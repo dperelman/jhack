@@ -9,12 +9,14 @@ C2AA15 Xterminator spray
 C2AA6D Rust promoter
 C2AA76 Rust promoter DX
 C2AA7F Guts increase
-C2AAC6 Defense
+C2AAC6 Defense spray
+C2AB0D Defense shower
+C2903C Nothing (no effect)
 C29039 Nothing
 C29033 Nothing (Ruler)
-C299EF Transform, full health (glorious light)
 C2C1BD Fly honey
 C28A92 Paralyze (Pollen scatter)
+C28B2C Poison
 C28D3A Exhaust fumes/something mysterious
 C28E3B Laugh maciacally/sprinkle powder
 C28B6D Cold attack (cold as in the sickness, you dumbass)
@@ -26,16 +28,32 @@ C2916E More-than-high-level attack (bite hard)
 C28EAE Guts down
 C29254 Offense and defense down
 C28F21 Offense and defense down 2
-C1DE43 Weapon
-C1E00F Armor
+C1DE43 Weapon equip
+C1E00F Armor equip
 C28CB8 Immobilize
 C29298 Smoke pour out from body
 C292EE Add Poo to party
 C292EB Transform (enemy extender)
 C290C6 Neutralize
-C2B27D Food
+C2B27D Food 1
+C2A0AE Food 2 (HP?)
+C2A0BF Food 3 (HP?)
+C2A0CF Food 4 (HP?)
+C2A0DF Food 5 (PP?)
+C2A0EF Food 6 (PP?)
+C2A26F Food 7 (Defense?)
+C2A360 Food 8 (HP?)
+C2A370 Food 9 (HP?)
+C2A380 Food 10
+C2A14B Food 11 (Guts?)
+C2A39D Unknown item
+C2AB71 Teleport Box
+C2904E Affliction - Homesickness
+C2904B Affliction - Sleep
+C2903F Affliction - Solidified
+C29048 Tried PSI, but didn't work
 C2B24E Is homesick
-C29042 Is asleep
+C29042 Is paralyzed
 C28770 Spy
 C2AD1B Pray
 C2889B On guard
@@ -81,11 +99,11 @@ C29E38 Offense up 1
 C29E7F Offense up 2
 C29E86 Defense down 1
 C29EFF Defense down 2
-C29E06 Hypnosis 1
-C29E57 Hypnosis 2
-C29E5E Magnet 1
-C29EE1 Magnet 2
-C29EFE Paralysis 1
+C29F06 Hypnosis 1
+C29F57 Hypnosis 2
+C29F5E Magnet 1
+C29FE1 Magnet 2
+C29FFE Paralysis 1
 C2A04F Paralysis 2
 C2A056 Brainshock 1
 C2A0A7 Brainshock 2
@@ -125,3 +143,7 @@ C2A5EC Damage and solidify
 C2A818 Bomb
 C2A821 Super Bomb
 C2B0A1 Mirror
+C2C14E Rainbow of colors
+C2C513 Unknown effect
+C2C4C0 Pokey's first speech
+C2C516 Pokey's second speech
