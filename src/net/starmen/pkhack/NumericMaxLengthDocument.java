@@ -30,19 +30,26 @@ public class NumericMaxLengthDocument extends MaxLengthDocument
     public void insertString(int offs, String str, AttributeSet a)
         throws BadLocationException
     {
+        while (this.getLength() > 0 && this.getText(0, 1).equals("0"))
+        {
+            super.remove(0, 1);
+            if (offs > 0)
+                offs--;
+        }
         super.insertString(offs, str.replaceAll("[^\\d]+", ""), a);
         //remove leading zeros
-        while (this.getLength() > 1 && this.getText(0, 1).equals("0"))
+        if (this.getLength() > 1 && this.getText(0, 1).equals("0"))
             remove(0, 1);
+        else if (this.getLength() == 0)
+            super.insertString(0, "0", new SimpleAttributeSet());
     }
 
     public void remove(int offs, int len) throws BadLocationException
     {
         super.remove(offs, len);
         if (this.getLength() == 0)
-            insertString(0, "0", new SimpleAttributeSet());
-        else
-            while (this.getLength() > 1 && this.getText(0, 1).equals("0"))
-                remove(0, 1);
+            super.insertString(0, "0", new SimpleAttributeSet());
+        else if (this.getLength() > 1 && this.getText(0, 1).equals("0"))
+            remove(0, 1);
     }
 }
