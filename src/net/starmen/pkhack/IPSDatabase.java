@@ -51,7 +51,6 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
     public IPSDatabase(Rom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
-        // TODO Auto-generated constructor stub
     }
 
     public static class IPSDatabaseEntry

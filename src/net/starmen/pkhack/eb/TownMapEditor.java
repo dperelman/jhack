@@ -779,8 +779,6 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
         fileMenu.addSeparator();
 
-        //TODO implement import/export; use checkbox tree for each map to
-        // import/export tiles, arrangement and/or palette
         fileMenu.add(HackModule.createJMenuItem("Import...", 'i', null,
             "import", this));
         fileMenu.add(HackModule.createJMenuItem("Export...", 'e', null,
