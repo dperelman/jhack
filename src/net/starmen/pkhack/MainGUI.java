@@ -69,7 +69,7 @@ import net.starmen.pkhack.eb.EbHackModule;
 //Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
 public class MainGUI implements ActionListener, WindowListener
 {
-    private JFrame mainWindow = new JFrame();
+    private JFrame mainWindow;
     private AbstractRom rom, orgRom = null;
     private ArrayList moduleList = new ArrayList();
     private boolean showload = false;
@@ -224,6 +224,7 @@ public class MainGUI implements ActionListener, WindowListener
         loadPrefs();
 
         //main init stuff
+        mainWindow = new JFrame();
         mainWindow.setTitle(MainGUI.getDescription() + " "
             + MainGUI.getVersion());
 
@@ -270,7 +271,7 @@ public class MainGUI implements ActionListener, WindowListener
         optionsMenu.add(new PrefsCheckBox("Display Console Dialog", prefs,
             "consoleDialog", false, 'c', null, "consoleDialog", this));
         optionsMenu.add(new PrefsCheckBox("Hide Error Console", prefs,
-        		"noErrorDialog", false, 'e', null, "noErrorDialog", this));
+            "noErrorDialog", false, 'e', null, "noErrorDialog", this));
         JMenu toolkitMenu = new JMenu("Look & Feel");
         toolkitMenu.setMnemonic('f');
         UIManager.LookAndFeelInfo[] lafi = UIManager.getInstalledLookAndFeels();
@@ -296,7 +297,7 @@ public class MainGUI implements ActionListener, WindowListener
             prefs, "useDirectFileIO", false, 'd', null, "directio", this));
         optionsMenu.add(new PrefsCheckBox("Load Last ROM on Startup", prefs,
             "autoLoad", true, 'l'));
-        optionsMenu.add(HackModule.createJMenuItem("Change Default ROM...",
+        optionsMenu.add(HackModule.createJMenuItem("Change Original ROM...",
             'c', null, "selectDefROM", this));
         optionsMenu.addSeparator();
         optionsMenu.add(new PrefsCheckBox("Auto Check for Updates", prefs,
@@ -468,12 +469,12 @@ public class MainGUI implements ActionListener, WindowListener
 
     public MainGUI(boolean visible)
     {
-    	if (visible)
-    		initGraphics();
-    	else
-    		loadPrefs();
+        if (visible)
+            initGraphics();
+        else
+            loadPrefs();
     }
-    
+
     /**
      * Creates a new <code>MainGUI</code> and shows its main window.
      */
@@ -620,10 +621,10 @@ public class MainGUI implements ActionListener, WindowListener
         if (!this.getPrefs().hasValue("checkVersion"))
         {
             int ques = JOptionPane.showConfirmDialog(null,
-                "Do you want JHack to check for updates\n"
+                "Do you want PK Hack to check for updates\n"
                     + "automatically on startup?\n"
                     + "NOTE: This accesses AnyoneEB's server and\n"
-                    + "could (but won't) be used to gather usage\n"
+                    + "could (but will not) be used to gather usage\n"
                     + "statistics if enabled.",
                 "Check for updates automatically?", JOptionPane.YES_NO_OPTION);
             this.getPrefs().setValueAsBoolean("checkVersion",
@@ -637,9 +638,9 @@ public class MainGUI implements ActionListener, WindowListener
         }
         if (this.getPrefs().hasValue("noErrorDialog"))
         {
-        	if (!JHack.isUseConsole())
-        		JHack.err.setEnabled(! this.getPrefs().getValueAsBoolean(
-        				"noErrorDialog"));
+            if (!JHack.isUseConsole())
+                JHack.err.setEnabled(!this.getPrefs().getValueAsBoolean(
+                    "noErrorDialog"));
         }
         //convert expRomPath and orgRomPath to game specific names
         if (this.getPrefs().hasValue("expRomPath"))
@@ -862,8 +863,11 @@ public class MainGUI implements ActionListener, WindowListener
             }
             this.getPrefs().setValue(
                 romType + ".expRomPath",
-                (tmpf = getFile("Select a unmodified or expanded " + romType
-                    + " ROM.", true)).toString());
+                (tmpf = getFile(
+                    "Now you must select a unmodified or expanded\n" + romType
+                        + " ROM for backup and other purposes.\n"
+                        + "This ROM must be one that will never be edited.",
+                    true)).toString());
             if (romType.equals("Earthbound")
                 && (tmpf.length() == AbstractRom.EB_ROM_SIZE_REGULAR || tmpf
                     .length() == AbstractRom.EB_ROM_SIZE_EXPANDED))
@@ -1389,7 +1393,7 @@ public class MainGUI implements ActionListener, WindowListener
         loading = false;
         return true;
     }
-    
+
     private void updateTitle()
     {
         mainWindow.setTitle(MainGUI.getDescription() + " "
@@ -1428,7 +1432,7 @@ public class MainGUI implements ActionListener, WindowListener
         if (ae.getActionCommand().equalsIgnoreCase("about"))
         {
             JOptionPane.showMessageDialog(null, this.createScollingLabel(this
-                .getFullCredits()), "About" + MainGUI.getDescription() + " "
+                .getFullCredits()), "About " + MainGUI.getDescription() + " "
                 + MainGUI.getVersion(), JOptionPane.INFORMATION_MESSAGE);
         }
         else if (ae.getActionCommand().equalsIgnoreCase("consoleDialog"))
@@ -1439,9 +1443,9 @@ public class MainGUI implements ActionListener, WindowListener
         }
         else if (ae.getActionCommand().equalsIgnoreCase("noErrorDialog"))
         {
-        	if (!JHack.isUseConsole())
-        		JHack.err.setEnabled(! this.getPrefs().getValueAsBoolean(
-        				"noErrorDialog"));
+            if (!JHack.isUseConsole())
+                JHack.err.setEnabled(!this.getPrefs().getValueAsBoolean(
+                    "noErrorDialog"));
         }
         else if (ae.getActionCommand().startsWith("LAF_"))
         {
@@ -1617,6 +1621,13 @@ public class MainGUI implements ActionListener, WindowListener
                         return;
 
                     romType = typeSel.getSelectedItem().toString();
+                    if (romType.trim().length() == 0)
+                    {
+                        JOptionPane.showMessageDialog(mainWindow,
+                            "The ROM type may not be an empty string.",
+                            "Invalid ROM Type", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
                 }
                 getPrefs().removeValue(romType + ".orgRomPath");
                 getPrefs().removeValue(romType + ".expRomPath");
