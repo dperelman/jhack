@@ -12,6 +12,7 @@ Next version (after v0.4.7.1):
 	in the format ~/.jhack/logs/yyyyMMddHHmmss.out.log (and .err.log).
 # Rom class separated into Rom and RomMem. Rom may be renamed to AbstractRom
 	before release.
+# Added some of JeffMan's graphics work to IPS Database
 
 v0.4.7.1:
 # IPSDatabase extensions:

@@ -78,8 +78,8 @@
 	<ips src = "stickman.lscn" size = "30845" author = "Jeffman" name = "Jeffman Logos 1"
 		sdesc = "Three logos by Jeffman" sshot = "stickman.png" sssize = "2614" type = "logoscreens"
 		romtype = "Earthbound" />
-	<ips src = "pkring.gas" size = "43778" author = "Jeffman" name = "PK Ring"
-		sdesc = "Replaces gas station with PK Hack logo" sshot = "pkring.png" sssize = "1277"
+	<ips src = "pkring.gas" size = "43778" author = "Jeffman" name = "PK Hack Gas"
+		sdesc = "Replaces gas station with PK Hack logo" sshot = "pkring.png" sssize = "2198"
 		type = "gasstation" romtype = "Earthbound" />
 	<!-- Mr. A asm hacks -->
 	<ips src = "eb6c_003.ips" size = "2558" author = "Mr. Accident"

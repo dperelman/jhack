@@ -66,7 +66,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
     public GasStationEditor(Rom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
-        
+
         try
         {
             Class[] c = new Class[]{byte[].class, GasStationEditor.class};
@@ -337,7 +337,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 tileOff += HackModule.write8BPPArea(tiles[i], udataTiles,
                     tileOff, 0, 0);
             }
-            System.out.println("Passed loop thingy.");
+            System.out.println("Tile data converted to SNES format.");
             byte[] compTile;
             int tileCompLen = comp(udataTiles, compTile = new byte[30000]);
             if (!hm.writeToFreeASMLink(compTile, tilePointerArray[num],
@@ -371,7 +371,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                     .println("Wrote "
                         + (palLen[i] = palCompLen)
                         + " bytes of the Gas Station #"
-                        + num
+                        + i
                         + " palette at "
                         + Integer.toHexString(palPointer[i] = hm.rom
                             .readRegAsmPointer(palPointerArray[i])) + " to "
@@ -1752,7 +1752,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
         return true;
     }
-    
+
     /**
      * Restore data from the given <code>byte[]</code> based on user input.
      * User input will always be expected by this method. This method exists to
