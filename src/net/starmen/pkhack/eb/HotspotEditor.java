@@ -123,7 +123,7 @@ public class HotspotEditor extends EbHackModule implements ActionListener, SeekL
 	public void show()
 	{
 		super.show();
-		readFromRom(this);
+		readFromRom();
 		mainWindow.setVisible(true);
 		if (entryChooser.getSelectedIndex() >= 0)
 			updateComponents();
