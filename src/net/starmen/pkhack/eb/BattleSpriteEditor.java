@@ -100,7 +100,8 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
         public boolean readInfo()
         {
-            if (isInited) return true;
+            if (isInited)
+                return true;
 
             //            System.out.println("Reading battle sprite #" + num + " from 0x"
             //                + Integer.toHexString(orgPointer));
@@ -147,7 +148,8 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
         public void initToNull()
         {
-            if (isInited) return;
+            if (isInited)
+                return;
 
             Dimension d = BATTLE_SPRITE_SIZES[size];
 
@@ -160,7 +162,8 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         public boolean writeInfo()
         {
             //if not inited, don't write anything
-            if (!isInited) return false;
+            if (!isInited)
+                return false;
 
             Rom rom = hm.rom;
             //write size 4 bytes after the start, 4 byte pointer is first
@@ -350,6 +353,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
     private SpritePalette pal;
     private JScrollPane jsp;
     private JCheckBoxMenuItem gridLines;
+    private int currPal;
 
     protected void init()
     {
@@ -379,6 +383,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         palSelector.setSelectedIndex(0);
         palSelector.setActionCommand("palSelector");
         palSelector.addActionListener(this);
+        palSelector.setEditable(true);
         entryNE.add(getLabeledComponent("Palette: ", palSelector,
             "Palettes 0-31 real palettes, rest are battle swirl data."));
 
@@ -557,6 +562,40 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         }
         else if (ae.getActionCommand().equals(palSelector.getActionCommand()))
         {
+            if (palSelector.getSelectedIndex() == -1)
+            {
+                try
+                {
+                    palSelector.setSelectedIndex(Integer.parseInt(palSelector
+                        .getSelectedItem().toString().trim().replaceAll(
+                            "[^\\d]", "")));
+                }
+                catch (NumberFormatException nfe)
+                {
+                    //we shouldn't get number format exceptions
+                    //the regular expression should remove all
+                    //non-digit characters
+                    System.err
+                        .println("This error cannot occur (BattleSpriteEditor"
+                            + ".actionPerformed(palSelector) "
+                            + "NumberFormatException).");
+                    nfe.printStackTrace();
+                    //set it back to a legal value
+                    palSelector.setSelectedIndex(currPal);
+                    return;
+                }
+                catch (IllegalArgumentException iae)
+                {
+                    //number out of range
+                    //would mean number too high, negitive is prevented
+                    //by the regular expression
+                    //change the palette selector back to what it was
+                    palSelector.setSelectedIndex(currPal);
+                    //previous line should have caused a call to this method,
+                    //no need to do it again
+                    return;
+                }
+            }
             updatePalette();
             da.repaint();
         }
@@ -694,7 +733,11 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
     private int getCurrentPalNum()
     {
-        return palSelector.getSelectedIndex();
+    	//make sure nothing ever thinks palette is #-1
+        int tmp = palSelector.getSelectedIndex();
+        if (tmp != -1)
+            currPal = tmp;
+        return currPal;
     }
 
     private void updateZoom()
@@ -766,8 +809,10 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
     {
         try
         {
-            if (f == null) return;
-            if (!f.exists()) throw new FileNotFoundException();
+            if (f == null)
+                return;
+            if (!f.exists())
+                throw new FileNotFoundException();
             BattleSprite sp = getSelectedSprite();
             BufferedImage img = ImageIO.read(f);
 
@@ -828,8 +873,10 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
     {
         try
         {
-            if (f == null) return;
-            if (!f.exists()) throw new FileNotFoundException();
+            if (f == null)
+                return;
+            if (!f.exists())
+                throw new FileNotFoundException();
             BattleSprite sp = getSelectedSprite();
             FileInputStream in = new FileInputStream(f);
             Image img = mainWindow.createImage(BMPReader.getBMPImage(in));
@@ -897,7 +944,8 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
      */
     public void exportImg(File f)
     {
-        if (f == null) return;
+        if (f == null)
+            return;
         if (!f.getAbsolutePath().endsWith(".png"))
         {
             f = new File(f.getAbsolutePath() + ".png");
