@@ -1,4 +1,9 @@
-NEXT VERSION (after v0.5.1):
+NEXT VERSION (after v0.5.1.1):
+
+v0.5.1.1:
+# BUGFIX: Upon loading a 4 MB ROM the ask to expand window would appear. It would
+	not expand past 4 MB.
+# Text Editor: BUGFIX: Expanded meg editing works with 6MB ROMs.
 
 v0.5.1:
 # Native comp() and decomp() support.

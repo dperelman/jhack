@@ -423,7 +423,7 @@ public class TextEditor extends EbHackModule implements ActionListener
 
         textLists[EXP].clear();
 
-        if (rom.length() == 0x400200)
+        if (rom.length() >= 0x400200)
         {
             do
             {

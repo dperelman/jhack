@@ -63,7 +63,7 @@ import net.starmen.pkhack.eb.EbHackModule;
  * buttons. This is called by {@link JHack#main(String[])}.
  * 
  * @author AnyoneEB
- * @version 0.5.1
+ * @version 0.5.1.1
  */
 //Made by AnyoneEB.
 //Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
@@ -491,7 +491,7 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public static String getVersion()
     {
-        return "0.5.1";
+        return "0.5.1.1";
     }
 
     /**
@@ -1302,8 +1302,7 @@ public class MainGUI implements ActionListener, WindowListener
 
         //if a Earthbound ROM was just loaded and it is unexpanded (3 MB + 512
         // byte header) then we may want to expand it
-        if (rom.getRomType().equals("Earthbound")
-            && (rom.length() == 0x300200 || rom.length() == 0x400200))
+        if (rom.getRomType().equals("Earthbound") && rom.length() == 0x300200)
         {
             //name of the automatic expansion preference
             String prefName = "Earthbound.autoExpand";
