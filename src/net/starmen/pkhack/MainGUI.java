@@ -816,8 +816,8 @@ public class MainGUI implements ActionListener, WindowListener
             || !(tmpf = new File(tmp)).exists())
         {
             //if orgRomPath from old version set, use it
-            boolean temp = false;
-            if ((tmpf = new File(tmp)).exists()
+            if (!(tmp == null)
+                && (tmpf = new File(tmp)).exists()
                 && ((tmp = this.getPrefs().getValue(romType + ".orgRomPath")) != null))
             {
                 return orgRomToExp(romType);

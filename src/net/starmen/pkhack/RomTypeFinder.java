@@ -36,16 +36,17 @@ public class RomTypeFinder
             public RomTypeCheck(String line)
             {
                 line = line.trim();
-                if (line.startsWith("*")) line = line.substring(1);
+                if (line.startsWith("*"))
+                    line = line.substring(1);
                 String[] info = line.split(":");
                 offset = Integer.parseInt(info[0].trim(), 16);
                 String[] data = info[1].trim().split("\\s+");
                 bytes = new byte[data.length];
-//                System.out.println();
-//                System.out.println("info[1] = " + info[1].trim());
+                //                System.out.println();
+                //                System.out.println("info[1] = " + info[1].trim());
                 for (int i = 0; i < data.length; i++)
                 {
-//                    System.out.println("data[" + i + "] = " + data[i]);
+                    //                    System.out.println("data[" + i + "] = " + data[i]);
                     bytes[i] = (byte) Integer.parseInt(data[i].trim(), 16);
                 }
             }
@@ -92,7 +93,8 @@ public class RomTypeFinder
         public boolean isRomOfType(Rom rom)
         {
             for (Iterator i = checks.iterator(); i.hasNext();)
-                if (!((RomTypeCheck) i.next()).check(rom)) return false;
+                if (!((RomTypeCheck) i.next()).check(rom))
+                    return false;
             return true;
         }
     }
@@ -103,7 +105,8 @@ public class RomTypeFinder
     public static void loadRomTypeFile()
     {
         //if already done this, don't do it again
-        if (loaded) return;
+        if (loaded)
+            return;
 
         RomType crt = null; //current RomType
         String[] rtlist; //rom type list
@@ -161,6 +164,7 @@ public class RomTypeFinder
 
     public static String getRomType(Rom rom)
     {
+        //make sure ROM types are loaded
         loadRomTypeFile();
 
         RomType rt;
@@ -175,11 +179,15 @@ public class RomTypeFinder
 
     public static String[] getRomTypeNames()
     {
+        //make sure ROM types are loaded
+        loadRomTypeFile();
+
         String[] out = new String[romTypes.size()];
         int j = 0;
         for (Iterator i = romTypes.iterator(); i.hasNext(); out[j++] = ((RomType) i
             .next()).getName())
             ;
+
         return out;
     }
 }
