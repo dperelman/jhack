@@ -164,7 +164,7 @@ public class PSIDamageEditor extends EbHackModule implements ActionListener
 	 */
 	public void show()
 	{
-		//super.show();
+		super.show();
 		init();
 
 		mainWindow.setVisible(true);
