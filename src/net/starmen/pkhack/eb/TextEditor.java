@@ -339,9 +339,10 @@ public class TextEditor extends EbHackModule implements ActionListener
     public static int loadRawText()
     {
         // Loads the raw text area(s) into the specified list of strings.
-        // Text from 0x51D12 - 0x08BE2D, 0x8DC31 - 0x0A012E, 0x2F5020 -
+        // Text from 0x50200 - 0x08BE2D, 0x8DC31 - 0x0A012E, 0x2F5020 -
         // 0x2FA57A
-        int address = 0x51D12;
+        //int address = 0x51D12;
+        int address = 0x50200;
         int istr = 0;
 
         textLists[RAW].clear();
