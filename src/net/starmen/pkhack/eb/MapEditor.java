@@ -659,6 +659,7 @@ public class MapEditor extends EbHackModule implements ActionListener
             
             this.modeMenu = modeMenu;
             setMapXY(0,0);
+            updateComponents();
             reloadMap();
         }
         
@@ -1145,20 +1146,31 @@ public class MapEditor extends EbHackModule implements ActionListener
         		this.y = 0;
         	else
         		this.y = y;
-        	updateComponents();
         }
         
         private void updateComponents()
         {
+        	updateScrollBars();
+        	updateFields();
+        }
+        
+        private void updateScrollBars()
+        {
+        	muteEvents = true;
+        	if (xScroll != null)
+        		xScroll.setValue(this.x);
+        	if (yScroll != null)
+        		yScroll.setValue(this.y);
+        	muteEvents = false;
+        }
+        
+        private void updateFields()
+        {
         	muteEvents = true;
         	if (xField != null) 
         		xField.setText(Integer.toString(this.x));
-        	if (xScroll != null)
-        		xScroll.setValue(this.x);
         	if (yField != null)
         		yField.setText(Integer.toString(this.y));
-        	if (yScroll != null)
-        		yScroll.setValue(this.y);
         	muteEvents = false;
         }
         
@@ -1913,6 +1925,7 @@ public class MapEditor extends EbHackModule implements ActionListener
 	    			gfxcontrol.setMapXY(
 	    					dest.getX() * 8 / MapEditor.tileWidth,
 	    					dest.getY() * 8 / MapEditor.tileHeight);
+	    			gfxcontrol.updateComponents();
 	    			gfxcontrol.reloadMap();
 	    			gfxcontrol.remoteRepaint();
 	    		}
