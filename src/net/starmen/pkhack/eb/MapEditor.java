@@ -2853,7 +2853,7 @@ public class MapEditor extends EbHackModule implements ActionListener
        				if (doorDestTypes[doorType] == -1)
            				doorData[areaNum].add(new DoorLocation(
            						doorX, doorY, doorType,
-    							(byte) ((doorPtr & 0xc0) >> 6), -1));
+    							(short) doorPtr, -1));
            			else
            			{
            				int destIndex =
@@ -3005,11 +3005,11 @@ public class MapEditor extends EbHackModule implements ActionListener
             					|| (doorLocation.getType() == 3) 
 								|| (doorLocation.getType() == 4))
             			{
-            				int data = doorLocation.getMisc() << 6;
+            				short data = doorLocation.getMisc();
             				toWrite[5 + (j * 5)] =
             					(byte) (data & 0xff);
             				toWrite[6 + (j * 5)] =
-            					(byte) ((data & 0xff00) >> 2);
+            					(byte) ((data & 0xff00) / 0x100);
             			}
             			else
             			{
@@ -3231,8 +3231,8 @@ public class MapEditor extends EbHackModule implements ActionListener
         public static class DoorLocation
 		{
         	private int destIndex;
-        	private byte type, misc;
-        	private short x, y, pointer;
+        	private byte type;
+        	private short x, y, pointer, misc;
         	
         	public DoorLocation(short x, short y,
         			byte type, short pointer, int destIndex)
@@ -3245,7 +3245,7 @@ public class MapEditor extends EbHackModule implements ActionListener
         	}
         	
         	public DoorLocation(short x, short y,
-        			byte type, byte misc)
+        			byte type, short misc)
         	{
         		this.x = x;
         		this.y = y;
@@ -3294,14 +3294,22 @@ public class MapEditor extends EbHackModule implements ActionListener
         		return pointer;
         	}
         	
-        	public byte getMisc()
+        	public boolean isEscalatorEnd()
+        	{
+        		return misc == 0x8000;
+        	}
+        	
+        	public short getMisc()
         	{
         		return misc;
         	}
         	
-        	public void setMisc(byte misc)
+        	public void setEscalatorEnd(boolean misc)
         	{
-        		this.misc = misc;
+        		if (misc)
+        			this.misc = (short) 0x8000;
+        		else
+        			this.misc = 0;
         	}
         	
         	public int getDestIndex()
