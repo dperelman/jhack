@@ -134,7 +134,7 @@ public class MiscEditor extends EbHackModule implements ActionListener
         {
             miscCrapList = new CommentedLineNumberReader(new InputStreamReader(
                 ClassLoader.getSystemResourceAsStream(DEFAULT_BASE_DIR
-                    + "miscdata.txt"))).readUsedLines();
+                    + "miscData.txt"))).readUsedLines();
         }
         catch (IOException e)
         {
