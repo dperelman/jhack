@@ -15,7 +15,7 @@ public class PSIAnimEditor extends EbHackModule implements ActionListener
     {
         super(rom, prefs);
     }
-        public String getVersion()
+    public String getVersion()
     {
         return "0.1a";
     }
