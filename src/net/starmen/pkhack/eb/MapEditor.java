@@ -19,7 +19,7 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.Math;
+// import java.lang.Math;
 import java.text.NumberFormat;
 
 import javax.swing.AbstractButton;
@@ -58,7 +58,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     private int music = 0;
     // real dimensions are 256 x 320, but I'm starting from 0.
     private int width = 255;
-    private int height = 319;
+    private int height = 323;
     private int tilewidth = 32;
     private int tileheight = 32;
     private int screen_width = 24;
@@ -76,6 +76,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     private JFormattedTextField paletteField;
     private JFormattedTextField musicField;
     private JScrollBar scrollh, scrollv, scrollh2;
+    private boolean changingSectors = false;
 
     public static final String[][][] menuNames = {
         {{"File", "f"}, {"Save Changes", "s"}, {"Exit", "q"}},
@@ -134,12 +135,12 @@ public class MapEditor extends EbHackModule implements ActionListener,
         paletteField.addPropertyChangeListener("value", this);
         panel.add(paletteField);
 
-        panel.add(new JLabel("Music: "));
+        /* panel.add(new JLabel("Music: "));
         musicField = new JFormattedTextField(num_format);
         musicField.setValue(new Integer(music));
         musicField.setColumns(3);
         musicField.addPropertyChangeListener("value", this);
-        panel.add(musicField);
+        panel.add(musicField); */
 
         return panel;
     }
@@ -292,62 +293,66 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
     public void propertyChange(PropertyChangeEvent e)
     {
-        // System.out.println("Property change!");
-        Object source = e.getSource();
-        // System.out.println("source: " + e.getSource());
-        if (source == xField)
+        if (!changingSectors)
         {
-            int newx = ((Number) xField.getValue()).intValue();
-            if ((newx >= 0) && (newx <= (width - screen_width)))
+//        	 System.out.println("Property change!");
+            Object source = e.getSource();
+            // System.out.println("source: " + e.getSource());
+            if (source == xField)
             {
-                x = newx;
-                int[][] maparray = new int[screen_height][screen_width];
-                for (int i = 0; i < screen_height; i++)
+                int newx = ((Number) xField.getValue()).intValue();
+                if ((newx >= 0) && (newx <= (width - screen_width)))
                 {
-                    maparray[i] = mapcontrol.getTiles(i + y, x, screen_width);
-                }
-                gfxcontrol.setMapArray(maparray);
-                gfxcontrol.setx(x);
-                gfxcontrol.remoteRepaint();
+                    x = newx;
+                    int[][] maparray = new int[screen_height][screen_width];
+                    for (int i = 0; i < screen_height; i++)
+                    {
+                        maparray[i] = mapcontrol.getTiles(i + y, x, screen_width);
+                    }
+                    gfxcontrol.setMapArray(maparray);
+                    gfxcontrol.setx(x);
+                    gfxcontrol.remoteRepaint();
 
-                scrollh.setValue(x);
-            }
-            else
-            {
-                xField.setValue(new Integer(x));
-            }
-        }
-        else if (source == yField)
-        {
-            int newy = ((Number) yField.getValue()).intValue();
-            if ((newy >= 0) && (newy <= (height - screen_height)))
-            {
-                y = newy;
-                int[][] maparray = new int[screen_height][screen_width];
-                for (int i = 0; i < screen_height; i++)
+                    scrollh.setValue(x);
+                }
+                else
                 {
-                    maparray[i] = mapcontrol.getTiles(i + y, x, screen_width);
+                    xField.setValue(new Integer(x));
                 }
-                gfxcontrol.setMapArray(maparray);
-                gfxcontrol.sety(y);
-                gfxcontrol.remoteRepaint();
-
-                scrollv.setValue(y);
             }
-            else
+            else if (source == yField)
             {
-                yField.setValue(new Integer(y));
+                int newy = ((Number) yField.getValue()).intValue();
+                if ((newy >= 0) && (newy <= (height - screen_height)))
+                {
+                    y = newy;
+                    int[][] maparray = new int[screen_height][screen_width];
+                    for (int i = 0; i < screen_height; i++)
+                    {
+                        maparray[i] = mapcontrol.getTiles(i + y, x, screen_width);
+                    }
+                    gfxcontrol.setMapArray(maparray);
+                    gfxcontrol.sety(y);
+                    gfxcontrol.remoteRepaint();
+
+                    scrollv.setValue(y);
+                }
+                else
+                {
+                    yField.setValue(new Integer(y));
+                }
+            }
+            else if ((source == paletteField)
+            		&& (gfxcontrol.knowsSector()))
+            {
+            	int newpal = ((Number) paletteField.getValue()).intValue();
+            	int[] sectorxy = gfxcontrol.getSectorxy();
+            	System.out.println("Now setting sector " + sectorxy[0] + ","
+            			+ sectorxy[1] + " to pal " + newpal);
+            	mapcontrol.setPal(sectorxy[0], sectorxy[1], newpal);
+            	gfxcontrol.remoteRepaint();
             }
         }
-        else if ((source == paletteField)
-        		&& (gfxcontrol.knowsSector()))
-        {
-        	int newpal = ((Number) yField.getValue()).intValue();
-        	int[] sectorxy = gfxcontrol.getSectorxy();
-        	mapcontrol.setPal(sectorxy[0], sectorxy[1], newpal);
-        	gfxcontrol.remoteRepaint();
-        }
-
     }
     
     public void actionPerformed(ActionEvent e)
@@ -362,17 +367,30 @@ public class MapEditor extends EbHackModule implements ActionListener,
     
     public void itemStateChanged(ItemEvent e)
     {
-    	System.out.println("itemStateChanged: " + e);
     	if ((e.getSource() == tilesetList)
     			&& (e.getStateChange() == ItemEvent.SELECTED)
-				&& (gfxcontrol.getModeProps()[2] == 1))
+				&& (gfxcontrol.getModeProps()[2] == 1)
+				&& (!changingSectors))
     	{
 			int[] sectorxy = gfxcontrol.getSectorxy();
-			System.out.println("sectorxy: " +
-					sectorxy[0] + " " + sectorxy[1]);
 			mapcontrol.setTset(sectorxy[0], sectorxy[1],
-					tilesetList.getSelectedIndex());
+					tilesetList.getSelectedIndex());		
 			gfxcontrol.remoteRepaint();
+			
+			int[] tsetpal = mapcontrol.getTsetPal(sectorxy[0], sectorxy[1]);
+			int[] modeprops = gfxcontrol.getModeProps();
+            if (modeprops[2] == 1)
+            {
+            	boolean isSame = editbox.setTsetPal(
+            			mapcontrol.getDrawTileset(tsetpal[0]),
+                        TileEditor.tilesets[mapcontrol.getDrawTileset(
+                        		tsetpal[0])].getPaletteNum(tsetpal[0],
+                        				tsetpal[1]));
+            	if (! isSame)
+            	{
+            		editbox.remoteRepaint();
+            	}
+            }
     	}
     }
     
@@ -404,9 +422,12 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
         public void mouseClicked(MouseEvent e)
         {
-            if ((e.getButton() == 1) &&
-            		(gfxcontrol.getModeProps()[2] == 1))
+        	System.out.println(gfxcontrol.knowsSector());
+            if ((e.getButton() == 1)
+            		&& (gfxcontrol.getModeProps()[2] == 1)
+					&& (gfxcontrol.knowsSector()))
             {
+            	System.out.println("we're in!");
             	int mousex = e.getX();
                 int mousey = e.getY();
                 editbox.setSelected(mousex, mousey);
@@ -469,6 +490,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	}
             else if (e.getButton() == 3)
             {
+            	changingSectors = true;
                 int mousex = e.getX();
                 int mousey = e.getY();
                 int sectorx = getSectorXorY(getTileXorY(mousex,
@@ -478,7 +500,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
                     tileheight, screen_height)
                     + y, sector_height);
                 
-                int[] tsetpal = mapcontrol.getTsetPal(sectorx, sectory);;
+                int[] tsetpal = mapcontrol.getTsetPal(sectorx, sectory);
                 int[] modeprops = gfxcontrol.getModeProps();
                 if (modeprops[0] == 2)
                 {
@@ -506,6 +528,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 // screen_y, tileheight, screen_height));
                 gfxcontrol.setSector(sectorx, sectory);
                 gfxcontrol.remoteRepaint();
+                changingSectors = false;
             }
         }
 	}
@@ -560,12 +583,12 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
     public String getDescription()
     {
-        return "Map Viewer";
+        return "Map Editor";
     }
 
     public String getVersion()
     {
-        return "0.1.5";
+        return "0.2";
     }
 
     public String getCredits()
@@ -1415,10 +1438,10 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	int newLtsetData = 0;
         	int local_tset = rom.read(address);
         	int newLtset2set;
-        	int tiley2 = Math.abs(this.sector_height - (tiley + 1));
+        	int localtiley = tiley - ((tiley / 4) * 4);
         	for (int i = 0; i <= 3; i++)
         	{
-        		if (i == tiley)
+        		if (i == localtiley)
         		{
         			newLtset2set = newltset;
         		}
@@ -1427,11 +1450,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			newLtset2set = (local_tset >> (i * 2)) & 3;
         		}
         		
-        		System.out.println("newLtset2set #" + i 
-        				+ ": " + Integer.toBinaryString(newLtset2set));
         		newLtsetData += newLtset2set << (i * 2);
-        		System.out.println("newLtsetData #" + i 
-        				+ ": " + Integer.toBinaryString(newLtsetData)); 
         	}
         	System.out.println("Old ltset: " + Integer.toBinaryString(local_tset)
         			+ " New ltset: " + Integer.toBinaryString(newLtsetData));
