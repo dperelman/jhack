@@ -29,6 +29,7 @@ import java.util.ListIterator;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -41,6 +42,8 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -61,7 +64,6 @@ public class MapEditor extends EbHackModule implements ActionListener
         super(rom, prefs);
     }
 	
-    private JFrame mainWindow;
     public static int sectorWidth = 8;
     public static int sectorHeight = 4;
     public static int widthInSectors = 32;
@@ -73,9 +75,15 @@ public class MapEditor extends EbHackModule implements ActionListener
     public static final int drawTsetNum = 20;
     public static final int mapTsetNum = 32;
     public static final int palsNum = 59;
+    private static boolean hasLoaded = false;
     private JMenu modeMenu;
     private JMenuItem sectorProps, findSprite;
     private boolean oldCompatability = false;
+    
+    private JFrame errorWindow;
+    private JLabel errorTitle;
+    private JTextArea errorText;
+    private JButton errorClose;
 
     public static final String[] TILESET_NAMES = {"Underworld", "Onett",
         "Twoson", "Threed", "Fourside", "Magicant", "Outdoors", "Summers",
@@ -291,6 +299,17 @@ public class MapEditor extends EbHackModule implements ActionListener
         checkBox.addActionListener(menuListener);
         menu.add(checkBox);
         menuBar.add(menu);
+        
+        menu = new JMenu("Errors");
+        menu.add(EbHackModule.createJMenuItem(
+        		"View Sprite Errors", 's', null, 
+				MenuListener.SPRITE_ERR, 
+				menuListener));
+        menu.add(EbHackModule.createJMenuItem(
+        		"View Door Errors", 'd', null, 
+				MenuListener.DOOR_ERR, 
+				menuListener));
+        menuBar.add(menu);
 
         return menuBar;
     }
@@ -389,6 +408,17 @@ public class MapEditor extends EbHackModule implements ActionListener
         mainWindow.getContentPane().add(contentPanel, BorderLayout.CENTER);
         
         mainWindow.pack();
+        
+        errorWindow = new JFrame();
+        JPanel errorPanel = new JPanel(new BorderLayout());
+        errorTitle = new JLabel();
+        errorText = new JTextArea(20,60);
+        errorText.setEditable(false);
+        errorClose = new JButton("Close");
+        errorClose.addActionListener(this);
+        errorWindow.getContentPane().add(errorTitle, BorderLayout.PAGE_START);
+        errorWindow.getContentPane().add(new JScrollPane(errorText), BorderLayout.CENTER);
+        errorWindow.getContentPane().add(errorClose, BorderLayout.PAGE_END);
     }
     
     protected void init()
@@ -407,17 +437,27 @@ public class MapEditor extends EbHackModule implements ActionListener
         createGUI();
     }
     
-    public void readFromRom()
+    private void readFromRom()
     {
-    	// EbMap.loadMapAddresses(rom);
-        EbMap.loadDoorData(rom);
-        EbMap.loadDrawTilesets(rom);
-        SpriteEditor.readFromRom(rom);
-        TPTEditor.readFromRom(this);
-        EbMap.loadSpriteData(rom);
-        HotspotEditor.readFromRom(this);
-        MapEventEditor.readFromRom(rom);
-        EventMusicEditor.readFromRom(rom);
+    	readFromRom(this);
+    	gfxcontrol.loadMusicNames();
+    }
+    
+    public static void readFromRom(HackModule hm)
+    {
+    	if (!hasLoaded)
+    	{
+//    		 EbMap.loadMapAddresses(rom);
+            EbMap.loadDoorData(hm.rom);
+            EbMap.loadDrawTilesets(hm.rom);
+            SpriteEditor.readFromRom(hm.rom);
+            TPTEditor.readFromRom(hm);
+            EbMap.loadSpriteData(hm.rom);
+            HotspotEditor.readFromRom(hm);
+            MapEventEditor.readFromRom(hm.rom);
+            EventMusicEditor.readFromRom(hm.rom);
+            hasLoaded = true;
+    	}
     }
     
     public void writeToRom()
@@ -463,7 +503,8 @@ public class MapEditor extends EbHackModule implements ActionListener
         	if (doorWrite && spWrite)
         		JOptionPane.showMessageDialog(mainWindow,
         			"Saved successfully!");
-        	reset();
+        	EbMap.reset();
+        	readFromRom();
     	}
     }    
     
@@ -477,6 +518,8 @@ public class MapEditor extends EbHackModule implements ActionListener
         {
             hide();
         }
+        else if (e.getSource().equals(errorClose))
+        	errorWindow.hide();
     }
     
     public class MenuListener implements ActionListener
@@ -497,6 +540,8 @@ public class MapEditor extends EbHackModule implements ActionListener
     	public static final String MUSIC_NAMES = "musicNames";
     	public static final String SECTOR_PROPS = "sectorProps";
     	public static final String FIND_SPRITE = "findSprite";
+    	public static final String DOOR_ERR = "doorErrors";
+    	public static final String SPRITE_ERR = "spriteErrors";
     	
 		public void actionPerformed(ActionEvent e)
 		{
@@ -625,6 +670,72 @@ public class MapEditor extends EbHackModule implements ActionListener
 							"Could not find a sprite entry using TPT entry 0x" + tpt + ".");
 				}
 			}
+			else if (ac.equals(DOOR_ERR))
+			{
+				ArrayList errors = EbMap.getErrors();
+				if (errors.size() == 0)
+					JOptionPane.showMessageDialog(mainWindow, "No errors encountered!");
+				else
+				{
+					int num = 0;
+					String out = "";
+					for (int i = 0; i < errors.size(); i++)
+					{
+						EbMap.ErrorRecord er = (EbMap.ErrorRecord) errors.get(i);
+						if (er.getType() == EbMap.ErrorRecord.DOOR_ERROR)
+						{
+							out = out + "#" + (num + 1) + ": " + er.getMessage()
+									+ System.getProperty("line.separator");
+							num++;
+						}
+					}
+					
+					if (num == 0)
+						JOptionPane.showMessageDialog(mainWindow, "No door errors encountered!");
+					else
+					{
+						errorWindow.setTitle("Door Errors - Map Editor");
+						errorTitle.setText(errors.size()
+								+ " errors were encountered while reading door entry data.");
+						errorText.setText(out);
+						errorWindow.pack();
+						errorWindow.show();
+					}
+				}
+			}
+			else if (ac.equals(SPRITE_ERR))
+			{
+				ArrayList errors = EbMap.getErrors();
+				if (errors.size() == 0)
+					JOptionPane.showMessageDialog(mainWindow, "No errors encountered!");
+				else
+				{
+					int num = 0;
+					String out = "";
+					for (int i = 0; i < errors.size(); i++)
+					{
+						EbMap.ErrorRecord er = (EbMap.ErrorRecord) errors.get(i);
+						if (er.getType() == EbMap.ErrorRecord.SPRITE_ERROR)
+						{
+							out = out + "#" + (num + 1) + ": " + er.getMessage()
+									+ System.getProperty("line.separator");
+							num++;
+						}
+					}
+					
+					if (num == 0)
+						JOptionPane.showMessageDialog(mainWindow, "No sprite errors encountered!");
+					else
+					{
+						errorWindow.setTitle("Sprite Errors - Map Editor");
+						errorTitle.setText(errors.size()
+								+ " errors were encountered while reading sprite entry data.");
+						errorText.setText(out);
+						errorWindow.pack();
+						errorWindow.show();
+					}
+				}
+			}
 		}
 	}
 
@@ -636,7 +747,7 @@ public class MapEditor extends EbHackModule implements ActionListener
     public void show(boolean userShown)
     {
         super.show();
-        // this.reset();
+        readFromRom();
         mainWindow.setVisible(true);
         mainWindow.repaint();
         
@@ -676,12 +787,13 @@ public class MapEditor extends EbHackModule implements ActionListener
     public void hide()
     {
         mainWindow.setVisible(false);
+        errorWindow.hide();
     }
     
     public void reset()
     {
     	EbMap.reset();
-    	readFromRom();
+    	hasLoaded = false;
     }
 
     public String getDescription()
@@ -838,11 +950,7 @@ public class MapEditor extends EbHackModule implements ActionListener
             tilesetList.addActionListener(this);
             paletteBox = new JComboBox();
             paletteBox.addActionListener(this);
-            String[] musicNames = new String[EventMusicEditor.MUSIC_NUM];
-            for (int i = 0; i < musicNames.length; i++)
-            	musicNames[i] = i + " - "
-					+ EventMusicEditor.getEventMusicEntry(i).getDefaultName();
-            musicBox = new JComboBox(musicNames);
+            musicBox = new JComboBox();
             musicBox.addActionListener(this);
             
             tilesetList.setEnabled(knowssector);
@@ -869,6 +977,16 @@ public class MapEditor extends EbHackModule implements ActionListener
             addMouseListener(this);
             addMouseMotionListener(this);
             addMouseWheelListener(this);
+        }
+        
+        public void loadMusicNames()
+        {
+        	musicBox.removeActionListener(this);
+        	musicBox.removeAllItems();
+          for (int i = 0; i < EventMusicEditor.MUSIC_NUM; i++)
+          		musicBox.addItem(i + " - " 
+          				+ EventMusicEditor.getEventMusicEntry(i).getDefaultName());
+          musicBox.addActionListener(this);
         }
         
         public void setEnabled(boolean enabled)
@@ -1048,12 +1166,12 @@ public class MapEditor extends EbHackModule implements ActionListener
                     		if ((((tileX + i) % MapEditor.sectorWidth) == 0)
                     				|| (i == 0))
                     		{
-                    			if (! EbMap.isSpriteDataLoaded(
+                    			/*if (! EbMap.isSpriteDataLoaded(
                     					(tileX + i) / MapEditor.sectorWidth,
 										(tileY + k) / (MapEditor.sectorHeight * 2)))
                     				EbMap.loadSpriteData(hm.rom,
                     						(tileX + i) / MapEditor.sectorWidth,
-											(tileY + k) / (MapEditor.sectorHeight * 2));
+											(tileY + k) / (MapEditor.sectorHeight * 2));*/
                     			int spritesNum = EbMap.getSpritesNum(
                     					(tileX + i) / MapEditor.sectorWidth,
 										(tileY + k) / (MapEditor.sectorHeight * 2));
@@ -1120,12 +1238,12 @@ public class MapEditor extends EbHackModule implements ActionListener
                     		if ((((tileX + i) % MapEditor.sectorWidth) == 0)
                     				|| (i == 0))
                     		{
-                    			if (! EbMap.isDoorDataLoaded(
+                    			/*if (! EbMap.isDoorDataLoaded(
                     					(tileX + i) / MapEditor.sectorWidth,
 										(tileY + k) / (MapEditor.sectorHeight * 2)))
                     				EbMap.loadDoorData(hm.rom,
                     						(tileX + i) / MapEditor.sectorWidth,
-											(tileY + k) / (MapEditor.sectorHeight * 2));
+											(tileY + k) / (MapEditor.sectorHeight * 2));*/
                     			int doorsNum = EbMap.getDoorsNum(
                     					(tileX + i) / MapEditor.sectorWidth,
 										(tileY + k) / (MapEditor.sectorHeight * 2));
@@ -2788,46 +2906,43 @@ public class MapEditor extends EbHackModule implements ActionListener
        private static final int spAsmPointer = 0x2461;
        private static final int spDataBase = 0xf0200; // 2 byte ptr + 0xf0200
        private static final int sectorPropsAddress = 0x17b400;
-       // private static int[] mapAddresses = new int[8];
-       private static ArrayList mapChanges = new ArrayList();
-       private static ArrayList[] spData =
-       	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-       private static Sector[] sectorData =
-       	new Sector[MapEditor.heightInSectors * MapEditor.widthInSectors];
-       private static int[] drawingTilesets =
-       	new int[MapEditor.mapTsetNum];
-       private static ArrayList localTilesetChanges = new ArrayList();
-       private static ArrayList[] doorData =
-       	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-       private static int[] oldDoorEntryLengths =
-       	new int[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-       private static ArrayList destData = new ArrayList();
-       private static ArrayList destsLoaded = new ArrayList();
-       private static ArrayList destsIndexes = new ArrayList();
-       private static Image[][][] tileImages =
-       	new Image[TILESET_NAMES.length][1024][MapEditor.mapTsetNum];
-       private static Image[][] spriteImages = new Image[SpriteEditor.NUM_ENTRIES][8];
+       // private static int[] mapAddresses;
+       private static ArrayList mapChanges;
+       private static ArrayList[] spData;
+       private static Sector[] sectorData;
+       private static int[] drawingTilesets;
+       private static ArrayList localTilesetChanges;
+       private static ArrayList[] doorData;
+       private static int[] oldDoorEntryLengths;
+       private static ArrayList destData;
+       private static ArrayList destsLoaded;
+       private static ArrayList destsIndexes;
+       private static ArrayList errors;
+       private static Image[][][] tileImages;
+       private static Image[][] spriteImages;
        
        public static void reset()
        {
        // mapAddresses = new int[8];
        	
-       	mapChanges.clear();
+       	mapChanges = new ArrayList();
            spData =
            	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
            sectorData =
            	new Sector[MapEditor.heightInSectors * MapEditor.widthInSectors];
            drawingTilesets = new int[MapEditor.mapTsetNum];
-           localTilesetChanges.clear();
+           localTilesetChanges = new ArrayList();
            doorData =
             	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
            oldDoorEntryLengths =
             	new int[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-           destData.clear();
-           destsLoaded.clear();
-           destsIndexes.clear();
+           destData = new ArrayList();
+           destsLoaded = new ArrayList();
+           destsIndexes = new ArrayList();
+           errors = new ArrayList();
            tileImages =
            	new Image[MapEditor.drawTsetNum][1024][MapEditor.palsNum];
+           spriteImages = new Image[SpriteEditor.NUM_ENTRIES][8];
        }
         
         /*public static void loadMapAddresses(AbstractRom rom)
@@ -3064,11 +3179,12 @@ public class MapEditor extends EbHackModule implements ActionListener
         	return isSpriteDataLoaded(areaX + (areaY * MapEditor.widthInSectors));
         }
         
-        public static void loadSpriteData(AbstractRom rom, int areaNum)
+        public static int loadSpriteData(AbstractRom rom, int areaNum)
         {
         	int spPtrsAddress = 
-        		HackModule.toRegPointer(rom.readMulti(spAsmPointer,3));
-        	int ptr = rom.readMulti(spPtrsAddress + (areaNum * 2), 2);
+        		HackModule.toRegPointer(rom.readMulti(spAsmPointer,3)),
+				ptr = rom.readMulti(spPtrsAddress + (areaNum * 2), 2),
+				errorsNum = 0;
         	spData[areaNum] = new ArrayList();
        		if (ptr > 0)
        		{
@@ -3084,41 +3200,56 @@ public class MapEditor extends EbHackModule implements ActionListener
 									  * 0x100));
            			TPTEditor.TPTEntry tptEntry;
            			try
-					{
+						{
            				tptEntry = TPTEditor.tptEntries[tpt];
-					}
+						}
            			catch (java.lang.ArrayIndexOutOfBoundsException e)
-					{
-           				System.out.println("Sprite entry #" + j + " of area #" + areaNum 
-           						+ " has a bad tpt value (0x" + Integer.toHexString(tpt) + ")");
-           				tpt = 0;
-           				tptEntry = TPTEditor.tptEntries[tpt];
-					}
+						{
+           				errors.add(
+           						new ErrorRecord(ErrorRecord.SPRITE_ERROR,
+           								"Sprite entry #" + j + " of area #" + areaNum 
+		           							+ " has a bad tpt value (0x" + Integer.toHexString(tpt) + ")"));
+           				tpt = -1;
+           				tptEntry = null;
+           				errorsNum++;
+						}
                 	
-                	SpriteEditor.SpriteInfoBlock sib =
-                		SpriteEditor.sib[tptEntry.getSprite()];
-                	short spriteX = 
-                		(short) (data[5 + (j * 4)] - (sib.width * 4));
-                	short spriteY =
-                		(short) (data[4 + (j * 4)] - (sib.height * 6));
-           			spData[areaNum].add(new SpriteLocation(
+           			if (tpt >= 0)
+           			{
+           				SpriteEditor.SpriteInfoBlock sib =
+           					SpriteEditor.sib[tptEntry.getSprite()];
+           				short spriteX = 
+           					(short) (data[5 + (j * 4)] - (sib.width * 4));
+           				short spriteY =
+           					(short) (data[4 + (j * 4)] - (sib.height * 6));
+           				spData[areaNum].add(new SpriteLocation(
            					tpt, spriteX, spriteY));
+           			}
            		}
        		}
+       		
+       		return errorsNum;
        	}
         
-        public static void loadSpriteData(AbstractRom rom, int areaX, int areaY)
+        public static int loadSpriteData(AbstractRom rom, int areaX, int areaY)
         {
-        	loadSpriteData(rom, areaX + (areaY * MapEditor.widthInSectors));
+        	return loadSpriteData(rom, areaX + (areaY * MapEditor.widthInSectors));
         }
         
         public static void loadSpriteData(AbstractRom rom)
         {
+        	int errorsNum = 0;
         	for (int i = 0; i < spData.length; i++)
         	{ 			
         		if (! isSpriteDataLoaded(i))
-        			loadSpriteData(rom,i);
+        			errorsNum += loadSpriteData(rom,i);
         	}
+        	if (errorsNum > 0)
+        		System.out.println(errorsNum + " sprite entry error"
+        				+ (errorsNum > 1 ? "s" : "" ) + " found, see Errors menu "
+						+ "in Map Editor for details.");
+        				
+        		
         }
         
         public static SpriteLocation getSpriteLocation(int areaNum, int num)
@@ -3336,15 +3467,22 @@ public class MapEditor extends EbHackModule implements ActionListener
         
         public static void loadDoorData(AbstractRom rom)
         {
+        	int errors = 0;
         	for (int i = 0; i < (MapEditor.heightInSectors / 2) * MapEditor.widthInSectors; i++)
         		if (doorData[i] == null)
-        			loadDoorData(rom, i);
+        			errors += loadDoorData(rom, i);
+        	if (errors > 0)
+        		System.out.println(errors + " door entry error"
+        				+ (errors > 1 ? "s" : "" ) + " found, see Errors menu "
+						+ "in Map Editor for details.");
         }
         
-        public static void loadDoorData(AbstractRom rom, int areaNum)
+        // returns how many errors were encountered
+        private static int loadDoorData(AbstractRom rom, int areaNum)
         {
         	int ptr = HackModule.toRegPointer(rom.readMulti(
-        			dPointersAddress + (areaNum * 4), 4));
+        			dPointersAddress + (areaNum * 4), 4)),
+				numErrors = 0;
         	doorData[areaNum] = new ArrayList();
         	oldDoorEntryLengths[areaNum] = rom.read(ptr);
        		for (byte i = 0; i < rom.readByte(ptr); i++)
@@ -3370,26 +3508,31 @@ public class MapEditor extends EbHackModule implements ActionListener
        			}
        			catch (ArrayIndexOutOfBoundsException e)
 					{
-       				System.out.println("Could not load door entry #" + i
-       					+ " of area #" + areaNum + " at 0x"
-							+ Integer.toHexString(ptr + (i * 5))
-							+ " because it has an invalid type (" + doorType + ").");
+       				errors.add(
+       						new ErrorRecord(
+       								ErrorRecord.DOOR_ERROR,
+       								"Could not load door entry #" + i + " of area #" 
+											+ areaNum + " at 0x" + Integer.toHexString(ptr + (i * 5)) 
+											+ " because it has an invalid type (" + doorType + ")."));
+       				numErrors++;
 					}
        		}
+       		
+       		return numErrors;
         }
         
-        public static void loadDoorData(AbstractRom rom, int areaX, int areaY)
-        {
-        	loadDoorData(rom, areaX + (areaY * MapEditor.widthInSectors));
-        }
-        
-        public static boolean isDoorDataLoaded(int areaNum)
+        /*public static boolean isDoorDataLoaded(int areaNum)
         {
         	return (doorData[areaNum] != null);
         }
         public static boolean isDoorDataLoaded(int areaX, int areaY)
         {
         	return isDoorDataLoaded(areaX + (areaY * MapEditor.widthInSectors));
+        }*/
+        
+        public static ArrayList getErrors()
+        {
+        	return errors;
         }
         
         public static int getDoorsNum(int areaNum)
@@ -4125,6 +4268,31 @@ public class MapEditor extends EbHackModule implements ActionListener
         		}
         		return byteArray;
         	}
+		}
+        
+       public static class ErrorRecord
+		{
+       	public static final int SPRITE_ERROR = 0;
+       	public static final int DOOR_ERROR = 1;
+       	
+       	private int type;
+       	private String message;
+       	
+       	public ErrorRecord(int type, String message)
+       	{
+       		this.type = type;
+       		this.message = message;
+       	}
+       	
+       	public int getType()
+       	{
+       		return type;
+       	}
+       	
+       	public String getMessage()
+       	{
+       		return message;
+       	}
 		}
     }
 
