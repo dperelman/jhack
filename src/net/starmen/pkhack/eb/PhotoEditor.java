@@ -770,7 +770,7 @@ public class PhotoEditor extends EbHackModule
                 		MapEditor.EbMap.loadSectorData(
                 				rom, sectorX, sectorY);
                 	
-                    tile_set = MapEditor.EbMap.getDrawTileset(rom,
+                    tile_set = MapEditor.EbMap.getDrawTileset(
                     		MapEditor.EbMap.getTset(sectorX, sectorY));
                     tile_tile = mapArray[i][j]
                         | (MapEditor.EbMap.getLocalTileset(rom,
@@ -1341,25 +1341,4 @@ public class PhotoEditor extends EbHackModule
 		}
 		
 	}
-
-	/*public class PhotoSprite
-	{
-		public int sprite, x, y;
-		public boolean enabled, isParty;
-		
-		public PhotoSprite(int sprite, int x, int y, boolean isParty)
-		{
-			this.sprite = sprite;
-			this.x = x;
-			this.y = y;
-			enabled = true;
-			this.isParty = isParty;
-		}
-		
-		public PhotoSprite(boolean isParty)
-		{
-			enabled = false;
-			this.isParty = isParty;
-		}
-	}*/
 }
