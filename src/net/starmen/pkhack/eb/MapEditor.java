@@ -915,18 +915,19 @@ public class MapEditor extends EbHackModule implements ActionListener
                     	tile_set = EbMap.getDrawTileset(sector.getTileset());
                         tile = row2draw[i2];
                         boolean changed = false;
-                        if (mapChanges)
-                        {
-                        	int num = MapEventEditor.countTileChanges(tile_set),
-								x = (i2 + tileX), y = (i2 + tileX);
-                        	for (int j = 0; j < num; j++)
-                        		if (tile == MapEventEditor.getTileChange(tile_set, j).getTile1())
-                        		{
-                        			tile = MapEventEditor.getTileChange(tile_set, j).getTile2();
-                        			changed = true;
-                        			j = num;
-                        		}
-                        }
+    	    			if (mapChanges)
+                        	for (int k = 0; k < MapEventEditor.countGroups(tile_set); k++)
+                        	{
+                        		for (int l = 0; l < MapEventEditor.countTileChanges(tile_set, k); l++)
+                        			if (tile == MapEventEditor.getTileChange(tile_set, k, l).getTile1())
+                            		{
+                            			tile = MapEventEditor.getTileChange(tile_set, k, l).getTile2();
+                            			changed = true;
+                            			break;
+                            		}
+                    			if (changed)
+                    				break;
+                        	}
                         tile_pal = 
                         	TileEditor.tilesets[tile_set].getPaletteNum(
                         			sector.getTileset(), sector.getPalette());
@@ -4077,13 +4078,18 @@ public class MapEditor extends EbHackModule implements ActionListener
     				int tile = ((scroll.getValue() + i) * (height + 1)) + j;
     				boolean changed = false;
 	    			if (mapChanges)
-                    	for (int k = 0; k < MapEventEditor.countTileChanges(tset); k++)
-                    		if (tile == MapEventEditor.getTileChange(tset, k).getTile1())
-                    		{
-                    			tile = MapEventEditor.getTileChange(tset, k).getTile2();
-                    			changed = true;
-                    			k = MapEventEditor.countTileChanges(tset);
-                    		}
+                    	for (int k = 0; k < MapEventEditor.countGroups(tset); k++)
+                    	{
+                    		for (int l = 0; l < MapEventEditor.countTileChanges(tset, k); l++)
+                        		if (tile == MapEventEditor.getTileChange(tset, k, l).getTile1())
+                        		{
+                        			tile = MapEventEditor.getTileChange(tset, k, l).getTile2();
+                        			changed = true;
+                        			break;
+                        		}
+                       		if (changed)
+                       			break;
+                    	}
     				if (textTiles)
     					g2d.drawString(addZeros(
                         		Integer.toHexString(tile), 2), 
