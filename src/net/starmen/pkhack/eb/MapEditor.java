@@ -691,7 +691,7 @@ public class MapEditor extends EbHackModule implements ActionListener
 
     public String getVersion()
     {
-        return "0.4.2";
+        return "0.4.3";
     }
 
     public String getCredits()
@@ -1839,11 +1839,12 @@ public class MapEditor extends EbHackModule implements ActionListener
             			if (dLoc.getY() + (my - movingData[2]) / 8 >
             					MapEditor.sectorHeight * 2 * (MapEditor.tileHeight / 8))
             			{
-            				alterY = 0;
+            				alterY = (dLoc.getY() + (my - movingData[2]) / 8)
+								/ (MapEditor.sectorHeight * 2 * (MapEditor.tileHeight / 8));
             				newDoorY = (short) (MapEditor.sectorHeight * 2 * (MapEditor.tileHeight / 8)
             						- dLoc.getY());
             			}
-            			else if (dLoc.getX() + (mx - movingData[1]) / 8 < 0)
+            			else if (dLoc.getY() + (mx - movingData[1]) / 8 < 0)
             			{
             				alterY = (dLoc.getY() + (my - movingData[2]) / 8)
 								/ (MapEditor.sectorHeight * 2 * (MapEditor.tileHeight / 8)) - 1;
