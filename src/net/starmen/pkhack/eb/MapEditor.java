@@ -33,6 +33,7 @@ import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
@@ -2877,20 +2878,36 @@ public class MapEditor extends EbHackModule implements ActionListener,
         		{
         			int pointer = rom.readMulti(address, 4);
         			short flag = (short) (rom.readMulti(address + 4, 2));
+        			boolean flagReversed;
+        			if (flag > 0x8000)
+        			{
+        				flag -= 0x8000;
+        				flagReversed = true;
+        			}
+        			else
+        				flagReversed = false;
         			short yCoord = (short) rom.read(address + 6);
         			yCoord += (short) ((rom.read(address + 7) & 0x3F) << 8);
         			short xCoord = (short) (rom.readMulti(address + 8, 2));
         			byte style = rom.readByte(address + 10);
         			byte direction = 
         				(byte) ((rom.read(address + 7) & 0xC0) >> 6);
-        			dest = new Destination(pointer, flag, xCoord,
+        			dest = new Destination(pointer, flag, flagReversed, xCoord,
         					yCoord, style, direction);
         		}
         		else if (doorDestTypes[type] == 1)
         		{
         			short flag = (short) (rom.readMulti(address, 2));
+        			boolean flagReversed;
+        			if (flag > 0x8000)
+        			{
+        				flag -= 0x8000;
+        				flagReversed = true;
+        			}
+        			else
+        				flagReversed = false;
         			int pointer = rom.readMulti(address + 2, 4);
-        			dest = new Destination(flag, pointer);
+        			dest = new Destination(flag, flagReversed, pointer);
         		}
         		else if (doorDestTypes[type] == 2)
         		{
@@ -3124,12 +3141,14 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	private int pointer;
         	private short flag, yCoord, xCoord;
         	private byte style, direction, type;
+        	private boolean flagReversed;
         	
-        	public Destination(int pointer, short flag, short xCoord,
-        			short yCoord, byte style, byte direction)
+        	public Destination(int pointer, short flag, boolean flagReversed,
+        			short xCoord, short yCoord, byte style, byte direction)
         	{
         		this.pointer = pointer;
         		this.flag = flag;
+        		this.flagReversed = flagReversed;
         		this.xCoord = xCoord;
         		this.yCoord = yCoord;
         		this.style = style;
@@ -3137,9 +3156,10 @@ public class MapEditor extends EbHackModule implements ActionListener,
         		this.type = 0;
         	}
         	
-        	public Destination(short flag, int pointer)
+        	public Destination(short flag, boolean flagReversed, int pointer)
         	{
         		this.flag = flag;
+        		this.flagReversed = flagReversed;
         		this.pointer = pointer;
         		this.type = 1;
         	}
@@ -3220,6 +3240,16 @@ public class MapEditor extends EbHackModule implements ActionListener,
         		this.direction = direction;
         	}
         	
+        	public boolean isFlagReversed()
+        	{
+        		return flagReversed;
+        	}
+        	
+        	public void setFlagReversed(boolean flagReversed)
+        	{
+        		this.flagReversed = flagReversed;
+        	}
+        	
         	public byte[] toByteArray()
         	{
         		byte[] byteArray;
@@ -3232,6 +3262,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			byteArray[3] = 0;
         			byteArray[4] = (byte) (flag & 0xff);
         			byteArray[5] = (byte) ((flag & 0xff00) / 0x100);
+        			if (flagReversed)
+        				byteArray[5] += 0x80;
         			byteArray[6] = (byte) (yCoord & 0xff);
         			byteArray[7] = (byte) (((yCoord & 0xff00) / 0x100)
         					+ (direction << 6));
@@ -3244,6 +3276,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			byteArray = new byte[6];
         			byteArray[0] = (byte) (flag & 0xff);
         			byteArray[1] = (byte) ((flag & 0xff00) / 0x100);
+        			if (flagReversed)
+        				byteArray[1] += 0x80;
         			byteArray[2] = (byte) (pointer & 0xff);
         			byteArray[3] = (byte) ((pointer & 0xff00) / 0x100);
         			byteArray[4] = (byte) ((pointer & 0xff0000) / 0x10000);
@@ -3435,6 +3469,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     	private JComboBox typeBox, typeDestBox, styleBox, dirBox;
     	private JLabel warnLabel;
     	private JButton setXYButton, jumpButton;
+    	private JCheckBox reverseCheck;
     	private EbMap.DoorLocation doorLocation;
     	private final String[] typeNames = {
     			"Switch", "Rope/Ladder", "Door", "Escalator",
@@ -3481,7 +3516,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     	 */
     	public String getDescription()
     	{
-    		return "Door Destination Editor";
+    		return "Door Editor";
     	}
 
     	/* (non-Javadoc)
@@ -3518,7 +3553,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
     	{
     		this.doorLocation = doorLocation;
     		this.show();
-    		updateComponents();
+
+    		updateComponents(true, true, true);
     	}
     	
     	public void createGUI()
@@ -3535,16 +3571,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
     				{
                 public void changedUpdate(DocumentEvent de)
                 {
-                    try
-                    {
-                    	doorLocation.setDestIndex(
-                				Integer.parseInt(numField.getText()));
-                    }
-                    catch (NumberFormatException nfe)
-                    {}
-                    catch (IndexOutOfBoundsException ae)
-                    {}
-                    updateComponents(false);
+                	if (numField.getText().length() > 0)
+                		updateComponents(true, false, true);
                 }
 
                 public void insertUpdate(DocumentEvent de)
@@ -3587,6 +3615,12 @@ public class MapEditor extends EbHackModule implements ActionListener,
     				HackModule.getLabeledComponent(
     						"Event flag: ", flagField));
     		
+    		reverseCheck = new JCheckBox();
+    		destPanel.add(
+    				HackModule.getLabeledComponent(
+    						"Reverse event flag effect: ",
+							reverseCheck));
+    		
     		JPanel buttonPanel = new JPanel();
     		setXYButton = new JButton("Set X&Y using map");
     		setXYButton.addActionListener(this);
@@ -3596,12 +3630,40 @@ public class MapEditor extends EbHackModule implements ActionListener,
     		buttonPanel.add(jumpButton);
     		destPanel.add(buttonPanel);
     		
+    		DocumentListener xyListener = 
+        		new DocumentListener()
+        				{
+                    public void changedUpdate(DocumentEvent de)
+                    {
+                    	if ((xField.getText().length() > 0)
+                    			&& (yField.getText().length() > 0))
+                    	{
+                    		destPreview.setXY(
+            						Integer.parseInt(xField.getText()), 
+    								Integer.parseInt(yField.getText()));
+                    		destPreview.remoteRepaint();
+                    	}
+                    }
+
+                    public void insertUpdate(DocumentEvent de)
+                    {
+                        changedUpdate(de);
+                    }
+
+                    public void removeUpdate(DocumentEvent de)
+                    {
+                        changedUpdate(de);
+                    }
+        				};
+    		
     		xField = HackModule.createSizedJTextField(5, true);
+    		xField.getDocument().addDocumentListener(xyListener);
     		destPanel.add(
     				HackModule.getLabeledComponent(
     						"X: ", xField));
     		
     		yField = HackModule.createSizedJTextField(5, true);
+    		yField.getDocument().addDocumentListener(xyListener);
     		destPanel.add(
     				HackModule.getLabeledComponent(
     						"Y: ", yField));
@@ -3649,14 +3711,20 @@ public class MapEditor extends EbHackModule implements ActionListener,
     		this.mainWindow.pack();
     	}
     	
-    	public void updateComponents(boolean numField)
+    	public void updateComponents(boolean load, boolean loadEntry, 
+    			boolean loadDestType)
     	{
 			muteEvents = true;
-			if (numField)
-				this.numField.setText(
-						Integer.toString(doorLocation.getDestIndex()));
-    		typeBox.setSelectedIndex((int) doorLocation.getType());
-    		int destNum = doorLocation.getDestIndex();
+			int destNum;
+			if (loadEntry)
+			{
+				destNum = doorLocation.getDestIndex();
+				numField.setText(Integer.toString(destNum));
+				typeBox.setSelectedIndex(doorLocation.getType());
+			}
+			else
+				destNum = Integer.parseInt(numField.getText());
+			
     		if (destNum < 0)
     		{
     			typeDestBox.setSelectedIndex(0);
@@ -3665,6 +3733,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     			yField.setText(null);
     			dirBox.setSelectedIndex(0);
     			flagField.setText(null);
+    			reverseCheck.setSelected(false);
     			styleBox.setSelectedIndex(0);
     			typeDestBox.setEnabled(false);
     			ptrField.setEditable(false);
@@ -3674,6 +3743,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     			yField.setEditable(false);
     			dirBox.setEnabled(false);
     			flagField.setEditable(false);
+    			reverseCheck.setEnabled(false);
     			styleBox.setEnabled(false);
     			
     			destPreview.clearMapArray();
@@ -3683,16 +3753,27 @@ public class MapEditor extends EbHackModule implements ActionListener,
     		{
         		EbMap.Destination dest = 
         			mapcontrol.getDestination(destNum);
-        		typeDestBox.setSelectedIndex(dest.getType());
-        		typeDestBox.setEnabled(true);
-        		if (dest.getType() == 0)
+        		int destType;
+        		if (loadDestType)
         		{
-            		ptrField.setText(Integer.toHexString(dest.getPointer()));
-            		xField.setText(Integer.toString(dest.getX()));
-            		yField.setText(Integer.toString(dest.getY()));
-            		dirBox.setSelectedIndex(dest.getDirection());
-            		flagField.setText(Integer.toHexString(dest.getFlag()));
-            		styleBox.setSelectedIndex(dest.getStyle());
+        			destType = dest.getType();
+        			typeDestBox.setSelectedIndex(destType);
+        		}
+        		else
+        			destType = typeDestBox.getSelectedIndex();
+        		typeDestBox.setEnabled(true);
+        		if (destType == 0)
+        		{
+        			if (load)
+        			{
+        				ptrField.setText(Integer.toHexString(dest.getPointer()));
+                		xField.setText(Integer.toString(dest.getX()));
+                		yField.setText(Integer.toString(dest.getY()));
+                		dirBox.setSelectedIndex(dest.getDirection());
+                		flagField.setText(Integer.toHexString(dest.getFlag()));
+                		reverseCheck.setSelected(dest.isFlagReversed());
+                		styleBox.setSelectedIndex(dest.getStyle());
+        			}
         			ptrField.setEditable(true);
         			jumpButton.setEnabled(true);
         			setXYButton.setEnabled(true);
@@ -3700,18 +3781,28 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			yField.setEditable(true);
         			dirBox.setEnabled(true);
         			flagField.setEditable(true);
+        			reverseCheck.setEnabled(true);
         			styleBox.setEnabled(true);
             		
-                    destPreview.setXY(dest.getX(), dest.getY());
-                    destPreview.remoteRepaint();
+        			if (load)
+        				destPreview.setXY(dest.getX(), dest.getY());
+        			else
+        				destPreview.setXY(
+        						Integer.parseInt(xField.getText()), 
+								Integer.parseInt(yField.getText()));
+        			destPreview.remoteRepaint();
         		}
-        		else if (dest.getType() == 1)
+        		else if (destType == 1)
         		{
-        			ptrField.setText(Integer.toHexString(dest.getPointer()));
+        			if (load)
+        			{
+        				ptrField.setText(Integer.toHexString(dest.getPointer()));
+        				flagField.setText(Integer.toHexString(dest.getFlag()));
+            			reverseCheck.setSelected(dest.isFlagReversed());
+        			}
         			xField.setText(null);
         			yField.setText(null);
         			dirBox.setSelectedIndex(0);
-        			flagField.setText(Integer.toHexString(dest.getFlag()));
         			styleBox.setSelectedIndex(0);
         			ptrField.setEditable(true);
         			jumpButton.setEnabled(false);
@@ -3720,18 +3811,22 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			yField.setEditable(false);
         			dirBox.setEnabled(false);
         			flagField.setEditable(true);
+        			reverseCheck.setEnabled(true);
         			styleBox.setEnabled(false);
         			
         			destPreview.clearMapArray();
         			destPreview.remoteRepaint();
         		}
-        		else if (dest.getType() == 2)
+        		else if (destType == 2)
         		{
-        			ptrField.setText(Integer.toHexString(dest.getPointer()));
+        			if (load)
+        				ptrField.setText(
+        						Integer.toHexString(dest.getPointer()));
         			xField.setText(null);
         			yField.setText(null);
         			dirBox.setSelectedIndex(0);
         			flagField.setText(null);
+        			reverseCheck.setSelected(false);
         			styleBox.setSelectedIndex(0);
         			ptrField.setEditable(true);
         			setXYButton.setEnabled(false);
@@ -3740,14 +3835,15 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			yField.setEditable(false);
         			dirBox.setEnabled(false);
         			flagField.setEditable(false);
+        			reverseCheck.setEnabled(false);
         			styleBox.setEnabled(false);
         			
         			destPreview.clearMapArray();
         			destPreview.remoteRepaint();
         		}
         		
-        		if (mapcontrol.getDoorDestType(doorLocation.getType())
-        				!= dest.getType())
+        		if (mapcontrol.getDoorDestType(typeBox.getSelectedIndex())
+        				!= destType)
         		{
             		warnLabel.setForeground(Color.RED);
             		warnLabel.setText("Warning!! Type mismatch!");
@@ -3759,11 +3855,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
         		}
     		}
 			muteEvents = false;
-    	}
-    	
-    	public void updateComponents()
-    	{
-    		updateComponents(true);
     	}
     	
         public void actionPerformed(ActionEvent e)
@@ -3791,6 +3882,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
             			dest.setFlag(
                 				(short) Integer.parseInt(
                 						flagField.getText(),16));
+            		if (reverseCheck.isEnabled())
+            			dest.setFlagReversed(reverseCheck.isSelected());
             		if (yField.isEditable())
             			dest.setY(
                 				(short) Integer.parseInt(
@@ -3806,7 +3899,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
             			dest.setDirection(
                 				(byte) dirBox.getSelectedIndex());
         		}
-        		updateComponents();
+        		updateComponents(true, true, true);
             }
             else if (e.getActionCommand().equals("close"))
             {
@@ -3834,7 +3927,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 			if ((e.getSource() == typeBox)
 					&& (! muteEvents))
 			{
-				if ((doorLocation.getDestIndex() == -1)
+				if ((typeBox.getSelectedIndex() == -1)
 						&& (mapcontrol.getDoorDestType(
 								typeBox.getSelectedIndex()) != -1))
 				{
@@ -3846,25 +3939,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		    				doorLocation.getType());
 		    		muteEvents = false;
 				}
-				else
-				{
-					doorLocation.setType(
-							(byte) typeBox.getSelectedIndex());
-					if (mapcontrol.getDoorDestType(
-							doorLocation.getType()) == -1)
-						doorLocation.setDestIndex(-1);
-				}
-				updateComponents();
+				updateComponents(false, false, false);
 			}
 			else if ((e.getSource() == typeDestBox)
 					&& (! muteEvents))
-			{
-				((EbMap.Destination) 
-						mapcontrol.getDestination(
-								doorLocation.getDestIndex())).setType(
-										(byte) typeDestBox.getSelectedIndex());
-				updateComponents();
-			}
+				updateComponents(true, false, false);
 		}
 		
 		public void setDestXY(int destX, int destY)
