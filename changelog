@@ -5,6 +5,7 @@ Next version (after v0.4.7.1):
 	CC parser to not use compression, which is used for those two.
 # eb.MiscTextEditor v0.5: Added Lumine hall text, max window width (250px)
 # HexEditor: fixed bug where the goto switched regular and snes pointers
+# Most recently loaded ROM is automatically loaded when JHack is opened.
 
 v0.4.7.1:
 # IPSDatabase extensions:

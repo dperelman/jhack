@@ -68,14 +68,19 @@ import javax.swing.filechooser.FileFilter;
 public class MainGUI implements ActionListener, WindowListener
 {
     private JFrame mainWindow = new JFrame();
+
     private Rom rom, orgRom = null;
+
     private ArrayList moduleList = new ArrayList();
 
     private boolean showload = false;
+
     private JFrame loadingDialog;
+
     private JProgressBar loadingBar;
 
     private JMenu revertMenu;
+
     private JMenuItem[] recentLoadsItems = new JMenuItem[5];
 
     private XMLPreferences prefs;
@@ -85,6 +90,7 @@ public class MainGUI implements ActionListener, WindowListener
     private final static String DATE_FORMAT = "yyyyMMddHHmmss";
 
     private Box buttons;
+
     private JButton[] modButtons;
 
     private String[] addToArr(String[] in, String arg)
@@ -122,15 +128,15 @@ public class MainGUI implements ActionListener, WindowListener
         try
         {
             moduleNames = new CommentedLineNumberReader(
-                new InputStreamReader(
-                    ClassLoader
-                        .getSystemResourceAsStream("net/starmen/pkhack/modulelist.txt")))
-                .readUsedLines();
+                    new InputStreamReader(
+                            ClassLoader
+                                    .getSystemResourceAsStream("net/starmen/pkhack/modulelist.txt")))
+                    .readUsedLines();
         }
         catch (IOException e)
         {
             e.printStackTrace();
-            moduleNames = new String[]{"DontCare"};
+            moduleNames = new String[] {"DontCare"};
         }
 
         if (showload)
@@ -161,7 +167,7 @@ public class MainGUI implements ActionListener, WindowListener
                     try
                     {
                         spacingList[moduleList.size()] = new StringTokenizer(
-                            moduleNames[i], "-", false).nextToken();
+                                moduleNames[i], "-", false).nextToken();
                     }
                     catch (NoSuchElementException nsee)
                     {
@@ -170,9 +176,11 @@ public class MainGUI implements ActionListener, WindowListener
                 }
                 else
                     moduleList.add((HackModule) Class.forName(
-                        "net.starmen.pkhack." + moduleNames[i]).getConstructor(
-                        new Class[]{Rom.class, XMLPreferences.class})
-                        .newInstance(new Object[]{rom, prefs}));
+                            "net.starmen.pkhack." + moduleNames[i])
+                            .getConstructor(
+                                    new Class[] {Rom.class,
+                                            XMLPreferences.class}).newInstance(
+                                    new Object[] {rom, prefs}));
             }
             catch (InstantiationException e)
             {
@@ -227,7 +235,7 @@ public class MainGUI implements ActionListener, WindowListener
 
         //main init stuff
         mainWindow.setTitle(MainGUI.getDescription() + " "
-            + MainGUI.getVersion());
+                + MainGUI.getVersion());
 
         mainWindow.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         mainWindow.addWindowListener(this);
@@ -237,13 +245,13 @@ public class MainGUI implements ActionListener, WindowListener
         JMenu fileMenu = new JMenu("File");
         fileMenu.setMnemonic('f');
         fileMenu.add(HackModule.createJMenuItem("Open ROM...", 'o', "ctrl O",
-            "load", this));
+                "load", this));
         fileMenu.add(HackModule.createJMenuItem("Close ROM", 'c', "ctrl F4",
-            "closeROM", this));
+                "closeROM", this));
         fileMenu.add(HackModule.createJMenuItem("Save ROM", 's', "ctrl S",
-            "save", this));
+                "save", this));
         fileMenu.add(HackModule.createJMenuItem("Save ROM As...", 'a',
-            "ctrl A", "saveAs", this));
+                "ctrl A", "saveAs", this));
         fileMenu.add(new JSeparator());
         revertMenu = new JMenu("Revert");
         revertMenu.setMnemonic('r');
@@ -264,21 +272,21 @@ public class MainGUI implements ActionListener, WindowListener
 
         fileMenu.add(new JSeparator());
         fileMenu.add(HackModule.createJMenuItem("Exit", 'x', "alt F4", "exit",
-            this));
+                this));
         menuBar.add(fileMenu);
 
         JMenu optionsMenu = new JMenu("Options");
         optionsMenu.setMnemonic('o');
         optionsMenu.add(new PrefsCheckBox("Display Console Dialog", prefs,
-            "consoleDialog", false, 'c', null, "consoleDialog", this));
+                "consoleDialog", false, 'c', null, "consoleDialog", this));
         optionsMenu.add(new PrefsCheckBox("Use Hex Numbers", prefs,
-            "useHexNumbers", true, 'h'));
+                "useHexNumbers", true, 'h'));
         optionsMenu.add(new PrefsCheckBox("Use Direct File IO", prefs,
-            "useDirectFileIO", false, 'd', null, "directio", this));
+                "useDirectFileIO", false, 'd', null, "directio", this));
         optionsMenu.add(new PrefsCheckBox("Auto Check for Updates", prefs,
-            "checkVersion", true, 'u'));
+                "checkVersion", true, 'u'));
         optionsMenu.add(HackModule.createJMenuItem("Change Default ROM...",
-            'c', null, "selectDefROM", this));
+                'c', null, "selectDefROM", this));
 
         JMenu toolkitMenu = new JMenu("Look & Feel");
         toolkitMenu.setMnemonic('t');
@@ -288,9 +296,9 @@ public class MainGUI implements ActionListener, WindowListener
         for (int i = 0; i < lafi.length; i++)
         {
             JRadioButtonMenuItem laf = new JRadioButtonMenuItem(lafi[i]
-                .getName());
+                    .getName());
             laf.setSelected(UIManager.getLookAndFeel().getName().equals(
-                lafi[i].getName()));
+                    lafi[i].getName()));
             laf.setActionCommand("LAF_" + lafi[i].getClassName());
             laf.addActionListener(this);
             lafbg.add(laf);
@@ -304,7 +312,7 @@ public class MainGUI implements ActionListener, WindowListener
         JMenu helpMenu = new JMenu("Help");
         helpMenu.setMnemonic('h');
         helpMenu.add(HackModule.createJMenuItem("About...", 'a', null, "about",
-            this));
+                this));
         menuBar.add(Box.createHorizontalGlue());
         menuBar.add(helpMenu);
 
@@ -321,8 +329,8 @@ public class MainGUI implements ActionListener, WindowListener
         HeadingLabel prevLabel = null;
         //buttons.setLayout(new GridLayout(getModuleCount() + spaces, 1));
         JScrollPane scroll = new JScrollPane(buttons,
-            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         modButtons = new JButton[getModuleCount()];
         for (int i = 0; i < getModuleCount(); i++)
         {
@@ -341,7 +349,7 @@ public class MainGUI implements ActionListener, WindowListener
                 else
                 {
                     HeadingLabel t = new HeadingLabel(spList[i],
-                        SwingConstants.CENTER);
+                            SwingConstants.CENTER);
                     t.setMaximumSize(new Dimension(274, 16));
                     buttons.add(t);
                     prevLabel = t;
@@ -381,6 +389,7 @@ public class MainGUI implements ActionListener, WindowListener
     private class HeadingLabel extends JLabel
     {
         private JComponent ca;
+
         private Color regCol, hoverCol;
 
         public HeadingLabel(String label, int align, Color col, Color hover)
@@ -407,7 +416,7 @@ public class MainGUI implements ActionListener, WindowListener
                     buttons.repaint();
                     ca.doLayout();
                     ((JComponent) mainWindow.getContentPane().getComponents()[0])
-                        .updateUI();
+                            .updateUI();
                 }
 
                 public void mouseEntered(MouseEvent arg0)
@@ -480,7 +489,7 @@ public class MainGUI implements ActionListener, WindowListener
     public static String getCredits() //Return who made it
     {
         return "Written by AnyoneEB\n" + "Various lists from PK Hack website\n"
-            + "Icons from PK Hack source";
+                + "Icons from PK Hack source";
     }
 
     private void exit()
@@ -488,8 +497,8 @@ public class MainGUI implements ActionListener, WindowListener
         if (rom.isLoaded && !rom.isDirectFileIO())
         {
             int ques = JOptionPane.showConfirmDialog(null,
-                "Do you want to save before exiting?", "Save?",
-                JOptionPane.YES_NO_CANCEL_OPTION);
+                    "Do you want to save before exiting?", "Save?",
+                    JOptionPane.YES_NO_CANCEL_OPTION);
             if (ques == JOptionPane.CANCEL_OPTION)
             {
                 return;
@@ -520,18 +529,18 @@ public class MainGUI implements ActionListener, WindowListener
     {
         rom = new Rom();
         File jhackDir = new File(System.getProperty("user.home")
-            + File.separator + ".jhack");
+                + File.separator + ".jhack");
         if (!jhackDir.exists())
             jhackDir.mkdir();
         File xmlFile = new File(jhackDir.toString() + File.separator
-            + "JHackPrefs.xml");
+                + "JHackPrefs.xml");
         HashMap iniPrefs = new HashMap();
         if (!xmlFile.exists())
         {
             try
             {
                 String[] input = new CommentedLineNumberReader("JHack.ini")
-                    .readUsedLines();
+                        .readUsedLines();
                 for (int i = 0; i < input.length; i++)
                 {
                     String[] split = input[i].split("=");
@@ -571,9 +580,9 @@ public class MainGUI implements ActionListener, WindowListener
             catch (NullPointerException e)
             {
                 System.out
-                    .println("No look and feel preference found, using default.");
+                        .println("No look and feel preference found, using default.");
                 UIManager.setLookAndFeel(UIManager
-                    .getSystemLookAndFeelClassName());
+                        .getSystemLookAndFeelClassName());
             }
             finally
             {
@@ -589,32 +598,33 @@ public class MainGUI implements ActionListener, WindowListener
         if (!this.getPrefs().hasValue("checkVersion"))
         {
             int ques = JOptionPane.showConfirmDialog(null,
-                "Do you want JHack to check for updates\n"
-                    + "automatically on startup?\n"
-                    + "NOTE: This accesses AnyoneEB's server and\n"
-                    + "could (but won't) be used to gather usage\n"
-                    + "statistics if enabled.",
-                "Check for updates automatically?", JOptionPane.YES_NO_OPTION);
+                    "Do you want JHack to check for updates\n"
+                            + "automatically on startup?\n"
+                            + "NOTE: This accesses AnyoneEB's server and\n"
+                            + "could (but won't) be used to gather usage\n"
+                            + "statistics if enabled.",
+                    "Check for updates automatically?",
+                    JOptionPane.YES_NO_OPTION);
             this.getPrefs().setValueAsBoolean("checkVersion",
-                ques == JOptionPane.YES_OPTION);
+                    ques == JOptionPane.YES_OPTION);
         }
         if (this.getPrefs().hasValue("consoleDialog"))
         {
             if (!JHack.isUseConsole())
                 JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
-                    "consoleDialog"));
+                        "consoleDialog"));
         }
         //convert expRomPath and orgRomPath to game specific names
         if (this.getPrefs().hasValue("expRomPath"))
         {
             this.getPrefs().setValue("Earthbound.expRomPath",
-                getPrefs().getValue("expRomPath"));
+                    getPrefs().getValue("expRomPath"));
             this.getPrefs().removeValue("expRomPath");
         }
         if (this.getPrefs().hasValue("orgRomPath"))
         {
             this.getPrefs().setValue("Earthbound.orgRomPath",
-                getPrefs().getValue("orgRomPath"));
+                    getPrefs().getValue("orgRomPath"));
             this.getPrefs().removeValue("orgRomPath");
         }
         if (this.getPrefs().getValueAsBoolean("checkVersion"))
@@ -632,12 +642,12 @@ public class MainGUI implements ActionListener, WindowListener
     private String getModuleCredits()
     {
         String returnValue = "\n\n" + Rom.getDescription() + " "
-            + Rom.getVersion() + "\n" + Rom.getCredits();
+                + Rom.getVersion() + "\n" + Rom.getCredits();
         for (int i = 0; i < getModuleCount(); i++)
         {
             returnValue += "\n\n" + getModuleAt(i).getDescription() + " "
-                + getModuleAt(i).getVersion() + "\n"
-                + getModuleAt(i).getCredits();
+                    + getModuleAt(i).getVersion() + "\n"
+                    + getModuleAt(i).getCredits();
         }
         return returnValue;
     }
@@ -645,7 +655,7 @@ public class MainGUI implements ActionListener, WindowListener
     private String getFullCredits()
     {
         return MainGUI.getDescription() + " " + MainGUI.getVersion() + "\n"
-            + MainGUI.getCredits() + this.getModuleCredits();
+                + MainGUI.getCredits() + this.getModuleCredits();
     }
 
     private JScrollPane createScollingLabel(String text)
@@ -672,8 +682,8 @@ public class MainGUI implements ActionListener, WindowListener
         }
 
         JScrollPane out = new JScrollPane(labels,
-            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         out.setPreferredSize(new Dimension(out.getPreferredSize().width, 200));
 
@@ -706,7 +716,7 @@ public class MainGUI implements ActionListener, WindowListener
     {}
 
     private static File getFileOfSize(final long size1, final long size2,
-        String msg, boolean repeat)
+            String msg, boolean repeat)
     {
         JFileChooser jfc = new JFileChooser(Rom.getDefaultDir());
         jfc.setFileFilter(new FileFilter()
@@ -714,11 +724,11 @@ public class MainGUI implements ActionListener, WindowListener
             public boolean accept(File f)
             {
                 if ((((f.getAbsolutePath().toLowerCase().endsWith(".smc")
-                    || f.getAbsolutePath().toLowerCase().endsWith(".sfc") || f
-                    .getAbsolutePath().toLowerCase().endsWith(".fig")) && (f
-                    .length() == size1 || f.length() == size2)) || f
-                    .isDirectory())
-                    && f.exists())
+                        || f.getAbsolutePath().toLowerCase().endsWith(".sfc") || f
+                        .getAbsolutePath().toLowerCase().endsWith(".fig")) && (f
+                        .length() == size1 || f.length() == size2)) || f
+                        .isDirectory())
+                        && f.exists())
                 {
                     return true;
                 }
@@ -733,10 +743,10 @@ public class MainGUI implements ActionListener, WindowListener
         do
         {
             JOptionPane.showMessageDialog(null, msg, "Where is this file?",
-                JOptionPane.QUESTION_MESSAGE);
+                    JOptionPane.QUESTION_MESSAGE);
         }
         while (jfc.showOpenDialog(null) != JFileChooser.APPROVE_OPTION
-            && repeat);
+                && repeat);
         return jfc.getSelectedFile();
     }
 
@@ -748,10 +758,10 @@ public class MainGUI implements ActionListener, WindowListener
             public boolean accept(File f)
             {
                 if ((((f.getAbsolutePath().toLowerCase().endsWith(".smc")
-                    || f.getAbsolutePath().toLowerCase().endsWith(".sfc") || f
-                    .getAbsolutePath().toLowerCase().endsWith(".fig"))) || f
-                    .isDirectory())
-                    && f.exists())
+                        || f.getAbsolutePath().toLowerCase().endsWith(".sfc") || f
+                        .getAbsolutePath().toLowerCase().endsWith(".fig"))) || f
+                        .isDirectory())
+                        && f.exists())
                 {
                     return true;
                 }
@@ -766,10 +776,10 @@ public class MainGUI implements ActionListener, WindowListener
         do
         {
             JOptionPane.showMessageDialog(null, msg, "Where is this file?",
-                JOptionPane.QUESTION_MESSAGE);
+                    JOptionPane.QUESTION_MESSAGE);
         }
         while (jfc.showOpenDialog(null) != JFileChooser.APPROVE_OPTION
-            && repeat);
+                && repeat);
         return jfc.getSelectedFile();
     }
 
@@ -782,7 +792,7 @@ public class MainGUI implements ActionListener, WindowListener
     {
         String orgRom = this.getPrefs().getValue(romType + ".orgRomPath");
         String expRom = orgRom.substring(0, orgRom.length() - 3) + "expanded."
-            + orgRom.substring(orgRom.length() - 3);
+                + orgRom.substring(orgRom.length() - 3);
 
         String dd = Rom.getDefaultDir();
 
@@ -813,37 +823,39 @@ public class MainGUI implements ActionListener, WindowListener
         String tmp;
         File tmpf;
         if ((tmp = this.getPrefs().getValue(romType + ".expRomPath")) == null
-            || !(tmpf = new File(tmp)).exists())
+                || !(tmpf = new File(tmp)).exists())
         {
             //if orgRomPath from old version set, use it
             if (!(tmp == null)
-                && (tmpf = new File(tmp)).exists()
-                && ((tmp = this.getPrefs().getValue(romType + ".orgRomPath")) != null))
+                    && (tmpf = new File(tmp)).exists()
+                    && ((tmp = this.getPrefs()
+                            .getValue(romType + ".orgRomPath")) != null))
             {
                 return orgRomToExp(romType);
             }
             this.getPrefs().setValue(
-                romType + ".expRomPath",
-                (tmpf = getFile("Select a unmodified or expanded " + romType
-                    + " ROM.", true)).toString());
+                    romType + ".expRomPath",
+                    (tmpf = getFile("Select a unmodified or expanded "
+                            + romType + " ROM.", true)).toString());
             if (romType.equals("Earthbound")
-                && tmpf.length() == Rom.EB_ROM_SIZE_REGULAR)
+                    && tmpf.length() == Rom.EB_ROM_SIZE_REGULAR)
             {
                 this.getPrefs().setValue(romType + ".orgRomPath",
-                    tmpf.toString());
+                        tmpf.toString());
                 return orgRomToExp(romType);
             }
         }
         System.out.println((new File(getPrefs().getValue(
-            romType + ".expRomPath")).length())
-            + " == " + Rom.EB_ROM_SIZE_REGULAR + "; romType = " + romType);
+                romType + ".expRomPath")).length())
+                + " == " + Rom.EB_ROM_SIZE_REGULAR + "; romType = " + romType);
         if (romType.equals("Earthbound")
-            && new File(getPrefs().getValue(romType + ".expRomPath")).length() == Rom.EB_ROM_SIZE_REGULAR)
+                && new File(getPrefs().getValue(romType + ".expRomPath"))
+                        .length() == Rom.EB_ROM_SIZE_REGULAR)
         {
             System.out
-                .println("Exp rom not actually expanded. Bug in previous versions.");
+                    .println("Exp rom not actually expanded. Bug in previous versions.");
             this.getPrefs().setValue(romType + ".orgRomPath",
-                getPrefs().getValue(romType + ".expRomPath"));
+                    getPrefs().getValue(romType + ".expRomPath"));
             this.getPrefs().removeValue(romType + ".expRomPath");
             return orgRomToExp(romType);
         }
@@ -861,7 +873,7 @@ public class MainGUI implements ActionListener, WindowListener
     public Rom getOrginalRomFile(String romType)
     {
         if (orgRom != null && orgRom.isLoaded
-            && orgRom.getRomType().equals(romType))
+                && orgRom.getRomType().equals(romType))
             return orgRom;
         Rom out = requestOrgRomFile(romType);
         if (out != null)
@@ -871,7 +883,7 @@ public class MainGUI implements ActionListener, WindowListener
             out = new Rom();
             String dd = Rom.getDefaultDir();
             out.loadRom(new File(this.getPrefs().getValue(
-                romType + ".expRomPath")));
+                    romType + ".expRomPath")));
             Rom.setDefaultDir(dd);
             return orgRom = out;
         }
@@ -880,7 +892,7 @@ public class MainGUI implements ActionListener, WindowListener
     private File getBackupDir()
     {
         return new File(rom.getFilePath().getParent() + File.separator
-            + "backup");
+                + "backup");
     }
 
     private void writeBackup() throws FileNotFoundException, IOException
@@ -897,11 +909,11 @@ public class MainGUI implements ActionListener, WindowListener
             //			FileOutputStream out =
             //				new FileOutputStream(
             File f = new File(backupDir.toString()
-                + File.separator
-                + rom.getFilePath().getName()
-                + "."
-                + new SimpleDateFormat(DATE_FORMAT)
-                    .format(new java.util.Date()) + ".bak.ips");
+                    + File.separator
+                    + rom.getFilePath().getName()
+                    + "."
+                    + new SimpleDateFormat(DATE_FORMAT)
+                            .format(new java.util.Date()) + ".bak.ips");
             ips.saveIPSFile(f);
             //			for (int i = 0; i < ips.length(); i++)
             //			{
@@ -935,7 +947,7 @@ public class MainGUI implements ActionListener, WindowListener
     }
 
     private void readBackup(String date) throws FileNotFoundException,
-        IOException
+            IOException
     {
         if (rom.isLoaded)
         {
@@ -943,8 +955,8 @@ public class MainGUI implements ActionListener, WindowListener
             if (backupDir.exists())
             {
                 File backupFile = new File(backupDir.toString()
-                    + File.separator + rom.getFilePath().getName() + "." + date
-                    + ".bak.ips");
+                        + File.separator + rom.getFilePath().getName() + "."
+                        + date + ".bak.ips");
                 //backup current rom path
                 File romPath = rom.getFilePath();
                 //load orginal ROM and patch it
@@ -993,7 +1005,7 @@ public class MainGUI implements ActionListener, WindowListener
                     public boolean accept(File dir, String name)
                     {
                         if (name.startsWith(rom.getFilePath().getName())
-                            && name.endsWith(".bak.ips"))
+                                && name.endsWith(".bak.ips"))
                             return true;
                         return false;
                     }
@@ -1013,14 +1025,14 @@ public class MainGUI implements ActionListener, WindowListener
                         currMenu.add(currMenu = new JMenu("More"));
                     }
                     String date = backups[i].substring(rom.getFilePath()
-                        .getName().length() + 1, rom.getFilePath().getName()
-                        .length()
-                        + 1 + DATE_FORMAT.length());
+                            .getName().length() + 1, rom.getFilePath()
+                            .getName().length()
+                            + 1 + DATE_FORMAT.length());
                     String formatedDate;
                     try
                     {
                         formatedDate = new SimpleDateFormat(DATE_FORMAT).parse(
-                            date).toString();
+                                date).toString();
                     }
                     catch (ParseException e)
                     {
@@ -1039,7 +1051,7 @@ public class MainGUI implements ActionListener, WindowListener
     {
         String out = "";
         String[] tmpRecent = (String[]) recentLoads.toArray(new String[0]), recent = new String[Math
-            .min(5, tmpRecent.length)];
+                .min(5, tmpRecent.length)];
         for (int i = 0; i < recent.length; i++)
         {
             recent[i] = tmpRecent[tmpRecent.length - (i + 1)];
@@ -1056,7 +1068,7 @@ public class MainGUI implements ActionListener, WindowListener
         try
         {
             String[] recent = this.getPrefs().getValue("recentLoads").split(
-                File.pathSeparator);
+                    File.pathSeparator);
             recentLoads.clear();
             for (int i = recent.length - 1; i >= 0; i--)
             {
@@ -1073,7 +1085,7 @@ public class MainGUI implements ActionListener, WindowListener
     private void refreshRecentLoads()
     {
         String[] tmpRecent = (String[]) recentLoads.toArray(new String[0]), recent = new String[Math
-            .min(5, tmpRecent.length)];
+                .min(5, tmpRecent.length)];
         int i = 0;
         for (; i < recent.length; i++)
         {
@@ -1089,8 +1101,9 @@ public class MainGUI implements ActionListener, WindowListener
 
     private void addRecentLoad(String path)
     {
+        File pathf = new File(path);
         for (Iterator i = recentLoads.iterator(); i.hasNext();)
-            if (new File((String) i.next()).equals(new File(path)))
+            if (new File((String) i.next()).equals(pathf))
                 i.remove();
         recentLoads.add(path);
         saveRecentLoadsPref();
@@ -1101,8 +1114,8 @@ public class MainGUI implements ActionListener, WindowListener
         if (rom.isLoaded && !(rom.isDirectFileIO()))
         {
             int ques = JOptionPane.showConfirmDialog(null,
-                "Do you want to save your changes?", "Save?",
-                JOptionPane.YES_NO_CANCEL_OPTION);
+                    "Do you want to save your changes?", "Save?",
+                    JOptionPane.YES_NO_CANCEL_OPTION);
             if (ques == JOptionPane.CANCEL_OPTION)
             {
                 return;
@@ -1116,7 +1129,7 @@ public class MainGUI implements ActionListener, WindowListener
 
         rom.isLoaded = false;
         mainWindow.setTitle(MainGUI.getDescription() + " "
-            + MainGUI.getVersion());
+                + MainGUI.getVersion());
         this.refreshRevertMenu();
     }
 
@@ -1166,15 +1179,29 @@ public class MainGUI implements ActionListener, WindowListener
         }
     }
 
+    private boolean loading = false;
+
+    private boolean isLoading()
+    {
+        return loading;
+    }
+
     private void loadRom(File loc)
     {
+        loading = true;
         if (loc == null)
         {
             if (!rom.loadRom())
+            {
+                loading = false;
                 return;
+            }
         }
         else if (!rom.loadRom(loc))
+        {
+            loading = false;
             return;
+        }
         //if a Earthbound ROM was just loaded and it is unexpanded (3 MB + 512
         // byte header) then we may want to expand it
         if (rom.getRomType().equals("Earthbound") && rom.length() == 0x300200)
@@ -1202,17 +1229,18 @@ public class MainGUI implements ActionListener, WindowListener
                 //my preference checkbox
 
                 JCheckBox remember = new JCheckBox(
-                    "Remember my choice and use it next time.", false);
+                        "Remember my choice and use it next time.", false);
 
                 JTextArea text = new JTextArea(
-                    "The Earthbound ROM you loaded is "
-                        + "not expanded. Expanding a ROM allows you to "
-                        + "have an extra megabyte of storage for more "
-                        + "of anything. ROM expansion cannot not be "
-                        + "undone. If you do not expand your ROM now "
-                        + "you can do so later by using the "
-                        + "ROM Expander located in the \"General\" "
-                        + "group.\n\nDo you wish to expand this ROM?", 10, 30);
+                        "The Earthbound ROM you loaded is "
+                                + "not expanded. Expanding a ROM allows you to "
+                                + "have an extra megabyte of storage for more "
+                                + "of anything. ROM expansion cannot not be "
+                                + "undone. If you do not expand your ROM now "
+                                + "you can do so later by using the "
+                                + "ROM Expander located in the \"General\" "
+                                + "group.\n\nDo you wish to expand this ROM?",
+                        10, 30);
                 //make sure text area looks right and does word wrap
                 text.setEditable(false);
                 text.setEnabled(false);
@@ -1227,8 +1255,8 @@ public class MainGUI implements ActionListener, WindowListener
                 text.setFont(remember.getFont());
 
                 int opt = JOptionPane.showConfirmDialog(mainWindow,
-                    new JComponent[]{text, remember}, "Expand ROM?",
-                    JOptionPane.YES_NO_OPTION);
+                        new JComponent[] {text, remember}, "Expand ROM?",
+                        JOptionPane.YES_NO_OPTION);
                 //yes is true if user selected yes, false if they did not
                 boolean yes = opt == JOptionPane.YES_OPTION;
                 if (yes)
@@ -1241,10 +1269,11 @@ public class MainGUI implements ActionListener, WindowListener
         }
         resetModules();
         mainWindow.setTitle(MainGUI.getDescription() + " "
-            + MainGUI.getVersion() + " - " + rom.getPath());
+                + MainGUI.getVersion() + " - " + rom.getPath());
         addRecentLoad(rom.getPath());
         refreshRecentLoads();
         doBackup();
+        loading = false;
     }
 
     private void loadRom()
@@ -1253,109 +1282,41 @@ public class MainGUI implements ActionListener, WindowListener
     }
 
     /**
+     * Loads the ROM most recently loaded. If the most recently loaded ROM is
+     * not known, nothing is done and false is returned.
+     * 
+     * @return true if most recent ROM successfully loaded
+     * @see #loadRom(File)
+     */
+    public boolean loadLastRom()
+    {
+        int rls = recentLoads.size();
+        if (rls != 0)
+        {
+            loadRom(new File((String) recentLoads.get(rls - 1)));
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
      */
     public void actionPerformed(ActionEvent ae)
     {
-        if (ae.getActionCommand().equalsIgnoreCase("load"))
-        {
-            loadRom(null);
-        }
-        else if (ae.getActionCommand().equalsIgnoreCase("save"))
-        {
-            rom.saveRom();
-            doBackup();
-        }
-        else if (ae.getActionCommand().equalsIgnoreCase("saveAs"))
-        {
-            rom.saveRomAs();
-            //ROM file name changed, add to recent list
-            addRecentLoad(rom.getPath());
-            refreshRecentLoads();
-            doBackup();
-        }
-        else if (ae.getActionCommand().equalsIgnoreCase("closeRom"))
-        {
-            closeRom();
-        }
-        else if (ae.getActionCommand().startsWith("revert-"))
-        {
-            this.restoreFromBackup(ae.getActionCommand().substring(7));
-        }
-        else if (ae.getActionCommand().startsWith("recentLoad"))
-        {
-            loadRom(new File(recentLoadsItems[Integer.parseInt(ae
-                .getActionCommand().substring(10))].getText().substring(2)));
-        }
-        else if (ae.getActionCommand().equalsIgnoreCase("exit"))
-        {
-            this.exit();
-        }
-        else if (ae.getActionCommand().equalsIgnoreCase("about"))
+        //stuff that can be done while ROM is loading
+        if (ae.getActionCommand().equalsIgnoreCase("about"))
         {
             JOptionPane.showMessageDialog(null, this.createScollingLabel(this
-                .getFullCredits()), "About" + MainGUI.getDescription() + " "
-                + MainGUI.getVersion(), JOptionPane.INFORMATION_MESSAGE);
+                    .getFullCredits()), "About" + MainGUI.getDescription()
+                    + " " + MainGUI.getVersion(),
+                    JOptionPane.INFORMATION_MESSAGE);
         }
         else if (ae.getActionCommand().equalsIgnoreCase("consoleDialog"))
         {
             if (!JHack.isUseConsole())
                 JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
-                    "consoleDialog"));
-        }
-        else if (ae.getActionCommand().equalsIgnoreCase("directio"))
-        {
-            //            this.getPrefs().setValueAsBoolean(
-            //                "useDirectFileIO",
-            //                !rom.isDirectFileIO());
-            if (rom.isLoaded && !(rom.isDirectFileIO()))
-            {
-                int ques = JOptionPane.showConfirmDialog(null,
-                    "Do you want to save your changes?", "Save?",
-                    JOptionPane.YES_NO_CANCEL_OPTION);
-                if (ques == JOptionPane.CANCEL_OPTION)
-                {
-                    return;
-                }
-                else if (ques == JOptionPane.YES_OPTION)
-                {
-                    rom.saveRom();
-                }
-            }
-
-            File rompath = null;
-            if (rom.isLoaded)
-                rompath = rom.getFilePath();
-
-            if (!rom.isDirectFileIO())
-            {
-                rom = new RomFileIO();
-            }
-            else
-            {
-                rom = new Rom();
-            }
-
-            //            HackModule.rom = rom;
-            if (rompath != null)
-                rom.loadRom(rompath);
-            for (int i = 0; i < getModuleCount(); i++)
-            {
-                try
-                {
-                    getModuleAt(i).rom = rom;
-                    getModuleAt(i).hide();
-                    getModuleAt(i).reset();
-                }
-                catch (NullPointerException npe)
-                {
-                    //If not module inited yet
-                }
-            }
-            System.gc();
-
-            //System.out.println("Debug: rom classname: " +
-            // rom.getClass().getName());
+                        "consoleDialog"));
         }
         else if (ae.getActionCommand().startsWith("LAF_"))
         {
@@ -1364,11 +1325,11 @@ public class MainGUI implements ActionListener, WindowListener
             try
             {
                 if (!UIManager.getLookAndFeel().getClass().getName()
-                    .equals(laf))
+                        .equals(laf))
                 {
                     UIManager.setLookAndFeel(laf);
                     SwingUtilities.updateComponentTreeUI(SwingUtilities
-                        .getRoot(mainWindow));
+                            .getRoot(mainWindow));
                     JHack.out.updateUI();
                     JHack.err.updateUI();
 
@@ -1393,48 +1354,152 @@ public class MainGUI implements ActionListener, WindowListener
                 e.printStackTrace();
             }
         }
-        else if (ae.getActionCommand().equals("selectDefROM"))
+        else
         {
-            String romType;
-            if (rom.isLoaded)
+            //if ROM is still loading, stop
+            if (isLoading())
             {
-                romType = rom.getRomType();
+                JOptionPane.showMessageDialog(mainWindow,
+                        "Please wait for the ROM to load.", "Loading ROM",
+                        JOptionPane.INFORMATION_MESSAGE);
+                return;
             }
-            else
+            //stuff that should not be done _during_ loading
+            if (ae.getActionCommand().equalsIgnoreCase("load"))
             {
-                //JDialog typeDia = new JDialog(mainWindow, "Select or Enter
-                // ROM Type", true);
-                //typeDia.getContentPane().setLayout(new BorderLayout());
+                loadRom(null);
+            }
+            else if (ae.getActionCommand().equalsIgnoreCase("save"))
+            {
+                rom.saveRom();
+                doBackup();
+            }
+            else if (ae.getActionCommand().equalsIgnoreCase("saveAs"))
+            {
+                rom.saveRomAs();
+                //ROM file name changed, add to recent list
+                addRecentLoad(rom.getPath());
+                refreshRecentLoads();
+                doBackup();
+            }
+            else if (ae.getActionCommand().equalsIgnoreCase("closeRom"))
+            {
+                closeRom();
+            }
+            else if (ae.getActionCommand().startsWith("revert-"))
+            {
+                this.restoreFromBackup(ae.getActionCommand().substring(7));
+            }
+            else if (ae.getActionCommand().startsWith("recentLoad"))
+            {
+                loadRom(new File(recentLoadsItems[Integer.parseInt(ae
+                        .getActionCommand().substring(10))].getText()
+                        .substring(2)));
+            }
+            else if (ae.getActionCommand().equalsIgnoreCase("exit"))
+            {
+                this.exit();
+            }
+            else if (ae.getActionCommand().equalsIgnoreCase("directio"))
+            {
+                //            this.getPrefs().setValueAsBoolean(
+                //                "useDirectFileIO",
+                //                !rom.isDirectFileIO());
+                if (rom.isLoaded && !(rom.isDirectFileIO()))
+                {
+                    int ques = JOptionPane.showConfirmDialog(null,
+                            "Do you want to save your changes?", "Save?",
+                            JOptionPane.YES_NO_CANCEL_OPTION);
+                    if (ques == JOptionPane.CANCEL_OPTION)
+                    {
+                        return;
+                    }
+                    else if (ques == JOptionPane.YES_OPTION)
+                    {
+                        rom.saveRom();
+                    }
+                }
 
-                JComboBox typeSel = new JComboBox(RomTypeFinder
-                    .getRomTypeNames());
-                typeSel.setEditable(true);
-                typeSel.setSelectedIndex(0);
-                //typeDia.add(typeSel, BorderLayout.NORTH);
-                if (JOptionPane.showConfirmDialog(mainWindow, typeSel,
-                    "Select or Enter ROM Type", JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION)
-                    return;
+                File rompath = null;
+                if (rom.isLoaded)
+                    rompath = rom.getFilePath();
 
-                romType = typeSel.getSelectedItem().toString();
+                if (!rom.isDirectFileIO())
+                {
+                    rom = new RomFileIO();
+                }
+                else
+                {
+                    rom = new Rom();
+                }
+
+                //            HackModule.rom = rom;
+                if (rompath != null)
+                    rom.loadRom(rompath);
+                for (int i = 0; i < getModuleCount(); i++)
+                {
+                    try
+                    {
+                        getModuleAt(i).rom = rom;
+                        getModuleAt(i).hide();
+                        getModuleAt(i).reset();
+                    }
+                    catch (NullPointerException npe)
+                    {
+                        //If not module inited yet
+                    }
+                }
+                System.gc();
+
+                //System.out.println("Debug: rom classname: " +
+                // rom.getClass().getName());
             }
-            getPrefs().removeValue(romType + ".orgRomPath");
-            getPrefs().removeValue(romType + ".expRomPath");
-            requestOrgRomFile(romType);
-        }
-        else if (ae.getActionCommand().startsWith("module"))
-        {
-            if (rom.isLoaded)
+            else if (ae.getActionCommand().equals("selectDefROM"))
             {
-                getModuleAt(
-                    Integer.parseInt(ae.getActionCommand().substring(6)))
-                    .show();
+                String romType;
+                if (rom.isLoaded)
+                {
+                    romType = rom.getRomType();
+                }
+                else
+                {
+                    //JDialog typeDia = new JDialog(mainWindow, "Select or
+                    // Enter
+                    // ROM Type", true);
+                    //typeDia.getContentPane().setLayout(new BorderLayout());
+
+                    JComboBox typeSel = new JComboBox(RomTypeFinder
+                            .getRomTypeNames());
+                    typeSel.setEditable(true);
+                    typeSel.setSelectedIndex(0);
+                    //typeDia.add(typeSel, BorderLayout.NORTH);
+                    if (JOptionPane.showConfirmDialog(mainWindow, typeSel,
+                            "Select or Enter ROM Type",
+                            JOptionPane.OK_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION)
+                        return;
+
+                    romType = typeSel.getSelectedItem().toString();
+                }
+                getPrefs().removeValue(romType + ".orgRomPath");
+                getPrefs().removeValue(romType + ".expRomPath");
+                requestOrgRomFile(romType);
             }
-            else
+            else if (ae.getActionCommand().startsWith("module"))
             {
-                JOptionPane.showMessageDialog(null,
-                    "You must load a ROM first!", "Error!",
-                    JOptionPane.ERROR_MESSAGE);
+                if (rom.isLoaded)
+                {
+                    getModuleAt(
+                            Integer
+                                    .parseInt(ae.getActionCommand()
+                                            .substring(6))).show();
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(null,
+                            "You must load a ROM first!", "Error!",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
     }
@@ -1480,7 +1545,7 @@ public class MainGUI implements ActionListener, WindowListener
      * @throws ClassNotFoundException On named class not existing.
      */
     public boolean showModule(String modClass, Object input)
-        throws ClassNotFoundException
+            throws ClassNotFoundException
     {
         return showModule(Class.forName(modClass), input);
     }
@@ -1511,8 +1576,8 @@ public class MainGUI implements ActionListener, WindowListener
         try
         {
             URL checkSite = new URL(
-                "http://anyoneeb.ath.cx:83/jhack/checkversion?ver="
-                    + MainGUI.getVersion());
+                    "http://anyoneeb.ath.cx:83/jhack/checkversion?ver="
+                            + MainGUI.getVersion());
             String ver = new String();
             InputStreamReader in = new InputStreamReader(checkSite.openStream());
             char[] cbuf = new char[10];
@@ -1530,7 +1595,11 @@ public class MainGUI implements ActionListener, WindowListener
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            //e.printStackTrace();
+            //no internet connection, return null
+            //TODO any way to get here with internet up?
+            System.out.println("Update check failed due to connection error: "
+                    + e.getClass() + ": " + e.getMessage());
         }
         return null;
     }
@@ -1552,7 +1621,7 @@ public class MainGUI implements ActionListener, WindowListener
         try
         {
             URL clogSite = new URL(
-                "http://anyoneeb.ath.cx:83/jhack/changelog?ver=" + version);
+                    "http://anyoneeb.ath.cx:83/jhack/changelog?ver=" + version);
             String out = new String();
             InputStreamReader in = new InputStreamReader(clogSite.openStream());
             char[] cbuf = new char[1024];
@@ -1574,22 +1643,25 @@ public class MainGUI implements ActionListener, WindowListener
 
     /**
      * Checks for updates and if one is found, asks the user if it should
-     * download it. This should be called every time JHack starts if the
-     * "checkVersion" pref is set to true.
+     * download it. If user requests to not download, version is remembered and
+     * user is not asked about that version again. This should be called every
+     * time JHack starts if the "checkVersion" pref is set to true.
      * 
      * @see #getChangeLog(String)
      * @see #checkVersion()
      * @return True if new version downloaded, false if not.
      */
-    public static boolean askToUpdate()
+    public boolean askToUpdate()
     {
         try
         {
-            String ver;
-            if ((ver = checkVersion()) != null)
+            final String ver = checkVersion();
+            if (ver != null)
             {
+                if (ver == getPrefs().getValue("ignoreUpdateVer"))
+                    return false;
                 JEditorPane clogDisplay = new JEditorPane(new URL(
-                    "http://anyoneeb.ath.cx:83/jhack/changelog?ver=" + ver));
+                        "http://anyoneeb.ath.cx:83/jhack/changelog?ver=" + ver));
                 clogDisplay.setEditable(false);
                 JScrollPane clogScroll = new JScrollPane(clogDisplay);
                 clogScroll.setPreferredSize(new Dimension(250, 150));
@@ -1600,11 +1672,11 @@ public class MainGUI implements ActionListener, WindowListener
                     if (i > 0)
                         dispver += ".";
                     dispver += Integer.toString(Integer.parseInt(dispverarr[i],
-                        36));
+                            36));
                 }
                 int ques = JOptionPane.showConfirmDialog(null, clogScroll,
-                    "Download JHack v" + dispver + "?",
-                    JOptionPane.YES_NO_OPTION);
+                        "Download JHack v" + dispver + "?",
+                        JOptionPane.YES_NO_OPTION);
                 if (ques == JOptionPane.YES_OPTION)
                 {
                     String[] fileverarr = ver.split("\\.");
@@ -1612,10 +1684,10 @@ public class MainGUI implements ActionListener, WindowListener
                     for (int i = 0; i < fileverarr.length; i++)
                         filever += fileverarr[i];
                     URL dl = new URL("http://anyoneeb.ath.cx:83/jhack/JHack."
-                        + filever + ".jar.zip");
+                            + filever + ".jar.zip");
                     InputStream in = dl.openStream();
                     FileOutputStream out = new FileOutputStream(new File(
-                        "JHack." + filever + ".jar.zip"));
+                            "JHack." + filever + ".jar.zip"));
                     byte[] b = new byte[50000];
                     int tmp;
                     while ((tmp = in.read(b)) != -1)
@@ -1624,6 +1696,17 @@ public class MainGUI implements ActionListener, WindowListener
                     }
                     out.close();
                     return true;
+                }
+                else
+                {
+                    //TODO remember version to not update, done?
+                    //message telling user we did this, no more news about this
+                    //update
+                    getPrefs().setValue("ignoreUpdateVer", ver);
+                    JOptionPane.showMessageDialog(null,
+                            "You will not be notifed of JHack updates again\n"
+                                    + "until the next version is released.",
+                            "Not updating", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         }
@@ -1637,6 +1720,7 @@ public class MainGUI implements ActionListener, WindowListener
         }
         return false;
     }
+
     /**
      * @return Returns the mainWindow.
      */

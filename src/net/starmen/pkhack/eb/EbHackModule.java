@@ -8,7 +8,6 @@ import java.util.Arrays;
 
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.Rom;
-import net.starmen.pkhack.Stopwatch;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -422,11 +421,12 @@ public abstract class EbHackModule extends HackModule
     //meant to emulate the C function FOR THIS SPECIFIC USE
     private static int memchr(int st, byte needle, int len, byte[] haystack)
     {
-        for (int i = 0; i < len; i++)
+        len += st;
+        for (int i = st; i < len; i++)
         {
-            if (haystack[st + i] == needle)
+            if (haystack[i] == needle)
             {
-                return st + i;
+                return i;
             }
         }
         return -1;
@@ -440,16 +440,18 @@ public abstract class EbHackModule extends HackModule
      * 
      * @param udata Uncompressed data
      * @param buffer Output buffer of compressed data
-     * @param length Length of uncompressed data
+     * @param limit Length of uncompressed data
      * @return Length of compressed output.
      */
-    public static int comp(byte[] udata, byte[] buffer, int length)
+    public static int comp(final byte[] udata, final byte[] buffer, final int limit)
     {
+//        Stopwatch sw = new Stopwatch(), swf = new Stopwatch(); //sw temp
+//        sw.start();
         //Tileset.buffer = buffer;
         //Tileset.udata = udata;
         //unsigned char *limit = &udata[length]; //udata start = 0, so limit =
         // length
-        int limit = length; //probably unneeded, could just use length
+        //int limit = length; //probably unneeded, could just use length
         int pos2, pos3;
 //        byte bitrevs[] = new byte[256];
         int tmp;
@@ -470,6 +472,13 @@ public abstract class EbHackModule extends HackModule
             mainloop : for (
                 pos2 = pos; pos2 < limit && pos2 < pos + 1024; pos2++)
             {
+//                try
+//                {
+//                    swf.stop();
+//                    System.out.println("comp() mainloop: " + swf);
+//                }
+//                catch(IllegalStateException e){}
+//                swf.start();
                 for (pos3 = pos2;
                     pos3 < limit
                         && pos3 < pos2 + 1024
@@ -484,7 +493,7 @@ public abstract class EbHackModule extends HackModule
                     break;
                 }
                 for (pos3 = pos2;
-                    pos3 < limit
+                    pos3 + 1 < limit
                         && pos3 < pos2 + 2048
                         && udata[pos3] == udata[pos2]
                         && udata[pos3 + 1] == udata[pos2 + 1];
@@ -571,13 +580,15 @@ public abstract class EbHackModule extends HackModule
                     }
                 }
             }
-            DONE :
+            DONE:
             /* Can't compress, so just use 0 (raw) */
             bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
             if (pos < pos2)
                 pos = pos2;
         }
         buffer[bpos++] = (byte) 0xFF;
+//        sw.stop();
+//        System.out.println("comp(): " + sw);
         return bpos;
     }
     /**
@@ -589,7 +600,7 @@ public abstract class EbHackModule extends HackModule
      * @param buffer Output buffer of compressed data
      * @return Length of compressed output.
      */
-    public static int comp(byte[] udata, byte[] buffer)
+    public static int comp(final byte[] udata, final byte[] buffer)
     {
         return comp(udata, buffer, udata.length);
     }

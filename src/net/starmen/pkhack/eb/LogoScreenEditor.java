@@ -13,7 +13,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.ByteArrayInputStream;
@@ -39,8 +38,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.starmen.pkhack.CheckNode;
@@ -57,7 +54,6 @@ import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
-import net.starmen.pkhack.eb.WindowBorderEditor.WindowBorderImportData;
 
 /**
  * TODO Write javadoc for this class
@@ -163,7 +159,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             System.out.println("About to attempt decompressing "
                 + tileBuffer.length + " bytes of logo screen #" + num
                 + " graphics.");
-            int[] tmp = hm.decomp(readOrg ? r
+            int[] tmp = EbHackModule.decomp(readOrg ? r
                 .readRegAsmPointer(tilePointerArray[num]) : tilePointer,
                 tileBuffer, r);
             if (tmp[0] < 0)
@@ -212,7 +208,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             System.out.println("About to attempt decompressing "
                 + palBuffer.length + " bytes of logo screen #" + num
                 + " palette.");
-            int[] tmp = hm.decomp(readOrg ? r
+            int[] tmp = EbHackModule.decomp(readOrg ? r
                 .readRegAsmPointer(palPointerArray[num]) : palPointer,
                 palBuffer, r);
             if (tmp[0] < 0)
@@ -258,7 +254,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             System.out.println("About to attempt decompressing "
                 + arngBuffer.length + " bytes of logo screen #" + num
                 + " arrangement.");
-            int[] tmp = hm.decomp(readOrg ? r
+            int[] tmp = EbHackModule.decomp(readOrg ? r
                 .readRegAsmPointer(arngPointerArray[num]) : arngPointer,
                 arngBuffer, r);
             if (tmp[0] < 0)

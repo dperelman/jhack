@@ -1,5 +1,8 @@
 package net.starmen.pkhack;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 
 /**
  * Executable of JHack. Run this to start JHack.
@@ -26,8 +29,9 @@ public class JHack
         for (int i = 0; i < args.length; i++)
             if (args[i].equals("-c") || args[i].equals("--console"))
                 useConsole = true;
-        out = new OutputStreamViewer("JHack Console");
-        err = new OutputStreamViewer("JHack Error");
+        String date = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        out = new OutputStreamViewer("JHack Console", date, "out");
+        err = new OutputStreamViewer("JHack Error", date, "err");
         if (!useConsole)
         {
             System.setOut(out.getPrintStream());
@@ -40,5 +44,6 @@ public class JHack
         }
 
         main = new MainGUI();
+        main.loadLastRom();
     }
 }

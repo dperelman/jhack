@@ -2,13 +2,8 @@ NON-RELEASE
 
 # Make (online) JHack TODO list
 
-NEXT RELEASE
-
-# Latest version of Jeffman's logos for ipslisting.xml when he finishes
-# ??? --> [03:09:02] <EBisumaru> Dammit, JHack can't do the compression.
-# [12:38:45] <JeffMan> oh and you should add the mother 2 font 
-	and the debug menu font to jhack's font editor if you can
-# BUGFIX:
+DONE?
+# BUGFIX: done? get test data from Faolan.
 [18:06:36] <Faolan> 8/11/04 2:58 PM: java.lang.ArrayIndexOutOfBoundsException: 2048
 [18:06:36] <Faolan> 8/11/04 3:05 PM: 	at net.starmen.pkhack.eb.EbHackModule.comp(EbHackModule.java:494)
 [18:06:36] <Faolan> 8/11/04 3:05 PM: 	at net.starmen.pkhack.eb.EbHackModule.comp(EbHackModule.java:553)
@@ -39,14 +34,32 @@ NEXT RELEASE
 [18:07:41] <Faolan> 8/11/04 3:05 PM: 	at java.awt.EventDispatchThread.pumpEvents(Unknown Source)
 [18:07:44] <Faolan> 8/11/04 3:05 PM: 	at java.awt.EventDispatchThread.run(Unknown Source)
 [18:07:45] <Faolan> 8/11/04 3:05 PM: 
-# [21:42:57] <JamesPicard_007> 1) If JHack notifies you of a new download and 
+# [21:43:52] <JamesPicard_007> 2) It'd be nice to have the ability for Jhack 
+	to automatically load the last ROM used. Just for convenience.
+
+NEXT RELEASE
+
+# Latest version of Jeffman's logos for ipslisting.xml when he finishes
+# ??? --> [03:09:02] <EBisumaru> Dammit, JHack can't do the compression.
+# [12:38:45] <JeffMan> oh and you should add the mother 2 font 
+	and the debug menu font to jhack's font editor if you can
+# DONE--TEST [21:42:57] <JamesPicard_007> 1) If JHack notifies you of a new download and 
 	you choose not to download it it'd be nice if the prompt wouldn't return 
 	unless a newer version comes out. I use JHack 4.7 and I keep getting the 
 	prompt if I want to download 4.7.1 when I don't want to use it yet. 
   JP007: New version DL only ask once per new version
 	(save pref with newest version denied?)
-# [21:43:52] <JamesPicard_007> 2) It'd be nice to have the ability for Jhack 
-	to automatically load the last ROM used. Just for convenience. 
+# Log to file. Files named for date/time JHack opened (new file for each
+	JHack session), yyyymmddhhmmss.(out|err). Flush file output once per line? 
+	(make sure it works with -c/--console)?
+	Hidden pref to disable?
+	# For errors: whenever an error is written (writing stops on error output for N secs)
+		send log and error log (via HTTP if possible, look into file
+		posting), have HTTP request be replied to with an ID number,
+		error report window for ask for more info: description of
+		circumstances, forum nick, other contact info, put in db
+		(name log files by db row id?)
+		Upon failure to send error log: (ignore|_fail_)?
 
 LONG TERM
 
