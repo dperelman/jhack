@@ -56,6 +56,7 @@ public class PhotoEditor extends EbHackModule
 	
 	public static final int photoPalsPointer = 0xa6d;
 	public static final int NUM_PALETTES = 20; // 120 subpalettes
+	public static final int NUM_PHOTOS = 32;
 	
 	private JButton centerSeek, refresh;
 	private JComboBox entryChooser, direction, photoPaletteChooser, subPaletteChooser;
@@ -81,7 +82,7 @@ public class PhotoEditor extends EbHackModule
 		
 		JPanel topPanel = new JPanel(new FlowLayout());
 		topPanel.add(new JLabel("Entry: "));
-		String[] entryNames = new String[31];
+		String[] entryNames = new String[NUM_PHOTOS];
 		for (int i = 0; i < entryNames.length; i++)
 			entryNames[i] = "Entry #" + i;
 		entryChooser = new JComboBox(entryNames);
@@ -324,7 +325,7 @@ public class PhotoEditor extends EbHackModule
 		readPalettes(hm, true);
 		
 		AbstractRom rom = hm.rom;
-		entries = new PhotoEntry[32];
+		entries = new PhotoEntry[NUM_PHOTOS];
 		for (int i = 0; i < entries.length; i++)
 		{
 			int address = 0x21318A + (i * 62);
