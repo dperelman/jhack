@@ -73,7 +73,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
         entry.add(Box.createVerticalStrut(10));
 
         nameSel = new JComboBox();
-        for (int i = 0; i < 24; i++)
+        for (int i = 0; i < PSIText.length; i++)
             nameSel.addItem(PSIText[i].getInfo());
         nameSel.setActionCommand("nameSel");
         nameSel.addActionListener(this);
@@ -160,14 +160,13 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
     public static void readFromRom(HackModule hm)
     {
-        int PSINamePtr = hm.rom.readAsmPointer(0x1c623);
         for (int i = 0; i < psis.length; i++)
         {
             psis[i] = new PSI(i, hm);
         }
         for (int i = 0; i < PSIText.length; i++)
         {
-            PSIText[i] = new MiscText(PSINamePtr + i * 25, 25, hm);
+            PSIText[i] = new MiscText(0x158f7a + i * 25, 25, hm);
         }
     }
 
@@ -210,7 +209,8 @@ public class PSIEditor extends EbHackModule implements ActionListener
         for (int i = 0; i < 17; i++)
             nameSel.addItem(PSIText[i].getInfo());
 
-        if (tmp != -1) nameSel.setSelectedIndex(tmp);
+        if (tmp != -1)
+            nameSel.setSelectedIndex(tmp);
         nameSel.addActionListener(this);
     }
 
@@ -296,8 +296,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
     public String getCredits()
     {
         return "Written by EBisumaru\n"
-            + "PSI Table discovered and documented by unknown\n"
-            + "Mercilessly ...adjusted by BlueAntoid\n";
+            + "PSI Table discovered and documented by unknown\n";
     }
 
     /**
@@ -752,7 +751,8 @@ public class PSIEditor extends EbHackModule implements ActionListener
          */
         public void setInfo(String newInfo)
         {
-            if (!isRealEntry) return;
+            if (!isRealEntry)
+                return;
             char[] temp = newInfo.toCharArray();
             for (int j = 0; j < info.length; j++)
             {
@@ -776,7 +776,8 @@ public class PSIEditor extends EbHackModule implements ActionListener
          */
         public void writeInfo()
         {
-            if (!isRealEntry) return;
+            if (!isRealEntry)
+                return;
 
             Rom rom = hm.rom;
 
