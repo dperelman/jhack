@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.swing.DefaultComboBoxModel;
@@ -2277,6 +2278,16 @@ public abstract class HackModule
         return out;
     }
 
+    /**
+     * Abstract <code>ComboBoxModel</code> for convenance use for creating
+     * simple <code>ComboBoxModel</code>'s simply. This is used by the
+     * <code>createComboBoxModel()</code> and <code>createComboBox</code>
+     * methods for that purpose.
+     * 
+     * @author AnyoneEB
+     * @see HackModule#createComboBoxModel(Object[], boolean, String)
+     * @see HackModule#createComboBox(Object[], boolean, String, ActionListener)
+     */
     protected static abstract class SimpleComboBoxModel extends
         DefaultComboBoxModel implements ListDataListener
     {
@@ -2350,6 +2361,30 @@ public abstract class HackModule
         }
     }
 
+    /**
+     * Creates a <code>ComboBoxModel</code> for an array. The
+     * <code>toString()</code> method will be called on all elements of the
+     * array, so only <code>String</code>'s will be seen as elements. This
+     * calls {@link #addDataListener(Object[], ListDataListener)}so that
+     * {@link #notifyDataListeners(Object[], ListDataEvent)}can be used to
+     * notify it of updates. If <code>zeroBased</code> is true, the array
+     * values will be pushed up by one (to offsets <code>1</code> to
+     * <code>array.length</code>). Offset <code>0</code> will be set to
+     * <code>zeroString</code>.
+     * 
+     * @param array <code>Object</code>'s whose <code>.toString()</code>
+     *            method will give the <code>String</code> to use for the
+     *            corresponding position in the <code>ComboBoxModel</code>.
+     * @param zeroBased If false, the values of <code>array</code> are pushed
+     *            up one and <code>zeroString</code> is used for the zero
+     *            value.
+     * @param zeroString <code>String</code> to use as element zero if
+     *            <code>zeroBased</code> is false.
+     * @return a <code>ComboBoxModel</code> for the specified array
+     * @see SimpleComboBoxModel
+     * @see #createComboBox(Object[], boolean, String, ActionListener)
+     * @see #createComboBoxModel(Object[], String)
+     */
     public static SimpleComboBoxModel createComboBoxModel(final Object[] array,
         final boolean zeroBased, final String zeroString)
     {
@@ -2385,14 +2420,57 @@ public abstract class HackModule
         return out;
     }
 
+    /**
+     * Creates a <code>ComboBoxModel</code> for an array. The
+     * <code>toString()</code> method will be called on all elements of the
+     * array, so only <code>String</code>'s will be seen as elements. This
+     * calls {@link #addDataListener(Object[], ListDataListener)}so that
+     * {@link #notifyDataListeners(Object[], ListDataEvent)}can be used to
+     * notify it of updates. If <code>zeroString</code> is not null, the array
+     * values will be pushed up by one (to offsets <code>1</code> to
+     * <code>array.length</code>). Offset <code>0</code> will be set to
+     * <code>zeroString</code>.
+     * 
+     * @param array <code>Object</code>'s whose <code>.toString()</code>
+     *            method will give the <code>String</code> to use for the
+     *            corresponding position in the <code>ComboBoxModel</code>.
+     * @param zeroString <code>null</code> if array should start at element
+     *            zero, otherwise <code>String</code> to use as element zero.
+     * @return a <code>ComboBoxModel</code> for the specified array
+     * @see SimpleComboBoxModel
+     * @see #createComboBox(Object[], boolean, String, ActionListener)
+     * @see #createComboBoxModel(Object[], boolean, String)
+     */
     public static SimpleComboBoxModel createComboBoxModel(final Object[] array,
         final String zeroString)
     {
         return createComboBoxModel(array, zeroString == null, zeroString);
     }
+    /**
+     * <code>ListDataListener<code>'s used to notify <code>ComboBoxModel</code>'s
+     * created by <code>createComboBoxModel()</code> of changes.
+     * 
+     * @see HackModule.SimpleComboBoxModel
+     * @see #createComboBox(Object[], boolean, String, ActionListener)
+     * @see #createComboBoxModel(Object[], boolean, String)
+     * @see #addDataListener(Object[], ListDataListener)
+     * @see #removeDataListener(Object[], ListDataListener)
+     * @see #notifyDataListeners(Object[], ListDataEvent)
+     */
     private static Hashtable comboBoxListeners = new Hashtable();
 
-    private static ArrayList getListeners(Object[] array)
+    /**
+     * Retrives the <code>List</code> containing the
+     * <code>ListDataListener</code>'s for the specified array. If it does
+     * not exist, it will be created and added to {@link #comboBoxListeners}.
+     * Since this is an object, modifying (by adding elements to) the returned
+     * value will modify the value in <code>comboBoxListeners</code>.
+     * 
+     * @param array array to get listeners for
+     * @return <code>List</code> of the <code>ListDataListeners</code> for
+     *         <code>array</code>
+     */
+    private static List getListeners(Object[] array)
     {
         Object obj = comboBoxListeners.get(array);
         if (obj == null)
@@ -2400,21 +2478,59 @@ public abstract class HackModule
             obj = new ArrayList();
             comboBoxListeners.put(array, obj);
         }
-        return (ArrayList) obj;
+        return (List) obj;
     }
 
+    /**
+     * Adds a <code>ListDataListener</code> to <code>array</code>. This
+     * should be called by a <code>ComboBoxModel</code> representing
+     * <code>array</code> so it can be notified of changes to
+     * <code>array</code> when <code>notifyDataListeners()</code> is called.
+     * 
+     * @param array array to add listener for
+     * @param ldl <code>ListDataListener</code> to listen to changes in
+     *            <code>array</code>
+     * @see ListDataListener
+     * @see #removeDataListener(Object[], ListDataListener)
+     * @see #notifyDataListeners(Object[], ListDataEvent)
+     */
     protected static void addDataListener(Object[] array, ListDataListener ldl)
     {
         getListeners(array).add(ldl);
     }
 
+    /**
+     * Removes a <code>ListDataListener</code> from <code>array</code>.
+     * 
+     * @param array array to remove listener from
+     * @param ldl <code>ListDataListener</code> which was listening to changes
+     *            in <code>array</code>
+     * @see ListDataListener
+     * @see #addDataListener(Object[], ListDataListener)
+     * @see #notifyDataListeners(Object[], ListDataEvent)
+     */
     protected static void removeDataListener(Object[] array,
         ListDataListener ldl)
     {
         getListeners(array).remove(ldl);
     }
 
-    protected static void notifyDataListeners(Object[] array, ListDataEvent lde)
+    /**
+     * Notifies all listeners of <code>array</code> that a change has occured.
+     * This should be called any time an array which has combo boxes displaying
+     * it is modified. <code>lde</code> should include the details as
+     * described in {@link ListDataEvent}. It is suggested that the other
+     * <code>notifyDataListeners()</code> methods are used for convenance.
+     * 
+     * @param array array change occured in
+     * @param lde <code>ListDataEvent</code> containing specifics of change
+     * @see ListDataEvent
+     * @see #notifyDataListeners(Object[], Object, int, int)
+     * @see #notifyDataListeners(Object[], Object, int)
+     * @see #addDataListener(Object[], ListDataListener)
+     * @see #removeDataListener(Object[], ListDataListener)
+     */
+    public static void notifyDataListeners(Object[] array, ListDataEvent lde)
     {
         for (Iterator i = getListeners(array).iterator(); i.hasNext();)
         {
@@ -2422,20 +2538,83 @@ public abstract class HackModule
         }
     }
 
-    protected static void notifyDataListeners(Object[] array, Object source,
+    /**
+     * Notifies all listeners of <code>array</code> that a change has occured
+     * in the element range from <code>start</code> to <code>end</code>.
+     * This should be called any time an array which has combo boxes displaying
+     * it is modified.
+     * 
+     * @param array array change occured in
+     * @param source <code>Object</code> which caused the change
+     * @param start index of first element of <code>array</code> that changed
+     * @param end index of last element of <code>array</code> that changed
+     * @see #notifyDataListeners(Object[], ListDataEvent)
+     * @see #notifyDataListeners(Object[], Object, int)
+     * @see #addDataListener(Object[], ListDataListener)
+     * @see #removeDataListener(Object[], ListDataListener)
+     */
+    public static void notifyDataListeners(Object[] array, Object source,
         int start, int end)
     {
         notifyDataListeners(array, new ListDataEvent(source,
             ListDataEvent.CONTENTS_CHANGED, start, end));
     }
 
-    protected static void notifyDataListeners(Object[] array, Object source,
+    /**
+     * Notifies all listeners of <code>array</code> that a change has occured
+     * in the element <code>num</code>. This should be called any time an
+     * array which has combo boxes displaying it is modified.
+     * 
+     * @param array array change occured in
+     * @param source <code>Object</code> which caused the change
+     * @param num index of the element of <code>array</code> that changed
+     * @see #notifyDataListeners(Object[], ListDataEvent)
+     * @see #notifyDataListeners(Object[], Object, int, int)
+     * @see #addDataListener(Object[], ListDataListener)
+     * @see #removeDataListener(Object[], ListDataListener)
+     */
+    public static void notifyDataListeners(Object[] array, Object source,
         int num)
     {
         notifyDataListeners(array, source, num, num);
     }
 
-    //TODO javadoc
+    /**
+     * Creates a <code>JComboBox</code> showing the elements of
+     * <code>array</code> as numbered <code>String</code>s. Since this adds
+     * a <code>ListDataListener</code> using
+     * {@link HackModule#addDataListener(Object[], ListDataListener)}, the
+     * {@link #notifyDataListeners(Object[], ListDataEvent)}methods can be used
+     * to force it to be redrawn. If <code>zeroBased</code> is true, the array
+     * values will be pushed up by one (to offsets <code>1</code> to
+     * <code>array.length</code>). Offset <code>0</code> will be set to
+     * <code>zeroString</code>. If not null, <code>al</code> will be added
+     * as an <code>ActionListener</code> to the return value.
+     * 
+     * @param array <code>Object</code>'s whose <code>.toString()</code>
+     *            method will give the <code>String</code> to use for the
+     *            corresponding position in the <code>JComboBox</code>.
+     * @param zeroBased If false, the values of <code>array</code> are pushed
+     *            up one and <code>zeroString</code> is used for the zero
+     *            value.
+     * @param zeroString <code>String</code> to use as element zero if
+     *            <code>zeroBased</code> is false.
+     * @param al If not null, <code>JComboBox.addActionListener(al);</code>
+     *            will be called.
+     * @return a <code>JComboBox</code> displaying <code>array</code> as
+     *         <code>String</code>'s with any offset determined by
+     *         <code>zeroBased</code> and <code>al</code> added as its
+     *         <code>ActionListener</code>
+     * @see #createComboBoxModel(Object[], boolean, String)
+     * @see #getNumberedString(String, int)
+     * @see #addDataListener(Object[], ListDataListener)
+     * @see #notifyDataListeners(Object[], ListDataEvent)
+     * @see #createComboBox(Object[], String, ActionListener)
+     * @see #createComboBox(Object[], boolean, ActionListener)
+     * @see #createComboBox(Object[], ActionListener)
+     * @see #createComboBox(Object[], String)
+     * @see #createComboBox(Object[])
+     */
     public static JComboBox createComboBox(Object[] array, boolean zeroBased,
         String zeroString, final ActionListener al)
     {
@@ -2468,29 +2647,176 @@ public abstract class HackModule
         return out;
     }
 
+    /**
+     * Creates a <code>JComboBox</code> showing the elements of
+     * <code>array</code> as numbered <code>String</code>s. Since this adds
+     * a <code>ListDataListener</code> using
+     * {@link HackModule#addDataListener(Object[], ListDataListener)}, the
+     * {@link #notifyDataListeners(Object[], ListDataEvent)}methods can be used
+     * to force it to be redrawn. If <code>zeroBased</code> is true, the array
+     * values will be pushed up by one (to offsets <code>1</code> to
+     * <code>array.length</code>). Offset <code>0</code> will be set to
+     * "Nothing". If not null, <code>al</code> will be added as an
+     * <code>ActionListener</code> to the return value.
+     * 
+     * @param array <code>Object</code>'s whose <code>.toString()</code>
+     *            method will give the <code>String</code> to use for the
+     *            corresponding position in the <code>JComboBox</code>.
+     * @param zeroBased If false, the values of <code>array</code> are pushed
+     *            up one and "Nothing" is used for the zero value.
+     * @param al If not null, <code>JComboBox.addActionListener(al);</code>
+     *            will be called.
+     * @return a <code>JComboBox</code> displaying <code>array</code> as
+     *         <code>String</code>'s with any offset determined by
+     *         <code>zeroBased</code> and <code>al</code> added as its
+     *         <code>ActionListener</code>
+     * @see #createComboBoxModel(Object[], boolean, String)
+     * @see #getNumberedString(String, int)
+     * @see #addDataListener(Object[], ListDataListener)
+     * @see #notifyDataListeners(Object[], ListDataEvent)
+     * @see #createComboBox(Object[], boolean, String, ActionListener)
+     * @see #createComboBox(Object[], String, ActionListener)
+     * @see #createComboBox(Object[], ActionListener)
+     * @see #createComboBox(Object[], String)
+     * @see #createComboBox(Object[])
+     */
     public static JComboBox createComboBox(Object[] array, boolean zeroBased,
         final ActionListener al)
     {
         return createComboBox(array, zeroBased, "Nothing", al);
     }
 
+    /**
+     * Creates a <code>JComboBox</code> showing the elements of
+     * <code>array</code> as numbered <code>String</code>s. Since this adds
+     * a <code>ListDataListener</code> using
+     * {@link HackModule#addDataListener(Object[], ListDataListener)}, the
+     * {@link #notifyDataListeners(Object[], ListDataEvent)}methods can be used
+     * to force it to be redrawn. If <code>zeroString</code> is not null, the
+     * array values will be pushed up by one (to offsets <code>1</code> to
+     * <code>array.length</code>). Offset <code>0</code> will be set to
+     * <code>zeroString</code>. If not null, <code>al</code> will be added
+     * as an <code>ActionListener</code> to the return value.
+     * 
+     * @param array <code>Object</code>'s whose <code>.toString()</code>
+     *            method will give the <code>String</code> to use for the
+     *            corresponding position in the <code>JComboBox</code>.
+     * @param zeroString <code>String</code> to use as element zero if
+     *            it is not null.
+     * @param al If not null, <code>JComboBox.addActionListener(al);</code>
+     *            will be called.
+     * @return a <code>JComboBox</code> displaying <code>array</code> as
+     *         <code>String</code>'s with any offset determined by
+     *         <code>zeroString</code> and <code>al</code> added as its
+     *         <code>ActionListener</code>
+     * @see #createComboBoxModel(Object[], boolean, String)
+     * @see #createComboBoxModel(Object[], String)
+     * @see #getNumberedString(String, int)
+     * @see #addDataListener(Object[], ListDataListener)
+     * @see #notifyDataListeners(Object[], ListDataEvent)
+     * @see #createComboBox(Object[], boolean, String, ActionListener)
+     * @see #createComboBox(Object[], boolean, ActionListener)
+     * @see #createComboBox(Object[], ActionListener)
+     * @see #createComboBox(Object[], String)
+     * @see #createComboBox(Object[])
+     */
     public static JComboBox createComboBox(Object[] array, String zeroString,
         final ActionListener al)
     {
         return createComboBox(array, zeroString == null, zeroString, al);
     }
 
+    /**
+     * Creates a <code>JComboBox</code> showing the elements of
+     * <code>array</code> as numbered <code>String</code>s. Since this adds
+     * a <code>ListDataListener</code> using
+     * {@link HackModule#addDataListener(Object[], ListDataListener)}, the
+     * {@link #notifyDataListeners(Object[], ListDataEvent)}methods can be used
+     * to force it to be redrawn. If <code>zeroString</code> is not null, the
+     * array values will be pushed up by one (to offsets <code>1</code> to
+     * <code>array.length</code>). Offset <code>0</code> will be set to
+     * <code>zeroString</code>.
+     * 
+     * @param array <code>Object</code>'s whose <code>.toString()</code>
+     *            method will give the <code>String</code> to use for the
+     *            corresponding position in the <code>JComboBox</code>.
+     * @param zeroString <code>String</code> to use as element zero if
+     *            <code>zeroBased</code> is false.
+     * @return a <code>JComboBox</code> displaying <code>array</code> as
+     *         <code>String</code>'s with any offset determined by
+     *         <code>zeroString</code>
+     * @see #createComboBoxModel(Object[], boolean, String)
+     * @see #createComboBoxModel(Object[], String)
+     * @see #getNumberedString(String, int)
+     * @see #addDataListener(Object[], ListDataListener)
+     * @see #notifyDataListeners(Object[], ListDataEvent)
+     * @see #createComboBox(Object[], boolean, String, ActionListener)
+     * @see #createComboBox(Object[], boolean, ActionListener)
+     * @see #createComboBox(Object[], String, ActionListener)
+     * @see #createComboBox(Object[], ActionListener)
+     * @see #createComboBox(Object[])
+     */
     public static JComboBox createComboBox(Object[] array, String zeroString)
     {
         return createComboBox(array, zeroString, null);
     }
 
+    /**
+     * Creates a <code>JComboBox</code> showing the elements of
+     * <code>array</code> as numbered <code>String</code>s. Since this adds
+     * a <code>ListDataListener</code> using
+     * {@link HackModule#addDataListener(Object[], ListDataListener)}, the
+     * {@link #notifyDataListeners(Object[], ListDataEvent)}methods can be used
+     * to force it to be redrawn. If not null, <code>al</code> will be added
+     * as an <code>ActionListener</code> to the return value.
+     * 
+     * @param array <code>Object</code>'s whose <code>.toString()</code>
+     *            method will give the <code>String</code> to use for the
+     *            corresponding position in the <code>JComboBox</code>.
+     * @param al If not null, <code>JComboBox.addActionListener(al);</code>
+     *            will be called.
+     * @return a <code>JComboBox</code> displaying <code>array</code> as
+     *         <code>String</code>'s with <code>al</code> added as its
+     *         <code>ActionListener</code>
+     * @see #createComboBoxModel(Object[], boolean, String)
+     * @see #getNumberedString(String, int)
+     * @see #addDataListener(Object[], ListDataListener)
+     * @see #notifyDataListeners(Object[], ListDataEvent)
+     * @see #createComboBox(Object[], boolean, String, ActionListener)
+     * @see #createComboBox(Object[], String, ActionListener)
+     * @see #createComboBox(Object[], boolean, ActionListener)
+     * @see #createComboBox(Object[], String)
+     * @see #createComboBox(Object[])
+     */
     public static JComboBox createComboBox(Object[] array,
         final ActionListener al)
     {
         return createComboBox(array, true, null, al);
     }
 
+    /**
+     * Creates a <code>JComboBox</code> showing the elements of
+     * <code>array</code> as numbered <code>String</code>s. Since this adds
+     * a <code>ListDataListener</code> using
+     * {@link HackModule#addDataListener(Object[], ListDataListener)}, the
+     * {@link #notifyDataListeners(Object[], ListDataEvent)}methods can be used
+     * to force it to be redrawn.
+     * 
+     * @param array <code>Object</code>'s whose <code>.toString()</code>
+     *            method will give the <code>String</code> to use for the
+     *            corresponding position in the <code>JComboBox</code>.
+     * @return a <code>JComboBox</code> displaying <code>array</code> as
+     *         <code>String</code>'s
+     * @see #createComboBoxModel(Object[], boolean, String)
+     * @see #getNumberedString(String, int)
+     * @see #addDataListener(Object[], ListDataListener)
+     * @see #notifyDataListeners(Object[], ListDataEvent)
+     * @see #createComboBox(Object[], boolean, String, ActionListener)
+     * @see #createComboBox(Object[], String, ActionListener)
+     * @see #createComboBox(Object[], boolean, ActionListener)
+     * @see #createComboBox(Object[], String)
+     * @see #createComboBox(Object[], ActionListener)
+     */
     public static JComboBox createComboBox(Object[] array)
     {
         return createComboBox(array, (ActionListener) null);
