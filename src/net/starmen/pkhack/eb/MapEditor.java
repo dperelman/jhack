@@ -347,8 +347,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
             {
             	int newpal = ((Number) paletteField.getValue()).intValue();
             	int[] sectorxy = gfxcontrol.getSectorxy();
-            	System.out.println("Now setting sector " + sectorxy[0] + ","
-            			+ sectorxy[1] + " to pal " + newpal);
             	mapcontrol.setPal(sectorxy[0], sectorxy[1], newpal);
             	gfxcontrol.remoteRepaint();
             }
@@ -422,12 +420,10 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
         public void mouseClicked(MouseEvent e)
         {
-        	System.out.println(gfxcontrol.knowsSector());
             if ((e.getButton() == 1)
             		&& (gfxcontrol.getModeProps()[2] == 1)
 					&& (gfxcontrol.knowsSector()))
             {
-            	System.out.println("we're in!");
             	int mousex = e.getX();
                 int mousey = e.getY();
                 editbox.setSelected(mousex, mousey);
@@ -479,8 +475,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			tile -= (1 << 8);
         			localtset++;
         		}
-        		
-        		System.out.println("(New) Tile: " + tile + " Local Tileset: " + localtset);
         		
         		mapcontrol.changeTile(scrollx + mapx, scrolly + mapy, tile);
         		gfxcontrol.changeMapArray(mapx, mapy, tile);
@@ -1452,8 +1446,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
         		
         		newLtsetData += newLtset2set << (i * 2);
         	}
-        	System.out.println("Old ltset: " + Integer.toBinaryString(local_tset)
-        			+ " New ltset: " + Integer.toBinaryString(newLtsetData));
         	rom.write(address, newLtsetData);
         }
     }
