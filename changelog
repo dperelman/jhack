@@ -1,4 +1,6 @@
 NEXT VERSION (after v0.5.6):
+# AbstractRom: Forced ROM types to not be "".
+# Attempted to fix bug where PK Hack would sometimes immediately error and die.
 
 v0.5.6:
 # Enemy Editor v0.6: Added game order view like PK Hack v0.2. ROM-specific enemyGameOrder.txt

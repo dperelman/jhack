@@ -55,6 +55,7 @@ public class OutputStreamViewer
     private boolean run = true;
     private boolean error = false, send = false, sendi;
     private JDialog einfodia;
+    private final StringBuffer sbb = new StringBuffer();
 
     /**
      * @return Returns the PrintStream.
@@ -113,6 +114,15 @@ public class OutputStreamViewer
                     errArea.append("\n\n------------------------\n"
                         + "Window closed." + "\n------------------------\n\n");
                 }
+
+                public void windowOpened(WindowEvent e)
+                {
+                    synchronized (sbb)
+                    {
+                        errArea.append(sbb.toString());
+                        sbb.delete(0, sbb.length());
+                    }
+                }
             });
             close.addActionListener(new ActionListener()
             {
@@ -125,8 +135,6 @@ public class OutputStreamViewer
             });
             errDia.getContentPane().add(close, BorderLayout.SOUTH);
             errDia.pack();
-            errDia.invalidate();
-            errDia.validate();
 
             t = new Thread()
             {
@@ -136,7 +144,6 @@ public class OutputStreamViewer
                 private void appendToErrArea()
                 {
                     String sbs = sb.toString();
-                    errArea.append(sbs);
                     if (log != null)
                     {
                         try
@@ -150,13 +157,21 @@ public class OutputStreamViewer
                                 + "to log file.");
                         }
                     }
-                    sb = new StringBuffer();
+                    sb.delete(0, sb.length());
                     if (!errDia.isVisible() && isEnabled())
                     {
                         errDia.setVisible(true);
+                        errArea.append(sbs);
                         Rectangle r = errArea.getBounds();
                         errArea.scrollRectToVisible(new Rectangle(0, r.height,
                             1, 1));
+                    }
+                    else
+                    {
+                        synchronized (sbb)
+                        {
+                            sbb.append(sbs);
+                        }
                     }
                 }
 
