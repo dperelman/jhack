@@ -37,8 +37,10 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -50,6 +52,7 @@ import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.ImageDrawingArea;
 import net.starmen.pkhack.IntArrDrawingArea;
+import net.starmen.pkhack.PrefsCheckBox;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.RomWriteOutOfRangeException;
 import net.starmen.pkhack.SpritePalette;
@@ -136,18 +139,30 @@ public class TileEditor extends EbHackModule implements ActionListener
          * many times it is called. This will be done automatically at the first
          * read/write attempt on this.
          */
-        public void init()
+        public boolean init()
         {
             if (!isInited)
             {
-                isInited = true;
-                readTiles();
-                readArrangements();
+                if(!readTiles()) return false;
+                if(!readArrangements()) return false;
                 readCollision();
                 //readPalettes();
                 //all palettes must be done at the same time by
                 // TileEditor.readPalettes()
+                isInited = true;
             }
+            return true;
+        }
+        
+        public void initToNull()
+        {
+            if (!isInited)
+            {
+                readTiles();
+                readArrangements();
+                readCollision();
+                isInited = true;
+            };
         }
 
         /**
@@ -164,7 +179,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         /**
          * Reads in and deinterlaces tile graphics.
          */
-        private void readTiles()
+        private boolean readTiles()
         {
             this.tileAddress = HackModule.toRegPointer(hm.rom.readMulti(
                 0x2F125B + (num * 4), 4));
@@ -180,9 +195,9 @@ public class TileEditor extends EbHackModule implements ActionListener
             int[] tmp;
             if ((tmp = hm.decomp(tileAddress, buffer, 28673))[0] != 28673)
             {
-                System.out.println("Error bad compressed data on tileset #"
-                    + num + " tiles. (" + tmp + ")");
-                //return;
+                System.err.println("Error bad compressed data on tileset #"
+                    + num + " tiles. (" + tmp[0] + ")");
+                return false;
             }
             tileOldCompLen = tmp[1];
 
@@ -198,7 +213,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                     }
                     catch (ArrayIndexOutOfBoundsException e)
                     {
-                        return;
+                        return true;
                         //if the array has ended, there's nothing left to do
                     }
                 }
@@ -215,9 +230,10 @@ public class TileEditor extends EbHackModule implements ActionListener
                     }
                 }
             }
+            return true;
         }
 
-        private void readArrangements()
+        private boolean readArrangements()
         {
             this.arrangmentsAddress = HackModule.toRegPointer(hm.rom.readMulti(
                 0x2F12AB + (num * 4), 4));
@@ -233,9 +249,9 @@ public class TileEditor extends EbHackModule implements ActionListener
             int[] tmp;
             if ((tmp = hm.decomp(this.arrangmentsAddress, arrBuffer, 32768))[0] < 0)
             {
-                System.out.println("Error bad compressed data on tileset #"
+                System.err.println("Error bad compressed data on tileset #"
                     + num + " arrangments. (" + tmp + ")");
-                //return;
+                return false;
             }
             arrOldCompLen = tmp[1];
 
@@ -256,6 +272,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             }
             catch (ArrayIndexOutOfBoundsException e)
             {}
+            return true;
         }
 
         private void readCollision()
@@ -312,7 +329,8 @@ public class TileEditor extends EbHackModule implements ActionListener
          * Format for the input is the map tileset number and then the map
          * palette number separated by a forward slash.
          * 
-         * @param pal map palette number in the form <code>mtileset + "/" + mpalette</code>
+         * @param pal map palette number in the form
+         *            <code>mtileset + "/" + mpalette</code>
          * @return number used to identify that palette internally
          */
         public int getPaletteNum(String pal)
@@ -2172,7 +2190,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         }
         catch (RomWriteOutOfRangeException e)
         {
-            System.out.println("You have too much collision data.");
+            System.err.println("You have too much collision data.");
             e.printStackTrace();
         }
     }
@@ -2792,13 +2810,6 @@ public void repaintTile(int tile)
 
     private class TileArrangementEditor extends ArrangementEditor
     {
-        private boolean drawGridLines = true;
-
-        public void setDrawGridLines(boolean drawGridLines)
-        {
-            this.drawGridLines = drawGridLines;
-        }
-
         protected boolean isEditable()
         {
             return true;
@@ -2836,7 +2847,8 @@ public void repaintTile(int tile)
 
         protected boolean isDrawGridLines()
         {
-            return drawGridLines;
+            return prefs
+            .getValueAsBoolean("eb.TileEditor.arrEditor.gridLines");
         }
 
         protected boolean isGuiInited()
@@ -3501,8 +3513,19 @@ public void repaintTile(int tile)
 
         mb.add(editMenu);
 
+        JMenu optionsMenu = new JMenu("Options");
+        optionsMenu.setMnemonic('o');
+        optionsMenu.add(new PrefsCheckBox("Enable Tile Selector Grid Lines",
+            prefs, "eb.TileEditor.tileSelector.gridLines", false, 't', null,
+            "tileSelGridLines", this));
+        optionsMenu.add(new PrefsCheckBox(
+            "Enable Arrangement Editor Grid Lines", prefs,
+            "eb.TileEditor.arrEditor.gridLines", true, 'a', null,
+            "arrEdGridLines", this));
+        mb.add(optionsMenu);
+        
         JMenu focusMenu = new JMenu("Focus");
-        focusMenu.setMnemonic('o');
+        focusMenu.setMnemonic('c');
 
         focusMenu.add(HackModule.createJMenuItem("Background Graphics Editor",
             'b', "ctrl B", "bgeFocus", this));
@@ -3522,6 +3545,7 @@ public void repaintTile(int tile)
 
         mainWindow.setJMenuBar(mb);
 
+        JPanel scrolledArea = new JPanel(new BorderLayout());
         JPanel display = new JPanel(new BorderLayout());
 
         display.add(tileSelector = new TileSelector()
@@ -3545,6 +3569,12 @@ public void repaintTile(int tile)
             public int getZoom()
             {
                 return 2;
+            }
+            
+            public boolean isDrawGridLines()
+            {
+                return prefs
+                    .getValueAsBoolean("eb.TileEditor.tileSelector.gridLines");
             }
 
             public int getTileCount()
@@ -3571,7 +3601,7 @@ public void repaintTile(int tile)
         arrangementSelector.setActionCommand("arrangementSelector");
         arrangementSelector.addActionListener(this);
 
-        mainWindow.getContentPane().add(display, BorderLayout.WEST);
+        scrolledArea.add(display, BorderLayout.WEST);
 
         Box edit = new Box(BoxLayout.Y_AXIS);
 
@@ -3670,13 +3700,16 @@ public void repaintTile(int tile)
 
         edit.add(arrEdit);
 
-        mainWindow.getContentPane().add(edit, BorderLayout.CENTER);
+        scrolledArea.add(edit, BorderLayout.CENTER);
 
         Box toolsetBox = new Box(BoxLayout.Y_AXIS);
         toolsetBox.add(tileDrawingToolset);
         toolsetBox.add(Box.createVerticalStrut(200));
 
-        mainWindow.getContentPane().add(toolsetBox, BorderLayout.EAST);
+        scrolledArea.add(toolsetBox, BorderLayout.EAST);
+        
+        mainWindow.getContentPane().add(new JScrollPane(scrolledArea),
+            BorderLayout.CENTER);
 
         mainWindow.pack();
     }
@@ -3735,7 +3768,50 @@ public void repaintTile(int tile)
         guiInited = true;
         tilesetSelector.setSelectedIndex(0);
     }
-
+    
+    private void doTilesetSelectAction()
+    {
+        if (!getSelectedTileset().init())
+        {
+            guiInited = false;
+            Object opt = JOptionPane.showInputDialog(mainWindow,
+                "Error decompressing the "
+                    + getSelectedTileset().name + " tileset (#"
+                    + getCurrentTileset() + ").", "Decompression Error",
+                JOptionPane.ERROR_MESSAGE, null, new String[]{"Abort", "Retry",
+                    "Fail"}, "Retry");
+            if (opt == null || opt.equals("Abort"))
+            {
+                tilesetSelector
+                    .setSelectedIndex((tilesetSelector.getSelectedIndex() + 1)
+                        % tilesetSelector.getItemCount());
+                doTilesetSelectAction();
+                return;
+            }
+            else if (opt.equals("Retry"))
+            {
+                //                mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
+                doTilesetSelectAction();
+                return;
+            }
+            else if (opt.equals("Fail"))
+            {
+                getSelectedTileset().initToNull();
+            }
+        }
+        guiInited = true;
+        
+        updatePaletteSelector();
+        updateTileSelector();
+        updateArrangementSelector();
+        resetArrangementUndo();
+        updateCollisionEditor();
+        arrangementEditor.clearSelection();
+        updateArrangementEditor();
+        updatePaletteDisplay();
+        updateTileGraphicsEditor();
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -3746,16 +3822,17 @@ public void repaintTile(int tile)
         //respond to each component
         if (ae.getActionCommand().equals("tilesetSelector"))
         {
-            getSelectedTileset().init();
-            updatePaletteSelector();
-            updateTileSelector();
-            updateArrangementSelector();
-            resetArrangementUndo();
-            updateCollisionEditor();
-            arrangementEditor.clearSelection();
-            updateArrangementEditor();
-            updatePaletteDisplay();
-            updateTileGraphicsEditor();
+//            getSelectedTileset().init();
+//            updatePaletteSelector();
+//            updateTileSelector();
+//            updateArrangementSelector();
+//            resetArrangementUndo();
+//            updateCollisionEditor();
+//            arrangementEditor.clearSelection();
+//            updateArrangementEditor();
+//            updatePaletteDisplay();
+//            updateTileGraphicsEditor();
+            doTilesetSelectAction();
         }
         else if (ae.getActionCommand().equals("paletteSelector"))
         {
@@ -3902,6 +3979,25 @@ public void repaintTile(int tile)
                 .getIntArrImage());
             this.tileDrawingArea.repaint();
             this.setFocus(tileDrawingArea);
+        }
+        //gridline toggle
+        else if (ae.getActionCommand().equals("tileSelGridLines"))
+        {
+            mainWindow.getContentPane().invalidate();
+            tileSelector.invalidate();
+            tileSelector.resetPreferredSize();
+            tileSelector.validate();
+            tileSelector.repaint();
+            mainWindow.getContentPane().validate();
+        }
+        else if (ae.getActionCommand().equals("arrEdGridLines"))
+        {
+            mainWindow.getContentPane().invalidate();
+            arrangementEditor.invalidate();
+            arrangementEditor.resetPreferredSize();
+            arrangementEditor.validate();
+            arrangementEditor.repaint();
+            mainWindow.getContentPane().validate();
         }
         //import/export
         else if (ae.getActionCommand().equals("importTile"))
@@ -4265,11 +4361,11 @@ public void repaintTile(int tile)
         }
         catch (FileNotFoundException e)
         {
-            System.out.println("Unable to find file to import tile from.");
+            System.err.println("Unable to find file to import tile from.");
         }
         catch (IOException e)
         {
-            System.out.println("Error reading file to import tile from.");
+            System.err.println("Error reading file to import tile from.");
         }
     }
 
@@ -4285,7 +4381,7 @@ public void repaintTile(int tile)
         }
         catch (IOException e)
         {
-            System.out.println("Error writing file to export tile to.");
+            System.err.println("Error writing file to export tile to.");
         }
     }
 
@@ -4301,11 +4397,11 @@ public void repaintTile(int tile)
         }
         catch (FileNotFoundException e)
         {
-            System.out.println("Unable to find file to import tileset from.");
+            System.err.println("Unable to find file to import tileset from.");
         }
         catch (IOException e)
         {
-            System.out.println("Error reading file to import tileset from.");
+            System.err.println("Error reading file to import tileset from.");
         }
     }
 
@@ -4319,7 +4415,7 @@ public void repaintTile(int tile)
         }
         catch (IOException e)
         {
-            System.out.println("Error writing file to export tileset to.");
+            System.err.println("Error writing file to export tileset to.");
         }
     }
 
@@ -4335,12 +4431,12 @@ public void repaintTile(int tile)
         }
         catch (FileNotFoundException e)
         {
-            System.out
+            System.err
                 .println("Unable to find file to import tileset properties from.");
         }
         catch (IOException e)
         {
-            System.out
+            System.err
                 .println("Error reading file to import tileset properties from.");
         }
     }
@@ -4355,7 +4451,7 @@ public void repaintTile(int tile)
         }
         catch (IOException e)
         {
-            System.out
+            System.err
                 .println("Error writing file to export tileset properties to.");
         }
     }
@@ -4372,11 +4468,11 @@ public void repaintTile(int tile)
         }
         catch (FileNotFoundException e)
         {
-            System.out.println("Unable to find file to import tileset from.");
+            System.err.println("Unable to find file to import tileset from.");
         }
         catch (IOException e)
         {
-            System.out.println("Error reading file to import tileset from.");
+            System.err.println("Error reading file to import tileset from.");
         }
     }
 
@@ -4390,7 +4486,7 @@ public void repaintTile(int tile)
         }
         catch (IOException e)
         {
-            System.out.println("Error writing file to export tileset to.");
+            System.err.println("Error writing file to export tileset to.");
         }
     }
 
@@ -4411,11 +4507,11 @@ public void repaintTile(int tile)
         }
         catch (FileNotFoundException e)
         {
-            System.out.println("Unable to find file to import tilesets from.");
+            System.err.println("Unable to find file to import tilesets from.");
         }
         catch (IOException e)
         {
-            System.out.println("Error reading file to import tilesets from.");
+            System.err.println("Error reading file to import tilesets from.");
         }
     }
 
@@ -4434,7 +4530,7 @@ public void repaintTile(int tile)
         }
         catch (IOException e)
         {
-            System.out.println("Error writing file to export tilesets to.");
+            System.err.println("Error writing file to export tilesets to.");
         }
     }
 
@@ -4448,7 +4544,7 @@ public void repaintTile(int tile)
         }
         catch (IOException e)
         {
-            System.out.println("Error writing file to export palette to.");
+            System.err.println("Error writing file to export palette to.");
         }
     }
 
@@ -4464,11 +4560,11 @@ public void repaintTile(int tile)
         }
         catch (FileNotFoundException e)
         {
-            System.out.println("Unable to find file to import palette from.");
+            System.err.println("Unable to find file to import palette from.");
         }
         catch (IOException e)
         {
-            System.out.println("Error reading file to import palette from.");
+            System.err.println("Error reading file to import palette from.");
         }
     }
 

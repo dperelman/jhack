@@ -70,8 +70,8 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
         this.squareSize = size;
         this.rows = rows;
         this.cols = (int) Math.ceil((float) numCol / (float) rows);
-//        System.out.println("SpritePalette(): numCol=" + numCol + ", rows="
-//            + rows + ", cols=" + cols);
+        //        System.out.println("SpritePalette(): numCol=" + numCol + ", rows="
+        //            + rows + ", cols=" + cols);
         this.setPreferredSize(new Dimension((squareSize * (cols + 2)) + 1,
             (squareSize * rows) + 1));
         this.addMouseListener(this);
@@ -245,7 +245,7 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
             //if in area with colors set color to clicked on one
 
             int newCol = (x / (this.squareSize)) + (y / this.squareSize) * cols;
-//            System.out.println("Selected color #" + newCol);
+            //            System.out.println("Selected color #" + newCol);
             if (newCol < pal.length) this.setSelectedColorIndex(newCol);
         }
     }
@@ -263,6 +263,7 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
      */
     public void paint(Graphics g)
     {
+        if (pal == null) return;
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, ((pal.length / rows) * squareSize) + 1,
             (rows * squareSize) + 1);
@@ -282,10 +283,10 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    g.setColor(this.getColorOf(c + r *cols));
+                    g.setColor(this.getColorOf(c + r * cols));
                     g.fillRect((c * squareSize) + 1, (r * squareSize) + 1,
                         squareSize - 1, squareSize - 1);
-                    if (c + r *cols == this.getSelectedColorIndex())
+                    if (c + r * cols == this.getSelectedColorIndex())
                     {
                         g.setColor(Color.WHITE);
                         g.drawRect(c * squareSize, r * squareSize, squareSize,

@@ -479,9 +479,9 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
     protected static HashMap exts = new HashMap();
 
     /**
-     * Registers a static method which can import files with the specified
-     * extension. This should be called from a static block from any class that
-     * has import abilities.
+     * Method not final, defination subject to change. Registers a static method
+     * which can import files with the specified extension. This should be
+     * called from a static block from any class that has import abilities.
      * 
      * @param ext extension given method can read; this is considered to be what
      *            is <em>after</em> the last period (.) in the file name.
@@ -499,11 +499,12 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
     }
 
     /**
-     * Imports data from the specified file. Uses <code>filename</code> to
-     * identify what the extension is. Once the extension has been read, the
-     * method registered with {@link #registerExtension(String, Method, Object)}
-     * will be used to process the data. That method may prompt the user for
-     * options, but may or may not allow the user to cancel.
+     * Method not final, defination subject to change. Imports data from the
+     * specified file. Uses <code>filename</code> to identify what the
+     * extension is. Once the extension has been read, the method registered
+     * with {@link #registerExtension(String, Method, Object)}will be used to
+     * process the data. That method may prompt the user for options, but may or
+     * may not allow the user to cancel.
      * 
      * @param filename filename to get extension from
      * @param file <code>byte[]</code> with the exported data

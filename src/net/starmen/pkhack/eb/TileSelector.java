@@ -22,7 +22,6 @@ import javax.swing.AbstractButton;
 public abstract class TileSelector extends AbstractButton implements
     MouseListener, MouseMotionListener
 {
-    //TODO make into abstract class like ArrangementEditor
     private int currentTile = 0;
 
     /**
@@ -57,6 +56,47 @@ public abstract class TileSelector extends AbstractButton implements
     public abstract int getZoom();
 
     /**
+     * Returns whether or not grid lines should be drawn.
+     * 
+     * @return if true, grid lines are drawn, if false they are not
+     */
+    protected abstract boolean isDrawGridLines();
+
+    /**
+     * Returns the drawn size of each tile in pixels. That is, the size that the
+     * tiles are actually drawn at accounting for zoom and (optionally) grid
+     * lines.
+     * 
+     * @param includeGrid if true, grid lines are included in the tile size.
+     *            default is true
+     * @return size in pixels that tiles are drawn
+     * @see #getDrawnTileSize()
+     * @see #getTileSize()
+     * @see #getZoom()
+     * @see #isDrawGridLines()
+     */
+    public int getDrawnTileSize(boolean includeGrid)
+    {
+        return (getTileSize() * getZoom())
+            + (isDrawGridLines() && includeGrid ? 1 : 0) + 1;
+    }
+
+    /**
+     * Returns the drawn size of each tile in pixels. That is, the size that the
+     * tiles are actually drawn at accounting for zoom and grid lines.
+     * 
+     * @return size in pixels that tiles are drawn
+     * @see #getDrawnTileSize(boolean)
+     * @see #getTileSize()
+     * @see #getZoom()
+     * @see #isDrawGridLines()
+     */
+    public int getDrawnTileSize()
+    {
+        return getDrawnTileSize(true);
+    }
+
+    /**
      * Returns the number of tiles this allows selection from. This will
      * probably be {@link #getTilesWide()}*{@link #getTilesHigh()}, but not
      * always. The first tile will always be refered to as tile 0, and the last
@@ -85,7 +125,7 @@ public abstract class TileSelector extends AbstractButton implements
      * @return if true, painting will occur, if false, it will not.
      */
     protected abstract boolean isGuiInited();
-    
+
     /**
      * Returns the currently selected tile.
      * 
@@ -97,7 +137,8 @@ public abstract class TileSelector extends AbstractButton implements
     }
 
     /**
-     * Sets the current tile. This is visually show the specificed tile as highlighted.
+     * Sets the current tile. This is visually show the specificed tile as
+     * highlighted.
      * 
      * @param newTile tile to change selection to
      */
@@ -115,8 +156,8 @@ public abstract class TileSelector extends AbstractButton implements
 
     private void setCurrentTile(int x, int y)
     {
-        setCurrentTile(((y / (getTileSize() * getZoom())) * getTilesWide())
-            + (x / (getTileSize() * getZoom())));
+        setCurrentTile(((y / (getDrawnTileSize())) * getTilesWide())
+            + (x / (getDrawnTileSize())));
     }
 
     /**
@@ -139,9 +180,9 @@ public abstract class TileSelector extends AbstractButton implements
      */
     private void drawTile(Graphics g, int tile)
     {
-        g.drawImage(getTileImage(tile), (tile % getTilesWide()) * getTileSize()
-            * getZoom(), (tile / getTilesWide()) * getTileSize() * getZoom(),
-            getTileSize() * getZoom(), getTileSize() * getZoom(), null);
+        g.drawImage(getTileImage(tile), (tile % getTilesWide())
+            * getDrawnTileSize(), (tile / getTilesWide()) * getDrawnTileSize(),
+            getDrawnTileSize(false), getDrawnTileSize(false), null);
     }
 
     /**
@@ -164,9 +205,9 @@ public abstract class TileSelector extends AbstractButton implements
     private void highlightTile(Graphics g, int tile)
     {
         g.setColor(new Color(255, 255, 0, 128));
-        g.fillRect((tile % getTilesWide()) * getTileSize() * getZoom(),
-            (tile / getTilesWide()) * getTileSize() * getZoom(), getTileSize()
-                * getZoom(), getTileSize() * getZoom());
+        g.fillRect((tile % getTilesWide()) * getDrawnTileSize(),
+            (tile / getTilesWide()) * getDrawnTileSize(),
+            getDrawnTileSize(false), getDrawnTileSize(false));
     }
 
     /**
@@ -184,9 +225,10 @@ public abstract class TileSelector extends AbstractButton implements
         drawTile(oldTile);
         highlightTile(newTile);
     }
-    
+
     /**
-     * Redraws the current tile. Call this after the current tile has been modified.
+     * Redraws the current tile. Call this after the current tile has been
+     * modified.
      */
     public void repaintCurrent()
     {
@@ -198,9 +240,20 @@ public abstract class TileSelector extends AbstractButton implements
     {
         if (isGuiInited())
         {
+            Dimension d = this.getPreferredSize();
+            //make image buffer so tile selector doesn't flash black
+            Image buffer = this.createImage(d.width, d.height);
+            Graphics bg = buffer.getGraphics();
+            //black background so grid is black
+            bg.setColor(Color.BLACK);
+            bg.fillRect(0, 0, this.getWidth(), this.getHeight());
+            //draw tiles
             for (int tile = 0; tile < getTileCount(); tile++)
-                drawTile(g, tile);
-            highlightTile(g, currentTile);
+                drawTile(bg, tile);
+            //draw highlight on current tile
+            highlightTile(bg, currentTile);
+            //draw buffer to screen
+            g.drawImage(buffer, 0, 0, this);
         }
     }
 
@@ -226,16 +279,15 @@ public abstract class TileSelector extends AbstractButton implements
     public void mouseDragged(MouseEvent me)
     {
         if (!(me.getX() < 0 || me.getY() < 0
-            || me.getX() > getTilesWide() * getTileSize() * getZoom() - 1 || me
-            .getY() > getTilesHigh() * getTileSize() * getZoom() - 1))
-            setCurrentTile(me.getX(), me.getY());
+            || me.getX() > getTilesWide() * getDrawnTileSize() - 1 || me.getY() > getTilesHigh()
+            * getDrawnTileSize() - 1)) setCurrentTile(me.getX(), me.getY());
     }
 
     public void mouseMoved(MouseEvent arg0)
     {}
 
     private String actionCommand = new String();
-    
+
     /**
      * Returns the action command of this.
      * 
@@ -256,10 +308,20 @@ public abstract class TileSelector extends AbstractButton implements
         this.actionCommand = ac;
     }
 
+    /**
+     * Sets preferred size to correct value. Bases value on the return values of
+     * {@link #getTilesWide()},{@link #getTilesHigh()}, and
+     * {@link #getDrawnTileSize()}.
+     */
+    public void resetPreferredSize()
+    {
+        setPreferredSize(new Dimension(getTilesWide() * getDrawnTileSize(),
+            getTilesHigh() * getDrawnTileSize()));
+    }
+
     public TileSelector()
     {
-        setPreferredSize(new Dimension(getTilesWide() * getTileSize()
-            * getZoom(), getTilesHigh() * getTileSize() * getZoom()));
+        resetPreferredSize();
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
     }

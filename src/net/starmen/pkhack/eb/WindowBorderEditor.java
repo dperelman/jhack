@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 import javax.swing.AbstractButton;
 import javax.swing.Box;
@@ -105,6 +106,17 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         "AUTO, afflictions", "non-battle text boxes"};
     private static int rOff, wOff, oldLens[] = new int[2];
 
+    /**
+     * 
+     * TODO Write javadoc for this method
+     * 
+     * @param pointerAddress
+     * @param num
+     * @param hm
+     * @return Positive means success. On failure user is presented with option
+     *         between abort (negative return value), retry (return value of
+     *         trying this method again), fail (return value of 0),
+     */
     private static int readGraphics(int pointerAddress, int num, EbHackModule hm)
     {
         byte[] buffer = new byte[8192];
@@ -115,8 +127,32 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         tmp = hm.decomp(address, buffer);
         if (tmp[0] < 0)
         {
-            System.out.println("Error " + tmp[0]
+            System.err.println("Error #" + tmp[0]
                 + " decompressing window graphics.");
+            Object opt = JOptionPane.showInputDialog(null, "Error " + tmp[0]
+                + " decompressing the window border graphics.",
+                "Decompression Error", JOptionPane.ERROR_MESSAGE, null,
+                new String[]{"Abort", "Retry", "Fail"}, "Retry");
+            if (opt == null || opt.equals("Abort"))
+            {
+                return tmp[0];
+            }
+            else if (opt.equals("Retry"))
+            {
+                return readGraphics(pointerAddress, num, hm);
+            }
+            else if (opt.equals("Fail"))
+            {
+                for (int j = 0; j < num; j++)
+                {
+                    for (int x = 0; x < 8; x++)
+                        Arrays.fill(graphics[rOff][x], (byte) 0);
+                    rOff++;
+                }
+                System.out.println("WindowBorderEditor: fail: zeroed below "
+                    + rOff);
+                return 0;
+            }
             return tmp[0];
         }
         System.out.println("Decompressed " + tmp[0] + " bytes ("
@@ -196,30 +232,45 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             }
             catch (IOException e)
             {
-                System.out
+                System.err
                     .println("Error reading subpalette numbers file (windowGPals.dat).");
                 e.printStackTrace();
             }
         }
     }
 
-    public static void readFromRom(EbHackModule hm)
+    public static boolean readFromRom(EbHackModule hm)
     {
         graphics = new byte[423][8][8];
         rOff = 0;
         //readGraphics(0x200200);
         //readGraphics(0x200954);
+        //        int[][] gloc = new int[][] {{0x47E47,416},{0x47EAA,7}};
+        //        String[] name = new String[] {"window border graphics", "flavor
+        // window graphics"};
+        //        for(int i = 0; i < 2; i++)
+        //        {
+        //            oldLens[i] = readGraphics(gloc[i][0], gloc[i][1], hm);
+        //            if(oldLens[i] < 0)
+        //            {
+        //                
+        //            }
+        //        }
         oldLens[0] = readGraphics(0x47E47, 416, hm); // and B798
+        if (oldLens[0] < 0) return false;
         //oldLens[0] = readGraphics(0xB798);
         oldLens[1] = readGraphics(0x47EAA, 7, hm);
+        if (oldLens[1] < 0) return false;
         readPalettes(hm.rom);
         readSubPalNums();
         readFlavorNames(hm);
+
+        return true;
     }
 
-    private void readFromRom()
+    private boolean readFromRom()
     {
-        readFromRom(this);
+        return readFromRom(this);
     }
 
     private static int writeGraphics(int[] pointerLoc, int oldLen, int num,
@@ -1131,7 +1182,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
 
     public String getVersion()
     {
-        return "0.3";
+        return "0.4";
     }
 
     public String getDescription()
@@ -1151,10 +1202,12 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
 
     public void show()
     {
-        readFromRom();
-        super.show();
-        updateFlavorSelector();
-        mainWindow.setVisible(true);
+        if (readFromRom())
+        {
+            super.show();
+            updateFlavorSelector();
+            mainWindow.setVisible(true);
+        }
     }
 
     private boolean doubleSelInit = false;

@@ -59,4 +59,4 @@ eb.TileEditor		#Edits map tiles, tile arrangements, and collision info,
 #eb.HotspotEditor	#Edits hotspots (places on the map that trigger text
 					#when you walk over them
 #eb.ItemDumper		#Dumps the item info for walkthru
-eb.MapEditor		#Views the map (in future may edit as well)
+#eb.MapEditor		#Views the map (in future may edit as well)

@@ -36,6 +36,8 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import sun.security.x509.IssuerAlternativeNameExtension;
+
 import net.starmen.pkhack.BMPReader;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
@@ -64,19 +66,14 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
     }
 
     /*
-     * •0E64EE to 0E6713 = In-battle graphics pointer table 
-     * •0E6714 to 0E6B13 =
+     * •0E64EE to 0E6713 = In-battle graphics pointer table •0E6714 to 0E6B13 =
      * In-battle graphics palettes
      * 
-     * Five-byte entries; a pointer (4 bytes) and one other bytes of unknown purpose
-     * Size byte  |  Image Dimensions (in pixels)
-     * ------------------------------------------
-     *      1     |   32 wide x  32 high
-     *      2     |   64 wide x  32 high
-     *      3     |   32 wide x  64 high
-     *      4     |   64 wide x  64 high
-     *      5     |  128 wide x  64 high
-     *      6     |  128 wide x 128 high
+     * Five-byte entries; a pointer (4 bytes) and one other bytes of unknown
+     * purpose Size byte | Image Dimensions (in pixels)
+     * ------------------------------------------ 1 | 32 wide x 32 high 2 | 64
+     * wide x 32 high 3 | 32 wide x 64 high 4 | 64 wide x 64 high 5 | 128 wide x
+     * 64 high 6 | 128 wide x 128 high
      */
     public final static Dimension[] BATTLE_SPRITE_SIZES = new Dimension[]{null,
         new Dimension(32, 32), new Dimension(64, 32), new Dimension(32, 64),
@@ -150,6 +147,8 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
         public void initToNull()
         {
+            if (isInited) return;
+
             Dimension d = BATTLE_SPRITE_SIZES[size];
 
             sprite = new byte[d.width][d.height];

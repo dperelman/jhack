@@ -16,12 +16,12 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.swing.AbstractButton;
 import javax.swing.Box;
@@ -47,6 +47,7 @@ import net.starmen.pkhack.CopyAndPaster;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IntArrDrawingArea;
+import net.starmen.pkhack.PrefsCheckBox;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.Undoable;
@@ -125,7 +126,18 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             arngPointer = hm.rom.readRegAsmPointer(arngPointerArray[i]);
         }
 
-        public boolean readInfo()
+        /**
+         * Decompresses information from ROM. allowFailure defaults to true, and
+         * is set to false when "fail" is selected from the abort/retry/fail box
+         * presented to the user when a problem is encountered while reading.
+         * 
+         * @param allowFailure if true, false will not be returned on failure,
+         *            instead the failed item will be set to zeros and reading
+         *            will continue
+         * @return true if everything is read or if allowFailure is true, false
+         *         if any decompression failed and allowFailure is false
+         */
+        public boolean readInfo(boolean allowFailure)
         {
             if (isInited) return true;
 
@@ -141,12 +153,34 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             if (tmp[0] < 0)
             {
                 System.err.println("Error " + tmp[0]
-                    + " decompressing logo screen #" + num + ".");
-                return false;
+                    + " decompressing logo screen #" + num + " graphics.");
+                if (allowFailure)
+                {
+                    //EMPTY TILES
+                    for (int i = 0; i < tiles.length; i++)
+                        for (int x = 0; x < tiles[i].length; x++)
+                                Arrays.fill(tiles[i][x], (byte) 0);
+                    tileLen = 0;
+                }
+                else
+                {
+                    return false;
+                }
             }
-            tileLen = tmp[1];
-            System.out.println("LogoScreen graphics: Decompressed " + tmp[0]
-                + " bytes from a " + tmp[1] + " byte compressed block.");
+            else
+            {
+                tileLen = tmp[1];
+                System.out.println("LogoScreen graphics: Decompressed "
+                    + tmp[0] + " bytes from a " + tmp[1]
+                    + " byte compressed block.");
+
+                int gfxOffset = 0;
+                for (int i = 0; i < NUM_TILES; i++)
+                {
+                    gfxOffset += HackModule.read2BPPArea(tiles[i], tileBuffer,
+                        gfxOffset, 0, 0);
+                }
+            }
 
             /** * DECOMPRESS PALETTE ** */
             System.out.println("About to attempt decompressing "
@@ -157,11 +191,30 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             {
                 System.err.println("Error " + tmp[0]
                     + " decompressing logo screen #" + num + " palette.");
-                return false;
+                if (allowFailure)
+                { //EMPTY PALETTES
+                    for (int i = 0; i < palette.length; i++)
+                        Arrays.fill(palette[i], Color.BLACK);
+                    palLen = 0;
+                }
+                else
+                {
+                    return false;
+                }
             }
-            palLen = tmp[1];
-            System.out.println("LogoScreen palette: Decompressed " + tmp[0]
-                + " bytes from a " + tmp[1] + " byte compressed block.");
+            else
+            {
+                palLen = tmp[1];
+                System.out.println("LogoScreen palette: Decompressed " + tmp[0]
+                    + " bytes from a " + tmp[1] + " byte compressed block.");
+
+                int palOffset = 0;
+                for (int i = 0; i < NUM_PALETTES; i++)
+                {
+                    HackModule.readPalette(palBuffer, palOffset, palette[i]);
+                    palOffset += palette[i].length * 2;
+                }
+            }
 
             /** * DECOMPRESS ARRANGEMENT ** */
             System.out.println("About to attempt decompressing "
@@ -171,38 +224,45 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             if (tmp[0] < 0)
             {
                 System.err.println("Error " + tmp[0]
-                    + " decompressing logo screen #" + num + " palette.");
-                return false;
+                    + " decompressing logo screen #" + num + " arrangement.");
+                if (allowFailure)
+                { //EMPTY ARRANGEMENTS
+                    Arrays.fill(arrangementList, 0);
+                    for (int x = 0; x < arrangement.length; x++)
+                        Arrays.fill(arrangement[x], 0);
+                    arngLen = 0;
+                }
+                else
+                {
+                    return false;
+                }
             }
-            arngLen = tmp[1];
-            System.out.println("LogoScreen arrangement: Decompressed " + tmp[0]
-                + " bytes from a " + tmp[1] + " byte compressed block.");
+            else
+            {
+                arngLen = tmp[1];
+                System.out.println("LogoScreen arrangement: Decompressed "
+                    + tmp[0] + " bytes from a " + tmp[1]
+                    + " byte compressed block.");
 
-            int palOffset = 0;
-            for (int i = 0; i < NUM_PALETTES; i++)
-            {
-                HackModule.readPalette(palBuffer, palOffset, palette[i]);
-                palOffset += palette[i].length * 2;
+                int arngOffset = 0;
+                for (int i = 0; i < NUM_ARRANGEMENTS; i++)
+                {
+                    arrangementList[i] = (arngBuffer[arngOffset++] & 0xff)
+                        + ((arngBuffer[arngOffset++] & 0xff) << 8);
+                }
+                int j = 0;
+                for (int y = 0; y < arrangement[0].length; y++)
+                    for (int x = 0; x < arrangement.length; x++)
+                        arrangement[x][y] = arrangementList[j++];
             }
-            int arngOffset = 0;
-            for (int i = 0; i < NUM_ARRANGEMENTS; i++)
-            {
-                arrangementList[i] = (arngBuffer[arngOffset++] & 0xff)
-                    + ((arngBuffer[arngOffset++] & 0xff) << 8);
-            }
-            int j = 0;
-            for (int y = 0; y < arrangement[0].length; y++)
-                for (int x = 0; x < arrangement.length; x++)
-                    arrangement[x][y] = arrangementList[j++];
-            int gfxOffset = 0;
-            for (int i = 0; i < NUM_TILES; i++)
-            {
-                gfxOffset += HackModule.read2BPPArea(tiles[i], tileBuffer,
-                    gfxOffset, 0, 0);
-            }
-            System.out.println("Offset thingy: " + gfxOffset + ".");
+
             isInited = true;
             return true;
+        }
+
+        public boolean readInfo()
+        {
+            return readInfo(false);
         }
 
         /**
@@ -212,27 +272,31 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
          */
         public void initToNull()
         {
-            if (isInited) return;
-
-            //EMPTY PALETTES
-            for (int i = 0; i < palette.length; i++)
-                for (int j = 0; j < palette[i].length; j++)
-                    palette[i][j] = Color.BLACK;
-
-            //EMPTY ARRANGEMENTS
-            for (int i = 0; i < arrangementList.length; i++)
-                arrangementList[i] = 0;
-            for (int x = 0; x < arrangement.length; x++)
-                for (int y = 0; y < arrangement[x].length; y++)
-                    arrangement[x][y] = 0;
-
-            //EMPTY TILES
-            for (int i = 0; i < tiles.length; i++)
-                for (int x = 0; x < tiles[i].length; x++)
-                    for (int y = 0; y < tiles[i][x].length; y++)
-                        tiles[i][x][y] = 0;
-
-            isInited = true;
+            readInfo(true);
+            //            if (isInited) return;
+            //
+            //            //EMPTY PALETTES
+            //            for (int i = 0; i < palette.length; i++)
+            //                for (int j = 0; j < palette[i].length; j++)
+            //                    palette[i][j] = Color.BLACK;
+            //            palLen = 0;
+            //
+            //            //EMPTY ARRANGEMENTS
+            //            for (int i = 0; i < arrangementList.length; i++)
+            //                arrangementList[i] = 0;
+            //            for (int x = 0; x < arrangement.length; x++)
+            //                for (int y = 0; y < arrangement[x].length; y++)
+            //                    arrangement[x][y] = 0;
+            //            arngLen = 0;
+            //
+            //            //EMPTY TILES
+            //            for (int i = 0; i < tiles.length; i++)
+            //                for (int x = 0; x < tiles[i].length; x++)
+            //                    for (int y = 0; y < tiles[i][x].length; y++)
+            //                        tiles[i][x][y] = 0;
+            //            tileLen = 0;
+            //
+            //            isInited = true;
         }
 
         public boolean writeInfo()
@@ -434,94 +498,94 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             return HackModule.drawImage(tiles[tile], palette[subPal]);
         }
 
-//        /**
-//         * TODO Write javadoc for this method
-//         * 
-//         * @param i
-//         * @param j
-//         * @return
-//         */
-//        public Image getTilesetImage(int subPal, int width, int height)
-//        {
-//            readInfo();
-//            BufferedImage out = new BufferedImage(width * 8, height * 8,
-//                BufferedImage.TYPE_INT_ARGB);
-//            Graphics g = out.getGraphics();
-//            int i = 0;
-//            try
-//            {
-//                for (int y = 0; y < height; y++)
-//                    for (int x = 0; x < width; x++)
-//                        g.drawImage(HackModule.drawImage(tiles[i++],
-//                            palette[subPal]), x * 8, y * 8, null);
-//            }
-//            catch (ArrayIndexOutOfBoundsException e)
-//            {}
-//            return out;
-//        }
-//
-//        public Image getTilesetImage(int subPal, int width, int height,
-//            int highlightTile)
-//        {
-//            readInfo();
-//            Image out = getTilesetImage(subPal, width, height);
-//            Graphics g = out.getGraphics();
-//            if (highlightTile >= 0 && highlightTile <= tiles.length - 1)
-//            {
-//                g.setColor(new Color(255, 255, 0, 128));
-//                g.fillRect((highlightTile % width) * 8,
-//                    (highlightTile / width) * 8, 8, 8);
-//            }
-//            return out;
-//        }
-//
-//        /**
-//         * TODO Write javadoc for this method
-//         * 
-//         * @param is
-//         * @param f
-//         * @param b
-//         * @return
-//         */
-//        public Image getArrangementImage(int[][] selection, float zoom,
-//            boolean gridLines)
-//        {
-//            readInfo();
-//            BufferedImage out = new BufferedImage((gridLines
-//                ? arrangement.length - 1
-//                : 0)
-//                + (int) (8 * arrangement.length * zoom), (gridLines
-//                ? arrangement[0].length - 1
-//                : 0)
-//                + (int) (8 * arrangement[0].length * zoom),
-//                BufferedImage.TYPE_4BYTE_ABGR_PRE);
-//            Graphics g = out.getGraphics();
-//            for (int x = 0; x < arrangement.length; x++)
-//            {
-//                for (int y = 0; y < arrangement[0].length; y++)
-//                {
-//                    //                    System.out.println(addZeros(Integer
-//                    //                        .toBinaryString(this.arrangement[x][y]), 16));
-//                    int arr = selection[x][y] == -1
-//                        ? arrangement[x][y]
-//                        : selection[x][y];
-//                    g.drawImage(getTileImage(arr & 0x01ff,
-//                        ((arr & 0x0400) >> 10), (arr & 0x4000) != 0,
-//                        (arr & 0x8000) != 0), (int) (x * 8 * zoom)
-//                        + (gridLines ? x : 0), (int) (y * 8 * zoom)
-//                        + (gridLines ? y : 0), (int) (8 * zoom),
-//                        (int) (8 * zoom), null);
-//                    if (selection[x][y] != -1)
-//                    {
-//                        g.setColor(new Color(255, 255, 0, 128));
-//                        g.fillRect((int) (x * 8 * zoom) + (gridLines ? x : 0),
-//                            (int) (y * 8 * zoom) + (gridLines ? y : 0),
-//                            (int) (8 * zoom), (int) (8 * zoom));
-//                    }
-//                }
-//            }
-//            return out;
-//        }
+        //        /**
+        //         * TODO Write javadoc for this method
+        //         *
+        //         * @param i
+        //         * @param j
+        //         * @return
+        //         */
+        //        public Image getTilesetImage(int subPal, int width, int height)
+        //        {
+        //            readInfo();
+        //            BufferedImage out = new BufferedImage(width * 8, height * 8,
+        //                BufferedImage.TYPE_INT_ARGB);
+        //            Graphics g = out.getGraphics();
+        //            int i = 0;
+        //            try
+        //            {
+        //                for (int y = 0; y < height; y++)
+        //                    for (int x = 0; x < width; x++)
+        //                        g.drawImage(HackModule.drawImage(tiles[i++],
+        //                            palette[subPal]), x * 8, y * 8, null);
+        //            }
+        //            catch (ArrayIndexOutOfBoundsException e)
+        //            {}
+        //            return out;
+        //        }
+        //
+        //        public Image getTilesetImage(int subPal, int width, int height,
+        //            int highlightTile)
+        //        {
+        //            readInfo();
+        //            Image out = getTilesetImage(subPal, width, height);
+        //            Graphics g = out.getGraphics();
+        //            if (highlightTile >= 0 && highlightTile <= tiles.length - 1)
+        //            {
+        //                g.setColor(new Color(255, 255, 0, 128));
+        //                g.fillRect((highlightTile % width) * 8,
+        //                    (highlightTile / width) * 8, 8, 8);
+        //            }
+        //            return out;
+        //        }
+        //
+        //        /**
+        //         * TODO Write javadoc for this method
+        //         *
+        //         * @param is
+        //         * @param f
+        //         * @param b
+        //         * @return
+        //         */
+        //        public Image getArrangementImage(int[][] selection, float zoom,
+        //            boolean gridLines)
+        //        {
+        //            readInfo();
+        //            BufferedImage out = new BufferedImage((gridLines
+        //                ? arrangement.length - 1
+        //                : 0)
+        //                + (int) (8 * arrangement.length * zoom), (gridLines
+        //                ? arrangement[0].length - 1
+        //                : 0)
+        //                + (int) (8 * arrangement[0].length * zoom),
+        //                BufferedImage.TYPE_4BYTE_ABGR_PRE);
+        //            Graphics g = out.getGraphics();
+        //            for (int x = 0; x < arrangement.length; x++)
+        //            {
+        //                for (int y = 0; y < arrangement[0].length; y++)
+        //                {
+        //                    // System.out.println(addZeros(Integer
+        //                    // .toBinaryString(this.arrangement[x][y]), 16));
+        //                    int arr = selection[x][y] == -1
+        //                        ? arrangement[x][y]
+        //                        : selection[x][y];
+        //                    g.drawImage(getTileImage(arr & 0x01ff,
+        //                        ((arr & 0x0400) >> 10), (arr & 0x4000) != 0,
+        //                        (arr & 0x8000) != 0), (int) (x * 8 * zoom)
+        //                        + (gridLines ? x : 0), (int) (y * 8 * zoom)
+        //                        + (gridLines ? y : 0), (int) (8 * zoom),
+        //                        (int) (8 * zoom), null);
+        //                    if (selection[x][y] != -1)
+        //                    {
+        //                        g.setColor(new Color(255, 255, 0, 128));
+        //                        g.fillRect((int) (x * 8 * zoom) + (gridLines ? x : 0),
+        //                            (int) (y * 8 * zoom) + (gridLines ? y : 0),
+        //                            (int) (8 * zoom), (int) (8 * zoom));
+        //                    }
+        //                }
+        //            }
+        //            return out;
+        //        }
 
         /**
          * TODO Write javadoc for this method
@@ -646,6 +710,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         readFromRom();
     }
 
+    private boolean guiInited = false;
+
     private class LogoScreenArrangementEditor extends ArrangementEditor
     {
         public LogoScreenArrangementEditor()
@@ -692,16 +758,11 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         {
             return 2;
         }
-        private boolean drawGridLines = false;
-
-        public void setDrawGridLines(boolean drawGrid)
-        {
-            drawGridLines = drawGrid;
-        }
 
         protected boolean isDrawGridLines()
         {
-            return drawGridLines;
+            return prefs
+                .getValueAsBoolean("eb.LogoScreenEditor.arrEditor.gridLines");
         }
 
         protected boolean isEditable()
@@ -711,7 +772,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         protected boolean isGuiInited()
         {
-            return true;
+            return guiInited;
         }
 
         protected int getCurrentSubPalette()
@@ -739,11 +800,11 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             getSelectedScreen().setArrangementData(data);
         }
 
-//        protected Image getArrangementImage(int[][] selection)
-//        {
-//            return getSelectedScreen().getArrangementImage(selection,
-//                getZoom(), isDrawGridLines());
-//        }
+        //        protected Image getArrangementImage(int[][] selection)
+        //        {
+        //            return getSelectedScreen().getArrangementImage(selection,
+        //                getZoom(), isDrawGridLines());
+        //        }
 
         protected Image getTileImage(int tile, int subPal, boolean hFlip,
             boolean vFlip)
@@ -884,6 +945,17 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         mb.add(editMenu);
 
+        JMenu optionsMenu = new JMenu("Options");
+        optionsMenu.setMnemonic('o');
+        optionsMenu.add(new PrefsCheckBox("Enable Tile Selector Grid Lines",
+            prefs, "eb.LogoScreenEditor.tileSelector.gridLines", false, 't',
+            null, "tileSelGridLines", this));
+        optionsMenu.add(new PrefsCheckBox(
+            "Enable Arrangement Editor Grid Lines", prefs,
+            "eb.LogoScreenEditor.arrEditor.gridLines", false, 'a', null,
+            "arrEdGridLines", this));
+        mb.add(optionsMenu);
+
         mainWindow.setJMenuBar(mb);
 
         //components
@@ -909,6 +981,12 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 return 2;
             }
 
+            public boolean isDrawGridLines()
+            {
+                return prefs
+                    .getValueAsBoolean("eb.LogoScreenEditor.tileSelector.gridLines");
+            }
+
             public int getTileCount()
             {
                 return LogoScreen.NUM_TILES;
@@ -922,7 +1000,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
             protected boolean isGuiInited()
             {
-                return true;
+                return guiInited;
             }
         };
         tileSelector.setActionCommand("tileSelector");
@@ -969,12 +1047,12 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         center.add(Box.createVerticalGlue());
 
         JPanel display = new JPanel(new BorderLayout());
-        display.add(pairComponents(dt,null,false), BorderLayout.EAST);
-        display.add(
-            pairComponents(pairComponents(tileSelector, center, true),
-                arrangementEditor, false), BorderLayout.WEST);
-        
-        mainWindow.getContentPane().add(new JScrollPane(display), BorderLayout.CENTER);
+        display.add(pairComponents(dt, null, false), BorderLayout.EAST);
+        display.add(pairComponents(pairComponents(tileSelector, center, true),
+            arrangementEditor, false), BorderLayout.WEST);
+
+        mainWindow.getContentPane().add(new JScrollPane(display),
+            BorderLayout.CENTER);
 
         mainWindow.pack();
     }
@@ -998,9 +1076,9 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
     private void doLogoSelectAction()
     {
-        name.setText(logoScreenNames[getCurrentScreen()]);
         if (!getSelectedScreen().readInfo())
         {
+            guiInited = false;
             Object opt = JOptionPane.showInputDialog(mainWindow,
                 "Error decompressing the "
                     + logoScreenNames[getCurrentScreen()] + " screen (#"
@@ -1017,7 +1095,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             }
             else if (opt.equals("Retry"))
             {
-                mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
+                //                mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
                 doLogoSelectAction();
                 return;
             }
@@ -1026,6 +1104,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 getSelectedScreen().initToNull();
             }
         }
+        guiInited = true;
+        name.setText(logoScreenNames[getCurrentScreen()]);
         updatePaletteDisplay();
         tileSelector.repaint();
         arrangementEditor.clearSelection();
@@ -1100,6 +1180,24 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         else if (ae.getActionCommand().equals("delete"))
         {
             fi.getCurrentCopyAndPaster().delete();
+        }
+        else if (ae.getActionCommand().equals("tileSelGridLines"))
+        {
+            mainWindow.getContentPane().invalidate();
+            tileSelector.invalidate();
+            tileSelector.resetPreferredSize();
+            tileSelector.validate();
+            tileSelector.repaint();
+            mainWindow.getContentPane().validate();
+        }
+        else if (ae.getActionCommand().equals("arrEdGridLines"))
+        {
+            mainWindow.getContentPane().invalidate();
+            arrangementEditor.invalidate();
+            arrangementEditor.resetPreferredSize();
+            arrangementEditor.validate();
+            arrangementEditor.repaint();
+            mainWindow.getContentPane().validate();
         }
         else if (ae.getActionCommand().equals("import"))
         {
@@ -1178,7 +1276,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
     public static final int NODE_ARR = 2;
     public static final int NODE_PAL = 3;
 
-    public static class TownMapImportData
+    public static class LogoScreenImportData
     {
         public byte[][][] tiles;
         public int[] arrangement;
@@ -1263,11 +1361,11 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         }
     }
 
-    public static TownMapImportData[] importData(File f)
+    public static LogoScreenImportData[] importData(File f)
     {
         try
         {
-            TownMapImportData[] out = new TownMapImportData[logoScreens.length];
+            LogoScreenImportData[] out = new LogoScreenImportData[logoScreens.length];
 
             FileInputStream in = new FileInputStream(f);
 
@@ -1286,7 +1384,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 //if bit for this map set...
                 if (((whichMaps >> m) & 1) != 0)
                 {
-                    out[m] = new TownMapImportData();
+                    out[m] = new LogoScreenImportData();
                     byte whichParts = (byte) in.read();
                     //if tile bit set...
                     if ((whichParts & 1) != 0)
@@ -1453,7 +1551,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
     private void importData()
     {
         File f = getFile(false, "lscn", "Logo SCreeN");
-        TownMapImportData[] tmid;
+        LogoScreenImportData[] tmid;
         if (f == null || (tmid = importData(f)) == null) return;
 
         CheckNode topNode = new CheckNode("Logo Screens", true, true);

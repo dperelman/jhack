@@ -16,12 +16,12 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.swing.AbstractButton;
 import javax.swing.Box;
@@ -47,6 +47,7 @@ import net.starmen.pkhack.CopyAndPaster;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IntArrDrawingArea;
+import net.starmen.pkhack.PrefsCheckBox;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.Undoable;
@@ -124,7 +125,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             int[] tmp = hm.decomp(oldPointer, buffer);
             if (tmp[0] < 0)
             {
-                System.out.println("Error " + tmp[0]
+                System.err.println("Error " + tmp[0]
                     + " decompressing town map #" + num + ".");
                 return false;
             }
@@ -155,6 +156,35 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
             isInited = true;
             return true;
+        }
+
+        /**
+         * Inits all values to zero. Will have no effect if {@link #readInfo()}
+         * or this has already been run successfully. Use this if
+         * <code>readInfo()</code> always fails.
+         */
+        public void initToNull()
+        {
+            if (isInited) return;
+
+            //EMPTY PALETTES
+            for (int i = 0; i < palette.length; i++)
+                Arrays.fill(palette[i], Color.BLACK);
+
+            //EMPTY ARRANGEMENTS
+            Arrays.fill(arrangementList, 0);
+            for (int x = 0; x < arrangement.length; x++)
+                Arrays.fill(arrangement[x], 0);
+
+            //EMPTY TILES
+            for (int i = 0; i < tiles.length; i++)
+                for (int x = 0; x < tiles[i].length; x++)
+                    Arrays.fill(tiles[i][x], (byte) 0);
+
+            //mark length as zero to prevent problems
+            oldLen = 0;
+
+            isInited = true;
         }
 
         public boolean writeInfo()
@@ -320,94 +350,94 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             return HackModule.drawImage(tiles[tile], palette[subPal]);
         }
 
-//        /**
-//         * TODO Write javadoc for this method
-//         * 
-//         * @param i
-//         * @param j
-//         * @return
-//         */
-//        public Image getTilesetImage(int subPal, int width, int height)
-//        {
-//            readInfo();
-//            BufferedImage out = new BufferedImage(width * 8, height * 8,
-//                BufferedImage.TYPE_INT_ARGB);
-//            Graphics g = out.getGraphics();
-//            int i = 0;
-//            try
-//            {
-//                for (int y = 0; y < height; y++)
-//                    for (int x = 0; x < width; x++)
-//                        g.drawImage(HackModule.drawImage(tiles[i++],
-//                            palette[subPal]), x * 8, y * 8, null);
-//            }
-//            catch (ArrayIndexOutOfBoundsException e)
-//            {}
-//            return out;
-//        }
+        //        /**
+        //         * TODO Write javadoc for this method
+        //         *
+        //         * @param i
+        //         * @param j
+        //         * @return
+        //         */
+        //        public Image getTilesetImage(int subPal, int width, int height)
+        //        {
+        //            readInfo();
+        //            BufferedImage out = new BufferedImage(width * 8, height * 8,
+        //                BufferedImage.TYPE_INT_ARGB);
+        //            Graphics g = out.getGraphics();
+        //            int i = 0;
+        //            try
+        //            {
+        //                for (int y = 0; y < height; y++)
+        //                    for (int x = 0; x < width; x++)
+        //                        g.drawImage(HackModule.drawImage(tiles[i++],
+        //                            palette[subPal]), x * 8, y * 8, null);
+        //            }
+        //            catch (ArrayIndexOutOfBoundsException e)
+        //            {}
+        //            return out;
+        //        }
 
-//        public Image getTilesetImage(int subPal, int width, int height,
-//            int highlightTile)
-//        {
-//            readInfo();
-//            Image out = getTilesetImage(subPal, width, height);
-//            Graphics g = out.getGraphics();
-//            if (highlightTile >= 0 && highlightTile <= tiles.length - 1)
-//            {
-//                g.setColor(new Color(255, 255, 0, 128));
-//                g.fillRect((highlightTile % width) * 8,
-//                    (highlightTile / width) * 8, 8, 8);
-//            }
-//            return out;
-//        }
+        //        public Image getTilesetImage(int subPal, int width, int height,
+        //            int highlightTile)
+        //        {
+        //            readInfo();
+        //            Image out = getTilesetImage(subPal, width, height);
+        //            Graphics g = out.getGraphics();
+        //            if (highlightTile >= 0 && highlightTile <= tiles.length - 1)
+        //            {
+        //                g.setColor(new Color(255, 255, 0, 128));
+        //                g.fillRect((highlightTile % width) * 8,
+        //                    (highlightTile / width) * 8, 8, 8);
+        //            }
+        //            return out;
+        //        }
 
-//        /**
-//         * TODO Write javadoc for this method
-//         * 
-//         * @param is
-//         * @param f
-//         * @param b
-//         * @return
-//         */
-//        public Image getArrangementImage(int[][] selection, float zoom,
-//            boolean gridLines)
-//        {
-//            readInfo();
-//            BufferedImage out = new BufferedImage((gridLines
-//                ? arrangement.length - 1
-//                : 0)
-//                + (int) (8 * arrangement.length * zoom), (gridLines
-//                ? arrangement[0].length - 1
-//                : 0)
-//                + (int) (8 * arrangement[0].length * zoom),
-//                BufferedImage.TYPE_4BYTE_ABGR_PRE);
-//            Graphics g = out.getGraphics();
-//            for (int x = 0; x < arrangement.length; x++)
-//            {
-//                for (int y = 0; y < arrangement[0].length; y++)
-//                {
-//                    //                    System.out.println(addZeros(Integer
-//                    //                        .toBinaryString(this.arrangement[x][y]), 16));
-//                    int arr = selection[x][y] == -1
-//                        ? arrangement[x][y]
-//                        : selection[x][y];
-//                    g.drawImage(getTileImage(arr & 0x01ff,
-//                        ((arr & 0x0400) >> 10), (arr & 0x4000) != 0,
-//                        (arr & 0x8000) != 0), (int) (x * 8 * zoom)
-//                        + (gridLines ? x : 0), (int) (y * 8 * zoom)
-//                        + (gridLines ? y : 0), (int) (8 * zoom),
-//                        (int) (8 * zoom), null);
-//                    if (selection[x][y] != -1)
-//                    {
-//                        g.setColor(new Color(255, 255, 0, 128));
-//                        g.fillRect((int) (x * 8 * zoom) + (gridLines ? x : 0),
-//                            (int) (y * 8 * zoom) + (gridLines ? y : 0),
-//                            (int) (8 * zoom), (int) (8 * zoom));
-//                    }
-//                }
-//            }
-//            return out;
-//        }
+        //        /**
+        //         * TODO Write javadoc for this method
+        //         *
+        //         * @param is
+        //         * @param f
+        //         * @param b
+        //         * @return
+        //         */
+        //        public Image getArrangementImage(int[][] selection, float zoom,
+        //            boolean gridLines)
+        //        {
+        //            readInfo();
+        //            BufferedImage out = new BufferedImage((gridLines
+        //                ? arrangement.length - 1
+        //                : 0)
+        //                + (int) (8 * arrangement.length * zoom), (gridLines
+        //                ? arrangement[0].length - 1
+        //                : 0)
+        //                + (int) (8 * arrangement[0].length * zoom),
+        //                BufferedImage.TYPE_4BYTE_ABGR_PRE);
+        //            Graphics g = out.getGraphics();
+        //            for (int x = 0; x < arrangement.length; x++)
+        //            {
+        //                for (int y = 0; y < arrangement[0].length; y++)
+        //                {
+        //                    // System.out.println(addZeros(Integer
+        //                    // .toBinaryString(this.arrangement[x][y]), 16));
+        //                    int arr = selection[x][y] == -1
+        //                        ? arrangement[x][y]
+        //                        : selection[x][y];
+        //                    g.drawImage(getTileImage(arr & 0x01ff,
+        //                        ((arr & 0x0400) >> 10), (arr & 0x4000) != 0,
+        //                        (arr & 0x8000) != 0), (int) (x * 8 * zoom)
+        //                        + (gridLines ? x : 0), (int) (y * 8 * zoom)
+        //                        + (gridLines ? y : 0), (int) (8 * zoom),
+        //                        (int) (8 * zoom), null);
+        //                    if (selection[x][y] != -1)
+        //                    {
+        //                        g.setColor(new Color(255, 255, 0, 128));
+        //                        g.fillRect((int) (x * 8 * zoom) + (gridLines ? x : 0),
+        //                            (int) (y * 8 * zoom) + (gridLines ? y : 0),
+        //                            (int) (8 * zoom), (int) (8 * zoom));
+        //                    }
+        //                }
+        //            }
+        //            return out;
+        //        }
 
         /**
          * TODO Write javadoc for this method
@@ -532,14 +562,16 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         readFromRom();
     }
 
+    private boolean guiInited = false;
+
     private class TownMapArrangementEditor extends ArrangementEditor
     {
         public TownMapArrangementEditor()
         {
             super();
-            this.setPreferredSize(new Dimension(getTilesWide()
-                * (getTileSize() * getZoom()), getTilesHigh()
-                * (getTileSize() * getZoom())));
+            //            this.setPreferredSize(new Dimension(getTilesWide()
+            //                * (getTileSize() * getZoom()), getTilesHigh()
+            //                * (getTileSize() * getZoom())));
         }
 
         public int makeArrangementNumber(int tile, int subPalette,
@@ -578,16 +610,11 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         {
             return 2;
         }
-        private boolean drawGridLines = false;
-
-        public void setDrawGridLines(boolean drawGrid)
-        {
-            drawGridLines = drawGrid;
-        }
 
         protected boolean isDrawGridLines()
         {
-            return drawGridLines;
+            return prefs
+                .getValueAsBoolean("eb.TownMapEditor.arrEditor.gridLines");
         }
 
         protected boolean isEditable()
@@ -597,7 +624,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
         protected boolean isGuiInited()
         {
-            return true;
+            return guiInited;
         }
 
         protected int getCurrentSubPalette()
@@ -625,11 +652,11 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             getSelectedMap().setArrangementData(data);
         }
 
-//        protected Image getArrangementImage(int[][] selection)
-//        {
-//            return getSelectedMap().getArrangementImage(selection, getZoom(),
-//                isDrawGridLines());
-//        }
+        //        protected Image getArrangementImage(int[][] selection)
+        //        {
+        //            return getSelectedMap().getArrangementImage(selection, getZoom(),
+        //                isDrawGridLines());
+        //        }
 
         protected Image getTileImage(int tile, int subPal, boolean hFlip,
             boolean vFlip)
@@ -772,6 +799,17 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
         mb.add(editMenu);
 
+        JMenu optionsMenu = new JMenu("Options");
+        optionsMenu.setMnemonic('o');
+        optionsMenu.add(new PrefsCheckBox("Enable Tile Selector Grid Lines",
+            prefs, "eb.TownMapEditor.tileSelector.gridLines", false, 't', null,
+            "tileSelGridLines", this));
+        optionsMenu.add(new PrefsCheckBox(
+            "Enable Arrangement Editor Grid Lines", prefs,
+            "eb.TownMapEditor.arrEditor.gridLines", false, 'a', null,
+            "arrEdGridLines", this));
+        mb.add(optionsMenu);
+
         mainWindow.setJMenuBar(mb);
 
         //components
@@ -797,6 +835,12 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                 return 2;
             }
 
+            public boolean isDrawGridLines()
+            {
+                return prefs
+                    .getValueAsBoolean("eb.TownMapEditor.tileSelector.gridLines");
+            }
+
             public int getTileCount()
             {
                 return 512;
@@ -810,7 +854,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
             protected boolean isGuiInited()
             {
-                return true;
+                return guiInited;
             }
         };
         tileSelector.setActionCommand("tileSelector");
@@ -854,16 +898,15 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         center.add(Box.createVerticalStrut(100));
         center.add(createFlowLayout(fi));
         center.add(Box.createVerticalGlue());
-        
+
         JPanel display = new JPanel(new BorderLayout());
-        display.add(pairComponents(center, null, false),
-            BorderLayout.CENTER);
-        display.add(pairComponents(dt,null,false), BorderLayout.EAST);
-        display.add(
-            pairComponents(tileSelector, arrangementEditor, false),
+        display.add(pairComponents(center, null, false), BorderLayout.CENTER);
+        display.add(pairComponents(dt, null, false), BorderLayout.EAST);
+        display.add(pairComponents(tileSelector, arrangementEditor, false),
             BorderLayout.WEST);
-        
-        mainWindow.getContentPane().add(new JScrollPane(display), BorderLayout.CENTER);
+
+        mainWindow.getContentPane().add(new JScrollPane(display),
+            BorderLayout.CENTER);
 
         mainWindow.pack();
     }
@@ -885,6 +928,44 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         mainWindow.setVisible(false);
     }
 
+    private void doMapSelectAction()
+    {
+        if (!getSelectedMap().readInfo())
+        {
+            guiInited = false;
+            Object opt = JOptionPane.showInputDialog(mainWindow,
+                "Error decompressing the " + townMapNames[getCurrentMap()]
+                    + " town map (#" + getCurrentMap() + ").",
+                "Decompression Error", JOptionPane.ERROR_MESSAGE, null,
+                new String[]{"Abort", "Retry", "Fail"}, "Retry");
+            if (opt == null || opt.equals("Abort"))
+            {
+                mapSelector
+                    .setSelectedIndex((mapSelector.getSelectedIndex() + 1)
+                        % mapSelector.getItemCount());
+                doMapSelectAction();
+                return;
+            }
+            else if (opt.equals("Retry"))
+            {
+                //                mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
+                doMapSelectAction();
+                return;
+            }
+            else if (opt.equals("Fail"))
+            {
+                getSelectedMap().initToNull();
+            }
+        }
+        guiInited = true;
+        name.setText(townMapNames[getCurrentMap()]);
+        updatePaletteDisplay();
+        tileSelector.repaint();
+        arrangementEditor.clearSelection();
+        arrangementEditor.repaint();
+        updateTileEditor();
+    }
+
     public void actionPerformed(ActionEvent ae)
     {
         if (ae.getActionCommand().equals("drawingArea"))
@@ -900,13 +981,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("mapSelector"))
         {
-            name.setText(townMapNames[getCurrentMap()]);
-            getSelectedMap().readInfo();
-            updatePaletteDisplay();
-            tileSelector.repaint();
-            arrangementEditor.clearSelection();
-            arrangementEditor.repaint();
-            updateTileEditor();
+            doMapSelectAction();
         }
         else if (ae.getActionCommand().equals("tileSelector"))
         {
@@ -959,10 +1034,28 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         {
             fi.getCurrentCopyAndPaster().delete();
         }
+        else if (ae.getActionCommand().equals("tileSelGridLines"))
+        {
+            mainWindow.getContentPane().invalidate();
+            tileSelector.invalidate();
+            tileSelector.resetPreferredSize();
+            tileSelector.validate();
+            tileSelector.repaint();
+            mainWindow.getContentPane().validate();
+        }
+        else if (ae.getActionCommand().equals("arrEdGridLines"))
+        {
+            mainWindow.getContentPane().invalidate();
+            arrangementEditor.invalidate();
+            arrangementEditor.resetPreferredSize();
+            arrangementEditor.validate();
+            arrangementEditor.repaint();
+            mainWindow.getContentPane().validate();
+        }
         else if (ae.getActionCommand().equals("import"))
         {
             importData();
-            
+
             updatePaletteDisplay();
             tileSelector.repaint();
             arrangementEditor.clearSelection();

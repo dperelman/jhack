@@ -203,9 +203,18 @@ public class HexEditor extends GeneralHackModule implements ActionListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                int offset = regType.isSelected() ? Integer.parseInt(tf
-                    .getText(), 16) : HackModule.toRegPointer(Integer.parseInt(
-                    tf.getText(), 16));
+                int offset;
+                try
+                {
+                    offset = regType.isSelected() ? Integer.parseInt(tf
+                        .getText(), 16) : HackModule.toRegPointer(Integer.parseInt(
+                        tf.getText(), 16));
+                }
+                catch (NumberFormatException e)
+                {
+                    e.printStackTrace();
+                    return;
+                }
                 if (!gotoOffset(offset))
                     JOptionPane.showMessageDialog(gotoDialog,
                         "The offset you entered is not\n" + "in the ROM.",

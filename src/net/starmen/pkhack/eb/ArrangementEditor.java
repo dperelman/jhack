@@ -87,6 +87,40 @@ public abstract class ArrangementEditor extends AbstractButton implements
     protected abstract boolean isDrawGridLines();
 
     /**
+     * Returns the drawn size of each tile in pixels. That is, the size that the
+     * tiles are actually drawn at accounting for zoom and (optionally) grid
+     * lines.
+     * 
+     * @param includeGrid if true, grid lines are included in the tile size.
+     *            default is true
+     * @return size in pixels that tiles are drawn
+     * @see #getDrawnTileSize()
+     * @see #getTileSize()
+     * @see #getZoom()
+     * @see #isDrawGridLines()
+     */
+    public int getDrawnTileSize(boolean includeGrid)
+    {
+        return (getTileSize() * getZoom())
+            + (isDrawGridLines() && includeGrid ? 1 : 0);
+    }
+
+    /**
+     * Returns the drawn size of each tile in pixels. That is, the size that the
+     * tiles are actually drawn at accounting for zoom and grid lines.
+     * 
+     * @return size in pixels that tiles are drawn
+     * @see #getDrawnTileSize(boolean)
+     * @see #getTileSize()
+     * @see #getZoom()
+     * @see #isDrawGridLines()
+     */
+    public int getDrawnTileSize()
+    {
+        return getDrawnTileSize(true);
+    }
+
+    /**
      * Returns whether or not this arrangement is editable. If this returns
      * false, all clicks will jump to the clicked on tile using
      * {@link #setCurrentTile(int)}.
@@ -215,9 +249,8 @@ public abstract class ArrangementEditor extends AbstractButton implements
      * V = vertical flip flag (1 = flip) <br>
      * H = horizonal flip flag (1 = flip) <br>
      * S = sub-palette + 2 (2-7) <br>
-     * T = tile number (0-1023)
-     * for the lower tiles depending on collision byte. ? = unkown purpose,
-     * always 0
+     * T = tile number (0-1023) for the lower tiles depending on collision byte. ? =
+     * unkown purpose, always 0
      * 
      * @param tile Number tile (0-1023).
      * @param subPalette Number of the subpalette to use (0-5).
@@ -547,7 +580,8 @@ public abstract class ArrangementEditor extends AbstractButton implements
         {
             drawnSelection = selection;
             g.setColor(Color.BLACK);
-            g.fillRect(0, 0, getWidth(), getHeight());
+            Dimension d = this.getPreferredSize();
+            g.fillRect(0, 0, d.width, d.height);
             for (int x = 0; x < getTilesWide(); x++)
                 for (int y = 0; y < getTilesHigh(); y++)
                     drawTile(g, x, y);
@@ -568,13 +602,26 @@ public abstract class ArrangementEditor extends AbstractButton implements
         this.actionCommand = ac;
     }
 
+    /**
+     * Sets preferred size to correct value. Bases value on the return values of
+     * {@link #getTilesWide()},{@link #getTilesHigh()}, and
+     * {@link #getDrawnTileSize()}.
+     */
+    public void resetPreferredSize()
+    {
+        this.setPreferredSize(new Dimension(
+            (getTilesWide() * (getDrawnTileSize() )) - 1,
+            (getTilesHigh() * (getDrawnTileSize() )) - 1));
+    }
+
     public ArrangementEditor()
     {
         clearSelection();
 
-        this.setPreferredSize(new Dimension((getTilesWide() * (getTileSize()
-            * getZoom() + 1)) - 1,
-            (getTilesHigh() * (getTileSize() * getZoom() + 1)) - 1));
+//        this.setPreferredSize(new Dimension((getTilesWide() * (getTileSize()
+//            * getZoom() + 1)) - 1,
+//            (getTilesHigh() * (getTileSize() * getZoom() + 1)) - 1));
+        resetPreferredSize();
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
     }
