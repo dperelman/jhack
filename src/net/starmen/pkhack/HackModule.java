@@ -1242,10 +1242,11 @@ public abstract class HackModule
      */
 
     public boolean writetoFree(byte[] data, int pointerLoc, int pointerLen,
-    	int oldLen, int newLen, boolean nullifyNow)
+    	int oldLen, int newLen, boolean nullifyNow, boolean expand)
     {
         //make sure ROM is expanded
-        rom.expandEx();
+    	if (expand)
+    		rom.expandEx();
         //store old pointer for use later
         int oldPointer = toRegPointer(rom.readMulti(pointerLoc, pointerLen));
         if ((newLen <= oldLen)
@@ -1311,7 +1312,7 @@ public abstract class HackModule
     public boolean writeToFree(byte[] data, int pointerLoc, int oldLen,
             int newLen)
     {
-    	return writetoFree(data, pointerLoc, 4, oldLen, newLen, true);
+    	return writetoFree(data, pointerLoc, 4, oldLen, newLen, true, true);
     }
 
     /**
