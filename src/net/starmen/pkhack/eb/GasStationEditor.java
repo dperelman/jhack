@@ -15,6 +15,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.PixelGrabber;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,8 +23,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Hashtable;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -39,6 +44,7 @@ import javax.swing.JTree;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.starmen.pkhack.AbstractRom;
+import net.starmen.pkhack.BMPReader;
 import net.starmen.pkhack.CheckNode;
 import net.starmen.pkhack.CheckRenderer;
 import net.starmen.pkhack.CopyAndPaster;
@@ -338,7 +344,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             }
             System.out.println("Tile data converted to SNES format.");
             byte[] compTile;
-            int tileCompLen = comp(udataTiles, compTile = new byte[30000]);
+            int tileCompLen = comp(udataTiles, compTile = new byte[50000]);
             if (!hm.writeToFreeASMLink(compTile, tilePointerArray[num],
                 tileLen, tileCompLen))
                 return false;
@@ -972,6 +978,13 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         fileMenu.add(HackModule.createJMenuItem("Export...", 'e', null,
             "export", this));
 
+        fileMenu.addSeparator();
+
+        fileMenu.add(HackModule.createJMenuItem("Import Image...", 'm', null,
+            "importImg", this));
+//        fileMenu.add(HackModule.createJMenuItem("Export Image...", 'x', null,
+//            "exportImg", this));
+
         mb.add(fileMenu);
 
         JMenu editMenu = HackModule.createEditMenu(this, true);
@@ -1287,6 +1300,16 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         else if (ae.getActionCommand().equals("export"))
         {
             exportData();
+        }
+        else if (ae.getActionCommand().equals("importImg"))
+        {
+            importImg();
+
+            updatePaletteDisplay();
+            tileSelector.repaint();
+            arrangementEditor.clearSelection();
+            arrangementEditor.repaint();
+            updateTileEditor();
         }
         else if (ae.getActionCommand().equals("apply"))
         {
@@ -1816,5 +1839,283 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         }
 
         return true;
+    }
+
+    private static class TileRef
+    {
+        private int tile;
+        private boolean vFlip, hFlip;
+
+        public boolean isHFlip()
+        {
+            return hFlip;
+        }
+
+        public int getTile()
+        {
+            return tile;
+        }
+
+        public boolean isVFlip()
+        {
+            return vFlip;
+        }
+
+        public int getArrangementData()
+        {
+            return (tile & 0x03ff) | (hFlip ? 0x4000 : 0)
+                | (vFlip ? 0x8000 : 0);
+        }
+
+        public TileRef(int tile, boolean hFlip, boolean vFlip)
+        {
+            this.tile = tile;
+            this.vFlip = vFlip;
+            this.hFlip = hFlip;
+        }
+    }
+
+    private static class ColorRef
+    {
+        private int col;
+
+        public ColorRef(int col)
+        {
+            this.col = col;
+        }
+
+        public int getCol()
+        {
+            return col;
+        }
+    }
+
+    private static class ByteArrHasher
+    {
+        private int hint;
+        private byte[] b;
+
+        public ByteArrHasher(byte[] b)
+        {
+            this.b = b;
+            byte[] hash;
+            try
+            {
+                hash = MessageDigest.getInstance("MD5").digest(b);
+            }
+            catch (NoSuchAlgorithmException e)
+            {
+                hash = new byte[]{0, 0, 0, 0};
+                e.printStackTrace();
+            }
+            hint = (hash[0] & 0xff) + ((hash[1] & 0xff) << 8)
+                + ((hash[2] & 0xff) << 16) + ((hash[3] & 0xff) << 24);
+        }
+
+        public int hashCode()
+        {
+            return hint;
+        }
+
+        public boolean equals(ByteArrHasher o)
+        {
+            return this.hint == o.hint;
+        }
+
+        protected Object clone()
+        {
+            return new ByteArrHasher(b);
+        }
+
+        public String toString()
+        {
+            return Integer.toString(hint);
+        }
+
+        public Integer toInteger()
+        {
+            return new Integer(hint);
+        }
+    }
+
+    private byte[] hFlip(byte[] b)
+    {
+        byte[] o = new byte[64]; //out
+        for (int x = 0; x < 8; x++)
+            for (int y = 0; y < 8; y++)
+                o[(y * 8) + (7 - x)] = b[(y * 8) + x];
+        return o;
+    }
+
+    private byte[] vFlip(byte[] b)
+    {
+        byte[] o = new byte[64]; //out
+        for (int x = 0; x < 8; x++)
+            for (int y = 0; y < 8; y++)
+                o[((7 - y) * 8) + x] = b[(y * 8) + x];
+        return o;
+    }
+
+    public void importImg()
+    {
+        importImg(getFile(false, new String[]{"bmp", "gif", "png"},
+            new String[]{"Windows BitMaP", "Compuserv GIF format",
+                "Portable Network Graphics"}));
+    }
+    public void importImg(File f)
+    {
+        if (f == null)
+            return;
+
+        Image img;
+        try
+        {
+            if (f.getName().endsWith(".bmp"))
+            {
+                FileInputStream in = new FileInputStream(f);
+                img = mainWindow.createImage(BMPReader.getBMPImage(in));
+                in.close();
+            }
+            else
+            {
+                img = ImageIO.read(f);
+            }
+        }
+        catch (IOException e1)
+        {
+            JOptionPane.showMessageDialog(mainWindow, "Unexpected IO error:\n"
+                + e1.getLocalizedMessage(), "ERROR: IO Error",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        int w = img.getWidth(mainWindow), h = img.getHeight(mainWindow);
+        if (w != 256)
+        {
+            JOptionPane.showMessageDialog(mainWindow,
+                "Image width must be 256 pixels.", "ERROR: Invalid width",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (h != 224)
+        {
+            JOptionPane.showMessageDialog(mainWindow,
+                "Image height must be 224 pixels.", "ERROR: Invalid height",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int[] pixels = new int[w * h];
+
+        PixelGrabber pg = new PixelGrabber(img, 0, 0, w, h, pixels, 0, w);
+        try
+        {
+            pg.grabPixels();
+        }
+        catch (InterruptedException e)
+        {
+            System.err.println("Interrupted waiting for pixels!");
+            return;
+        }
+        int[][] arrangement = new int[32][28];
+        byte[][] tiles = new byte[632][64];
+        Color[] pal = new Color[256];
+        int tnum = 0, pnum = 0;
+        Hashtable tilerefs = new Hashtable(), palrefs = new Hashtable();
+        for (int yt = 0; yt < 28; yt++)
+        {
+            int js = yt * 8;
+            for (int xt = 0; xt < 32; xt++)
+            {
+                int is = xt * 8;
+                byte[] tile = new byte[64];
+                for (int j = 0; j < 8; j++)
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        //sprite[i][j] = pixels[j * w + i];
+                        int c = pixels[((j + (yt * 8)) * w) + (i + (xt * 8))];
+                        Color col = new Color(c);
+                        int cn;
+                        Object tmpc;
+                        if ((tmpc = palrefs.get(col)) != null)
+                        {
+                            cn = ((ColorRef) tmpc).getCol();
+                        }
+                        else
+                        {
+                            cn = pnum;
+                            palrefs.put(col, new ColorRef(pnum));
+                            try
+                            {
+                                pal[pnum++] = col;
+                            }
+                            catch (ArrayIndexOutOfBoundsException e)
+                            {
+                                JOptionPane
+                                    .showMessageDialog(
+                                        mainWindow,
+                                        "Image must have no more than 256 colors.\n"
+                                            + "Please use the dithering option on your\n"
+                                            + "favorite image editor program to decrease\n"
+                                            + "the number of colors to 256.",
+                                        "ERROR: Too many colors",
+                                        JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+                        }
+                        tile[(j * 8) + i] = (byte) cn;
+                    }
+                }
+                TileRef tn;
+                byte[] htile, vtile, hvtile;
+                htile = hFlip(tile);
+                vtile = vFlip(tile);
+                hvtile = hFlip(vtile);
+
+                Object tmpt;
+                if ((tmpt = tilerefs.get(new ByteArrHasher(tile).toInteger())) != null)
+                {
+                    tn = (TileRef) tmpt;
+                }
+                else
+                {
+                    tn = new TileRef(tnum, false, false);
+                    tilerefs.put(new ByteArrHasher(tile).toInteger(), tn);
+                    tilerefs.put(new ByteArrHasher(htile).toInteger(),
+                        new TileRef(tnum, true, false));
+                    tilerefs.put(new ByteArrHasher(vtile).toInteger(),
+                        new TileRef(tnum, false, true));
+                    tilerefs.put(new ByteArrHasher(hvtile).toInteger(),
+                        new TileRef(tnum, true, true));
+                    //TODO support flipping
+                    try
+                    {
+                        tiles[tnum++] = tile;
+                    }
+                    catch (ArrayIndexOutOfBoundsException e)
+                    {
+                        JOptionPane
+                            .showMessageDialog(
+                                mainWindow,
+                                "Image must have no more than 632 unique 8x8 tiles.\n"
+                                    + "Flipping of tiles is currently not supported.",
+                                "ERROR: Too many tiles",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+                arrangement[xt][yt] = tn.getArrangementData();
+            }
+        }
+
+        for (int i = 0; i < gasStations[0].palette.length; i++)
+            gasStations[0].palette[i] = pal;
+        for (int t = 0; t < tnum; t++)
+        {
+            for (int x = 0; x < 8; x++)
+                for (int y = 0; y < 8; y++)
+                    gasStations[0].tiles[t][x][y] = tiles[t][(y * 8) + x];
+        }
+        gasStations[0].arrangement = arrangement;
     }
 }

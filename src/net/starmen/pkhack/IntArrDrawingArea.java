@@ -856,7 +856,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
         {
             for (int i = 0; i < w; i++)
             {
-                newImg[i][j] = img[i + x][j + y];
+                newImg[i][j] = img[i + x][j + y] & 0xff;
             }
         }
 
@@ -939,7 +939,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
         this.drawingWidth = img.length;
         this.drawingHeight = img[0].length;
 
-        int w = (int) (drawingWidth * zoom) + 1, h = (int) (drawingHeight * zoom) +1;
+        int w = (int) (drawingWidth * zoom) + 1, h = (int) (drawingHeight * zoom) + 1;
 
         this.setPreferredSize(new Dimension(w, h));
 

@@ -871,6 +871,45 @@ public abstract class HackModule
         return editMenu;
     }
 
+    private static class SimpleFileFilter extends FileFilter
+    {
+        private boolean save;
+        private String ext, desc;
+
+        public SimpleFileFilter(boolean save, String ext, String desc)
+        {
+            this.save = save;
+            this.ext = ext;
+            this.desc = desc;
+        }
+
+        public boolean accept(File f)
+        {
+            if ((f.getAbsolutePath().toLowerCase().endsWith("." + ext) || f
+                .isDirectory())
+                && (f.exists() || save))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public String getDescription()
+        {
+            return desc + " (*." + ext + ")";
+        }
+
+        public String getDesc()
+        {
+            return desc;
+        }
+
+        public String getExt()
+        {
+            return ext;
+        }
+    }
+
     /**
      * Asks the user to select a file. The extension is forced for saving.
      * 
@@ -878,35 +917,59 @@ public abstract class HackModule
      * @param ext extension of file without the dot before it
      * @param desc description of file type
      * @return the user-selected <code>File</code> or null if canceled.
+     * @see #openFile(String[], String[])
      */
     public static File getFile(final boolean save, final String ext,
         final String desc)
     {
         JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
-        jfc.setFileFilter(new FileFilter()
-        {
-            public boolean accept(File f)
-            {
-                if ((f.getAbsolutePath().toLowerCase().endsWith("." + ext) || f
-                    .isDirectory())
-                    && (f.exists() || save))
-                {
-                    return true;
-                }
-                return false;
-            }
-
-            public String getDescription()
-            {
-                return desc + " (*." + ext + ")";
-            }
-        });
+        jfc.setFileFilter(new SimpleFileFilter(save, ext, desc));
         if ((save ? jfc.showSaveDialog(null) : jfc.showOpenDialog(null)) == JFileChooser.APPROVE_OPTION)
         {
             File out = jfc.getSelectedFile();
             //extension is forced on save.
             if (!out.getPath().endsWith("." + ext) && save)
                 out = new File(out.getPath() + "." + ext);
+            AbstractRom.setDefaultDir(out.getParent());
+            return out;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Asks the user to select a file of one of multiple types. The extension
+     * selected by the user is forced for saving.
+     * 
+     * @param save if true, shows a save dialog, if false shows an open dialog
+     * @param ext lower case extension of file without the dot before it
+     * @param desc description of file type
+     * @return the user-selected <code>File</code> or null if canceled.
+     * @see #getFile(boolean, String, String)
+     */
+    public static File getFile(final boolean save, final String[] ext,
+        final String[] desc)
+    {
+        if (ext.length != desc.length)
+        {
+            System.err.println("Invalid call to getFile("
+                + "boolean,String[],String[]): "
+                + "String[] lengths must be equal.");
+            return null;
+        }
+        JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
+        for (int i = 0; i < ext.length; i++)
+            jfc.addChoosableFileFilter(new SimpleFileFilter(save, ext[i],
+                desc[i]));
+        if ((save ? jfc.showSaveDialog(null) : jfc.showOpenDialog(null)) == JFileChooser.APPROVE_OPTION)
+        {
+            File out = jfc.getSelectedFile();
+            //extension is forced on save.
+            String exts = ((SimpleFileFilter) jfc.getFileFilter()).getExt();
+            if (!out.getPath().endsWith("." + exts) && save)
+                out = new File(out.getPath() + "." + exts);
             AbstractRom.setDefaultDir(out.getParent());
             return out;
         }
@@ -1266,45 +1329,47 @@ public abstract class HackModule
      *            pointer at pointerLoc will be set to null
      * @param newLen how many bytes to read from <code>data</code>
      * @param beginAt the last byte that can be changed
-     * @param mustBeInExpanded whether the data must be written to the expanded area
+     * @param mustBeInExpanded whether the data must be written to the expanded
+     *            area
      * @return true on success, false on failure (no change will be made to the
      *         ROM on failure)
      * @see #findFreeRange(int, int)
      */
 
-    public boolean writetoFree(byte[] rawData, int[] pointerLoc, int pointerBase,
-        int pointerLen, int oldLen, int newLen, int beginAt, boolean mustBeInExpanded)
+    public boolean writetoFree(byte[] rawData, int[] pointerLoc,
+        int pointerBase, int pointerLen, int oldLen, int newLen, int beginAt,
+        boolean mustBeInExpanded)
     {
-    	int pointerDelay = 0;
-    	byte[] data;
-    	// 0xff shielding if the new data starts or ends with 0
-    	if ((rawData[0] == 0) && (rawData[rawData.length - 1] == 0))
-    	{
-    		data = new byte[rawData.length + 2];
-    		data[0] = (byte) 0xff;
-    		data[data.length - 1] = (byte) 0xff;
-    		System.arraycopy(rawData, 0, data, 1, rawData.length);
-    		newLen += 2;
-    		pointerDelay = 1;
-    	}
-    	else if (rawData[0] == 0)
-    	{
-    		data = new byte[rawData.length + 1];
-    		data[0] = (byte) 0xff;
-    		System.arraycopy(rawData, 0, data, 1, rawData.length);
-    		newLen++;
-    		pointerDelay = 1;
-    	}
-    	else if (rawData[rawData.length - 1] == 0)
-    	{
-    		data = new byte[rawData.length + 1];
-    		data[data.length - 1] = (byte) 0xff;
-    		System.arraycopy(rawData, 0, data, 0, rawData.length);
-    		newLen++;
-    	}
-    	else
-    		data = rawData;
-    	
+        int pointerDelay = 0;
+        byte[] data;
+        // 0xff shielding if the new data starts or ends with 0
+        if ((rawData[0] == 0) && (rawData[rawData.length - 1] == 0))
+        {
+            data = new byte[rawData.length + 2];
+            data[0] = (byte) 0xff;
+            data[data.length - 1] = (byte) 0xff;
+            System.arraycopy(rawData, 0, data, 1, rawData.length);
+            newLen += 2;
+            pointerDelay = 1;
+        }
+        else if (rawData[0] == 0)
+        {
+            data = new byte[rawData.length + 1];
+            data[0] = (byte) 0xff;
+            System.arraycopy(rawData, 0, data, 1, rawData.length);
+            newLen++;
+            pointerDelay = 1;
+        }
+        else if (rawData[rawData.length - 1] == 0)
+        {
+            data = new byte[rawData.length + 1];
+            data[data.length - 1] = (byte) 0xff;
+            System.arraycopy(rawData, 0, data, 0, rawData.length);
+            newLen++;
+        }
+        else
+            data = rawData;
+
         //make sure ROM is expanded if needed
         if ((newLen > oldLen) || mustBeInExpanded)
             askExpandType();
@@ -1312,26 +1377,29 @@ public abstract class HackModule
         //store old pointer for use later
         int oldPointer;
         if (pointerLen < 0)
-        	oldPointer = rom.readRegAsmPointer(pointerLoc[0]);
+            oldPointer = rom.readRegAsmPointer(pointerLoc[0]);
         else
-        	oldPointer = toRegPointer(rom.readMulti(pointerLoc[0], pointerLen) + pointerBase);
+            oldPointer = toRegPointer(rom.readMulti(pointerLoc[0], pointerLen)
+                + pointerBase);
         if ((newLen <= oldLen)
-        		&& !(mustBeInExpanded && (oldPointer < 0x300200))
-				&& (oldPointer + oldLen <= beginAt))
+            && !(mustBeInExpanded && (oldPointer < 0x300200))
+            && (oldPointer + oldLen <= beginAt))
         {
             //if it fits in the same place, then write there
             nullifyArea(oldPointer, oldLen);
             if (oldPointer < 0x300200)
-            	rom.write(oldPointer, rawData, newLen);
+                rom.write(oldPointer, rawData, newLen);
             else
             {
-            	if (pointerLen < 0)
-            		for (int i = 0; i < pointerLoc.length; i++)
-            			rom.writeRegAsmPointer(pointerLoc[i], oldPointer + pointerDelay);
-            	else
-            		for (int i = 0; i < pointerLoc.length; i++)
-            			rom.write(pointerLoc[i], toSnesPointer(oldPointer + pointerDelay), pointerLen);
-            	rom.write(oldPointer, data, newLen);
+                if (pointerLen < 0)
+                    for (int i = 0; i < pointerLoc.length; i++)
+                        rom.writeRegAsmPointer(pointerLoc[i], oldPointer
+                            + pointerDelay);
+                else
+                    for (int i = 0; i < pointerLoc.length; i++)
+                        rom.write(pointerLoc[i], toSnesPointer(oldPointer
+                            + pointerDelay), pointerLen);
+                rom.write(oldPointer, data, newLen);
             }
             return true;
         }
@@ -1353,11 +1421,12 @@ public abstract class HackModule
                 newPointer = newPointer - pointerBase + pointerDelay;
                 //write pointer
                 if (pointerLen > 0)
-                	for (int i = 0; i < pointerLoc.length; i++)
-                		rom.write(pointerLoc[i], toSnesPointer(newPointer), pointerLen);
+                    for (int i = 0; i < pointerLoc.length; i++)
+                        rom.write(pointerLoc[i], toSnesPointer(newPointer),
+                            pointerLen);
                 else
-                	for (int i = 0; i < pointerLoc.length; i++)
-                		rom.writeRegAsmPointer(pointerLoc[i], newPointer);
+                    for (int i = 0; i < pointerLoc.length; i++)
+                        rom.writeRegAsmPointer(pointerLoc[i], newPointer);
                 //success!
                 return true;
             }
@@ -1369,7 +1438,7 @@ public abstract class HackModule
             }
         }
     }
-    
+
     /**
      * Writes the specified data into a free spot in the ROM and nulls the
      * previous copy. If a free spot large enough cannot be found, false will be
@@ -1384,19 +1453,21 @@ public abstract class HackModule
      *            pointer at pointerLoc will be set to null
      * @param newLen how many bytes to read from <code>data</code>
      * @param beginAt the last byte that can be changed
-     * @param mustBeInExpanded whether the data must be written to the expanded area
+     * @param mustBeInExpanded whether the data must be written to the expanded
+     *            area
      * @return true on success, false on failure (no change will be made to the
      *         ROM on failure)
      * @see #findFreeRange(int, int)
      */
 
     public boolean writetoFree(byte[] rawData, int pointerLoc, int pointerBase,
-        int pointerLen, int oldLen, int newLen, int beginAt, boolean mustBeInExpanded)
+        int pointerLen, int oldLen, int newLen, int beginAt,
+        boolean mustBeInExpanded)
     {
-    	return writetoFree(rawData, new int[] { pointerLoc }, pointerBase,
-    			pointerLen, oldLen, newLen, beginAt, mustBeInExpanded);
+        return writetoFree(rawData, new int[]{pointerLoc}, pointerBase,
+            pointerLen, oldLen, newLen, beginAt, mustBeInExpanded);
     }
-    
+
     /**
      * Writes the specified data into a free spot in the ROM and nulls the
      * previous copy. If a free spot large enough cannot be found, false will be
@@ -1414,17 +1485,17 @@ public abstract class HackModule
      *         ROM on failure)
      * @see #findFreeRange(int, int)
      */
-    
-    public boolean writeToFree(byte[] data, int pointerLoc, int pointerBase, 
-    		int pointerLen, int oldLen, int newLen)
+
+    public boolean writeToFree(byte[] data, int pointerLoc, int pointerBase,
+        int pointerLen, int oldLen, int newLen)
     {
-    	int beginAt = pointerBase;
-    	for (int i = 0; i < pointerLen; i++)
-    		beginAt += 0xff * (Math.pow(0x10,i*2));
-    	return writetoFree(data, pointerLoc, pointerBase, pointerLen,
-    			oldLen, newLen, beginAt, false); 
+        int beginAt = pointerBase;
+        for (int i = 0; i < pointerLen; i++)
+            beginAt += 0xff * (Math.pow(0x10, i * 2));
+        return writetoFree(data, pointerLoc, pointerBase, pointerLen, oldLen,
+            newLen, beginAt, false);
     }
-    
+
     /**
      * Writes the specified data into a free spot in the ROM and nulls the
      * previous copy. If a free spot large enough cannot be found, false will be
@@ -1438,7 +1509,8 @@ public abstract class HackModule
      *            pointer at pointerLoc will be set to null
      * @param newLen how many bytes to read from <code>data</code>
      * @param beginAt the last byte that can be changed
-     * @param mustBeInExpanded whether the data must be written to the expanded area
+     * @param mustBeInExpanded whether the data must be written to the expanded
+     *            area
      * @return true on success, false on failure (no change will be made to the
      *         ROM on failure)
      * @see #findFreeRange(int, int)
@@ -1447,10 +1519,10 @@ public abstract class HackModule
     public boolean writetoFree(byte[] data, int pointerLoc, int pointerLen,
         int oldLen, int newLen, int beginAt, boolean mustBeInExpanded)
     {
-        return writetoFree(data, pointerLoc, 0, pointerLen, 
-        		oldLen, newLen, beginAt, mustBeInExpanded);
+        return writetoFree(data, pointerLoc, 0, pointerLen, oldLen, newLen,
+            beginAt, mustBeInExpanded);
     }
-    
+
     /**
      * aaWrites the specified data into a free spot in the ROM and nulls the
      * previous copy. If a free spot large enough cannot be found, false will be
@@ -1463,7 +1535,8 @@ public abstract class HackModule
      * @param oldLen length of orginal data; that many bytes starting at the old
      *            pointer at pointerLoc will be set to null
      * @param newLen how many bytes to read from <code>data</code>
-     * @param mustBeInExpanded whether the data must be written to the expanded area
+     * @param mustBeInExpanded whether the data must be written to the expanded
+     *            area
      * @return true on success, false on failure (no change will be made to the
      *         ROM on failure)
      * @see #findFreeRange(int, int)
@@ -1474,8 +1547,8 @@ public abstract class HackModule
     {
         if ((newLen > oldLen) || mustBeInExpanded)
             askExpandType();
-    	return writetoFree(data, pointerLoc, pointerLen, oldLen, newLen,
-    			rom.length(), mustBeInExpanded);
+        return writetoFree(data, pointerLoc, pointerLen, oldLen, newLen, rom
+            .length(), mustBeInExpanded);
     }
 
     /**
@@ -1522,18 +1595,18 @@ public abstract class HackModule
     public boolean writeToFreeASMLink(byte[] data, int[] pointerLoc,
         int oldLen, int newLen, int beginAt, boolean mustBeInExpanded)
     {
-    	return writetoFree(data, pointerLoc, 0, -1, oldLen, newLen,
-    			beginAt, mustBeInExpanded);
+        return writetoFree(data, pointerLoc, 0, -1, oldLen, newLen, beginAt,
+            mustBeInExpanded);
     }
-    
+
     /**
      * Writes the specified data into a free spot in the ROM and nulls the
      * previous copy. If a free spot large enough cannot be found, false will be
      * returned and the ROM will not be changed.
      * 
      * @param data data to write
-     * @param pointerLoc location of an ASM link to data, it will be set to point
-     *            to the location <code>data</code> is written to
+     * @param pointerLoc location of an ASM link to data, it will be set to
+     *            point to the location <code>data</code> is written to
      * @param oldLen length of orginal data; that many bytes starting at the old
      *            pointer at pointerLoc will be set to null
      * @param newLen how many bytes to read from <code>data</code>
@@ -1545,13 +1618,13 @@ public abstract class HackModule
      * @see #findFreeRange(int, int)
      * @see AbstractRom#writeAsmPointer(int, int)
      */
-    public boolean writeToFreeASMLink(byte[] data, int pointerLoc,
-        int oldLen, int newLen, int beginAt, boolean mustBeInExpanded)
+    public boolean writeToFreeASMLink(byte[] data, int pointerLoc, int oldLen,
+        int newLen, int beginAt, boolean mustBeInExpanded)
     {
-    	return writeToFreeASMLink(data, new int[] {pointerLoc}, oldLen, newLen,
-    			beginAt, mustBeInExpanded);
+        return writeToFreeASMLink(data, new int[]{pointerLoc}, oldLen, newLen,
+            beginAt, mustBeInExpanded);
     }
-    
+
     /**
      * Writes the specified data into a free spot in the ROM and nulls the
      * previous copy. If a free spot large enough cannot be found, false will be
@@ -1573,8 +1646,8 @@ public abstract class HackModule
     public boolean writeToFreeASMLink(byte[] data, int[] pointerLoc,
         int oldLen, int newLen, boolean mustBeInExpanded)
     {
-    	return writeToFreeASMLink(data, pointerLoc, oldLen, newLen,
-    			rom.length(), mustBeInExpanded);
+        return writeToFreeASMLink(data, pointerLoc, oldLen, newLen, rom
+            .length(), mustBeInExpanded);
     }
 
     /**
@@ -3418,34 +3491,34 @@ public abstract class HackModule
             return;
         }
     }
-    
+
     public static int numberize(String ib)
     {
-    	String in = ib;
-    	//remove preceding spaces
-    	for (int i = 0; i < in.length(); i++)
-    	{
-    		if((in.charAt(i) < '9') && (in.charAt(i) > '0'))
-    		{
-    			in = in.substring(i);
-    			break;
-    		}    		
-    	}
-    	//get number
-    	for (int i = 0; i < in.length(); i++)
-    	{
-    		if(!((in.charAt(i) < '9') && (in.charAt(i) > '0')))
-    		{
-    			if (i==0)
-    			{
-    				return 0;
-    			}
-    			return Integer.parseInt(in.substring(0,i));
-    		}
-    	}
-    	if(in.equals(new String("")))
-    		return 0;
-    	else
-    		return Integer.parseInt(in);
+        String in = ib;
+        //remove preceding spaces
+        for (int i = 0; i < in.length(); i++)
+        {
+            if ((in.charAt(i) < '9') && (in.charAt(i) > '0'))
+            {
+                in = in.substring(i);
+                break;
+            }
+        }
+        //get number
+        for (int i = 0; i < in.length(); i++)
+        {
+            if (!((in.charAt(i) < '9') && (in.charAt(i) > '0')))
+            {
+                if (i == 0)
+                {
+                    return 0;
+                }
+                return Integer.parseInt(in.substring(0, i));
+            }
+        }
+        if (in.equals(new String("")))
+            return 0;
+        else
+            return Integer.parseInt(in);
     }
 }
