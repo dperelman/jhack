@@ -332,4 +332,9 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
             hide();
         }
     }
+    
+    public static int getPlayableSPT(int character, int num)
+    {
+    	return sctEntries[character].getSprite(num);
+    }
 }
