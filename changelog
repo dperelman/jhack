@@ -10,6 +10,8 @@ NEXT VERSION (after v0.5.1.2):
 # Map Editor: Map changes not saved directly
 # Teleport Table Editor: Previews/seeks the destination
 # Teleport Editor: Previews/seeks the destination
+# Door Editor: accessible from main menu
+# Added Music/Flags Correlations Editor
 
 v0.5.1.2:
 # Map Editor: BUGFIX: Map Editor handles event flags in door destinations correctly
