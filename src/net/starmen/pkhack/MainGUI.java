@@ -269,6 +269,8 @@ public class MainGUI implements ActionListener, WindowListener
         optionsMenu.setMnemonic('o');
         optionsMenu.add(new PrefsCheckBox("Display Console Dialog", prefs,
             "consoleDialog", false, 'c', null, "consoleDialog", this));
+        optionsMenu.add(new PrefsCheckBox("Hide Error Console", prefs,
+        		"noErrorDialog", false, 'e', null, "noErrorDialog", this));
         JMenu toolkitMenu = new JMenu("Look & Feel");
         toolkitMenu.setMnemonic('f');
         UIManager.LookAndFeelInfo[] lafi = UIManager.getInstalledLookAndFeels();
@@ -632,6 +634,12 @@ public class MainGUI implements ActionListener, WindowListener
             if (!JHack.isUseConsole())
                 JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
                     "consoleDialog"));
+        }
+        if (this.getPrefs().hasValue("noErrorDialog"))
+        {
+        	if (!JHack.isUseConsole())
+        		JHack.err.setEnabled(! this.getPrefs().getValueAsBoolean(
+        				"noErrorDialog"));
         }
         //convert expRomPath and orgRomPath to game specific names
         if (this.getPrefs().hasValue("expRomPath"))
@@ -1428,6 +1436,12 @@ public class MainGUI implements ActionListener, WindowListener
             if (!JHack.isUseConsole())
                 JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
                     "consoleDialog"));
+        }
+        else if (ae.getActionCommand().equalsIgnoreCase("noErrorDialog"))
+        {
+        	if (!JHack.isUseConsole())
+        		JHack.err.setEnabled(! this.getPrefs().getValueAsBoolean(
+        				"noErrorDialog"));
         }
         else if (ae.getActionCommand().startsWith("LAF_"))
         {
