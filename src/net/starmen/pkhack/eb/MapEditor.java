@@ -69,6 +69,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     private int editwidth = screen_width - 1;
     private static final int draw_tsets = 20;
     private static final int map_tsets = 32;
+    private static final int maxpals = 59;
     private NumberFormat num_format;
     private JFormattedTextField xField;
     private JFormattedTextField yField;
@@ -342,9 +343,18 @@ public class MapEditor extends EbHackModule implements ActionListener,
             		&& (gfxcontrol.knowsSector()))
             {
             	int newpal = ((Number) paletteField.getValue()).intValue();
-            	int[] sectorxy = gfxcontrol.getSectorxy();
-            	mapcontrol.setPal(sectorxy[0], sectorxy[1], newpal);
-            	gfxcontrol.remoteRepaint();
+            	if (((newpal >= 0) && (newpal <= maxpals)) &&
+            			(gfxcontrol.getModeProps()[2] != 1))
+            	{
+            		palette = newpal;
+                	int[] sectorxy = gfxcontrol.getSectorxy();
+                	mapcontrol.setPal(sectorxy[0], sectorxy[1], newpal);
+                	gfxcontrol.remoteRepaint();
+            	}
+            	else
+            	{
+            		paletteField.setValue(new Integer(palette));
+            	}
             }
         }
     }
@@ -510,6 +520,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
                     paletteField.setValue(new Integer(tsetpal[1]));
                 }
                 
+                palette = tsetpal[1];
+                
                 if (modeprops[2] == 1)
                 {
                 	boolean isSame = editbox.setTsetPal(
@@ -619,7 +631,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
             //   allow map editing}
             {2, 1, 0}, {2, 2, 0}, {2, 2, 1}};
         // tile_images is sorted by tilset, tile, palette
-        public Image[][][] tile_images = new Image[TILESET_NAMES.length][1024][59];
+        public Image[][][] tile_images =
+        	new Image[TILESET_NAMES.length][1024][maxpals];
 
         public MapGraphics(EbHackModule newhm, int newx, int newy,
             int newwidth, int newheight, int newtilewidth, int newtileheight,
