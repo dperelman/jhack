@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 /**
  * Object representing a .ips patch file. Includes methods to make an
  * <code>IPSFile</code> from two <code>int[]</code>'s and to apply this
@@ -124,13 +126,20 @@ public class IPSFile
         }
         catch (FileNotFoundException e)
         {
-            System.out.println("Error: File not loaded: File not found.");
-            e.printStackTrace();
+            String errmsg = "File not found: " + ips.getAbsolutePath(), errtitle = "Error: File not loaded";
+            JOptionPane.showMessageDialog(null, errmsg, errtitle,
+                JOptionPane.ERROR_MESSAGE);
+            System.out.println(errtitle + ": " + errmsg);
+            //e.printStackTrace();
         }
         catch (IOException e)
         {
-            System.out.println("Error: File not loaded: Could read file.");
-            e.printStackTrace();
+            String errmsg = "Could not read file: " + ips.getAbsolutePath()
+                + "\n" + e.getClass() + ": " + e.getMessage(), errtitle = "Error: File not loaded";
+            JOptionPane.showMessageDialog(null, errmsg, errtitle,
+                JOptionPane.ERROR_MESSAGE);
+            System.out.println(errtitle + ": " + errmsg);
+            //e.printStackTrace();
         }
         return new IPSFile();
     }
@@ -150,13 +159,18 @@ public class IPSFile
         }
         catch (FileNotFoundException e)
         {
-            System.out.println("Error: File not saved: File not found.");
-            e.printStackTrace();
+            String errmsg = "File not found: " + ips.getAbsolutePath(), errtitle = "Error: File not saved";
+            JOptionPane.showMessageDialog(null, errmsg, errtitle,
+                JOptionPane.ERROR_MESSAGE);
+            System.out.println(errtitle + ": " + errmsg);
         }
         catch (IOException e)
         {
-            System.out.println("Error: File not saved: Could write to file.");
-            e.printStackTrace();
+            String errmsg = "Could not write to file: " + ips.getAbsolutePath()
+                + "\n" + e.getClass() + ": " + e.getMessage(), errtitle = "Error: File not saved";
+            JOptionPane.showMessageDialog(null, errmsg, errtitle,
+                JOptionPane.ERROR_MESSAGE);
+            System.out.println(errtitle + ": " + errmsg);
         }
     }
 
@@ -252,8 +266,8 @@ public class IPSFile
      * 
      * @param file1 The file that has been changed.
      * @param file2 The orginal file. The file this patch will be applied to.
-     * @param start Offset to start looking for differences.
-     * @param end Offset to stop looking for differences.
+     * @param start Offset to start looking for differences inclusive.
+     * @param end Offset to stop looking for differences exclusive.
      * @return A new <code>IPSFile</code> based on <code>file1</code> and
      *         <code>file2</code>
      * @see #createIPS(byte[], byte[])
@@ -265,6 +279,19 @@ public class IPSFile
         // file1 is the modified file, file2 is the orginal file
 
         //System.out.println("Creating a .IPS file");
+        if (start > file1.length - 1 || start > file2.length - 1
+            || end > file1.length || end > file2.length)
+        {
+            JOptionPane.showMessageDialog(null,
+                "An IPS file cannot be made for this range\n"
+                    + "because it is past the end of either the\n"
+                    + "original or modified file.\n" + "\n" + "The range is ["
+                    + start + ", " + end + ") in decimal,\n" + "or [0x"
+                    + Integer.toHexString(start) + ", 0x"
+                    + Integer.toHexString(end) + ") in hex.",
+                "Error: Illegal Range", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
 
         IPSFile out = new IPSFile();
 

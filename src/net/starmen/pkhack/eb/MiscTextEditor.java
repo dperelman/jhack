@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import javax.swing.BoxLayout;
@@ -30,7 +31,8 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public MiscTextEditor(AbstractRom rom, XMLPreferences prefs) {
+    public MiscTextEditor(AbstractRom rom, XMLPreferences prefs)
+    {
         super(rom, prefs);
     }
     private JComboBox selector;
@@ -100,7 +102,7 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
         readFromRom();
         initSelector();
         mainWindow.pack();
-        if(mainWindow.getWidth() > 250)
+        if (mainWindow.getWidth() > 250)
             mainWindow.setSize(250, mainWindow.getHeight());
         mainWindow.setVisible(true);
     }
@@ -163,7 +165,8 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
 
     private void saveInfo(int i)
     {
-        if (i < 0) return;
+        if (i < 0)
+            return;
         miscText[i].setInfo(tf.getText());
         miscText[i].writeInfo();
         selector.repaint();
@@ -171,7 +174,8 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
 
     private void showInfo(int i)
     {
-        if (i < 0) return;
+        if (i < 0)
+            return;
         if (miscText[i].isRealEntry())
         {
             tf.setDocument(new MaxLengthDocument(miscText[i].getLen()));
@@ -181,7 +185,10 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
         else
         //note: two titles next to each other _WILL_ cause a crash
         {
-            if (this.initing) { return; }
+            if (this.initing)
+            {
+                return;
+            }
             int current = selector.getSelectedIndex();
             try
             {
@@ -220,20 +227,19 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
             hide();
         }
     }
-    
+
     public static String getMiscText(int index)
-	{
-    	return miscText[index].getInfo();
+    {
+        return miscText[index].getInfo();
     }
 
-/*    public static void setMiscText(int index, String text)
-	{
-    	miscText[index].setInfo(text);
-    	saveInfo(index);
-    }*/
+    /*
+     * public static void setMiscText(int index, String text) {
+     * miscText[index].setInfo(text); saveInfo(index); }
+     */
     /**
-     * This class represents any misc text in EarthBound. The text must not
-     * have any control codes or compression.
+     * This class represents any misc text in EarthBound. The text must not have
+     * any control codes or compression.
      */
     public static class MiscText
     {
@@ -258,9 +264,9 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
             this.address = address;
             this.len = len;
             this.info = new char[len];
-            
+
             AbstractRom rom = hm.rom;
-            
+
             rom.seek(this.address);
 
             for (int j = 0; j < info.length; j++)
@@ -270,9 +276,9 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Creates a MiscText to be used as a title in the <code>JComboBox</code>.
-         * The title is displayed in all caps with an underscore added on both
-         * sides.
+         * Creates a MiscText to be used as a title in the
+         * <code>JComboBox</code>. The title is displayed in all caps with an
+         * underscore added on both sides.
          * 
          * @param title Title to use
          */
@@ -323,7 +329,8 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
          */
         public void setInfo(String newInfo)
         {
-            if (!isRealEntry) return;
+            if (!isRealEntry)
+                return;
             char[] temp = newInfo.toCharArray();
             for (int j = 0; j < info.length; j++)
             {
@@ -347,10 +354,11 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
          */
         public void writeInfo()
         {
-            if (!isRealEntry) return;
-            
+            if (!isRealEntry)
+                return;
+
             AbstractRom rom = hm.rom;
-            
+
             rom.seek(this.address);
             for (int j = 0; j < this.info.length; j++)
             {
@@ -360,7 +368,18 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
 
         private String stripNull(String in)
         {
-            return new StringTokenizer(in, "\0").nextToken();
+            try
+            {
+                return new StringTokenizer(in, "\0").nextToken();
+            }
+            catch (NoSuchElementException e)
+            {
+                /*
+                 * String is all nulls, so no element can be found by
+                 * StringTokenizer.
+                 */
+                return "";
+            }
         }
     }
 }

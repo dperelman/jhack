@@ -371,10 +371,26 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
                 throw new FileNotFoundException();
             Sprite sp = new Sprite(getSpriteInfo(HackModule.getNumberOfString(
                 selector.getSelectedItem().toString(), false)), this);
-            sp.setImage(ImageIO.read(f));
-            //this.spriteDrawingArea.setImage(sp.getImage());
-            this.spriteDrawingArea.setImage(sp.getSprite());
-            this.spriteDrawingArea.repaint();
+            try
+            {
+                sp.setImage(ImageIO.read(f));
+                //this.spriteDrawingArea.setImage(sp.getImage());
+                this.spriteDrawingArea.setImage(sp.getSprite());
+                this.spriteDrawingArea.repaint();
+            }
+            catch (ArrayIndexOutOfBoundsException e)
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Image import failed due to an image of invalid size.\n"
+                        + "Try checking the size of the image "
+                        + "and changing the size\n"
+                        + "of the target sprite using the "
+                        + "SPT editor if necessary.\n"
+                        + "Also note that this feature is only to be used\n"
+                        + "with sprite images exported by JHack and having\n"
+                        + "identical palettes.", "Error: Import Failed",
+                    JOptionPane.ERROR_MESSAGE);
+            }
         }
         catch (IOException e)
         {
@@ -472,6 +488,8 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
 
     private void setBgCol(Color tc)
     {
+        if (tc == null)
+            return;
         SpriteEditor.bgColor = new Color((tc.getRed() >= 255 ? 254 : tc
             .getRed()) | 1, (tc.getGreen() >= 255 ? 254 : tc.getGreen()) | 1,
             (tc.getBlue() >= 255 ? 254 : tc.getBlue()) | 1);

@@ -150,8 +150,10 @@ public class CCInfo
         // or decompression. If the string is greater than 8192 characters
         // long, it will be truncated at that point.
 
-        char[] buffer = new char[8192];
-        char[] headBuff = new char[100];
+//        char[] buffer = new char[8192];
+//        char[] headBuff = new char[100];
+        StringBuffer buffer = new StringBuffer(), headBuff = new StringBuffer();
+        int headlen = 100;
 
         int pos = 0, hpos = 0;
         int len = 0;
@@ -173,7 +175,7 @@ public class CCInfo
 
             if (arglevel > 0)
             {
-                buffer[pos++] = (char) ch;
+                buffer.append((char) ch);
 
                 arglevel--;
                 continue;
@@ -200,7 +202,7 @@ public class CCInfo
                     opcode = false;
                     activeNode = ccTable;
                     prevNode = null;
-                    buffer[pos++] = (char) ch;
+                    buffer.append((char) ch);
                     continue;
                 }
                 else
@@ -223,23 +225,23 @@ public class CCInfo
                         // Integer.toHexString(address));
                     }
 
-                    if (hpos < headBuff.length - 1
+                    if (headBuff.length() < headlen - 1
                         && (curcode == 0x15 || curcode == 0x16 || curcode == 0x17))
                     {
                         int c = ((curcode - 0x15) * 256) + ch;
 
                         for (int p = 0; p < comprTable[c].length
-                            && hpos < headBuff.length - 1;)
+                            && hpos < headlen - 1;)
                         {
-                            headBuff[hpos++] = comprTable[c][p++];
+                            headBuff.append(comprTable[c][p++]);
                         }
                     }
 
-                    buffer[pos++] = (char) ch;
+                    buffer.append((char) ch);
                 }
                 else if (activeNode.type == TYPE_CODE)
                 {
-                    buffer[pos++] = (char) ch;
+                    buffer.append((char) ch);
                 }
 
                 //if (activeNode.level == 0 && activeNode.value == 0x02)
@@ -281,9 +283,9 @@ public class CCInfo
             else
             {
                 //buffer[pos++] = (char) ((((int) ch) & 0xFF) - asciiOff);
-                buffer[pos++] = (char) ch;
-                if (hpos < headBuff.length - 1)
-                    headBuff[hpos++] = (crdChr
+                buffer.append((char) ch);
+                if (headBuff.length() < headlen - 1)
+                    headBuff.append(crdChr
                         ? EbHackModule.simpCreditsToRegChar((char) (ch & 0xFF))
                         : (char) ((ch & 0xFF) - asciiOff));
             }
@@ -291,8 +293,8 @@ public class CCInfo
 
         StrInfo s = new StrInfo();
         s.address = address;
-        s.str = new String(buffer, 0, pos);
-        s.header = hpos == 0 ? " " : new String(headBuff, 0, hpos);
+        s.str = buffer.toString();
+        s.header = headBuff.length() == 0 ? " " : headBuff.toString();
 
         return s;
     }
@@ -411,9 +413,11 @@ public class CCInfo
 
     public String parseString(String str, boolean showCC, boolean codesOnly)
     {
-        char[] buffer = new char[81920];
+        //char[] buffer = new char[81920];
+        //aribitary length guess
+        StringBuffer buffer = new StringBuffer(str.length() * 2);
 
-        int pos = 0; // position in returned string
+        //int pos = 0; // position in returned string
         int ipos = 0;
 
         CCNode activeNode = ccTable, prevNode = null;
@@ -436,14 +440,11 @@ public class CCInfo
             if (arglevel > 0)
             {
                 if (showCC)
-                {
-                    addCode(buffer, ch, pos);
-                    pos += 4;
-                }
+                    addCode(buffer, ch);
 
                 arglevel--;
                 if (arglevel == 0)
-                    buffer[pos++] = '\u1234';
+                    buffer.append('\u1234');
                 continue;
             }
             if (endcc)
@@ -458,7 +459,7 @@ public class CCInfo
                     opcode = true;
                     if (codesOnly && showCC)
                     {
-                        buffer[pos++] = '\u1234';
+                        buffer.append('\u1234');
                     }
                 }
             }
@@ -550,26 +551,20 @@ public class CCInfo
                         {
                             if (showCC)
                             {
-                                addCode(buffer, curcode, pos);
-                                pos += 4;
-                                addCode(buffer, ch, pos);
-                                pos += 4;
+                                addCode(buffer, curcode);
+                                addCode(buffer, ch);
                             }
                         }
                         else
                         {
                             int c = ((curcode - 0x15) * 256) + ch;
 
-                            for (int p = 0; p < comprTable[c].length;)
-                            {
-                                buffer[pos++] = comprTable[c][p++];
-                            }
+                            buffer.append(comprTable[c]);
                         }
                     }
                     else if (showCC)
                     {
-                        addCode(buffer, ch, pos);
-                        pos += 4;
+                        addCode(buffer, ch);
                     }
                 }
                 if (activeNode.type == TYPE_CODE)
@@ -579,8 +574,7 @@ public class CCInfo
                     if (curcode != 0x15 && curcode != 0x16 && curcode != 0x17
                         && showCC)
                     {
-                        addCode(buffer, ch, pos);
-                        pos += 4;
+                        addCode(buffer, ch);
                     }
                 }
 
@@ -612,7 +606,7 @@ public class CCInfo
                 {
                     //                    System.out.println("End of " + activeNode.toString());
                     if (arglevel == 0)
-                        buffer[pos++] = '\u1234';
+                        buffer.append('\u1234');
                     opcode = false;
                     //if (activeNode.toString().equals("[19 02]"))
                     if (activeNode.menu_raise)
@@ -633,8 +627,7 @@ public class CCInfo
                 //make sure brackets never get added as characters
                 if (codesOnly && showCC)
                 {
-                    addCode(buffer, ch, pos);
-                    pos += 4;
+                    addCode(buffer, ch);
                 }
                 else
                 {
@@ -642,20 +635,20 @@ public class CCInfo
                     {
                         if (showCC)
                         {
-                            addCode(buffer, ch, pos);
-                            pos += 4;
-                            buffer[pos++] = '\u1234';
+                            addCode(buffer, ch);
+                            buffer.append('\u1234');
                         }
                     }
                     else
                     {
-                        buffer[pos++] = cht;
+                        buffer.append(cht);
                     }
                 }
             }
         }
 
-        return parseGrouping(new String(buffer, 0, pos));
+        //return parseGrouping(new String(buffer, 0, pos));
+        return parseGrouping(buffer.toString());
 
         //		char* newstr = new char[pos];
         //		for(i = 0; i < pos; i++)
@@ -1013,15 +1006,10 @@ public class CCInfo
         // input into the text editing box) and converts it into a string
         // that is ready to be written directly to the ROM.
 
-        char[] buffer = new char[8192];
-        String newstr; // this gets allocated later
-
-        int pos = 0;
+        StringBuffer buffer = new StringBuffer(str.length());
 
         int bracketlevel = 0;
-
         int ch;
-
         int len = str.length();
 
         for (int i = 0; i < len; i++)
@@ -1073,7 +1061,7 @@ public class CCInfo
                             t[j] = 0;
 
                             int a = Integer.parseInt(new String(t).trim(), 16) & 0xFF;
-                            buffer[pos++] = (char) a;
+                            buffer.append((char) a);
 
                             j = 0;
                             i -= 2;
@@ -1088,7 +1076,7 @@ public class CCInfo
 
                                 int a = Integer.parseInt(new String(t).trim(),
                                     16) & 0xFF;
-                                buffer[pos++] = (char) a;
+                                buffer.append((char) a);
 
                                 j = 0;
                             }
@@ -1113,7 +1101,7 @@ public class CCInfo
             }
 
             else
-                buffer[pos++] = (crdChr ? EbHackModule.simpRegToCreditsChar(str
+                buffer.append(crdChr ? EbHackModule.simpRegToCreditsChar(str
                     .charAt(i)) : (char) (str.charAt(i) + asciiOff));
 
         }
@@ -1126,7 +1114,8 @@ public class CCInfo
 
         //buffer[pos++] = 0;
 
-        return new String(buffer, 0, pos);
+        //return new String(buffer, 0, pos);
+        return buffer.toString();
 
         //		char* newstr = new char[pos];
         //		for(i = 0; i < pos; i++)
@@ -1174,6 +1163,12 @@ public class CCInfo
         str[pos++] = tmp[1];
         str[pos++] = tmp[2];
         str[pos++] = tmp[3];
+    }
+
+    public void addCode(StringBuffer str, int val)
+    {
+        str.append("["
+            + HackModule.addZeros(Integer.toHexString(val & 0xff), 2) + "]");
     }
 
     protected void createCompressionTable(char tbl[][])

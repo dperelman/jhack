@@ -72,40 +72,6 @@ public abstract class AbstractRom
      */
     private int seekOffset;
 
-    //    /**
-    //     * String indicating an unknown ROM type.
-    //     *
-    //     * @see #getRomType()
-    //     */
-    //    public final static String TYPE_UNKNOWN = "Unknown";
-    //
-    //    /**
-    //     * String indicating an Earthbound ROM.
-    //     *
-    //     * @see #getRomType()
-    //     */
-    //    public final static String TYPE_EARTHBOUND = "Earthbound";
-    //
-    //    /**
-    //     * String indicating a Secret of Mana ROM.
-    //     *
-    //     * @see #getRomType()
-    //     */
-    //    public final static String TYPE_SECRET_OF_MANA = "Secret of Mana";
-    //
-    //    /**
-    //     * String indicating a Chrono Trigger ROM.
-    //     *
-    //     * @see #getRomType()
-    //     */
-    //    public final static String TYPE_CHRONO_TRIGGER = "Chrono Trigger";
-
-    //    /**
-    //     * Array of all ROM types for internal use.
-    //     */
-    //    protected final static String[] TYPES = new String[]{TYPE_UNKNOWN,
-    //        TYPE_EARTHBOUND, TYPE_SECRET_OF_MANA, TYPE_CHRONO_TRIGGER};
-
     /**
      * Stores the type of ROM.
      */
@@ -159,35 +125,6 @@ public abstract class AbstractRom
     public boolean loadRom(File rompath)
     {
         setDefaultDir(rompath.getParent());
-        //        if (rompath.length() == ROM_SIZE_REGULAR)
-        //        {
-        //            this.isExpanded = false;
-        //        }
-        //        else if (rompath.length() == ROM_SIZE_EXPANDED)
-        //        {
-        //            this.isExpanded = true;
-        //        }
-        //        else
-        //        {
-        //            this.isValid = false;
-        //            //Not either size, assume bad rom
-        //            int ques = JOptionPane
-        //                .showConfirmDialog(
-        //                    null,
-        //                    "File is the wrong size. It may not be a ROM\nContinue anyways?",
-        //                    "Error!", JOptionPane.YES_NO_OPTION);
-        //            if (ques == JOptionPane.NO_OPTION) { return false; }
-        //            if (Math.abs(rompath.length() - ROM_SIZE_REGULAR) < Math
-        //                .abs(rompath.length() - ROM_SIZE_EXPANDED))
-        //            //if the size is closer to $regSize
-        //            {
-        //                this.isExpanded = false;
-        //            }
-        //            else
-        //            {
-        //                this.isExpanded = true;
-        //            }
-        //        }
 
         try
         {
@@ -199,13 +136,17 @@ public abstract class AbstractRom
                 + rompath.getAbsolutePath(), "Error Loading ROM",
                 JOptionPane.ERROR_MESSAGE);
             System.out.println("Error: File not loaded: File not found.");
-//            e.printStackTrace();
+            //            e.printStackTrace();
             return false;
         }
         catch (IOException e)
         {
-            System.err.println("Error: File not loaded: Could read file.");
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                "Error: File not loaded: Could read file:\n" + e.getClass()
+                    + ": " + e.getMessage(), "Error Loading ROM",
+                JOptionPane.ERROR_MESSAGE);
+            System.out.println("Error: File not loaded: Could read file.");
+            e.printStackTrace(System.out);
             return false;
         }
 
@@ -220,37 +161,6 @@ public abstract class AbstractRom
         //first look for .romtype file
         if (!loadRomType())
         {
-            //            //then look at certain bytes
-            //            //Earthbound
-            //            if (length() >= 0x300200
-            //                && compare(0x1f005, new int[]{0xa9, 0x5e, 0xc0, 0x85, 0x12,
-            //                    0xa9, 0xc4, 0x00}))
-            //            {
-            //                //1F005 - 1F00C = "Start New Game" text pointer
-            //                //should be [a9 5e c0 85 12 a9 c4 00]
-            //                setRomType(TYPE_EARTHBOUND);
-            //            }
-            //            //SOM
-            //            else if (length() >= 0x200000
-            //                && compare(0x230, new int[]{0x48, 0xab, 0xbd, 0x00, 0x00}))
-            //            {
-            //                //0x230 unknown
-            //                setRomType(TYPE_SECRET_OF_MANA);
-            //            }
-            //            //CT
-            //            else if (length() >= 0x400200
-            //                && compare(0x270, new int[]{0x00, 0xc2, 0xe0, 0xff, 0x01, 0x30,
-            //                    0x06, 0xa2}))
-            //            {
-            //                //0x270 unknown
-            //                setRomType(TYPE_CHRONO_TRIGGER);
-            //            }
-            //            //all tests failed, unknown
-            //            else
-            //            {
-            //                //unknown
-            //                setRomType(TYPE_UNKNOWN);
-            //            }
             setRomType(RomTypeFinder.getRomType(this));
         }
 
@@ -1743,11 +1653,11 @@ public abstract class AbstractRom
      */
     public boolean expand()
     {
-        if ((!getRomType().equals("Earthbound")) || length() == 0x400200)
-        {
+        //Only expand Earthbound ROMs that are unexpanded with a 0x200 header
+        if ((getRomType().equals("Earthbound")) && length() == 0x300200)
+            return _expand();
+        else
             return false;
-        }
-        return _expand();
     }
 
     /**

@@ -1,6 +1,10 @@
-NEXT VERSION (after v0.5.0.1):
+NEXT VERSION (after v0.5.0.2):
+
+v0.5.0.2:
 # IPSFile: BUGFIX: IPS creation no longer uses recursion, should fix obscure
 	bug Red80 was getting.
+# IPSFile: better error handling; won't attempt to create IPS if modified
+	file is larger than original file
 # Error console: waits for 4 seconds no output before asking to send error.
 # Error console: "error reporting error" messages can be copy and pasted from.
 # Made compressed graphics editors not output errors for decompression errors,
@@ -8,6 +12,19 @@ NEXT VERSION (after v0.5.0.1):
 # IPS Database: BUGFIX: Click apply with nothing selected
 # AbstractRom: File not found errors no longer printed to error console,
 	dialog still appears.
+# AbstractRom: Only Earthbound ROMs of exactly 0x300200 may be expanded.
+# Sprite Editor: BUGFIX: Background color no longer changes on saving, and
+	background color can be set by right-clicking on it in the palette.
+	(thanks to NLA)
+# Sprite Editor: Error message shown if imported sprite image is too big.
+# Tile Editor: Added abort/retry/fail upon decompression errors like the
+	other graphics editors.
+# Misc. Text Editor: BUGFIX: Strings can now be set to blank/empty.
+# Text Editor: BUGFIX: Can save strings that deparse to longer than 8 KB 
+	and can load strings that are longer than 8 KB and/or parse to longer
+	than 80 KB. Should also	improve text editor memory usage.
+# Reset Button: BUGFIX: Entry of ranges with an end before the start is
+	no longer permitted. If attempted, the start and end will be switched.
 
 v0.5.0.1
 # BUGFIX: IMPORTANT: AFFECTS MOST EDITORS. Number text fields work right. 

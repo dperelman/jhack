@@ -4,9 +4,19 @@ NON-RELEASE
 
 DONE? (CHANGES TO CONFIRM/DEBUG)
 
-NEXT RELEASE
+NEXT v0.0.0.x (bugfix) RELEASE
+# Text Editor: Warn user about losing changes if they switch text blocks.
+	Use "Save" "Don't Save" "Cancel" dialog.
+# Look into threading of error console GUI building (ERROR#65895)
+
+NEXT v0.0.x (minor) RELEASE
 
 # Allow selection of compression for auto-update download (zip, 7z, bz2, rar)
+# AbstractRom: React to loadRom() returning false, at least in MainGUI
+# Sprite Editor palette 4 may mean use of map subpalette. Selection of map subpalette:
+	In each map palette (grouping of six 16-color subpalettes), color 0 in the third 
+	subpalette indicates which of the six subpalettes to use. The value contained in 
+	that entry is two greater than the index of the palette actually used. - MrA
 # TextEditor: Routine Map
 # Window positions editor
 	[13:45:08] <GuyInSummers> AA AA BB BB CC CC DD DD. The window's topleft 
@@ -18,15 +28,9 @@ NEXT RELEASE
 		with a null entry or not... I don't think so
 # [12:38:45] <JeffMan> oh and you should add the mother 2 font 
 	and the debug menu font to jhack's font editor if you can
-# Sprite Placement Editor API (GUI to be done by MrTenda), see 20040826 log for how to edit
+# Sprite Placement Editor API (GUI to be done by MrTenda), see 20040826 log for how to edit:
+	http://pkhack.fobby.net/misc/IRCLogs/spriteplacement.log
 # Text Editor: Preview of next text block (optional) (in separate window?)
-# Error reporting: (All need testing)
-	/ Comment window scrolling
-	/ Error reporting error copy & paste
-	/ Make sure whole error gets submitted
-/ IPS Database: BUGFIX: Click apply with nothing selected
-# Tile Editor: Abort/retry/fail on tiles and arrangements
-# AbstractRom: React to loadRom() returning false, at least in MainGUI
 
 LONG TERM
 

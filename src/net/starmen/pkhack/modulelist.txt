@@ -1,5 +1,5 @@
 # = comment
-# each line should be the class name of a module relative to pkhack.starmen.net
+# each line should be the class name of a module relative to net.starmen.pkhack
 # all modules must extend net.starmen.pkhack.HackModule
 
 ----------------------IPS------------------------------------------------------
@@ -41,13 +41,14 @@ eb.EnemyEditor		#Edits enemy information
 eb.ActionEditor		#Edits attack actions
 eb.PSIEditor		#Edits PSI effects
 eb.PSIDamageEditor	#Edits the damage caused by PSI attacks
-#eb.BattleAnimEditor #Edits battle animations (PSIs, items that animate)
+#eb.BattleAnimEditor     #Edits battle animations (PSIs, items that animate)
 ----------------------Sprites--------------------------------------------------
-eb.SpriteEditor		#Edits the appearence of out of battle (uncompressed) sprites
-eb.SPTEditor		#Edits the SPT
+eb.SpriteEditor		     #Edits the appearence of out of battle (uncompressed) sprites
+eb.SPTEditor		     #Edits the SPT
 eb.SpriteCharacterTableEditor
-					#tells which sprites are used for playable chacters
-eb.BattleSpriteEditor	#Edits sprites used by enemies in battle
+					     #tells which sprites are used for playable chacters
+eb.BattleSpriteEditor	 #Edits sprites used by enemies in battle
+#eb.BattleSpriteExporter #Exports battle sprites by enemy number
 ----------------------Graphics-------------------------------------------------
 eb.FontEditor			#Edits Fonts
 eb.CreditsFontEditor	#Edits Credits font

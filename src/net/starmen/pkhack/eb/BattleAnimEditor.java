@@ -3,19 +3,15 @@ package net.starmen.pkhack.eb;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.StringTokenizer;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import net.starmen.pkhack.AutoSearchBox;
-import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.JSearchableComboBox;
 import net.starmen.pkhack.AbstractRom;
+import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.XMLPreferences;
 
 /**

@@ -6,7 +6,6 @@ package net.starmen.pkhack;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.AbstractDocument.DefaultDocumentEvent;
 
 /**
  * Limited length <code>Document</code> that can only contain numbers.

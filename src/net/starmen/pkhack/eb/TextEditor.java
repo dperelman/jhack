@@ -9,7 +9,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -55,12 +54,11 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoableEdit;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.CCInfo;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.AbstractRom;
-import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
 import net.starmen.pkhack.eb.TPTEditor.TPTEntry;
 

@@ -76,6 +76,7 @@ public class ResetButton extends EbHackModule implements ActionListener
     private JTextField startTF, endTF, lenTF;
     private JComboBox rangeSelector, subrangeSelector;
     private boolean isCustom = true; //false = preset range
+    private boolean changingTF = false, changingSlider = false;
 
     private AbstractRom orgRom = null;
     private ArrayList ranges = new ArrayList();
@@ -410,6 +411,16 @@ public class ResetButton extends EbHackModule implements ActionListener
         ranges.add(rr);
     }
 
+    private void correctSliders()
+    {
+        if (start.getValue() > end.getValue())
+        {
+            JSlider e = end;
+            end = start;
+            start = e;
+        }
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -508,18 +519,29 @@ public class ResetButton extends EbHackModule implements ActionListener
         {
             public void stateChanged(ChangeEvent arg0)
             {
-                try
+                if (changingTF)
                 {
-                    startTF.setText(addZeros(Integer.toString(start.getValue(),
-                        16), 6));
-                    endTF.setText(addZeros(
-                        Integer.toString(end.getValue(), 16), 6));
                     lenTF.setText(Integer.toString(end.getValue()
                         - start.getValue() + 1, 16));
                 }
-                catch (IllegalStateException e)
+                else
                 {
-                    //e.printStackTrace();
+                    changingSlider = true;
+                    correctSliders();
+                    try
+                    {
+                        startTF.setText(addZeros(Integer.toString(start
+                            .getValue(), 16), 6));
+                        endTF.setText(addZeros(Integer.toString(end.getValue(),
+                            16), 6));
+                        lenTF.setText(Integer.toString(end.getValue()
+                            - start.getValue() + 1, 16));
+                    }
+                    catch (IllegalStateException e)
+                    {
+                        //e.printStackTrace();
+                    }
+                    changingSlider = false;
                 }
             }
         };
@@ -528,23 +550,32 @@ public class ResetButton extends EbHackModule implements ActionListener
         {
             public void doStuff()
             {
-                isCustom = true;
-                try
+                if (!changingSlider)
                 {
-                    start.setValue(Integer.parseInt(startTF.getText(), 16));
+                    changingTF = true;
+                    isCustom = true;
+                    int st = -1, e = -1;
+                    try
+                    {
+                        st = Integer.parseInt(startTF.getText(), 16);
+                    }
+                    catch (NumberFormatException e1)
+                    {}
+                    try
+                    {
+                        e = Integer.parseInt(endTF.getText(), 16);
+                    }
+                    catch (NumberFormatException e2)
+                    {}
+                    if(st >= 0 && e >= 0)
+                    {
+                        start.setValue(Math.min(st,e));
+                        end.setValue(Math.max(st,e));
+                    }
+                    //                    lenTF.setText(Integer.toString(end.getValue()
+                    //                        - start.getValue() + 1, 16));
+                    changingTF = false;
                 }
-                catch (NumberFormatException e)
-                {}
-                try
-                {
-                    end.setValue(Integer.parseInt(endTF.getText(), 16));
-                }
-                catch (NumberFormatException e)
-                {}
-                //				lenTF.setText(
-                //					Integer.toString(
-                //						end.getValue() - start.getValue() + 1,
-                //						16));
             }
 
             public void insertUpdate(DocumentEvent arg0)
@@ -571,45 +602,47 @@ public class ResetButton extends EbHackModule implements ActionListener
         lenTF.setEnabled(false);
         entry.add(end = new JSlider(0, rom.length() - 1, rom.length() - 1));
 
-        start.addChangeListener(new ChangeListener()
-        {
-            public void stateChanged(ChangeEvent arg0)
-            {
-                isCustom = true;
-                try
-                {
-                    startTF.setText(addZeros(Integer.toString(start.getValue(),
-                        16), 6));
-                    lenTF.setText(Integer.toString(end.getValue()
-                        - start.getValue() + 1, 16));
-                }
-                catch (IllegalStateException e)
-                {
-                    //e.printStackTrace();
-                }
-            }
-        });
-        end.addChangeListener(new ChangeListener()
-        {
-            public void stateChanged(ChangeEvent arg0)
-            {
-                isCustom = false;
-                try
-                {
-                    endTF.setText(addZeros(
-                        Integer.toString(end.getValue(), 16), 6));
-                    lenTF.setText(Integer.toString(end.getValue()
-                        - start.getValue() + 1, 16));
-                }
-                catch (IllegalStateException e)
-                {
-                    //e.printStackTrace();
-                }
-            }
-        });
+        //        start.addChangeListener(new ChangeListener()
+        //        {
+        //            public void stateChanged(ChangeEvent arg0)
+        //            {
+        //                isCustom = true;
+        //                try
+        //                {
+        //                    startTF.setText(addZeros(Integer.toString(start.getValue(),
+        //                        16), 6));
+        //                    lenTF.setText(Integer.toString(end.getValue()
+        //                        - start.getValue() + 1, 16));
+        //                }
+        //                catch (IllegalStateException e)
+        //                {
+        //                    //e.printStackTrace();
+        //                }
+        //            }
+        //        });
+        //        end.addChangeListener(new ChangeListener()
+        //        {
+        //            public void stateChanged(ChangeEvent arg0)
+        //            {
+        //                isCustom = false;
+        //                try
+        //                {
+        //                    endTF.setText(addZeros(
+        //                        Integer.toString(end.getValue(), 16), 6));
+        //                    lenTF.setText(Integer.toString(end.getValue()
+        //                        - start.getValue() + 1, 16));
+        //                }
+        //                catch (IllegalStateException e)
+        //                {
+        //                    //e.printStackTrace();
+        //                }
+        //            }
+        //        });
+        start.addChangeListener(scl);
+        end.addChangeListener(scl);
         startTF.getDocument().addDocumentListener(tdl);
         endTF.getDocument().addDocumentListener(tdl);
-        lenTF.getDocument().addDocumentListener(tdl);
+        //lenTF.getDocument().addDocumentListener(tdl);
         scl.stateChanged(new ChangeEvent(this));
 
         mainWindow.getContentPane().add(

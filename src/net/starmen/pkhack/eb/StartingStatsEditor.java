@@ -10,7 +10,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import net.starmen.pkhack.MaxLengthDocument;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
@@ -113,7 +112,7 @@ public class StartingStatsEditor extends EbHackModule implements ActionListener
      * @see net.starmen.pkhack.HackModule#show()
      */
     public void show()
-    {
+    {   
         super.show();
         readFromRom();
         this.initSelector();

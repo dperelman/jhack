@@ -1189,7 +1189,7 @@ public class MainGUI implements ActionListener, WindowListener
         return loading;
     }
 
-    private void loadRom(File loc)
+    private boolean loadRom(File loc)
     {
         loading = true;
         if (loc == null)
@@ -1197,13 +1197,13 @@ public class MainGUI implements ActionListener, WindowListener
             if (!rom.loadRom())
             {
                 loading = false;
-                return;
+                return false;
             }
         }
         else if (!rom.loadRom(loc))
         {
             loading = false;
-            return;
+            return false;
         }
         //if a Earthbound ROM was just loaded and it is unexpanded (3 MB + 512
         // byte header) then we may want to expand it
@@ -1276,6 +1276,7 @@ public class MainGUI implements ActionListener, WindowListener
         refreshRecentLoads();
         doBackup();
         loading = false;
+        return true;
     }
 
     private void loadRom()

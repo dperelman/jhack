@@ -15,7 +15,6 @@ import javax.swing.JLabel;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JLinkComboBox;
-import net.starmen.pkhack.JSearchableComboBox;
 import net.starmen.pkhack.XMLPreferences;
 
 /**

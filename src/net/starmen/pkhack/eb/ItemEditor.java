@@ -2,13 +2,10 @@ package net.starmen.pkhack.eb;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +13,6 @@ import java.util.Iterator;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -33,10 +29,8 @@ import javax.swing.event.ListDataListener;
 
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.JLinkComboBox;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.MaxLengthDocument;
 import net.starmen.pkhack.XMLPreferences;
 
 /**

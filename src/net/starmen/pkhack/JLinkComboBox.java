@@ -6,7 +6,6 @@ package net.starmen.pkhack;
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Enumeration;
 
 import javax.swing.JComboBox;
 import javax.swing.UIManager;
