@@ -1258,7 +1258,7 @@ public abstract class HackModule
      * returned and the ROM will not be changed.
      * 
      * @param data data to write
-     * @param pointerLoc location of pointer to data, will be set to point to
+     * @param pointerLoc location of pointers to data, will be set to point to
      *            the location <code>data</code> is written to
      * @param pointerBase the base SNES (NOT HEX!) address of the pointer
      * @param pointerLen length of the pointer at PointerLoc in bytes
@@ -1272,10 +1272,10 @@ public abstract class HackModule
      * @see #findFreeRange(int, int)
      */
 
-    public boolean writetoFree(byte[] rawData, int pointerLoc, int pointerBase,
+    public boolean writetoFree(byte[] rawData, int[] pointerLoc, int pointerBase,
         int pointerLen, int oldLen, int newLen, int beginAt, boolean mustBeInExpanded)
     {
-    	boolean latePointer = false;
+    	int pointerDelay = 0;
     	byte[] data;
     	// 0xff shielding if the new data starts or ends with 0
     	if ((rawData[0] == 0) && (rawData[rawData.length - 1] == 0))
@@ -1285,7 +1285,7 @@ public abstract class HackModule
     		data[data.length - 1] = (byte) 0xff;
     		System.arraycopy(rawData, 0, data, 1, rawData.length);
     		newLen += 2;
-    		latePointer = true;
+    		pointerDelay = 1;
     	}
     	else if (rawData[0] == 0)
     	{
@@ -1293,7 +1293,7 @@ public abstract class HackModule
     		data[0] = (byte) 0xff;
     		System.arraycopy(rawData, 0, data, 1, rawData.length);
     		newLen++;
-    		latePointer = true;
+    		pointerDelay = 1;
     	}
     	else if (rawData[rawData.length - 1] == 0)
     	{
@@ -1310,7 +1310,11 @@ public abstract class HackModule
             askExpandType();
 
         //store old pointer for use later
-        int oldPointer = toRegPointer(rom.readMulti(pointerLoc, pointerLen) + pointerBase);
+        int oldPointer;
+        if (pointerLen < 0)
+        	oldPointer = rom.readRegAsmPointer(pointerLoc[0]);
+        else
+        	oldPointer = toRegPointer(rom.readMulti(pointerLoc[0], pointerLen) + pointerBase);
         if ((newLen <= oldLen)
         		&& !(mustBeInExpanded && (oldPointer < 0x300200))
 				&& (oldPointer + oldLen <= beginAt))
@@ -1321,8 +1325,12 @@ public abstract class HackModule
             	rom.write(oldPointer, rawData, newLen);
             else
             {
-            	if (latePointer)
-            		rom.write(pointerLoc, rom.readMulti(pointerLoc, pointerLen) + 1, pointerLen);
+            	if (pointerLen < 0)
+            		for (int i = 0; i < pointerLoc.length; i++)
+            			rom.writeRegAsmPointer(pointerLoc[i], oldPointer + pointerDelay);
+            	else
+            		for (int i = 0; i < pointerLoc.length; i++)
+            			rom.write(pointerLoc[i], toSnesPointer(oldPointer + pointerDelay), pointerLen);
             	rom.write(oldPointer, data, newLen);
             }
             return true;
@@ -1342,11 +1350,14 @@ public abstract class HackModule
                 //write data there
                 rom.write(newPointer, data, newLen);
                 //change pointer
-                newPointer = toSnesPointer(newPointer - pointerBase);
-                if (latePointer)
-                	newPointer++;
+                newPointer = newPointer - pointerBase + pointerDelay;
                 //write pointer
-                rom.write(pointerLoc, newPointer, pointerLen);
+                if (pointerLen > 0)
+                	for (int i = 0; i < pointerLoc.length; i++)
+                		rom.write(pointerLoc[i], toSnesPointer(newPointer), pointerLen);
+                else
+                	for (int i = 0; i < pointerLoc.length; i++)
+                		rom.writeRegAsmPointer(pointerLoc[i], newPointer);
                 //success!
                 return true;
             }
@@ -1357,6 +1368,33 @@ public abstract class HackModule
                 return false;
             }
         }
+    }
+    
+    /**
+     * Writes the specified data into a free spot in the ROM and nulls the
+     * previous copy. If a free spot large enough cannot be found, false will be
+     * returned and the ROM will not be changed.
+     * 
+     * @param data data to write
+     * @param pointerLoc location of pointer to data, will be set to point to
+     *            the location <code>data</code> is written to
+     * @param pointerBase the base SNES (NOT HEX!) address of the pointer
+     * @param pointerLen length of the pointer at PointerLoc in bytes
+     * @param oldLen length of orginal data; that many bytes starting at the old
+     *            pointer at pointerLoc will be set to null
+     * @param newLen how many bytes to read from <code>data</code>
+     * @param beginAt the last byte that can be changed
+     * @param mustBeInExpanded whether the data must be written to the expanded area
+     * @return true on success, false on failure (no change will be made to the
+     *         ROM on failure)
+     * @see #findFreeRange(int, int)
+     */
+
+    public boolean writetoFree(byte[] rawData, int pointerLoc, int pointerBase,
+        int pointerLen, int oldLen, int newLen, int beginAt, boolean mustBeInExpanded)
+    {
+    	return writetoFree(rawData, new int[] { pointerLoc }, pointerBase,
+    			pointerLen, oldLen, newLen, beginAt, mustBeInExpanded);
     }
     
     /**
@@ -1414,7 +1452,7 @@ public abstract class HackModule
     }
     
     /**
-     * Writes the specified data into a free spot in the ROM and nulls the
+     * aaWrites the specified data into a free spot in the ROM and nulls the
      * previous copy. If a free spot large enough cannot be found, false will be
      * returned and the ROM will not be changed.
      * 
@@ -1471,6 +1509,58 @@ public abstract class HackModule
      * @param oldLen length of orginal data; that many bytes starting at the old
      *            pointer at pointerLoc will be set to null
      * @param newLen how many bytes to read from <code>data</code>
+     * @param beginAt the last byte that can be changed
+     * @param mustBeInExpanded if true, data will always be written to the
+     *            expanded area, never to where it originally was
+     * @return true on success, false on failure (no change will be made to the
+     *         ROM on failure)
+     * @see #findFreeRange(int, int)
+     * @see AbstractRom#writeAsmPointer(int, int)
+     */
+    public boolean writeToFreeASMLink(byte[] data, int[] pointerLoc,
+        int oldLen, int newLen, int beginAt, boolean mustBeInExpanded)
+    {
+    	return writetoFree(data, pointerLoc, 0, -1, oldLen, newLen,
+    			beginAt, mustBeInExpanded);
+    }
+    
+    /**
+     * Writes the specified data into a free spot in the ROM and nulls the
+     * previous copy. If a free spot large enough cannot be found, false will be
+     * returned and the ROM will not be changed.
+     * 
+     * @param data data to write
+     * @param pointerLoc location of an ASM link to data, it will be set to point
+     *            to the location <code>data</code> is written to
+     * @param oldLen length of orginal data; that many bytes starting at the old
+     *            pointer at pointerLoc will be set to null
+     * @param newLen how many bytes to read from <code>data</code>
+     * @param beginAt the last byte that can be changed
+     * @param mustBeInExpanded if true, data will always be written to the
+     *            expanded area, never to where it originally was
+     * @return true on success, false on failure (no change will be made to the
+     *         ROM on failure)
+     * @see #findFreeRange(int, int)
+     * @see AbstractRom#writeAsmPointer(int, int)
+     */
+    public boolean writeToFreeASMLink(byte[] data, int pointerLoc,
+        int oldLen, int newLen, int beginAt, boolean mustBeInExpanded)
+    {
+    	return writeToFreeASMLink(data, new int[] {pointerLoc}, oldLen, newLen,
+    			beginAt, mustBeInExpanded);
+    }
+    
+    /**
+     * Writes the specified data into a free spot in the ROM and nulls the
+     * previous copy. If a free spot large enough cannot be found, false will be
+     * returned and the ROM will not be changed.
+     * 
+     * @param data data to write
+     * @param pointerLoc location of ASM links to data, all will be set to point
+     *            to the location <code>data</code> is written to
+     * @param oldLen length of orginal data; that many bytes starting at the old
+     *            pointer at pointerLoc will be set to null
+     * @param newLen how many bytes to read from <code>data</code>
      * @param mustBeInExpanded if true, data will always be written to the
      *            expanded area, never to where it originally was
      * @return true on success, false on failure (no change will be made to the
@@ -1481,49 +1571,8 @@ public abstract class HackModule
     public boolean writeToFreeASMLink(byte[] data, int[] pointerLoc,
         int oldLen, int newLen, boolean mustBeInExpanded)
     {
-        //make sure ROM is expanded if needed
-        if (newLen > oldLen)
-            askExpandType();
-        //store old pointer for use later
-        int oldPointer = rom.readRegAsmPointer(pointerLoc[0]);
-        System.out.println("writeToFreeASMLink(): read pointer as being: 0x"
-            + Integer.toHexString(oldPointer));
-        if (newLen <= oldLen && !mustBeInExpanded)
-        {
-            //if it fits in the same place, then write there
-            nullifyArea(oldPointer, oldLen);
-            rom.write(oldPointer, data, newLen);
-            return true;
-        }
-        else
-        {
-            //if it's too big to fit in the same place...
-            //back-up old data in case there isn't enough space
-            byte[] oldData = rom.readByte(oldPointer, oldLen);
-            //delete old data from ROM, it may be part of the empty space
-            // found
-            nullifyArea(oldPointer, oldLen);
-            try
-            {
-                //look for space...
-                int newPointer = findFreeRange(rom.length(), newLen);
-                System.out.println("writeToFreeASMLink(): new pointer is: 0x"
-                    + Integer.toHexString(newPointer));
-                //write data there
-                rom.write(newPointer, data, newLen);
-                //change pointer
-                for (int i = 0; i < pointerLoc.length; i++)
-                    rom.writeRegAsmPointer(pointerLoc[i], newPointer);
-                //success!
-                return true;
-            }
-            catch (EOFException e)
-            {
-                //if there isn't space, rewrite old data, and return failure
-                rom.write(oldPointer, oldData);
-                return false;
-            }
-        }
+    	return writeToFreeASMLink(data, pointerLoc, oldLen, newLen,
+    			rom.length(), mustBeInExpanded);
     }
 
     /**
