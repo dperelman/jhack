@@ -36,14 +36,15 @@ public class PSIAnimEditor extends EbHackModule implements ActionListener
         private boolean isInited = false;
         private int num, arngPointer, dataPointer;
         
-        // Base address for the tiles
+        /** Base address for the tiles */
         public static final int baseAddr = 0xC0200;
-        
-        // Base address for the arrangement
+        /** Base address for the arrangement */
         public static final int arngPointers = 0xCF78F;
-        
-        // Base address for the PSI data
+        /** Base address for the PSI data */
         public static final int dataPointers = 0xCC2E19;
+        
+        /** Two-dimentional array of arrangements used. */
+        private int[][] arrangement = new int[32][28];
         
         
         public PSIAnim(int i, EbHackModule hm)
@@ -52,7 +53,7 @@ public class PSIAnimEditor extends EbHackModule implements ActionListener
             this.num = i;
 
             arngPointer = toRegPointer(hm.rom.readMulti(arngPointer + (i * 4), 4));
-            dataPointer = toRegPointer(hm.rom.readMulti(arngPointer + (i * 4), 4));
+            dataPointer = toRegPointer(hm.rom.readMulti(arngPointer + (i * 12), 12));
         }
         public boolean readInfo()
         {
