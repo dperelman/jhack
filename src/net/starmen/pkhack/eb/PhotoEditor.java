@@ -14,6 +14,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -29,6 +30,7 @@ import javax.swing.event.DocumentListener;
 
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.HackModule;
+import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
 import net.starmen.pkhack.eb.MapEditor.EbMap;
 
@@ -49,20 +51,31 @@ public class PhotoEditor extends EbHackModule
 		super(rom, prefs);
 	}
 	
+	public static final int photoPalsPointer = 0xa6d;
+	public static final int NUM_PALETTES = 120; // TODO confirm this number
+	
 	private JButton centerSeek, refresh;
-	private JComboBox entryChooser, direction;
-	private JTextField flag, centerX, centerY, palette,
-		distance, landX, landY;
+	private JComboBox entryChooser, direction, photoPaletteChooser;
+	private JTextField flag, centerX, centerY, distance, landX, landY;
 	private JComponent[][] party = new JComponent[6][3];
 	private JComponent[][] extra = new JComponent[4][4];
-	private PhotoEntry[] entries;
+	private static PhotoEntry[] entries;
 	private PhotoPreview preview;
+	private SpritePalette sp;
+	private static Color[][] palettes;
 	private int movingSprite = -1;
-	public static final int[] defaultPartySprites =
-		new int[] { 0xe, 0x2, 0x3, 0x4, 0x33, 0x2e };
+	private static int palLen;
+	private boolean muteEvents = false;
 
 	protected void init()
 	{
+		SpriteCharacterTableEditor.readFromRom(rom);
+		readFromRom(this);
+		
+		String[] palNames = new String[NUM_PALETTES];
+		for (int i = 0; i < NUM_PALETTES; i++)
+			palNames[i] = "Palette #" + i;
+		
 		mainWindow = createBaseWindow(this);
 		mainWindow.setTitle(this.getDescription());
 		
@@ -155,11 +168,12 @@ public class PhotoEditor extends EbHackModule
 			}
 		}
 		
-		palette = HackModule.createSizedJTextField(5, true);
+		photoPaletteChooser = new JComboBox(palNames);
 		landX = HackModule.createSizedJTextField(4, true);
 		landY = HackModule.createSizedJTextField(4, true);
 		
-		preview = new PhotoPreview(this, party, extra, palette,
+		sp = new SpritePalette(2, 20, 16);
+		preview = new PhotoPreview(this, party, extra, photoPaletteChooser,
 				landX, landY);
 		PhotoPreviewListener ears = new PhotoPreviewListener();
 		preview.addMouseListener(ears);
@@ -172,7 +186,7 @@ public class PhotoEditor extends EbHackModule
 							* MapEditor.tileHeight + 2));
 				
 				
-		tmpPanel.add(preview);
+		tmpPanel.add(HackModule.pairComponents(sp,preview,true));
 		flag = HackModule.createSizedJTextField(5, false);
 		tmpPanel.add(
 				HackModule.getLabeledComponent(
@@ -220,10 +234,10 @@ public class PhotoEditor extends EbHackModule
 		tmpPanel.add(
 				HackModule.getLabeledComponent(
 						"Center of Picture (Y): ", centerY));
-		palette.getDocument().addDocumentListener(this);
+		photoPaletteChooser.addActionListener(this);
 		tmpPanel.add(
 				HackModule.getLabeledComponent(
-						"Palette: ", palette));
+						"Palette: ", photoPaletteChooser));
 		direction = new JComboBox(
 				new String[] {
 						"Down", "45 Degree Down and Left",
@@ -249,15 +263,10 @@ public class PhotoEditor extends EbHackModule
 		tmpPanel.setAlignmentY(Component.TOP_ALIGNMENT);
 		panel.add(tmpPanel);
 		
-
-		tmpPanel2.setAlignmentY(Component.TOP_ALIGNMENT);
 		panel.add(tmpPanel2);
-		
-		tmpPanel3.setAlignmentY(Component.TOP_ALIGNMENT);
 		panel.add(tmpPanel3);
 		
-		mainWindow.getContentPane().add(
-				panel, BorderLayout.CENTER);
+		mainWindow.getContentPane().add(panel, BorderLayout.CENTER);
 		mainWindow.pack();
 	}
 
@@ -280,10 +289,12 @@ public class PhotoEditor extends EbHackModule
 	{
 		super.show();
 		
-		readFromRom();
 		TPTEditor.readFromRom(this);
 		SpriteEditor.readFromRom(rom);
-		entryChooser.setSelectedIndex(0);
+		if (entryChooser.getSelectedIndex() >= 0)
+			updateComponents();
+		else
+			entryChooser.setSelectedIndex(0);
 		
 		mainWindow.setVisible(true);
 	}
@@ -293,8 +304,12 @@ public class PhotoEditor extends EbHackModule
 		mainWindow.hide();
 	}
 	
-	public void readFromRom()
+	public static void readFromRom(HackModule hm)
 	{
+		int[] palPointers = new int[NUM_PALETTES];
+		readPalettes(hm, palPointers, true);
+		
+		AbstractRom rom = hm.rom;
 		entries = new PhotoEntry[32];
 		for (int i = 0; i < entries.length; i++)
 		{
@@ -303,6 +318,12 @@ public class PhotoEditor extends EbHackModule
 			short centerX = (short) rom.readMulti(address + 2, 2);
 			short centerY = (short) rom.readMulti(address + 4, 2);
 			short palette = (short) rom.readMulti(address + 6, 2);
+			int palNum = -1;
+			for (int j = 0; j < palPointers.length; j++)
+				if ((palette & 0xffff) == palPointers[j])
+					palNum = j;
+			if (palNum == -1)
+				System.out.println("Error getting palette number");
 			byte direction = (byte) (rom.readByte(address + 8) / 0x8);
 			byte distance = rom.readByte(address + 9);
 			short landX = (short) rom.readMulti(address + 10, 2);
@@ -328,18 +349,61 @@ public class PhotoEditor extends EbHackModule
 			}
 			
 			entries[i] = new PhotoEntry(flag, centerX, centerY,
-					palette, direction, distance, landX, landY,
+					palNum, direction, distance, landX, landY,
 					partyXY, extraSprites);
 		}
 	}
 	
+	private static boolean readPalettes(HackModule hm, int[] palPointers,
+			boolean allowFailure)
+	{
+		AbstractRom r = hm.rom;
+		
+		palettes = new Color[NUM_PALETTES][16];
+        byte[] palBuffer = new byte[4300];
+        /*** DECOMPRESS PALETTES ** */
+        System.out.println("About to attempt decompressing "
+        	+ palBuffer.length + " bytes of photo palettes.");
+        int[] tmp = EbHackModule.decomp(r.readRegAsmPointer(photoPalsPointer), palBuffer, r);
+        if (tmp[0] < 0)
+        {
+            System.out.println("Error " + tmp[0]
+                + " decompressing photo palettes.");
+            if (allowFailure)
+            {
+            	Arrays.fill(palettes, Color.BLACK); // EMPTY PALETTES
+            	palLen = 0;
+            }
+            else
+            	return false;
+        }
+        else
+        {
+        	palLen = tmp[1];
+            System.out.println("Photo palettes: Decompressed " + tmp[0]
+                + " bytes from a " + tmp[1] + " byte compressed block.");
+
+            int palOffset = 0;
+            for (int i = 0; i < NUM_PALETTES; i++)
+            {
+            	palPointers[i] = palOffset;
+                HackModule.readPalette(palBuffer, palOffset, palettes[i]);
+                palOffset += palettes[i].length * 2;
+            }
+        }
+        return true;
+	}
+	
 	public void writeToRom()
 	{
+		int palPointer = 0;
+		writePalettes(this, palPointer, photoPaletteChooser.getSelectedIndex());
+		
 		PhotoEntry photo = entries[entryChooser.getSelectedIndex()];
 		photo.setFlag((short) Integer.parseInt(flag.getText(),16));
 		photo.setCenterX((short) Integer.parseInt(centerX.getText()));
 		photo.setCenterY((short) Integer.parseInt(centerY.getText()));
-		photo.setPalette((short) Integer.parseInt(palette.getText()));
+		photo.setPalette(photoPaletteChooser.getSelectedIndex());
 		photo.setLandX((short) Integer.parseInt(landX.getText()));
 		photo.setLandY((short) Integer.parseInt(landY.getText()));
 		photo.setDirection((byte) direction.getSelectedIndex());
@@ -371,17 +435,43 @@ public class PhotoEditor extends EbHackModule
 		}
 		
 		rom.write(0x21318A + (entryChooser.getSelectedIndex() * 62),
-				photo.toByteArray());
+				photo.toByteArray(palPointer));
+	}
+	
+	public static boolean writePalettes(HackModule hm, int palPointer, int palNum)
+	{
+        byte[] udataPal = new byte[4300];
+        int palOff = 0;
+        /* COMPRESS PALETTE */
+        for (int i = 0; i < NUM_PALETTES; i++)
+        {
+            HackModule.writePalette(udataPal, palOff, palettes[i]);
+            palOff += palettes[i].length * 2;
+        }
+
+        byte[] compPal;
+        int palCompLen = comp(udataPal, compPal = new byte[2800]);
+        if (!hm.writeToFreeASMLink(compPal, photoPalsPointer, palLen,
+            palCompLen))
+            return false;
+        System.out.println("Wrote "
+            + (palLen = palCompLen)
+            + " bytes of the photo palettes at "
+            + Integer.toHexString(palPointer = hm.rom
+                .readRegAsmPointer(photoPalsPointer)) + " to "
+            + Integer.toHexString(palPointer + palCompLen - 1) + ".");
+        return true;
 	}
 	
 	public void updateComponents()
 	{
+		muteEvents = true;
 		PhotoEntry photo = entries[entryChooser.getSelectedIndex()];
 		direction.setSelectedIndex(photo.getDirection());
 		flag.setText(Integer.toString(photo.getFlag(),16));
 		centerX.setText(Integer.toString(photo.getCenterX()));
 		centerY.setText(Integer.toString(photo.getCenterY()));
-		palette.setText(Integer.toString(photo.getPalette()));
+		photoPaletteChooser.setSelectedIndex(photo.getPalette());
 		distance.setText(Integer.toString(photo.getDistance()));
 		landX.setText(Integer.toString(photo.getLandX()));
 		landY.setText(Integer.toString(photo.getLandY()));
@@ -433,6 +523,15 @@ public class PhotoEditor extends EbHackModule
 		}
 		
 		preview.remoteRepaint();
+		muteEvents = false;
+	}
+	
+	public void updatePaletteDisplay()
+	{
+		muteEvents = true;
+		sp.setPalette(palettes[photoPaletteChooser.getSelectedIndex()]);
+		sp.repaint();
+		muteEvents = false;
 	}
 	
 	public void returnSeek(int x, int y, int tileX, int tileY) {
@@ -454,6 +553,8 @@ public class PhotoEditor extends EbHackModule
 			hide();
 		else if (ae.getSource().equals(entryChooser))
 			updateComponents();
+		else if (ae.getSource().equals(photoPaletteChooser))
+			updatePaletteDisplay();
 		else if (ae.getSource().equals(centerSeek))
 			net.starmen.pkhack.JHack.main.showModule(
         			MapEditor.class, this);
@@ -494,7 +595,7 @@ public class PhotoEditor extends EbHackModule
 
 	public void changedUpdate(DocumentEvent e)
 	{
-		if (e.getDocument().getLength() > 0)
+		if ((e.getDocument().getLength() > 0) && !muteEvents)
 			preview.remoteRepaint();
 	}
 
@@ -508,14 +609,15 @@ public class PhotoEditor extends EbHackModule
 		changedUpdate(e);
 	}
 	
-	public class PhotoEntry
+	public static class PhotoEntry
 	{
-		private short flag, centerX, centerY, palette, landX, landY;
+		private int palette;
+		private short flag, centerX, centerY, landX, landY;
 		private short[][] partyXY, extraSprites;
 		private byte direction, distance;
 		
 		public PhotoEntry(short flag, short centerX, short centerY,
-				short palette, byte direction, byte distance,
+				int palette, byte direction, byte distance,
 				short landX, short landY, short[][] partyXY,
 				short[][] extraSprites)
 		{
@@ -561,12 +663,12 @@ public class PhotoEditor extends EbHackModule
 			this.centerY = centerY;
 		}
 		
-		public short getPalette()
+		public int getPalette()
 		{
 			return palette;
 		}
 		
-		public void setPalette(short palette)
+		public void setPalette(int palette)
 		{
 			this.palette = palette;
 		}
@@ -663,7 +765,7 @@ public class PhotoEditor extends EbHackModule
 			extraSprites[num][1] = y;
 		}
 		
-		public byte[] toByteArray()
+		public byte[] toByteArray(int palPointer)
 		{
 			byte[] byteArray = new byte[62];
 			byteArray[0] = (byte) (flag & 0xff);
@@ -672,8 +774,8 @@ public class PhotoEditor extends EbHackModule
 			byteArray[3] = (byte) ((centerX & 0xff00) / 0x100);
 			byteArray[4] = (byte) (centerY & 0xff);
 			byteArray[5] = (byte) ((centerY & 0xff00) / 0x100);
-			byteArray[6] = (byte) (palette & 0xff);
-			byteArray[7] = (byte) ((palette & 0xff00) / 0x100);
+			byteArray[6] = (byte) (palPointer & 0xff);
+			byteArray[7] = (byte) ((palPointer & 0xff00) / 0x100);
 			byteArray[8] = direction;
 			byteArray[9] = distance;
 			byteArray[10] = (byte) (landX & 0xff);
@@ -722,12 +824,13 @@ public class PhotoEditor extends EbHackModule
 			movingSprite = -1, movingSpriteX,
 			movingSpriteY;
     	private JComponent[][] party, extra;
-    	private JTextField palette, landX, landY;
+    	private JTextField landX, landY;
+    	private JComboBox palette;
     	
     	public PhotoPreview(HackModule hm,
     			JComponent[][] party,
     			JComponent[][] extra,
-				JTextField palette,
+				JComboBox palette,
 				JTextField landX,
 				JTextField landY)
     	{
@@ -889,7 +992,7 @@ public class PhotoEditor extends EbHackModule
         		if (((JCheckBox) party[i][0]).isSelected())
         		{         		
             		SpriteEditor.SpriteInfoBlock sib =
-                		SpriteEditor.sib[defaultPartySprites[i]];
+                		SpriteEditor.sib[SpriteCharacterTableEditor.getPlayableSPT(i,0)];
             		
             		int x = (Integer.parseInt(((JTextField) party[i][1]).getText()) * 8)
             				- (tileX * MapEditor.tileWidth) - (sib.width * 4);
@@ -904,9 +1007,9 @@ public class PhotoEditor extends EbHackModule
             				firstX = x;
             				firstY = y;
             			}
-            			EbMap.loadSpriteImage(hm, defaultPartySprites[i],4);
+            			EbMap.loadSpriteImage(hm, SpriteCharacterTableEditor.getPlayableSPT(i,0),4);
             			g.drawImage(
-                    			EbMap.getSpriteImage(defaultPartySprites[i],4),x,y,this);
+                    			EbMap.getSpriteImage(SpriteCharacterTableEditor.getPlayableSPT(i,0),4),x,y,this);
             			g2d.setPaint(Color.red);
                 		g2d.draw(new Rectangle2D.Double(
                     			x - 1, y - 1,
@@ -990,24 +1093,20 @@ public class PhotoEditor extends EbHackModule
         	if (movingSprite > -1)
         		if (movingSprite < 6)
         		{
-        			SpriteEditor.SpriteInfoBlock sib = SpriteEditor.sib[movingSprite];
+        			int spt = SpriteCharacterTableEditor.getPlayableSPT(movingSprite,0);
+        			//SpriteEditor.SpriteInfoBlock sib = SpriteEditor.sib[movingSprite];
                 	EbMap.loadSpriteImage(hm,
-        					defaultPartySprites[movingSprite],4);
+                			SpriteCharacterTableEditor.getPlayableSPT(spt,0),4);
         			g.drawImage(
-                			EbMap.getSpriteImage(
-                					defaultPartySprites[movingSprite],4),
+                			EbMap.getSpriteImage(spt,4),
         					movingSpriteX,
 							movingSpriteY,this);
         			g2d.setPaint(Color.red);
             		g2d.draw(new Rectangle2D.Double(
                 			movingSpriteX - 1,
 							movingSpriteY - 1,
-							EbMap.getSpriteImage(
-									defaultPartySprites[movingSprite],4)
-													.getWidth(this) + 1,
-							EbMap.getSpriteImage(
-									defaultPartySprites[movingSprite],4)
-													.getHeight(this) + 1));
+							EbMap.getSpriteImage(spt,4).getWidth(this) + 1,
+							EbMap.getSpriteImage(spt,4).getHeight(this) + 1));
         		}
         		else if (movingSprite < 10)
         		{
@@ -1185,7 +1284,7 @@ public class PhotoEditor extends EbHackModule
             	for (int i = 0; i < party.length; i++)
             	{
             		SpriteEditor.SpriteInfoBlock sib =
-                		SpriteEditor.sib[defaultPartySprites[i]];
+                		SpriteEditor.sib[SpriteCharacterTableEditor.getPlayableSPT(i,0)];
             		int x = (Integer.parseInt(((JTextField) party[i][1]).getText()) * 8)
     					- (preview.getTileX() * MapEditor.tileWidth)
 						- (sib.width * 4);
@@ -1268,8 +1367,8 @@ public class PhotoEditor extends EbHackModule
 				if (preview.getMovingSprite() < 6)
 				{
 					SpriteEditor.SpriteInfoBlock sib =
-                		SpriteEditor.sib[defaultPartySprites[
-											preview.getMovingSprite()]];
+                		SpriteEditor.sib[SpriteCharacterTableEditor.getPlayableSPT(
+                				preview.getMovingSprite(),0)];
 					((JCheckBox) party[preview.getMovingSprite()][0])
 						.setSelected(true);
 					((JTextField) party[preview.getMovingSprite()][1])
