@@ -5,6 +5,7 @@ NEXT VERSION (after v0.5.0.2):
 # Hex Editor: BUGFIX: goto doesn't allow entry of non-hex digits
 # Due to display problems, the CDE/Motif look and feel is no longer offered.
 # Compression format for auto-update download may be selected (zip, 7z, bz2, rar)
+# Enemy Editor: Added impossible to run flag and mirror success rate % (Unknown J)
 
 v0.5.0.2:
 # IPSFile: BUGFIX: IPS creation no longer uses recursion, should fix obscure

@@ -62,7 +62,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
     //stats tab stuff
     private JTextField name, hp, pp, exp, money, speed, offense, defense,
             level, guts, iq;
-    private JCheckBox theFlag, runFlag;
+    private JCheckBox theFlag, runFlag, bossFlag;
     private JComboBox gender, itemFreq, status;
     private ItemEditor.ItemEntry item;
     private JTextField missRate;
@@ -84,6 +84,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
     //weakness tab stuff
     private JComboBox weakness[] = new JComboBox[5];
+    private JTextField mirrorRate;
 
     //unknowns tab stuff
     private JTextField unknowna, unknownb, unknownc, unknownd, unknowne,
@@ -179,7 +180,12 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         statsTabRight.add(pairComponents(runFlag = new JCheckBox(
             "Fear higher leveled PCs?"), new JLabel(), true));
         runFlag
-            .setToolTipText("If checked this enemy will run from your party (out of battle).");
+            .setToolTipText("If checked this enemy will run from your party "
+                + "(out of battle).");
+        statsTabRight.add(pairComponents(bossFlag = new JCheckBox(
+            "Impossible to run from"), new JLabel(), true));
+        bossFlag.setToolTipText("If checked, attempts to use the run battle "
+            + "command automatically fail.");
         statsTabRight.add(Box.createVerticalStrut(10));
         statsTabRight.add(item = new ItemEditor.ItemEntry("Item", this, this));
         statsTabRight.add(getLabeledComponent("Item Freq: ",
@@ -199,6 +205,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         type.addItem(getNumberedString("Normal", 0));
         type.addItem(getNumberedString("Insect", 1));
         type.addItem(getNumberedString("Metal", 2));
+        statsTabRight.add(Box.createVerticalStrut(10));
         statsTab.add(pairComponents(statsTabRight, new JLabel(), false),
             BorderLayout.EAST);
 
@@ -369,6 +376,9 @@ public class EnemyEditor extends EbHackModule implements ActionListener
                     ? ffWeaknessCat
                     : weaknessCat)));
         }
+        weaknessTab.add(getLabeledComponent("Mirror success rate: ",
+            pairComponents(mirrorRate = HackModule.createSizedJTextField(3,
+                true), new JLabel("%"), true)));
         tabs.addTab("Weaknesses", pairComponents(pairComponents(weaknessTab,
             new JLabel(), true), new JLabel(), false));
 
@@ -412,9 +422,10 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             unknowni = createSizedJTextField(3, true),
             "Replaced by row in Graphics/Sound tab."));
         unknowni.setEnabled(false);
-        unknownsTab.add(getLabeledComponent("Unknown J: ",
+        unknownsTab.add(getLabeledComponent("Unknown J (mirror percentage): ",
             unknownj = createSizedJTextField(3, true),
-            "Last byte; see: unknown1.txt"));
+            "Replaced by mirror success rate (%) on weaknesses tab"));
+        unknownj.setEnabled(false);
         unknownsTab.add(getLabeledComponent("Unknown K: ",
             unknownk = createSizedJTextField(3, true),
             "Byte after offense, offense is confirmed one byte"));
@@ -602,6 +613,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         //stats tab - right side
         theFlag.setSelected(enemies[i].getTheFlag());
         runFlag.setSelected((enemies[i].getRunFlag() & 1) == 1);
+        bossFlag.setSelected((enemies[i].getBossFlag() & 1) == 1);
         int gi = enemies[i].getGender() - 1; //gender index; 0 isn't used
         if (gi >= 0 && gi < 3)
             gender.setSelectedIndex(gi);
@@ -676,6 +688,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         //weaknesses tab
         for (int j = 0; j < weakness.length; j++)
             weakness[j].setSelectedIndex(enemies[i].getWeakness(j));
+        mirrorRate.setText(Integer.toString(enemies[i].getMirrorPercent()));
 
         //unknowns tab
         unknowna.setText(Integer.toString(enemies[i].getUnknowna()));
@@ -718,7 +731,9 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             //stats tab - right side
             enemies[i].setTheFlag(theFlag.isSelected());
             enemies[i].setRunFlag((enemies[i].getRunFlag() & 0xfe)
-                + (runFlag.isSelected() ? 1 : 0));
+                | (runFlag.isSelected() ? 1 : 0));
+            enemies[i].setBossFlag((enemies[i].getBossFlag() & 0xfe)
+                | (bossFlag.isSelected() ? 1 : 0));
             enemies[i].setGender(gender.getSelectedIndex() + 1); //0 isn't used
             if (item.getSelectedIndex() != -1)
                 enemies[i].setItem(item.getSelectedIndex());
@@ -756,6 +771,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             //weaknesses tab
             for (int j = 0; j < weakness.length; j++)
                 enemies[i].setWeakness(j, weakness[j].getSelectedIndex());
+            enemies[i].setMirrorPercent(Integer.parseInt(mirrorRate.getText()));
 
             //unknowns tab
             //enemies[i].setUnknowna(Integer.parseInt(unknowna.getText()));
@@ -767,7 +783,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             //enemies[i].setUnknowng(Integer.parseInt(unknowng.getText()));
             enemies[i].setUnknownh(Integer.parseInt(unknownh.getText()));
             //enemies[i].setRow(Integer.parseInt(unknowni.getText()));
-            enemies[i].setUnknownj(Integer.parseInt(unknownj.getText()));
+            //enemies[i].setMirrorPercent(Integer.parseInt(unknownj.getText()));
             enemies[i].setUnknownk(Integer.parseInt(unknownk.getText()));
             enemies[i].setUnknownl(Integer.parseInt(unknownl.getText()));
         }
@@ -983,7 +999,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         private int row;
         //see http://pkhack.starmen.net/old/misc/unknown2.txt
         private int maxCall; // <= 8
-        private int unknownj;
+        private int mirrorPercent;
         //see http://pkhack.starmen.net/old/misc/unknown1.txt
         private HackModule hm;
 
@@ -1073,7 +1089,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
             this.maxCall = rom.readSeek();
 
-            this.unknownj = rom.readSeek();
+            this.mirrorPercent = rom.readSeek();
 
             //			if (this.runFlag != 7)
             //			{
@@ -1164,7 +1180,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
             rom.writeSeek(this.maxCall);
 
-            rom.writeSeek(this.unknownj);
+            rom.writeSeek(this.mirrorPercent);
         }
 
         /**
@@ -1625,13 +1641,25 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Returns the unknownj.
+         * Returns the percent chance of Poo's mirror success.
          * 
          * @return int
+         * @deprecated
+         * @see #getMirrorPercent()
          */
         public int getUnknownj()
         {
-            return unknownj;
+            return mirrorPercent;
+        }
+
+        /**
+         * Returns the percent chance of Poo's mirror success.
+         * 
+         * @return int
+         */
+        public int getMirrorPercent()
+        {
+            return mirrorPercent;
         }
 
         /**
@@ -2074,13 +2102,25 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Sets the unknownj.
+         * Sets the percentage chance of Poo's mirror being successful.
          * 
-         * @param unknownj The unknownj to set
+         * @param unknownj The mirrorPercent to set
+         * @deprecated
+         * @see #setMirrorPercent(int)
          */
         public void setUnknownj(int unknownj)
         {
-            this.unknownj = unknownj;
+            this.mirrorPercent = unknownj;
+        }
+
+        /**
+         * Sets the percentage chance of Poo's mirror being successful.
+         * 
+         * @param mirrorPercent The mirrorPercent to set
+         */
+        public void setMirrorPercent(int mirrorPercent)
+        {
+            this.mirrorPercent = mirrorPercent;
         }
 
         /**
