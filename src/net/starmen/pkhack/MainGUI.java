@@ -269,6 +269,8 @@ public class MainGUI implements ActionListener, WindowListener
 
         JMenu optionsMenu = new JMenu("Options");
         optionsMenu.setMnemonic('o');
+        optionsMenu.add(new PrefsCheckBox("Display Console Dialog", prefs,
+            "consoleDialog", false, 'c', null, "consoleDialog", this));
         optionsMenu.add(new PrefsCheckBox("Use Hex Numbers", prefs,
             "useHexNumbers", true, 'h'));
         optionsMenu.add(new PrefsCheckBox("Use Direct File IO", prefs,
@@ -558,6 +560,8 @@ public class MainGUI implements ActionListener, WindowListener
         try
         {
             UIManager.setLookAndFeel(prefs.getValue("laf"));
+            JHack.out.updateUI();
+            JHack.err.updateUI();
         }
         catch (NullPointerException e)
         {
@@ -580,6 +584,11 @@ public class MainGUI implements ActionListener, WindowListener
                 "Check for updates automatically?", JOptionPane.YES_NO_OPTION);
             this.getPrefs().setValueAsBoolean("checkVersion",
                 ques == JOptionPane.YES_OPTION);
+        }
+        if (this.getPrefs().getValue("consoleDialog") != null)
+        {
+            JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
+                "consoleDialog"));
         }
         //convert expRomPath and orgRomPath to game specific names
         if (this.getPrefs().hasValue("expRomPath"))
@@ -1162,6 +1171,11 @@ public class MainGUI implements ActionListener, WindowListener
                 .getFullCredits()), "About" + MainGUI.getDescription() + " "
                 + MainGUI.getVersion(), JOptionPane.INFORMATION_MESSAGE);
         }
+        else if (ae.getActionCommand().equalsIgnoreCase("consoleDialog"))
+        {
+            JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
+                "consoleDialog"));
+        }
         else if (ae.getActionCommand().equalsIgnoreCase("directio"))
         {
             //            this.getPrefs().setValueAsBoolean(
@@ -1226,6 +1240,8 @@ public class MainGUI implements ActionListener, WindowListener
                     UIManager.setLookAndFeel(laf);
                     SwingUtilities.updateComponentTreeUI(SwingUtilities
                         .getRoot(mainWindow));
+                    JHack.out.updateUI();
+                    JHack.err.updateUI();
 
                     for (Iterator i = moduleList.iterator(); i.hasNext();)
                         ((HackModule) i.next()).updateUI();
