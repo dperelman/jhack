@@ -302,6 +302,7 @@ public class MainGUI implements ActionListener, WindowListener
         String[][] compTypes = new String[][]{{"zip", "ZIP, most common"},
             {"bz2", "BZip2"}, {"rar", "RAR"}, {"7z", "7-Zip, best"}};
         ButtonGroup compTypeGroup = new ButtonGroup();
+        String formatPref = prefs.getValue("updateFormat");
         for (int i = 0; i < compTypes.length; i++)
         {
             JRadioButtonMenuItem type = new JRadioButtonMenuItem("."
@@ -311,8 +312,8 @@ public class MainGUI implements ActionListener, WindowListener
             type.addActionListener(this);
             compType.add(type);
             compTypeGroup.add(type);
-            if ((!prefs.hasValue("updateFormat") && i == 0)
-                || prefs.getValue("updateFormat").equals(compTypes[i][0]))
+            if ((formatPref == null && i == 0)
+                || (formatPref != null && formatPref.equals(compTypes[i][0])))
                 type.setSelected(true);
         }
         optionsMenu.add(compType);
