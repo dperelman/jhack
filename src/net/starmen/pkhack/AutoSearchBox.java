@@ -159,9 +159,12 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	 */
 	public void actionPerformed(ActionEvent ae)
 	{
-		String _ = comboBox.getSelectedItem().toString();
-		if (!(_==null))
+		Object a = comboBox.getSelectedItem();
+		if (!(a.equals(null)))
+		{
+			String _ = a.toString();
 			tf.setText(_.substring(0,_.indexOf(" ")));	
+		}
 	}
 
 	/*
