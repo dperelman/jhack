@@ -204,6 +204,7 @@ public class RomFileIO extends AbstractRom
         //ensure mirror for ExHiRom
         if (length() == 0x600200)
         {
+            write(0x0101d5, 0x25);
             write(0x0101d7, 0x0d);
             write(0x408200, readByte(0x008200, 0x8000));
         }
@@ -260,6 +261,7 @@ public class RomFileIO extends AbstractRom
         {
             rom.seek(rom.length());
             byte[] b = new byte[2 << 20]; //2 mebibytes
+            write(0x0101d5, 0x25);
             write(0x0101d7, 0x0d);
             System.arraycopy(readByte(0x008200, 0x8000), 0, b, 0x8000, 0x8000);
             rom.write(b);

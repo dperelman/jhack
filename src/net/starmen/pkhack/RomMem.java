@@ -46,6 +46,7 @@ public class RomMem extends AbstractRom
         //ensure mirror for ExHiRom
         if (length() == 0x600200)
         {
+            rom[0x0101d5] = 0x25;
             rom[0x0101d7] = 0x0d;
             System.arraycopy(rom, 0x008200, rom, 0x408200, 0x8000);
         }
@@ -164,6 +165,7 @@ public class RomMem extends AbstractRom
         byte[] out = new byte[rl + (2 << 20)];
         Arrays.fill(out, rl, out.length, (byte) 0);
         System.arraycopy(rom, 0, out, 0, rl);
+        out[0x0101d5] = 0x25;
         out[0x0101d7] = 0x0d;
         System.arraycopy(out, 0x008200, out, 0x408200, 0x8000);
 
