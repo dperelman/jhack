@@ -3945,7 +3945,7 @@ public class MapEditor extends EbHackModule implements ActionListener
     		this.height = height;
     		this.textTiles = textTiles;
     		addMouseListener(this);
-    		scroll = new JScrollBar(JScrollBar.HORIZONTAL, 0, width, 0, 1024 / (height + 1));
+    		scroll = new JScrollBar(JScrollBar.HORIZONTAL, 0, width, 0, 1024 / (height + 1) - 1);
     		scroll.addAdjustmentListener(this);
     		
     		this.setPreferredSize(new Dimension(
