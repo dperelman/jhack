@@ -10,23 +10,29 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
+import net.starmen.pkhack.eb.MapEditor.MapGraphics;
 
 /**
  * Edits the PSI Teleport destination entries.
  * 
  * @author AnyoneEB
  */
-public class TeleportEditor extends EbHackModule implements ActionListener
+public class TeleportEditor extends EbHackModule implements ActionListener, SeekListener
 {
     /**
      * @param rom
@@ -36,7 +42,11 @@ public class TeleportEditor extends EbHackModule implements ActionListener
         super(rom, prefs);
     }
     private JTextField[][] tfs = new JTextField[16][4];
+    private JRadioButton[] rbs = new JRadioButton[16];
     private JComboBox ppuBox;
+    private MapGraphics preview;
+    private JButton seekButton;
+    
     /**
      * Array of teleport destination entries.
      * 
@@ -73,23 +83,82 @@ public class TeleportEditor extends EbHackModule implements ActionListener
             labels.add(getSizedJLabel(titles[i], i == 0 ? 25 : 5));
         }
         entry.add(labels);
+        
+        DocumentListener xyListener =
+			new DocumentListener()
+			{
+				public void changedUpdate(DocumentEvent e)
+				{
+					for (int i = 0; i < tfs.length; i++)
+						for (int j = 0; j < tfs[i].length; j++)
+							if (e.getDocument().equals(tfs[i][j].getDocument())
+									&& tfs[i][2].getText().length() > 0
+									&& tfs[i][3].getText().length() > 0)
+							{
+								rbs[i].setSelected(true);
+			            		int x = Integer.parseInt(tfs[i][2].getText()),
+									y = Integer.parseInt(tfs[i][3].getText());
+			            		if (ppuBox.getSelectedIndex() == 0)
+			            		{
+			            			preview.setMapXY(x / 4, y / 4);
+				            		preview.setPreviewBoxXY(x, y);
+			            		}
+			            		else
+			            		{
+			            			preview.setMapXY(x,y);
+			            			preview.disablePreviewBox();
+			            		}
+			            		preview.remoteRepaint();
+			            		return;
+							}
+				}
+				
+				public void insertUpdate(DocumentEvent e)
+				{
+					changedUpdate(e);
+				}
 
+				public void removeUpdate(DocumentEvent e)
+				{
+					changedUpdate(e);
+				}
+			};
+		
+		ButtonGroup bg = new ButtonGroup();
         for (int i = 0; i < tfs.length; i++)
         {
-            entry.add(getTeleportRow(tfs[i]));
+        	rbs[i] = new JRadioButton();
+        	rbs[i].addActionListener(this);
+        	bg.add(rbs[i]);
+            entry.add(getTeleportRow(tfs[i], rbs[i], bg, xyListener));
         }
+        
+        JPanel mapStuff = new JPanel();
+        mapStuff.setLayout(new BoxLayout(mapStuff, BoxLayout.Y_AXIS));
+        preview = new MapGraphics(this, 4, 4, 5, false, false, true);
+		preview.setPreferredSize(new Dimension(
+				(MapEditor.tileWidth * preview.getScreenWidth()) + 1,
+				(MapEditor.tileHeight * preview.getScreenHeight()) + 1));
+		mapStuff.add(preview);
+		seekButton = new JButton("Seek");
+		seekButton.addActionListener(this);
+		mapStuff.add(seekButton);
 
         mainWindow.getContentPane().add(entry, BorderLayout.CENTER);
+        mainWindow.getContentPane().add(mapStuff, BorderLayout.LINE_START);
         mainWindow.pack();
     }
 
-    private JPanel getTeleportRow(JTextField[] in)
+    private JPanel getTeleportRow(JTextField[] in, JRadioButton rb,
+    		ButtonGroup bg, DocumentListener dl)
     {
         JPanel out = new JPanel();
         out.setLayout(new BoxLayout(out, BoxLayout.X_AXIS));
+        out.add(rb);
         for (int j = 0; j < in.length; j++)
         {
             in[j] = HackModule.createSizedJTextField(j == 0 ? 25 : 5, j >= 2);
+            in[j].getDocument().addDocumentListener(dl);
             out.add(in[j]);
         }
         return out;
@@ -108,7 +177,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener
      */
     public String getVersion()
     {
-        return "0.1";
+        return "0.2";
     }
 
     /**
@@ -135,7 +204,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener
     {
         super.show();
         readFromRom();
-        showInfo();
+        showInfo();		
         mainWindow.setVisible(true);
     }
 
@@ -181,6 +250,13 @@ public class TeleportEditor extends EbHackModule implements ActionListener
                 tfs[i][2].setText(Integer.toString(td[i].x / 4));
                 tfs[i][3].setText(Integer.toString(td[i].y / 4));
             }
+        rbs[0].setSelected(true);
+        preview.setMapXY(td[0].x / 4, td[0].y / 4);
+        if (ppuBox.getSelectedIndex() == 0)
+        	preview.setPreviewBoxXY(td[0].x, td[0].y);
+		else
+			preview.disablePreviewBox();
+		preview.remoteRepaint();
     }
 
     private void saveInfo()
@@ -230,7 +306,43 @@ public class TeleportEditor extends EbHackModule implements ActionListener
         {
             showInfo();
         }
+        else if (ae.getSource().equals(seekButton))
+        {
+        	net.starmen.pkhack.JHack.main.showModule(MapEditor.class, this);
+        }
+        else if (ae.getSource() instanceof JRadioButton)
+        {
+            for (int i = 0; i < rbs.length; i++)
+            	if (rbs[i].isSelected())
+            	{
+            		int x = Integer.parseInt(tfs[i][2].getText()),
+						y = Integer.parseInt(tfs[i][3].getText());
+            		if (ppuBox.getSelectedIndex() == 0)
+            		{
+            			preview.setMapXY(x / 4, y / 4);
+	            		preview.setPreviewBoxXY(x, y);
+            		}
+            		else
+            		{
+            			preview.setMapXY(x,y);
+            			preview.disablePreviewBox();
+            		}
+            		preview.remoteRepaint();
+            		return;
+            	}
+        }
     }
+    
+	public void returnSeek(int x, int y, int tileX, int tileY)
+	{
+		for (int i = 0; i < rbs.length; i++)
+        	if (rbs[i].isSelected())
+        	{
+        		td[i].x = x / 8;
+        		td[i].y = y / 8;
+        		showInfo();
+        	}
+	}
 
     /**
      * Represents an entry in the PSI Teleport destinations table.
@@ -562,5 +674,4 @@ public class TeleportEditor extends EbHackModule implements ActionListener
 
         return new ImageIcon(out);
     }
-
 }
