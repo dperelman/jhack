@@ -202,7 +202,7 @@ public class PhotoEditor extends EbHackModule
 						preview.setXY(
 								Integer.parseInt(centerX.getText()),
 								Integer.parseInt(centerY.getText()));
-						preview.remoteRepaint();
+						preview.repaint();
 					}
 				}
 				
@@ -325,6 +325,9 @@ public class PhotoEditor extends EbHackModule
 		readPalettes(hm, true);
 		
 		AbstractRom rom = hm.rom;
+		
+		EbMap.loadDrawTilesets(rom);
+		
 		entries = new PhotoEntry[NUM_PHOTOS];
 		for (int i = 0; i < entries.length; i++)
 		{
@@ -544,7 +547,7 @@ public class PhotoEditor extends EbHackModule
 					Integer.toString(photo.getExtraY(i)));
 		}
 		
-		preview.remoteRepaint();
+		preview.repaint();
 		muteEvents = false;
 	}
 	
@@ -555,7 +558,7 @@ public class PhotoEditor extends EbHackModule
 				palettes[photoPaletteChooser.getSelectedIndex()][subPaletteChooser.getSelectedIndex()]);
 		sp.repaint();
 		preview.setPalette(palettes[photoPaletteChooser.getSelectedIndex()]);
-		preview.remoteRepaint();
+		preview.repaint();
 		muteEvents = false;
 	}
 	
@@ -567,7 +570,7 @@ public class PhotoEditor extends EbHackModule
 		centerX.setText(Integer.toString(centerXnum));
 		centerY.setText(Integer.toString(centerYnum));
 		centerSeek.setEnabled(true);
-		preview.remoteRepaint();
+		preview.repaint();
 	}
 
 	public void actionPerformed(ActionEvent ae)
@@ -577,7 +580,7 @@ public class PhotoEditor extends EbHackModule
 			palettes[photoPaletteChooser.getSelectedIndex()][0][sp.getSelectedColorIndex()] =
 				sp.getNewColor();
 			preview.setPalette(palettes[photoPaletteChooser.getSelectedIndex()]);
-			preview.remoteRepaint();
+			preview.repaint();
 		}
 		else if (ae.getSource().equals(entryChooser))
 			updateComponents();
@@ -596,7 +599,7 @@ public class PhotoEditor extends EbHackModule
 			net.starmen.pkhack.JHack.main.showModule(
         			MapEditor.class, this);
 		else if (ae.getSource().equals(refresh))
-			preview.remoteRepaint();
+			preview.repaint();
 		else if (ae.getSource() instanceof JCheckBox)
 		{
 			for (int i = 0; i < party.length; i++)
@@ -607,7 +610,7 @@ public class PhotoEditor extends EbHackModule
 							cbox.isSelected());
 					((JTextField) party[i][2]).setEditable(
 							cbox.isSelected());
-					preview.remoteRepaint();
+					preview.repaint();
 					return;
 				}
 					
@@ -622,12 +625,12 @@ public class PhotoEditor extends EbHackModule
 							cbox.isSelected());
 					((JTextField) extra[i][3]).setEditable(
 							cbox.isSelected());
-					preview.remoteRepaint();
+					preview.repaint();
 					return;
 				}
 		}
 		else if (ae.getSource() instanceof JComboBox)
-			preview.remoteRepaint();
+			preview.repaint();
 		else if (ae.getActionCommand().equals("apply"))
 			writeToRom();
 		else if (ae.getActionCommand().equals("close"))
@@ -637,7 +640,7 @@ public class PhotoEditor extends EbHackModule
 	public void changedUpdate(DocumentEvent e)
 	{
 		if ((e.getDocument().getLength() > 0) && !muteEvents)
-			preview.remoteRepaint();
+			preview.repaint();
 	}
 
 	public void insertUpdate(DocumentEvent e)
@@ -867,7 +870,6 @@ public class PhotoEditor extends EbHackModule
 			movingSprite = -1, spOrigX, spOrigY;
     	private JComponent[][] party, extra;
     	private JTextField landX, landY;
-    	private JComboBox palette;
     	private Color[][] palColors;
     	private Image tiles;
     	
@@ -882,7 +884,6 @@ public class PhotoEditor extends EbHackModule
     		this.rom = hm.rom;
     		this.party = party;
     		this.extra = extra;
-    		this.palette = palette;
     		this.landX = landX;
     		this.landY = landY;
     	}
@@ -1162,11 +1163,6 @@ public class PhotoEditor extends EbHackModule
         	this.mapArray = null;
         }
         
-        public void remoteRepaint()
-        {
-            repaint();
-        }
-        
         public int getPhotoWidth()
         {
         	return photoWidth;
@@ -1200,6 +1196,7 @@ public class PhotoEditor extends EbHackModule
         public void setPalette(Color[][] palColors)
         {
         	this.palColors = palColors;
+        	tiles = null;
         }
         
         public Image getTilesImage()
