@@ -143,8 +143,8 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
         JPanel prev = new JPanel(new BorderLayout());
         preview = new MapGraphics(this, 4, 4, 5, false, false, true);
         preview.setPreferredSize(new Dimension((MapEditor.tileWidth * preview
-            .getScreenWidth()) + 1, (MapEditor.tileHeight * preview
-            .getScreenHeight()) + 1));
+            .getScreenWidth()), (MapEditor.tileHeight * preview
+            .getScreenHeight())));
         prev.add(preview, BorderLayout.CENTER);
         seekButton = new JButton("Seek");
         seekButton.addActionListener(this);
@@ -265,6 +265,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
             }
         rbs[0].setSelected(true);
         preview.setMapXY(td[0].x / 4, td[0].y / 4);
+        System.out.println(td[0].x + " " + td[0].y);
         if (ppuBox.getSelectedIndex() == 0)
             preview.setPreviewBoxXY(td[0].x, td[0].y);
         else

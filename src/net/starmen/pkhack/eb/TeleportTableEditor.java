@@ -319,8 +319,8 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener,
 		
 		preview = new MapGraphics(this, 4, 4, 5, false, false, true);
 		preview.setPreferredSize(new Dimension(
-				(MapEditor.tileWidth * preview.getScreenWidth()) + 1,
-				(MapEditor.tileHeight * preview.getScreenHeight()) + 1));
+				MapEditor.tileWidth * preview.getScreenWidth(),
+				MapEditor.tileHeight * preview.getScreenHeight()));
 
 		mainWindow.getContentPane().add(entry, BorderLayout.CENTER);
 		mainWindow.getContentPane().add(preview, BorderLayout.LINE_START);
