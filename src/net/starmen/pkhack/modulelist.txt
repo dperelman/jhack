@@ -53,6 +53,7 @@ eb.BattleSpriteEditor	 #Edits sprites used by enemies in battle
 eb.FontEditor			#Edits Fonts
 eb.CreditsFontEditor	#Edits Credits font
 eb.WindowBorderEditor	#Edits Window appearence
+eb.WindowPositionEditor #Edits Window position
 eb.TownMapEditor		#Edits town maps
 eb.LogoScreenEditor		#Edits logo screens at start of game (Nitendo, HAL, APE)
 eb.GasStationEditor		#Edits the gas station screen at the start of the game

@@ -1,0 +1,53 @@
+00 - the standard gameplay menu.
+01 - the standard text window.
+02 - displaying characters' inventories.
+03 - the Use/Give/Drop/Help menu.
+04 - PSI targetting/cost description box.
+05 - the phone menu.
+06 - the Equip menu.
+07 - the list of equippable items of one type.
+08 - the Status window.
+09 - store windows.
+0A - the cash:on:hand window.
+0B - 
+0C - 
+0D - 
+0E - battle messages window.
+0F - standard battle menu.
+10 - the Offense/Defense/Assist PSI menu.
+11 - 
+12 - Jeff's battle menu
+13 - the file selection menu.
+14 - the Continue/Copy/Delete/Setup menu.
+15 - the copy file menu (with 2 slots available).
+16 - the copy file menu (wiht 1 slot available).
+17 - the delete file confirmation window.
+18 - the text speed selection menu.
+19 - the sound mode selection menu.
+1A - the box showing selected letters of a character's name.
+1B - the 'Name this friend" message box.
+1C - a letter selection box.
+1D - Ness's name confirmation box.
+1E - Paula's name confirmation box.
+1F - Jeff's name confirmation box.
+20 - Poo's name confirmation box.
+21 - King's name confirmation box.
+22 - favorite food confirmation box.
+23 - favorite thing confirmation box.
+24 - the "Are you sure" confirmation box.
+25 - 
+26 - 
+27 - 
+28 - 
+29 - 
+2A - 
+2B - 
+2C - 
+2D - 
+2E - 
+2F - 
+30 - 
+31 - 
+32 - 
+33 - 
+34 - 
