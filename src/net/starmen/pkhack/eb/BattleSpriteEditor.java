@@ -40,7 +40,7 @@ import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
 
@@ -57,7 +57,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
      * @param rom
      * @param prefs
      */
-    public BattleSpriteEditor(Rom rom, XMLPreferences prefs)
+    public BattleSpriteEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -89,7 +89,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
             this.num = i;
             this.address = 0x0E64EE + (i * 5);
 
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
             rom.seek(address);
             orgPointer = HackModule.toRegPointer(rom.readMultiSeek(4));
             size = rom.readSeek();
@@ -162,7 +162,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
             if (!isInited)
                 return false;
 
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
             //write size 4 bytes after the start, 4 byte pointer is first
             rom.write(address + 4, size);
             Dimension d = BATTLE_SPRITE_SIZES[size];
@@ -300,7 +300,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
     public final static BattleSprite[] battleSprites = new BattleSprite[NUM_ENTRIES];
     public static Color[][] palettes;
 
-    private static void readPalettes(Rom rom)
+    private static void readPalettes(AbstractRom rom)
     {
         palettes = new Color[256][16];
         rom.seek(0x0E6714);
@@ -308,7 +308,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
             rom.readPaletteSeek(palettes[pal]);
     }
 
-    private static void writePalettes(Rom rom)
+    private static void writePalettes(AbstractRom rom)
     {
         rom.seek(0x0E6714);
         for (int pal = 0; pal < 32; pal++)
@@ -355,7 +355,6 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
     protected void init()
     {
         reset();
-        EnemyEditor.readFromRom(this);
 
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
@@ -476,10 +475,10 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
      */
     public void show()
     {
-        super.show();
-
         readFromRom();
         EnemyEditor.readFromRom(this);
+        super.show();
+
         spriteSelector.setSelectedIndex(spriteSelector.getSelectedIndex() == -1
             ? 0
             : spriteSelector.getSelectedIndex());
@@ -770,17 +769,11 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         updateZoom();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.starmen.pkhack.HackModule#reset()
-     */
     public void reset()
     {
         super.reset();
         readArray(DEFAULT_BASE_DIR, "insideSprites.txt", rom.getPath(), false,
             battleSpriteNames);
-        readFromRom();
     }
 
     private final static Color[] BITMAP_PAL = new Color[]{new Color(0, 0, 0),

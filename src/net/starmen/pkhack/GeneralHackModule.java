@@ -19,7 +19,7 @@ public abstract class GeneralHackModule extends HackModule
      * @param rom
      * @param prefs
      */
-    public GeneralHackModule(Rom rom, XMLPreferences prefs) {
+    public GeneralHackModule(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
 

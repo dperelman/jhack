@@ -10,9 +10,9 @@ package net.starmen.pkhack;
  */
 public class HexRom implements HexData
 {
-    Rom rom;
+    AbstractRom rom;
 
-    public HexRom(Rom rom)
+    public HexRom(AbstractRom rom)
     {
         this.rom = rom;
     }

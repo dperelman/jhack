@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.starmen.pkhack.MaxLengthDocument;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -27,7 +27,7 @@ public class StartingStatsEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public StartingStatsEditor(Rom rom, XMLPreferences prefs) {
+    public StartingStatsEditor(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
     private JComboBox selector;
@@ -128,7 +128,7 @@ public class StartingStatsEditor extends EbHackModule implements ActionListener
     /**
      * Reads information from ROM into {@link #stats}.
      */
-    public static void readFromRom(Rom rom)
+    public static void readFromRom(AbstractRom rom)
     {
         for (int i = 0; i < stats.length; i++)
         {
@@ -230,7 +230,7 @@ public class StartingStatsEditor extends EbHackModule implements ActionListener
      */
     public static class StartingStatsEntry
     {
-        private Rom rom;
+        private AbstractRom rom;
         private int[] unknown = new int[4];
         private int money;
         private int level;
@@ -245,7 +245,7 @@ public class StartingStatsEditor extends EbHackModule implements ActionListener
          * @param num Number of the entry to read. (0 = Ness, 1 = Paula, 2 =
          *            Jeff, 3 = Poo)
          */
-        public StartingStatsEntry(int num, Rom rom) {
+        public StartingStatsEntry(int num, AbstractRom rom) {
             this.rom = rom;
             this.num = num;
             this.address = 0x15F7F5 + (num * 20);

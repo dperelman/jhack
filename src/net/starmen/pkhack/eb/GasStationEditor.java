@@ -48,7 +48,7 @@ import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.NodeSelectionListener;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
@@ -63,7 +63,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 {
     public static final int NUM_GAS_STATIONS = 1;
 
-    public GasStationEditor(Rom rom, XMLPreferences prefs)
+    public GasStationEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
 
@@ -148,7 +148,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
         private boolean readGraphics(boolean allowFailure, boolean readOrg)
         {
-            Rom r = readOrg
+            AbstractRom r = readOrg
                 ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
                 : hm.rom;
 
@@ -198,7 +198,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
         private boolean readPalettes(boolean allowFailure, boolean readOrg)
         {
-            Rom r = readOrg
+            AbstractRom r = readOrg
                 ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
                 : hm.rom;
 
@@ -242,7 +242,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
         private boolean readArrangement(boolean allowFailure, boolean readOrg)
         {
-            Rom r = readOrg
+            AbstractRom r = readOrg
                 ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
                 : hm.rom;
 
@@ -738,6 +738,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
     public static void readFromRom(EbHackModule hm)
     {
         gasStations[0] = new GasStation(hm);
+        inited = true;
     }
 
     private void readFromRom()
@@ -745,10 +746,11 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         readFromRom(this);
     }
 
+    private static boolean inited = false;
+
     public void reset()
     {
-        //        initgasStationNames(rom.getPath());
-        readFromRom();
+        inited = false;
     }
 
     private class GasStationArrangementEditor extends ArrangementEditor
@@ -1190,10 +1192,6 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         {
             fi.setFocus(arrangementEditor);
         }
-        //        else if (ae.getActionCommand().equals("mapSelector"))
-        //        {
-        //            doMapSelectAction();
-        //        }
         else if (ae.getActionCommand().equals("tileSelector"))
         {
             updateTileEditor();
@@ -1676,6 +1674,10 @@ public class GasStationEditor extends EbHackModule implements ActionListener
      */
     public static boolean importData(byte[] b, GasStationEditor gse)
     {
+        if (!inited)
+            readFromRom(gse);
+        for (int i = 0; i < NUM_GAS_STATIONS; i++)
+            gasStations[i].readInfo();
         boolean out = gse.importData(importData(b));
         if (out)
         {
@@ -1696,6 +1698,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
     private static boolean checkStation(GasImportData gid, int i)
     {
+        gasStations[i].readInfo();
         if (gid.tiles != null)
         {
             //check tiles
@@ -1708,9 +1711,9 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         if (gid.arrangement != null)
         {
             //check arrangement
-            //TODO does this work?
-            if (!Arrays.equals(gid.arrangement, gasStations[i].arrangementList))
-                ;
+            if (!Arrays.equals(gid.arrangement, gasStations[i]
+                .getArrangementArr()))
+                return false;
         }
         if (gid.palette != null)
         {
@@ -1743,6 +1746,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
      */
     public static boolean checkData(byte[] b, GasStationEditor gse)
     {
+        if (!inited)
+            readFromRom(gse);
         GasImportData[] gid = importData(b);
 
         for (int i = 0; i < gid.length; i++)
@@ -1764,6 +1769,10 @@ public class GasStationEditor extends EbHackModule implements ActionListener
      */
     public static boolean restoreData(byte[] b, GasStationEditor gse)
     {
+        if (!inited)
+            readFromRom(gse);
+        for (int i = 0; i < NUM_GAS_STATIONS; i++)
+            gasStations[i].readInfo();
         boolean[][] a = showCheckList(null, "<html>Select which items you wish"
             + "to restore to the orginal EarthBound verions.</html>",
             "Restore what?");

@@ -59,7 +59,7 @@ import net.starmen.pkhack.CCInfo;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
 import net.starmen.pkhack.eb.TPTEditor.TPTEntry;
@@ -75,7 +75,7 @@ public class TextEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public TextEditor(Rom rom, XMLPreferences prefs)
+    public TextEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -407,7 +407,7 @@ public class TextEditor extends EbHackModule implements ActionListener
         return istr;
     }
 
-    public static int loadEXPText(Rom rom)
+    public static int loadEXPText(AbstractRom rom)
     {
         int address = 0x300200;
         int istr;

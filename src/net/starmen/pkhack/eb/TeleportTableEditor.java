@@ -13,7 +13,7 @@ import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -29,7 +29,7 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public TeleportTableEditor(Rom rom, XMLPreferences prefs) {
+    public TeleportTableEditor(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
 
@@ -44,11 +44,11 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener
 	 */
 	public static class TeleportTableEntry
 	{
-	    private Rom rom;
+	    private AbstractRom rom;
 		private int x, y, dir, style, unknown[];
 		private int address, num;
 
-		public TeleportTableEntry(int num, Rom rom)
+		public TeleportTableEntry(int num, AbstractRom rom)
 		{
 		    this.rom = rom;
 			this.num = num;
@@ -193,7 +193,7 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener
 	public static TeleportTableEntry[] ttentries = new TeleportTableEntry[0xE9];
 
 	/** Reads information from ROM into {@link #ttentries}. */
-	public static void readFromRom(Rom rom)
+	public static void readFromRom(AbstractRom rom)
 	{
 		for (int i = 0; i < ttentries.length; i++)
 		{

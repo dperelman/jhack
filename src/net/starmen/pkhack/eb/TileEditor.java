@@ -54,7 +54,7 @@ import net.starmen.pkhack.ImageDrawingArea;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.RomWriteOutOfRangeException;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.Undoable;
@@ -73,7 +73,7 @@ public class TileEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public TileEditor(Rom rom, XMLPreferences prefs)
+    public TileEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -1889,13 +1889,13 @@ public class TileEditor extends EbHackModule implements ActionListener
          * and returns bytes written. Do next write at
          * <code>offset + return value</code>. Best to call this instead of
          * the individual methods unless you have a good reason. Even better to
-         * call {@link TileEditor#writeInfo(int, Rom)}, which also writes
+         * call {@link TileEditor#writeInfo(int, AbstractRom)}, which also writes
          * collision info. Will only write if data was read from the expanded
          * meg or if data was changed.
          * 
          * @see #writeTiles(int)
          * @see #writeArrangements(int)
-         * @see TileEditor#writeInfo(int, Rom)
+         * @see TileEditor#writeInfo(int, AbstractRom)
          * @param offset Where to start writting.
          * @return Number of bytes written or -1 if not enough space to write.
          */
@@ -2019,13 +2019,13 @@ public class TileEditor extends EbHackModule implements ActionListener
          * Writes the tile and arrangment information to the ROM and returns
          * bytes written. Best to call this instead of the individual methods
          * unless you have a good reason. Even better to call
-         * {@link TileEditor#writeInfo(Rom)}, which also writes collision info.
+         * {@link TileEditor#writeInfo(AbstractRom)}, which also writes collision info.
          * Will only write if data was read from the expanded meg or if data was
          * changed.
          * 
          * @see #writeTiles()
          * @see #writeArrangements()
-         * @see TileEditor#writeInfo(Rom)
+         * @see TileEditor#writeInfo(AbstractRom)
          * @return Number of bytes written or -1 if not enough space to write.
          */
         public int writeInfo()
@@ -2100,17 +2100,12 @@ public class TileEditor extends EbHackModule implements ActionListener
         readFromRom(this);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.starmen.pkhack.HackModule#reset()
-     */
     public void reset()
     {
         readFromRom();
     }
 
-    private static void readPalettes(Rom rom)
+    private static void readPalettes(AbstractRom rom)
     {
         for (int i = 0; i < 32; i++)
         {
@@ -2140,7 +2135,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         return false;
     }
 
-    private static void writeCollision(Rom rom)
+    private static void writeCollision(AbstractRom rom)
     {
         //Collision info can not be written separately
 
@@ -2224,7 +2219,7 @@ public class TileEditor extends EbHackModule implements ActionListener
      * @param offset Where to start writting.
      * @return Number of bytes written or -1 if not enough space to write.
      */
-    public static int writeInfo(int offset, Rom rom)
+    public static int writeInfo(int offset, AbstractRom rom)
     {
         int len = 0, tmp;
         boolean exp = rom.length() == 0x400200, inited[] = new boolean[20];
@@ -2257,13 +2252,13 @@ public class TileEditor extends EbHackModule implements ActionListener
      * has not been changed, it recompresses it and writes it anyway. The offset
      * is the one used by Cabbage's tile editor.
      * 
-     * @see #writeInfo(Rom)
+     * @see #writeInfo(AbstractRom)
      * @see TileEditor.Tileset#writeInfo(int)
      * @param writeLower If true tries to write eariler in the ROM until it
      *            works.
      * @return Number of bytes written.
      */
-    public static int writeInfo(boolean writeLower, Rom rom)
+    public static int writeInfo(boolean writeLower, AbstractRom rom)
     {
         int tmp = -1, offset = 0x3A0200;
         while (tmp == -1 && writeLower && offset > 0x3001ff)
@@ -2284,7 +2279,7 @@ public class TileEditor extends EbHackModule implements ActionListener
      * @see HackModule#writeToFree(byte[], int, int, int)
      * @return Number of bytes written.
      */
-    public static int writeInfo(Rom rom)
+    public static int writeInfo(AbstractRom rom)
     {
         int len = 0, tmp;
         boolean exp = rom.length() == 0x400200, inited[] = new boolean[20];

@@ -37,7 +37,7 @@ public class HexEditor extends GeneralHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public HexEditor(Rom rom, XMLPreferences prefs)
+    public HexEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -91,6 +91,16 @@ public class HexEditor extends GeneralHackModule implements ActionListener
     public void show()
     {
         super.show();
+        
+        if(!inited)
+        {
+            JHexEdit t = new JHexEdit(new HexRom(rom));
+            mainWindow.getContentPane().remove(hexEdit);
+            mainWindow.getContentPane().add(t, BorderLayout.CENTER);
+            table = t.table;
+            inited = true;
+        }
+        
         mainWindow.setVisible(true);
     }
 
@@ -157,17 +167,10 @@ public class HexEditor extends GeneralHackModule implements ActionListener
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.starmen.pkhack.HackModule#reset()
-     */
+    private boolean inited = false;
     public void reset()
     {
-        JHexEdit t = new JHexEdit(new HexRom(rom));
-        mainWindow.getContentPane().remove(hexEdit);
-        mainWindow.getContentPane().add(t, BorderLayout.CENTER);
-        table = t.table;
+        inited =false;
     }
 
     private void initGotoDialog()

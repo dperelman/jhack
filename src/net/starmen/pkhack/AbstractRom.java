@@ -20,7 +20,7 @@ import javax.swing.filechooser.FileFilter;
  */
 //Made by AnyoneEB.
 //Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
-public abstract class Rom
+public abstract class AbstractRom
 {
     /** Size in bytes of a regular Earthbound ROM. */
     public final static long EB_ROM_SIZE_REGULAR = 3146240;
@@ -113,18 +113,18 @@ public abstract class Rom
     protected String romType;
 
     /**
-     * Creates an Rom object and loads the <code>File rompath</code>.
+     * Creates an AbstractRom object and loads the <code>File rompath</code>.
      */
-    public Rom(File rompath)
+    public AbstractRom(File rompath)
     {
         this.loadRom(rompath);
     }
 
     /**
-     * Creates an Rom object. There will be no ROM loaded so calls to
+     * Creates an AbstractRom object. There will be no ROM loaded so calls to
      * <code>read()</code> or <code>write()</code> will give exceptions.
      */
-    public Rom()
+    public AbstractRom()
     {}
 
     /**
@@ -210,7 +210,7 @@ public abstract class Rom
         this.path = rompath;
 
         System.out.println("Opened ROM: " + rompath.toString());
-        System.out.println("Rom size is: " + rompath.length());
+        System.out.println("AbstractRom size is: " + rompath.length());
 
         this.isLoaded = true;
 
@@ -302,7 +302,7 @@ public abstract class Rom
 
     /**
      * Reads the ROM into memory, DO NOT CALL. This method is here to be
-     * overridden by classes extending Rom.
+     * overridden by classes extending AbstractRom.
      * 
      * @param rompath Path to load from.
      * @throws FileNotFoundException
@@ -319,7 +319,7 @@ public abstract class Rom
      */
     public boolean loadRom()
     {
-        JFileChooser jfc = new JFileChooser(Rom.getDefaultDir());
+        JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
         jfc.setFileFilter(new FileFilter()
         {
 
@@ -387,7 +387,7 @@ public abstract class Rom
         {
             return false;
         }
-        JFileChooser jfc = new JFileChooser(Rom.getDefaultDir());
+        JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
         jfc.setFileFilter(new FileFilter()
         {
 
@@ -1616,7 +1616,7 @@ public abstract class Rom
      * @param orgRom orginal ROM to read from
      * @see net.starmen.pkhack.eb.ResetButton
      */
-    public void resetArea(int offset, int len, Rom orgRom)
+    public void resetArea(int offset, int len, AbstractRom orgRom)
     {
         write(offset, orgRom.readByte(offset, len));
     }
@@ -1823,7 +1823,7 @@ public abstract class Rom
     public abstract int length();
 
     /**
-     * Returns whether this Rom object writes directly to the filesystem.
+     * Returns whether this AbstractRom object writes directly to the filesystem.
      * 
      * @return boolean
      */
@@ -1834,13 +1834,13 @@ public abstract class Rom
      * ROM and the specified ROM. The IPSFile will only contain differences
      * between the byte offsets <code>start</code> and <code>end</code>.
      * 
-     * @see #createIPS(Rom)
+     * @see #createIPS(AbstractRom)
      * @param orgRom ROM to base patch off of.
      * @param start Byte offset to start looking for differences.
      * @param end Byte offset to stop looking for differences.
      * @return IPSFile
      */
-    public IPSFile createIPS(Rom orgRom, int start, int end)
+    public IPSFile createIPS(AbstractRom orgRom, int start, int end)
     {
         IPSFile out = new IPSFile();
 
@@ -1873,11 +1873,11 @@ public abstract class Rom
      * Returns an {@link IPSFile}object containing the differences between this
      * ROM and the specified ROM.
      * 
-     * @see #createIPS(Rom, int, int)
+     * @see #createIPS(AbstractRom, int, int)
      * @param orgRom ROM to base patch off of.
      * @return IPSFile
      */
-    public IPSFile createIPS(Rom orgRom)
+    public IPSFile createIPS(AbstractRom orgRom)
     {
         return this.createIPS(orgRom, 0, this.length());
     }
@@ -1946,11 +1946,11 @@ public abstract class Rom
      * Unapplies the specified patch from this ROM.
      * 
      * @param ips IPSFile object to get patch from.
-     * @param orgRom <code>Rom</code> to read orginal bytes from
+     * @param orgRom <code>AbstractRom</code> to read orginal bytes from
      * @return Returns true if successful, false if fails because ROM is not
      *         expanded.
      */
-    public boolean unapply(IPSFile ips, Rom orgRom)
+    public boolean unapply(IPSFile ips, AbstractRom orgRom)
     {
         try
         {

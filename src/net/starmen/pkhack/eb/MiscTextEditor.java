@@ -15,7 +15,7 @@ import javax.swing.JTextField;
 import net.starmen.pkhack.CommentedLineNumberReader;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.MaxLengthDocument;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -30,7 +30,7 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public MiscTextEditor(Rom rom, XMLPreferences prefs) {
+    public MiscTextEditor(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
     private JComboBox selector;
@@ -259,7 +259,7 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
             this.len = len;
             this.info = new char[len];
             
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
             
             rom.seek(this.address);
 
@@ -349,7 +349,7 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
         {
             if (!isRealEntry) return;
             
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
             
             rom.seek(this.address);
             for (int j = 0; j < this.info.length; j++)

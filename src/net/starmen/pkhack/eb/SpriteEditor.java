@@ -38,7 +38,7 @@ import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
 
@@ -57,7 +57,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
      * @param rom
      * @param prefs
      */
-    public SpriteEditor(Rom rom, XMLPreferences prefs)
+    public SpriteEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -239,6 +239,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
     {
         super.show();
         this.reset();
+        readFromRom();
         selector.setSelectedIndex(Math.max(0, selector.getSelectedIndex()));
         initSelector(showRepeats.isSelected());
         selector.updateUI();
@@ -668,7 +669,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          * @param pal Palette number to read.
          * @return <code>Color[]</code> containing the palette.
          */
-        public static Color[] getSpriteRGB(int pal, Rom rom)
+        public static Color[] getSpriteRGB(int pal, AbstractRom rom)
         {
             Color[] out = rom.readPalette(0x30200 + (pal * 32), 16);
             out[0] = SpriteEditor.bgColor; //transparent
@@ -683,7 +684,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          * 
          * @param pal Palette number to write
          */
-        public static void writeSpriteRGB(int pal, Rom rom)
+        public static void writeSpriteRGB(int pal, AbstractRom rom)
         {
             // don't write transparent color differently
             pals[pal][0] = rom.readPalette(0x30200 + (pal * 32));
@@ -1030,7 +1031,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             "up-right, standing", "up-right, walking", "down-right, standing",
             "down-right, walking", "down-left, standing", "down-left, walking",
             "up-left, standing", "up-left, walking"};
-        private Rom rom;
+        private AbstractRom rom;
         /**
          * Pretty self-expanitory. Width/height in sprite tiles. Address/bank
          * are SNES pointers. Pointer is a SNES pointer.
@@ -1064,7 +1065,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          * 
          * @param num Entry number to read
          */
-        public SpriteInfoBlock(int num, Rom rom)
+        public SpriteInfoBlock(int num, AbstractRom rom)
         {
             this.rom = rom;
             this.num = num;
@@ -1278,7 +1279,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         sptNames[0] = "Null";
     }
 
-    private static void initSpriteInfo(Rom rom)
+    private static void initSpriteInfo(AbstractRom rom)
     {
         int siNum = 0;
         int[][] tempSi;
@@ -1404,7 +1405,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         }
     }
 
-    public static void readFromRom(Rom rom)
+    public static void readFromRom(AbstractRom rom)
     {
         sib = null;
         si = null;
@@ -1420,7 +1421,6 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
     public void reset()
     {
         initSptNames(rom.getPath());
-        readFromRom();
     }
 
     /**

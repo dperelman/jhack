@@ -53,11 +53,11 @@ import javax.swing.filechooser.FileFilter;
 public abstract class HackModule
 {
     /**
-     * Common instance of Rom
+     * Common instance of AbstractRom
      * 
-     * @see net.starmen.pkhack.Rom
+     * @see net.starmen.pkhack.AbstractRom
      */
-    public Rom rom;
+    public AbstractRom rom;
     /**
      * Preferences.
      */
@@ -201,12 +201,12 @@ public abstract class HackModule
     }
 
     /**
-     * Constructor that takes a Rom and preferences object.
+     * Constructor that takes a AbstractRom and preferences object.
      * 
      * @param rom ROM object for I/O
      * @param prefs prefrences access
      */
-    public HackModule(Rom rom, XMLPreferences prefs)
+    public HackModule(AbstractRom rom, XMLPreferences prefs)
     {
         this.rom = rom;
         this.prefs = prefs;
@@ -841,7 +841,7 @@ public abstract class HackModule
     public static File getFile(final boolean save, final String ext,
         final String desc)
     {
-        JFileChooser jfc = new JFileChooser(Rom.getDefaultDir());
+        JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
         jfc.setFileFilter(new FileFilter()
         {
             public boolean accept(File f)
@@ -866,7 +866,7 @@ public abstract class HackModule
             //extension is forced on save.
             if (!out.getPath().endsWith("." + ext) && save)
                 out = new File(out.getPath() + "." + ext);
-            Rom.setDefaultDir(out.getParent());
+            AbstractRom.setDefaultDir(out.getParent());
             return out;
         }
         else
@@ -941,8 +941,8 @@ public abstract class HackModule
      * @param len Number of bytes to read.
      * @return a regular string
      * @see #simpToRegChar(char)
-     * @see Rom#readChar(int, int)
-     * @see Rom#read(int)
+     * @see AbstractRom#readChar(int, int)
+     * @see AbstractRom#read(int)
      */
     public String readRegString(int offset, int len)
     {
@@ -962,8 +962,8 @@ public abstract class HackModule
      * @param offset Where to read from.
      * @return a regular string
      * @see #simpToRegChar(char)
-     * @see Rom#readChar(int, int)
-     * @see Rom#read(int)
+     * @see AbstractRom#readChar(int, int)
+     * @see AbstractRom#read(int)
      */
     public String readRegString(int offset)
     {
@@ -980,9 +980,9 @@ public abstract class HackModule
      * @param len Number of bytes to read.
      * @return a regular string
      * @see #simpToRegChar(char)
-     * @see Rom#seek(int)
-     * @see Rom#readCharSeek(int)
-     * @see Rom#readSeek()
+     * @see AbstractRom#seek(int)
+     * @see AbstractRom#readCharSeek(int)
+     * @see AbstractRom#readSeek()
      */
     public String readSeekRegString(int len)
     {
@@ -1004,8 +1004,8 @@ public abstract class HackModule
      * @param len number of bytes (characters) to write
      * @param str regular striing to write at <code>offset</code>.
      * @see #simpToGameChar(char)
-     * @see Rom#write(int, char[])
-     * @see Rom#writeSeek(int)
+     * @see AbstractRom#write(int, char[])
+     * @see AbstractRom#writeSeek(int)
      * @see #readRegString(int, int)
      */
     public void writeRegString(int offset, int len, String str)
@@ -1024,9 +1024,9 @@ public abstract class HackModule
      * @param len number of bytes (characters) to write
      * @param str regular string to write at <code>seekOffset</code>.
      * @see #simpToGameChar(char)
-     * @see Rom#seek(int)
-     * @see Rom#writeSeek(char[])
-     * @see Rom#writeSeek(int)
+     * @see AbstractRom#seek(int)
+     * @see AbstractRom#writeSeek(char[])
+     * @see AbstractRom#writeSeek(int)
      * @see #readSeekRegString(int)
      */
     public void writeSeekRegString(int len, String str)
@@ -1252,7 +1252,7 @@ public abstract class HackModule
      * @return true on success, false on failure (no change will be made to the
      *         ROM on failure)
      * @see #findFreeRange(int, int)
-     * @see Rom#writeAsmPointer(int, int)
+     * @see AbstractRom#writeAsmPointer(int, int)
      */
     public boolean writeToFreeASMLink(byte[] data, int[] pointerLoc,
         int oldLen, int newLen)
@@ -1315,7 +1315,7 @@ public abstract class HackModule
      * @return true on success, false on failure (no change will be made to the
      *         ROM on failure)
      * @see #findFreeRange(int, int)
-     * @see Rom#writeAsmPointer(int, int)
+     * @see AbstractRom#writeAsmPointer(int, int)
      */
     public boolean writeToFreeASMLink(byte[] data, int pointerLoc, int oldLen,
         int newLen)

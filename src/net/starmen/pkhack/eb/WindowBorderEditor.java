@@ -6,6 +6,7 @@ package net.starmen.pkhack.eb;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -32,6 +33,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -55,7 +57,7 @@ import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.MaxLengthDocument;
 import net.starmen.pkhack.NodeSelectionListener;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
 
@@ -90,7 +92,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public WindowBorderEditor(Rom rom, XMLPreferences prefs)
+    public WindowBorderEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
 
@@ -144,7 +146,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
     {
         byte[] buffer = new byte[8192];
         int[] tmp;
-        Rom r = readOrg
+        AbstractRom r = readOrg
             ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
             : hm.rom;
         int address = r.readRegAsmPointer(pointerAddress);
@@ -191,7 +193,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         return tmp[1];
     }
 
-    private static void readPalettes(Rom rom)
+    private static void readPalettes(AbstractRom rom)
     {
         rom.seek(0x2021C8);
         palettes = new Color[7][8][4];
@@ -210,7 +212,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
          * 04c366:18 #21 from JeffMan's list 04c378:14 #22 from JeffMan's list
          * 04c386:14 #23 from JeffMan's list
          */
-        Rom r = readOrg
+        AbstractRom r = readOrg
             ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
             : hm.rom;
         for (int i = 0; i < FLAVOR_NAME_POINTERS.length; i++)
@@ -291,7 +293,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         readSubPalNums();
         readFlavorNames(hm, readOrg);
 
-        return true;
+        return inited = true;
     }
 
     public static boolean readFromRom(EbHackModule hm)
@@ -326,7 +328,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         return tmp;
     }
 
-    private static void writePalettes(Rom rom)
+    private static void writePalettes(AbstractRom rom)
     {
         rom.seek(0x2021C8);
         for (int pal = 0; pal < 7; pal++)
@@ -1039,7 +1041,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         editBottom.add(Box.createVerticalStrut(10));
         editBottom.add(createFlowLayout(arre));
 
-        edit.add(editBottom, BorderLayout.SOUTH);
+        edit.add(editBottom, BorderLayout.CENTER);
 
         center.add(edit, BorderLayout.CENTER);
         center.add(toolset, BorderLayout.EAST);
@@ -1099,8 +1101,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                 da.setImage(gr);
                 if (!doubleSelInit)
                 {
-                    da.getParent().doLayout();
-                    mainWindow.pack();
+                    da.revalidate();
                     doubleSelInit = true;
                 }
             }
@@ -1641,6 +1642,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
      */
     public static boolean importData(byte[] b, WindowBorderEditor wbe)
     {
+        if (!inited)
+            readFromRom(wbe);
         boolean out = wbe.importData(importData(b));
         if (out)
         {
@@ -1680,6 +1683,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
      */
     public static boolean checkData(byte[] b, WindowBorderEditor wbe)
     {
+        if (!inited)
+            readFromRom(wbe);
         WindowBorderImportData wbid = importData(b);
 
         //check graphics if included
@@ -1712,6 +1717,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
      */
     public static void restoreData(byte[] b, WindowBorderEditor wbe)
     {
+        if (!inited)
+            readFromRom(wbe);
         boolean[] a = showChecklist(null, "<html>Select which items you wish"
             + "to restore to the orginal EarthBound verions.</html>",
             "Restore what?");
@@ -1720,7 +1727,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             readGraphics(wbe, true);
             writeGraphics(wbe);
         }
-        Rom orgRom = JHack.main.getOrginalRomFile(wbe.rom.getRomType());
+        AbstractRom orgRom = JHack.main.getOrginalRomFile(wbe.rom.getRomType());
         //restore palettes
         //each of 7 palettes has 8 subpals of 4 colors each
         //2 bytes/color = 8*4*2 = 64 bytes/palette
@@ -1735,14 +1742,11 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             wbe.mainWindow.repaint();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.starmen.pkhack.HackModule#reset()
-     */
+    private static boolean inited = false;
+
     public void reset()
     {
         super.reset();
-        readFromRom();
+        inited = false;
     }
 }

@@ -68,7 +68,7 @@ import javax.swing.filechooser.FileFilter;
 public class MainGUI implements ActionListener, WindowListener
 {
     private JFrame mainWindow = new JFrame();
-    private Rom rom, orgRom = null;
+    private AbstractRom rom, orgRom = null;
     private ArrayList moduleList = new ArrayList();
     private boolean showload = false;
     private JFrame loadingDialog;
@@ -165,7 +165,7 @@ public class MainGUI implements ActionListener, WindowListener
                 else
                     moduleList.add((HackModule) Class.forName(
                         "net.starmen.pkhack." + moduleNames[i]).getConstructor(
-                        new Class[]{Rom.class, XMLPreferences.class})
+                        new Class[]{AbstractRom.class, XMLPreferences.class})
                         .newInstance(new Object[]{rom, prefs}));
             }
             catch (InstantiationException e)
@@ -627,8 +627,8 @@ public class MainGUI implements ActionListener, WindowListener
 
     private String getModuleCredits()
     {
-        String returnValue = "\n\n" + Rom.getDescription() + " "
-            + Rom.getVersion() + "\n" + Rom.getCredits();
+        String returnValue = "\n\n" + AbstractRom.getDescription() + " "
+            + AbstractRom.getVersion() + "\n" + AbstractRom.getCredits();
         for (int i = 0; i < getModuleCount(); i++)
         {
             returnValue += "\n\n" + getModuleAt(i).getDescription() + " "
@@ -704,7 +704,7 @@ public class MainGUI implements ActionListener, WindowListener
     private static File getFileOfSize(final long size1, final long size2,
         String msg, boolean repeat)
     {
-        JFileChooser jfc = new JFileChooser(Rom.getDefaultDir());
+        JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
         jfc.setFileFilter(new FileFilter()
         {
             public boolean accept(File f)
@@ -738,7 +738,7 @@ public class MainGUI implements ActionListener, WindowListener
 
     private static File getFile(String msg, boolean repeat)
     {
-        JFileChooser jfc = new JFileChooser(Rom.getDefaultDir());
+        JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
         jfc.setFileFilter(new FileFilter()
         {
             public boolean accept(File f)
@@ -772,24 +772,24 @@ public class MainGUI implements ActionListener, WindowListener
     /**
      * Creates a exp'd ROM from the org ROM pref and sets the exp ROM pref.
      * 
-     * @return expanded Rom object.
+     * @return expanded AbstractRom object.
      */
-    private Rom orgRomToExp(String romType)
+    private AbstractRom orgRomToExp(String romType)
     {
         String orgRom = this.getPrefs().getValue(romType + ".orgRomPath");
         String expRom = orgRom.substring(0, orgRom.length() - 3) + "expanded."
             + orgRom.substring(orgRom.length() - 3);
 
-        String dd = Rom.getDefaultDir();
+        String dd = AbstractRom.getDefaultDir();
 
-        Rom r = new RomMem();
+        AbstractRom r = new RomMem();
         r.loadRom(new File(orgRom));
         r.expand();
         r.saveRom(new File(expRom));
 
         this.getPrefs().setValue(romType + ".expRomPath", expRom);
 
-        Rom.setDefaultDir(dd);
+        AbstractRom.setDefaultDir(dd);
 
         return r;
     }
@@ -801,10 +801,10 @@ public class MainGUI implements ActionListener, WindowListener
      * does not ask if they are already set with valid paths to ROMs of the
      * correct length.
      * 
-     * @return An Rom with path of ExpRomPath if just expanded, null if
+     * @return An AbstractRom with path of ExpRomPath if just expanded, null if
      *         ExpRomPath pref set.
      */
-    public Rom requestOrgRomFile(String romType)
+    public AbstractRom requestOrgRomFile(String romType)
     {
         String tmp;
         File tmpf;
@@ -823,7 +823,7 @@ public class MainGUI implements ActionListener, WindowListener
                 (tmpf = getFile("Select a unmodified or expanded " + romType
                     + " ROM.", true)).toString());
             if (romType.equals("Earthbound")
-                && tmpf.length() == Rom.EB_ROM_SIZE_REGULAR)
+                && tmpf.length() == AbstractRom.EB_ROM_SIZE_REGULAR)
             {
                 this.getPrefs().setValue(romType + ".orgRomPath",
                     tmpf.toString());
@@ -832,9 +832,9 @@ public class MainGUI implements ActionListener, WindowListener
         }
         System.out.println((new File(getPrefs().getValue(
             romType + ".expRomPath")).length())
-            + " == " + Rom.EB_ROM_SIZE_REGULAR + "; romType = " + romType);
+            + " == " + AbstractRom.EB_ROM_SIZE_REGULAR + "; romType = " + romType);
         if (romType.equals("Earthbound")
-            && new File(getPrefs().getValue(romType + ".expRomPath")).length() == Rom.EB_ROM_SIZE_REGULAR)
+            && new File(getPrefs().getValue(romType + ".expRomPath")).length() == AbstractRom.EB_ROM_SIZE_REGULAR)
         {
             System.out
                 .println("Exp rom not actually expanded. Bug in previous versions.");
@@ -854,21 +854,21 @@ public class MainGUI implements ActionListener, WindowListener
      * 
      * @return The path to an unmodified ROM.
      */
-    public Rom getOrginalRomFile(String romType)
+    public AbstractRom getOrginalRomFile(String romType)
     {
         if (orgRom != null && orgRom.isLoaded
             && orgRom.getRomType().equals(romType))
             return orgRom;
-        Rom out = requestOrgRomFile(romType);
+        AbstractRom out = requestOrgRomFile(romType);
         if (out != null)
             return orgRom = out;
         else
         {
             out = new RomMem();
-            String dd = Rom.getDefaultDir();
+            String dd = AbstractRom.getDefaultDir();
             out.loadRom(new File(this.getPrefs().getValue(
                 romType + ".expRomPath")));
-            Rom.setDefaultDir(dd);
+            AbstractRom.setDefaultDir(dd);
             return orgRom = out;
         }
     }
@@ -950,7 +950,7 @@ public class MainGUI implements ActionListener, WindowListener
                 rom.apply(IPSFile.loadIPSFile(backupFile));
                 //change path back so it saves in the right place
                 rom.path = romPath;
-                Rom.setDefaultDir(romPath.getParent());
+                AbstractRom.setDefaultDir(romPath.getParent());
                 resetModules();
             }
         }

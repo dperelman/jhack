@@ -21,7 +21,7 @@ import javax.swing.JTextField;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -85,7 +85,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public SPTEditor(Rom rom, XMLPreferences prefs)
+    public SPTEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }

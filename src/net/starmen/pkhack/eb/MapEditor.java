@@ -34,14 +34,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 public class MapEditor extends EbHackModule implements ActionListener,
     PropertyChangeListener, AdjustmentListener, ItemListener
 {
 
-    public MapEditor(Rom rom, XMLPreferences prefs)
+    public MapEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -180,7 +180,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         // mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // mainWindow.setSize(window_width, window_height);
 
-        scrollh = new JScrollBar(JScrollBar.HORIZONTAL, 0, 15, 0, width);
+        scrollh = new JScrollBar(JScrollBar.HORIZONTAL, 0, 15, 0, width - 8);
         scrollh.addAdjustmentListener(this);
 
         scrollv = new JScrollBar(JScrollBar.VERTICAL, 0, 15, 0, height);
@@ -1316,7 +1316,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         private final static int tsettbl_address = 0x2F121B;
         private final static int localtset_address = 0x175200;
 
-        private Rom rom;
+        private AbstractRom rom;
 
         public EbMap(HackModule hm, int newwidth, int newheight,
             int newsector_width, int newsector_height)

@@ -13,7 +13,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -28,7 +28,7 @@ public class LevelUpStatsEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public LevelUpStatsEditor(Rom rom, XMLPreferences prefs) {
+    public LevelUpStatsEditor(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
 
@@ -51,7 +51,7 @@ public class LevelUpStatsEditor extends EbHackModule implements ActionListener
      */
     public static class LevelUpStats
     {
-        private Rom rom;
+        private AbstractRom rom;
         private int num, offset;
         private int[] rawStats = new int[7];
 
@@ -61,7 +61,7 @@ public class LevelUpStatsEditor extends EbHackModule implements ActionListener
          * 
          * @param charNum
          */
-        public LevelUpStats(int charNum, Rom rom) {
+        public LevelUpStats(int charNum, AbstractRom rom) {
             this.rom = rom;
             this.num = charNum;
             this.offset = 0x15EC5B + (num * 7);
@@ -239,7 +239,7 @@ public class LevelUpStatsEditor extends EbHackModule implements ActionListener
         mainWindow.setVisible(false);
     }
 
-    public static void readFromRom(Rom rom)
+    public static void readFromRom(AbstractRom rom)
     {
         for (int i = 0; i < 4; i++)
         {

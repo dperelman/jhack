@@ -20,7 +20,7 @@ import javax.swing.JTextField;
 
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -34,7 +34,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public TPTEditor(Rom rom, XMLPreferences prefs)
+    public TPTEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -69,7 +69,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
         public TPTEntry(int num, HackModule hm)
         {
             this.hm = hm;
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
 
             address = /*0x0F8B96*/ 0xF8B85 + (num * 0x11);
             rom.seek(address);
@@ -86,7 +86,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
 
         public void writeInfo()
         {
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
 
             rom.seek(address);
 

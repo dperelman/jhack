@@ -49,7 +49,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public IPSDatabase(Rom rom, XMLPreferences prefs)
+    public IPSDatabase(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
 
@@ -131,9 +131,10 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         /**
          * Rechecks if this has been applied.
          */
-        public void checkApplied()
+        public void checkApplied(AbstractRom rom)
         {
-            applied = checkAppliedFile(filename, file);
+            applied = forRom(rom.getRomType())
+                && checkAppliedFile(filename, file);
         }
 
         /**
@@ -200,6 +201,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         {
             return ss;
         }
+
         /**
          * @return Returns the romType.
          */
@@ -209,17 +211,21 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         }
     }
 
-    public static void checkAllApplied(Rom rom)
+    public static void checkAllApplied(AbstractRom rom)
     {
+        readXML();
         for (int i = 0; i < entries.size(); i++)
         {
-            ((DatabaseEntry) entries.get(i)).checkApplied();
+            ((DatabaseEntry) entries.get(i)).checkApplied(rom);
         }
     }
 
+    /** If false, readXML(rom) needs to be called. */
+    private static boolean inited = false;
+
     public void reset()
     {
-        readXML(rom);
+        inited = false;
     }
 
     private static void readAll(byte[] b, InputStream in) throws IOException
@@ -232,10 +238,11 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
 
     private static List entries = new ArrayList();
 
-    public static void readXML(Rom rom)
+    private static boolean xmlInited = false;
+
+    public static void readXML()
     {
-        //don't do this twice
-        if (entries.size() > 0)
+        if (xmlInited)
             return;
         //This is the slow way, the fast way (SAX) looks like too much work.
         Document dom;
@@ -253,8 +260,6 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
                 try
                 {
                     DatabaseEntry de = new DatabaseEntry((Element) nl.item(i));
-                    if(rom.getRomType().equals(de.getRomType()))
-                    de.checkApplied();
                     entries.add(de);
                 }
                 catch (NumberFormatException e)
@@ -267,12 +272,13 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
                 }
             }
         }
+        xmlInited = true;
     }
     private JTable ipsTable;
 
     protected void init()
     {
-        readXML(rom);
+        readXML();
 
         mainWindow = new JFrame(this.getDescription());
         mainWindow.setLocationRelativeTo(JHack.main.getMainWindow());
@@ -445,6 +451,22 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         }
     }
 
+    /**
+     * Reads from the ROM and checks all patches for if they have been applied.
+     * 
+     * @param rom AbstractRom to check against
+     * @param force If true, checking is done even if it has already been done
+     *            on this AbstractRom. (The AbstractRom could have been changed by JHack modules
+     *            since it was loaded.)
+     */
+    public static void readFromRom(AbstractRom rom, boolean force)
+    {
+        readXML();
+        if (!inited || force)
+            checkAllApplied(rom);
+        inited = true;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -454,7 +476,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
     {
         super.show();
 
-        reset();
+        readFromRom(rom, true);
         ipsTable.revalidate();
 
         mainWindow.setVisible(true);
@@ -469,6 +491,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
      */
     public static DatabaseEntry getPatch(String patchName)
     {
+        readXML();
         DatabaseEntry e;
         for (Iterator i = entries.iterator(); i.hasNext();)
         {

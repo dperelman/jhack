@@ -18,7 +18,7 @@ public class IPSPatchApplier extends GeneralHackModule
      * @param rom
      * @param prefs
      */
-    public IPSPatchApplier(Rom rom, XMLPreferences prefs) {
+    public IPSPatchApplier(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
 
@@ -54,7 +54,7 @@ public class IPSPatchApplier extends GeneralHackModule
 	 */
 	public void show()
 	{
-		JFileChooser jfc = new JFileChooser(Rom.getDefaultDir());
+		JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
 		jfc.setFileFilter(new FileFilter()
 		{
 			public boolean accept(File f)

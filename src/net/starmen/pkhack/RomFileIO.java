@@ -13,14 +13,14 @@ import java.io.RandomAccessFile;
  * 
  * @author AnyoneEB
  */
-public class RomFileIO extends Rom
+public class RomFileIO extends AbstractRom
 {
     RandomAccessFile rom;
 
     /*
      * (non-Javadoc)
      * 
-     * @see net.starmen.pkhack.Rom#readFromRom(java.io.File)
+     * @see net.starmen.pkhack.AbstractRom#readFromRom(java.io.File)
      */
     protected void readFromRom(File rompath) throws FileNotFoundException,
         IOException
@@ -31,7 +31,7 @@ public class RomFileIO extends Rom
     /*
      * (non-Javadoc)
      * 
-     * @see net.starmen.pkhack.Rom#read(int)
+     * @see net.starmen.pkhack.AbstractRom#read(int)
      */
     public int read(int offset)
     {
@@ -88,7 +88,7 @@ public class RomFileIO extends Rom
     /*
      * (non-Javadoc)
      * 
-     * @see net.starmen.pkhack.Rom#write(int, int)
+     * @see net.starmen.pkhack.AbstractRom#write(int, int)
      */
     public void write(int offset, int arg)
     {
@@ -133,7 +133,7 @@ public class RomFileIO extends Rom
     /*
      * (non-Javadoc)
      * 
-     * @see net.starmen.pkhack.Rom#readSeek()
+     * @see net.starmen.pkhack.AbstractRom#readSeek()
      */
     public int readSeek()
     {
@@ -151,7 +151,7 @@ public class RomFileIO extends Rom
     /*
      * (non-Javadoc)
      * 
-     * @see net.starmen.pkhack.Rom#seek(int)
+     * @see net.starmen.pkhack.AbstractRom#seek(int)
      */
     public void seek(int offset)
     {
@@ -168,7 +168,7 @@ public class RomFileIO extends Rom
     /*
      * (non-Javadoc)
      * 
-     * @see net.starmen.pkhack.Rom#writeSeek(int)
+     * @see net.starmen.pkhack.AbstractRom#writeSeek(int)
      */
     public void writeSeek(int arg)
     {
@@ -185,7 +185,7 @@ public class RomFileIO extends Rom
     /*
      * (non-Javadoc)
      * 
-     * @see net.starmen.pkhack.Rom#saveRom(java.io.File)
+     * @see net.starmen.pkhack.AbstractRom#saveRom(java.io.File)
      */
     public boolean saveRom(File rompath)
     {
@@ -242,7 +242,7 @@ public class RomFileIO extends Rom
     /*
      * (non-Javadoc)
      * 
-     * @see net.starmen.pkhack.Rom#length()
+     * @see net.starmen.pkhack.AbstractRom#length()
      */
     public int length()
     {
@@ -260,7 +260,7 @@ public class RomFileIO extends Rom
     /*
      * (non-Javadoc)
      * 
-     * @see net.starmen.pkhack.Rom#isDirectFileIO()
+     * @see net.starmen.pkhack.AbstractRom#isDirectFileIO()
      */
     public boolean isDirectFileIO()
     {

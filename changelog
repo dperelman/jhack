@@ -6,15 +6,16 @@ Next version (after v0.4.7.1):
 # eb.MiscTextEditor v0.5: Added Lumine hall text, max window width (250px)
 # HexEditor: fixed bug where the goto switched regular and snes pointers
 # Most recently loaded ROM is automatically loaded when JHack is opened.
-	This can be disabled in the options menu. (suggested by JamesPicard_007)
-# SpriteEditor: hitting cancel on import/export no longer results in
-	an error
+	(suggested by JamesPicard_007) This can be disabled in the options menu. 
+	(suggested by GuyInSummers)
+# SpriteEditor: Hitting cancel on import/export no longer results in
+	an error.
 # Added log files. Two log files are created for each session with filenames
 	in the format ~/.jhack/logs/yyyyMMddHHmmss.out.log (and .err.log).
-# Rom class separated into Rom and RomMem. Rom may be renamed to AbstractRom
-	before release.
-# Added some of JeffMan's graphics work to IPS Database
 # Automated error reporting (doesn't work with -c/--console argument)
+# Rom class separated into AbstractRom and RomMem. Some of RomFileIO moved
+	to AbstractRom as non-optimised implementations.
+# Added some of JeffMan's graphics work to IPS Database
 # New version notification only shown once. (suggested by JamesPicard_007)
 # BUGFIX: A few comp() bugs fixed (thanks to Faolan for the bug report
 	and Goplat for helping fix them). Attempt made to ensure that any other
@@ -22,6 +23,9 @@ Next version (after v0.4.7.1):
 # BUGFIX: Selecting "Close ROM" now hides module windows.
 # Enemy Editor: Problems related to too high arguments are fixed and show a
 	warning	message to inform the user what happened. (thanks EBPlayer1028)
+# Minimised work done on ROM load (moved to module load) in order to do less
+	unneeded tasks and speed up ROM loading.
+# Added Map Editor (written by MrTenda)
 
 v0.4.7.1:
 # IPSDatabase extensions:

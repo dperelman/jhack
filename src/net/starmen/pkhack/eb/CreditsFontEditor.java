@@ -31,7 +31,7 @@ import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
 
@@ -46,7 +46,7 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public CreditsFontEditor(Rom rom, XMLPreferences prefs)
+    public CreditsFontEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -127,19 +127,19 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
     /**
      * Reads the credits font graphics from the ROM into {@link #tiles}.
      * 
-     * @param rom Rom being edited to read from. Only used if readOrg is false.
+     * @param rom AbstractRom being edited to read from. Only used if readOrg is false.
      * @param readOrg If true, reading is done from the orginal ROM instead of
      *            <code>rom</code>
      * @return Positive means success. On failure user is presented with option
      *         between abort (negative return value), retry (return value of
      *         trying this method again), fail (return value of 0),
      */
-    private static int readGraphics(Rom rom, boolean readOrg)
+    private static int readGraphics(AbstractRom rom, boolean readOrg)
     {
         tiles = new byte[NUM_CREDITS_CHARS][8][8];
         byte[] buffer = new byte[NUM_CREDITS_CHARS * 32];
         int[] tmp;
-        Rom r = readOrg ? JHack.main.getOrginalRomFile(rom.getRomType()) : rom;
+        AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(rom.getRomType()) : rom;
         int address = oldPointer = r.readRegAsmPointer(CREDITS_FONT_POINTER);
         System.out.println("Reading from address: 0x"
             + Integer.toHexString(address) + " (" + address + ")");
@@ -181,7 +181,7 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
         return tmp[1];
     }
 
-    public static boolean readFromRom(Rom rom)
+    public static boolean readFromRom(AbstractRom rom)
     {
         readSubPalNums();
 

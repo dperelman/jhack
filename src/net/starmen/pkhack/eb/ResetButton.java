@@ -37,7 +37,7 @@ import javax.swing.filechooser.FileFilter;
 import net.starmen.pkhack.CommentedLineNumberReader;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JHack;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.RomMem;
 import net.starmen.pkhack.XMLPreferences;
 
@@ -67,7 +67,7 @@ public class ResetButton extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public ResetButton(Rom rom, XMLPreferences prefs)
+    public ResetButton(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -77,7 +77,7 @@ public class ResetButton extends EbHackModule implements ActionListener
     private JComboBox rangeSelector, subrangeSelector;
     private boolean isCustom = true; //false = preset range
 
-    private Rom orgRom = null;
+    private AbstractRom orgRom = null;
     private ArrayList ranges = new ArrayList();
 
     /**
@@ -654,7 +654,7 @@ public class ResetButton extends EbHackModule implements ActionListener
     {
         return "Written by AnyoneEB\n"
             + "Idea based on Dr Andount's Reset Button";
-        //			+ "\nRanges from the PK Rom Map";
+        //			+ "\nRanges from the PK AbstractRom Map";
     }
 
     /**
@@ -715,7 +715,7 @@ public class ResetButton extends EbHackModule implements ActionListener
         if (ae.getActionCommand().equals("load"))
         {
             //don't overwrite orginal ROM file
-            Rom tmpRom = orgRom;
+            AbstractRom tmpRom = orgRom;
             if (orgRom == JHack.main.getOrginalRomFile(rom.getRomType()))
             {
                 orgRom = new RomMem();

@@ -45,7 +45,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 // code by Chris (AIM: daemionx)
@@ -57,7 +57,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
      * @param rom
      * @param prefs
      */
-    public FlyoverEditor(Rom rom, XMLPreferences prefs) {
+    public FlyoverEditor(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
     //variables other than GUI:
@@ -647,7 +647,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
                             {
                                 //this is just making sure that it won't have an error reading the rom
                                 //these values in the bounds should never be used for a pointer =p
-                                if( address < Rom.EB_ROM_SIZE_EXPANDED - 1 && address >= 0 )
+                                if( address < AbstractRom.EB_ROM_SIZE_EXPANDED - 1 && address >= 0 )
                                 {
                                     textBlock = new Text( address, true );
                                 }
@@ -660,7 +660,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
                             }
                             else
                             {
-                                if( address < Rom.EB_ROM_SIZE_REGULAR - 1 && address >= 0 )
+                                if( address < AbstractRom.EB_ROM_SIZE_REGULAR - 1 && address >= 0 )
                                 {
                                     textBlock = new Text( address, true );
                                 }
@@ -689,7 +689,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
                             {
                                 //this is just making sure that it won't have an error reading the rom
                                 //these values in the bounds should never be used for a pointer =p
-                                if( address < Rom.EB_ROM_SIZE_EXPANDED - 1 && address >= 0 )
+                                if( address < AbstractRom.EB_ROM_SIZE_EXPANDED - 1 && address >= 0 )
                                 {
                                     textBlock = new Text( address, true );
                                 }
@@ -702,7 +702,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
                             }
                             else
                             {
-                                if( address < Rom.EB_ROM_SIZE_REGULAR - 1 && address >= 0 )
+                                if( address < AbstractRom.EB_ROM_SIZE_REGULAR - 1 && address >= 0 )
                                 {
                                     textBlock = new Text( address, true );
                                 }
@@ -730,7 +730,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
                             {
                                 //this is just making sure that it won't have an error reading the rom
                                 //these values in the bounds should never be used for a pointer =p
-                                if( address < Rom.EB_ROM_SIZE_EXPANDED - 1 && address >= 0 )
+                                if( address < AbstractRom.EB_ROM_SIZE_EXPANDED - 1 && address >= 0 )
                                 {
                                     textBlock = new Text( address, true );
                                 }
@@ -743,7 +743,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
                             }
                             else
                             {
-                                if( address < Rom.EB_ROM_SIZE_REGULAR - 1 && address >= 0 )
+                                if( address < AbstractRom.EB_ROM_SIZE_REGULAR - 1 && address >= 0 )
                                 {
                                     textBlock = new Text( address, true );
                                 }
@@ -1136,7 +1136,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
                             {
                                 //this is just making sure that it won't have an error reading the rom
                                 //these values in the bounds should never be used for a pointer =p
-                                if( address < Rom.EB_ROM_SIZE_EXPANDED - 1 && address >= 0 )
+                                if( address < AbstractRom.EB_ROM_SIZE_EXPANDED - 1 && address >= 0 )
                                 {
                                     textBlock = new Text( address, true );
                                 }
@@ -1149,7 +1149,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
                             }
                             else
                             {
-                                if( address < Rom.EB_ROM_SIZE_REGULAR - 1 && address >= 0 )
+                                if( address < AbstractRom.EB_ROM_SIZE_REGULAR - 1 && address >= 0 )
                                 {
                                     textBlock = new Text( address, true );
                                 }
@@ -1176,7 +1176,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
                             {
                                 //this is just making sure that it won't have an error reading the rom
                                 //these values in the bounds should never be used for a pointer =p
-                                if( address < Rom.EB_ROM_SIZE_EXPANDED - 1 && address >= 0 )
+                                if( address < AbstractRom.EB_ROM_SIZE_EXPANDED - 1 && address >= 0 )
                                 {
                                     textBlock = new Text( address, true );
                                 }
@@ -1189,7 +1189,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
                             }
                             else
                             {
-                                if( address < Rom.EB_ROM_SIZE_REGULAR - 1 && address >= 0 )
+                                if( address < AbstractRom.EB_ROM_SIZE_REGULAR - 1 && address >= 0 )
                                 {
                                     textBlock = new Text( address, true );
                                 }
@@ -1216,7 +1216,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
                             {
                                 //this is just making sure that it won't have an error reading the rom
                                 //these values in the bounds should never be used for a pointer =p
-                                if( address < Rom.EB_ROM_SIZE_EXPANDED - 1 && address >= 0 )
+                                if( address < AbstractRom.EB_ROM_SIZE_EXPANDED - 1 && address >= 0 )
                                 {
                                     textBlock = new Text( address, true );
                                 }
@@ -1229,7 +1229,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener, ItemL
                             }
                             else
                             {
-                                if( address < Rom.EB_ROM_SIZE_REGULAR - 1 && address >= 0 )
+                                if( address < AbstractRom.EB_ROM_SIZE_REGULAR - 1 && address >= 0 )
                                 {
                                     textBlock = new Text( address, true );
                                 }

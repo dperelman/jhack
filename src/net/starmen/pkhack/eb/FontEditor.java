@@ -49,7 +49,7 @@ import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IPSDatabase;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
 import net.starmen.pkhack.eb.FontEditor.Font.Character;
@@ -65,19 +65,19 @@ public class FontEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public FontEditor(Rom rom, XMLPreferences prefs)
+    public FontEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
 
         try
         {
             String[] exts = new String[]{"efn", "efs", "eft"};
-            Class[] c = new Class[]{byte[].class, Integer.class};
+            Class[] c = new Class[]{byte[].class, Object[].class};
             for (int i = 0; i < exts.length; i++)
                 IPSDatabase.registerExtension(exts[i], FontEditor.class
                     .getMethod("importFont", c), FontEditor.class.getMethod(
                     "restore", c), FontEditor.class.getMethod("check", c),
-                    new Integer(i));
+                    new Object[]{new Integer(i), this});
         }
         catch (SecurityException e)
         {
@@ -364,7 +364,7 @@ public class FontEditor extends EbHackModule implements ActionListener
 
             public void restoreChar()
             {
-                Rom rom = hm.rom, orgRom = JHack.main.getOrginalRomFile(rom
+                AbstractRom rom = hm.rom, orgRom = JHack.main.getOrginalRomFile(rom
                     .getRomType());
                 rom.write(widthAddress, orgRom.readByte(widthAddress));
                 rom.write(address, orgRom.readByte(address, CHAR_SIZES[size]));
@@ -525,6 +525,7 @@ public class FontEditor extends EbHackModule implements ActionListener
         {
             fonts[i] = new Font(i, hm);
         }
+        inited = true;
     }
 
     private class CharSelector extends AbstractButton implements MouseListener,
@@ -1144,7 +1145,7 @@ public class FontEditor extends EbHackModule implements ActionListener
     protected void init()
     {
         batFontWidthHack = IPSDatabase.getPatch("Battle Font Width Hack");
-        batFontWidthHack.checkApplied();
+        batFontWidthHack.checkApplied(rom);
 
         if (JHack.main.getPrefs().getValue("batFontWidthHack") == null
             && batFontWidthHack != null && !isBatFontWidthHacked())
@@ -1174,7 +1175,7 @@ public class FontEditor extends EbHackModule implements ActionListener
         {
             batFontWidthHack.apply();
         }
-        batFontWidthHack.checkApplied();
+        batFontWidthHack.checkApplied(rom);
 
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
@@ -1579,7 +1580,14 @@ public class FontEditor extends EbHackModule implements ActionListener
      * extensions.
      * 
      * @param b exported data to import
-     * @param obj ignored, exists as an implementation detail
+     * @param obj <code>Object[]</code>: first element is an
+     *            <code>Integer</code> called <code>size</code> (Size of the
+     *            font to restore. <code>FONT_SIZE_NORMAL</code>,
+     *            <code>FONT_SIZE_SMALL</code>, or
+     *            <code>FONT_SIZE_TINY</code> .), second element is a
+     *            <code>HackModule</code> containing a reference to the
+     *            current EarthBound ROM to init font data from if it has not
+     *            been inited.
      * @see net.starmen.pkhack.IPSDatabase#applyFile(String, byte[])
      * @see net.starmen.pkhack.IPSDatabase#registerExtension(String, Method,
      *      Method, Method, Object)
@@ -1589,8 +1597,11 @@ public class FontEditor extends EbHackModule implements ActionListener
      * @see #SATURN
      * @see #BIG
      */
-    public static boolean importFont(byte[] b, Integer size)
+    public static boolean importFont(byte[] b, Object[] obj)
     {
+        Integer size = (Integer) obj[0];
+        if (!inited)
+            readFromRom((HackModule) obj[1]);
         int font = getFontOfSize(size, "import to");
         if (font == -1)
             return false;
@@ -1749,13 +1760,21 @@ public class FontEditor extends EbHackModule implements ActionListener
      * <code>IPSDatabase</code> for "unapplying" files with .ef? extensions.
      * 
      * @param b ignored, exists as an implementation detail
-     * @param size Size of the font to restore. <code>FONT_SIZE_NORMAL</code>,
+     * @param obj <code>Object[]</code>: first element is an
+     *            <code>Integer</code> called <code>size</code> (Size of the
+     *            font to restore. <code>FONT_SIZE_NORMAL</code>,
      *            <code>FONT_SIZE_SMALL</code>, or
-     *            <code>FONT_SIZE_TINY</code>.
+     *            <code>FONT_SIZE_TINY</code> .), second element is a
+     *            <code>HackModule</code> containing a reference to the
+     *            current EarthBound ROM to init font data from if it has not
+     *            been inited.
      * @return false if any problems occur
      */
-    public static boolean restore(byte[] b, Integer size)
+    public static boolean restore(byte[] b, Object[] obj)
     {
+        Integer size = (Integer) obj[0];
+        if (!inited)
+            readFromRom((HackModule) obj[1]);
         int font = getFontOfSize(size, "restore to orginal Earthbound version");
         if (font == -1)
             return false;
@@ -1770,18 +1789,25 @@ public class FontEditor extends EbHackModule implements ActionListener
      * 
      * @param b an exported font in the correct format for a font of size
      *            <code>size</code>
-     * @param size Size of font to check. <code>size.intValue()</code> should
-     *            be <code>FONT_SIZE_NORMAL</code>,
+     * @param obj <code>Object[]</code>: first element is an
+     *            <code>Integer</code> called <code>size</code> (Size of the
+     *            font to restore. <code>FONT_SIZE_NORMAL</code>,
      *            <code>FONT_SIZE_SMALL</code>, or
-     *            <code>FONT_SIZE_TINY</code>.
+     *            <code>FONT_SIZE_TINY</code> .), second element is a
+     *            <code>HackModule</code> containing a reference to the
+     *            current EarthBound ROM to init font data from if it has not
+     *            been inited.
      * @return <code>true</code> if at least one font of the specified size is
      *         has had <code>b</code> imported into it
      * @see #FONT_SIZE_NORMAL
      * @see #FONT_SIZE_SMALL
      * @see #FONT_SIZE_TINY
      */
-    public static boolean check(byte[] b, Integer size)
+    public static boolean check(byte[] b, Object[] obj)
     {
+        Integer size = (Integer) obj[0];
+        if (!inited)
+            readFromRom((HackModule) obj[1]);
         int s = size.intValue();
         for (int font = 0; font < fonts.length; font++)
         {
@@ -1793,9 +1819,11 @@ public class FontEditor extends EbHackModule implements ActionListener
         return false;
     }
 
+    private static boolean inited = false;
+
     public void reset()
     {
-        readFromRom(this);
+        inited = false;
     }
 
 }

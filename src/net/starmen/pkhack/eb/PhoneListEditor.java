@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -29,7 +29,7 @@ public class PhoneListEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public PhoneListEditor(Rom rom, XMLPreferences prefs) {
+    public PhoneListEditor(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
         // TODO Auto-generated constructor stub
     }
@@ -365,7 +365,7 @@ public class PhoneListEditor extends EbHackModule implements ActionListener
 			this.num = num;
 			this.address = 0x157cae + (num * 31);
 			
-			Rom rom = hm.rom;
+			AbstractRom rom = hm.rom;
 			
 			rom.seek(this.address);
 
@@ -483,7 +483,7 @@ public class PhoneListEditor extends EbHackModule implements ActionListener
 		 */
 		public void writeInfo()
 		{
-		    Rom rom = hm.rom;
+		    AbstractRom rom = hm.rom;
 		    
 			rom.seek(this.address);
 			for (int j = 0; j < this.name.length; j++)

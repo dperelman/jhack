@@ -50,7 +50,7 @@ import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.NodeSelectionListener;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
@@ -64,7 +64,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 {
     public static final int NUM_LOGO_SCREENS = 3;
 
-    public LogoScreenEditor(Rom rom, XMLPreferences prefs)
+    public LogoScreenEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
 
@@ -149,7 +149,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         private boolean readGraphics(boolean allowFailure, boolean readOrg)
         {
-            Rom r = readOrg
+            AbstractRom r = readOrg
                 ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
                 : hm.rom;
 
@@ -199,7 +199,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         private boolean readPalette(boolean allowFailure, boolean readOrg)
         {
-            Rom r = readOrg
+            AbstractRom r = readOrg
                 ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
                 : hm.rom;
 
@@ -244,7 +244,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         private boolean readArrangement(boolean allowFailure, boolean readOrg)
         {
-            Rom r = readOrg
+            AbstractRom r = readOrg
                 ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
                 : hm.rom;
 
@@ -1118,8 +1118,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         fi = new FocusIndicator();
 
         Box center = new Box(BoxLayout.Y_AXIS);
-        center.add(getLabeledComponent("Map: ", mapSelector));
-        center.add(getLabeledComponent("Map Name: ", name));
+        center.add(getLabeledComponent("Screen: ", mapSelector));
+        center.add(getLabeledComponent("Screen Name: ", name));
         center.add(getLabeledComponent("SubPalette: ", subPalSelector));
         center.add(Box.createVerticalStrut(15));
         center.add(createFlowLayout(da));
@@ -1786,6 +1786,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
     private static boolean checkScreen(LogoScreenImportData lsid, int i)
     {
+        logoScreens[i].readInfo();
         if (lsid.tiles != null)
         {
             //check tiles
@@ -1798,10 +1799,9 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         if (lsid.arrangement != null)
         {
             //check arrangement
-            //TODO does this work?
             if (!Arrays
-                .equals(lsid.arrangement, logoScreens[i].arrangementList))
-                ;
+                .equals(lsid.arrangement, logoScreens[i].getArrangementArr()))
+                return false;
         }
         if (lsid.palette != null)
         {

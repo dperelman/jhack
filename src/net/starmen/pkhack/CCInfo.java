@@ -118,11 +118,11 @@ public class CCInfo
 
     public CCNode ccTable = new CCNode(); // initial node
     private static final int MAX_ARG_MULT = 0xff;
-    private Rom rom;
+    private AbstractRom rom;
     private boolean allowComp = false, crdChr = false;
     private static final int asciiOff = 0x30;
 
-    public CCInfo(String codefile, Rom rom, boolean allowComp, boolean crdChr)
+    public CCInfo(String codefile, AbstractRom rom, boolean allowComp, boolean crdChr)
     {
         this.rom = rom;
         this.allowComp = allowComp;
@@ -136,7 +136,7 @@ public class CCInfo
         createCompressionTable(comprTable);
     }
 
-    public CCInfo(String codefile, Rom rom)
+    public CCInfo(String codefile, AbstractRom rom)
     {
         this(codefile, rom, true, false);
     }

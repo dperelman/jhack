@@ -7,7 +7,7 @@ import java.io.EOFException;
 import java.util.Arrays;
 
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -130,7 +130,7 @@ public abstract class EbHackModule extends HackModule
      * @param rom
      * @param prefs
      */
-    public EbHackModule(Rom rom, XMLPreferences prefs) {
+    public EbHackModule(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
         initBigArrays();
     }
@@ -212,12 +212,12 @@ public abstract class EbHackModule extends HackModule
      *            to the right size
      * @param maxlen Maximum decompression length, probably
      *            <code>buffer.length</code>
-     * @param rom <code>Rom</code> to read from
+     * @param rom <code>AbstractRom</code> to read from
      * @return <code>int[]</code> where [0] = Negitive on error, number of
      *         bytes decompressed into buffer otherwise. [1] = number of bytes
      *         read from ROM
      */
-    public static int[] decomp(int cdata, byte[] buffer, int maxlen, Rom rom)
+    public static int[] decomp(int cdata, byte[] buffer, int maxlen, AbstractRom rom)
     {
         int start = cdata;
         int bpos = 0, bpos2 = 0;
@@ -344,12 +344,12 @@ public abstract class EbHackModule extends HackModule
      * @param cdata Address of compressed data
      * @param buffer byte arrray to put decompressed data into, must be inited
      *            to the right size
-     * @param rom <code>Rom</code> to read from
+     * @param rom <code>AbstractRom</code> to read from
      * @return <code>int[]</code> where [0] = Negitive on error, number of
      *         bytes decompressed into buffer otherwise. [1] = number of bytes
      *         read from ROM
      */
-    public static int[] decomp(int cdata, byte[] buffer, Rom r)
+    public static int[] decomp(int cdata, byte[] buffer, AbstractRom r)
     {
         return decomp(cdata, buffer, buffer.length, r);
     }

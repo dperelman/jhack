@@ -14,7 +14,7 @@ import javax.swing.JLabel;
 
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -33,23 +33,28 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
      * @param rom
      * @param prefs
      */
-    public SpriteCharacterTableEditor(Rom rom, XMLPreferences prefs) {
+    public SpriteCharacterTableEditor(AbstractRom rom, XMLPreferences prefs)
+    {
         super(rom, prefs);
         // TODO Auto-generated constructor stub
     }
 
     /**
-     * <p>Represents an entry in the sprite character table. This table
-     * controls which sprite is used for which playable character. Each entry
-     * controls the sprites for a single character in different situations.
-     * These 7 situations are listed in
-     * {@link SpriteCharacterTableEditor#spriteLabels}. It is interesting to
-     * note that there is space for an eighth, but it is always 0xFF. This does
-     * not edit that value. If you want to know which character you are editing
-     * the sprite for, look at {@link SpriteCharacterTableEditor#sctEntries}.
-     * </p><p>This editor is based off information from <a href =
+     * <p>
+     * Represents an entry in the sprite character table. This table controls
+     * which sprite is used for which playable character. Each entry controls
+     * the sprites for a single character in different situations. These 7
+     * situations are listed in {@link SpriteCharacterTableEditor#spriteLabels}.
+     * It is interesting to note that there is space for an eighth, but it is
+     * always 0xFF. This does not edit that value. If you want to know which
+     * character you are editing the sprite for, look at
+     * {@link SpriteCharacterTableEditor#sctEntries}.
+     * </p>
+     * <p>
+     * This editor is based off information from <a href =
      * "http://forum.starmen.net/ultimatebb.php?ubb=get_topic;f=8;t=000397#000000">
-     * this forum topic </a>.</p>
+     * this forum topic </a>.
+     * </p>
      * 
      * @see SpriteCharacterTableEditor#spriteLabels
      * @see SpriteCharacterTableEditor#sctEntries
@@ -57,18 +62,20 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
      */
     public static class SpriteCharacterTableEntry
     {
-        private Rom rom;
+        private AbstractRom rom;
         private int address, num, sprite[] = new int[7];
 
         /**
-         * Creates a new SpriteCharacterTableEntry and loads entry <code>num</code>.
-         * If you want to know which character you are changing the sprites
-         * for, look at {@link SpriteCharacterTableEditor#sctEntries}.
+         * Creates a new SpriteCharacterTableEntry and loads entry
+         * <code>num</code>. If you want to know which character you are
+         * changing the sprites for, look at
+         * {@link SpriteCharacterTableEditor#sctEntries}.
          * 
          * @see SpriteCharacterTableEditor#sctEntries
          * @param num Which entry to edit.
          */
-        public SpriteCharacterTableEntry(int num, Rom rom) {
+        public SpriteCharacterTableEntry(int num, AbstractRom rom)
+        {
             this.rom = rom;
             address = 0x3F4B5 + (num * 16);
 
@@ -117,18 +124,22 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
     }
     /**
      * Array containing all 17 SpriteCharacterTableEntry's. Call
-     * {@link SpriteCharacterTableEditor#readFromRom(Rom)}to be sure the
+     * {@link SpriteCharacterTableEditor#readFromRom(AbstractRom)}to be sure the
      * entries are inited.
      * 
-     * @see #readFromRom(Rom)
+     * @see #readFromRom(AbstractRom)
      */
     public static SpriteCharacterTableEntry[] sctEntries = new SpriteCharacterTableEntry[17];
     /**
      * Array of <code>String</code>'s labeling the sprites in a
-     * SpriteCharacterTableEntry. The list is: <br>[0] = "Normal" <br>[1] =
-     * "Dead" <br>[2] = "Ladder" <br>[3] = "Rope" <br>[4] = "Tiny" (Lost
-     * Underworld) <br>[5] = "Tiny & Dead" (Lost Underworld) <br>[6] =
-     * "Robot"
+     * SpriteCharacterTableEntry. The list is: <br>
+     * [0] = "Normal" <br>
+     * [1] = "Dead" <br>
+     * [2] = "Ladder" <br>
+     * [3] = "Rope" <br>
+     * [4] = "Tiny" (Lost Underworld) <br>
+     * [5] = "Tiny & Dead" (Lost Underworld) <br>
+     * [6] = "Robot"
      * 
      * @see SpriteCharacterTableEntry#getSprite(int)
      * @see SpriteCharacterTableEntry#setSprite(int, int)
@@ -137,13 +148,21 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
         "Ladder", "Rope", "Tiny", "Tiny & Dead", "Robot"};
     /**
      * Array of <code>String</code>'s labeling the sprite character table
-     * entries. The list is: <br>[0] = "Ness" <br>[1] = "Paula" <br>[2] =
-     * "Jeff" <br>[3] = "Poo" <br>[4] = "Pokey" <br>[5] = "Picky" <br>[6] =
-     * "King" <br>[7] = "Tony" <br>[8] = "Bubble Monkey" <br>[9] = "Brick
-     * Road" <br>[10 - 14] = "Flying Man 1-5" <br>[15 - 16] = "Teddy Bear
-     * 1-2"
+     * entries. The list is: <br>
+     * [0] = "Ness" <br>
+     * [1] = "Paula" <br>
+     * [2] = "Jeff" <br>
+     * [3] = "Poo" <br>
+     * [4] = "Pokey" <br>
+     * [5] = "Picky" <br>
+     * [6] = "King" <br>
+     * [7] = "Tony" <br>
+     * [8] = "Bubble Monkey" <br>
+     * [9] = "Brick Road" <br>
+     * [10 - 14] = "Flying Man 1-5" <br>
+     * [15 - 16] = "Teddy Bear 1-2"
      * 
-     * @see SpriteCharacterTableEntry#SpriteCharacterTableEntry(int, Rom)
+     * @see SpriteCharacterTableEntry#SpriteCharacterTableEntry(int, AbstractRom)
      */
     public static String[] entryNames = new String[]{"Ness", "Paula", "Jeff",
         "Poo", "Pokey", "Picky", "King", "Tony", "Bubble Monkey", "Brick Road",
@@ -156,7 +175,7 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
      * @see SpriteCharacterTableEditor#sctEntries
      * @see SpriteCharacterTableEntry
      */
-    public static void readFromRom(Rom rom)
+    public static void readFromRom(AbstractRom rom)
     {
         for (int i = 0; i < sctEntries.length; i++)
         {
@@ -193,8 +212,8 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
         selector.addActionListener(this);
 
         for (int i = 0; i < 7; i++)
-            entry.add(new JSearchableComboBox(sprite[i] = createComboBox(sptNames,
-                true, this), spriteLabels[i] + ": "));
+            entry.add(new JSearchableComboBox(sprite[i] = createComboBox(
+                sptNames, true, this), spriteLabels[i] + ": "));
 
         npcEntry = new Box(BoxLayout.Y_AXIS);
 
@@ -210,17 +229,6 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
 
         mainWindow.getContentPane().add(entry, BorderLayout.CENTER);
         mainWindow.pack();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.starmen.pkhack.HackModule#reset()
-     */
-    public void reset()
-    {
-    //		for (int i = 0; i < 7; i++)
-    //			sprite[i] = createJComboBoxFromArray(oobSpriteNames);
     }
 
     public String getVersion()
@@ -279,7 +287,8 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
             int t = 0;
             if (tar == 6)
                 t = 1;
-            else if (tar == 7) t = 2;
+            else if (tar == 7)
+                t = 2;
             target.setSelectedIndex(t);
 
             enemy.setSelectedIndex(NPCBattleEditor.npcbEntries[j].getEnemy());

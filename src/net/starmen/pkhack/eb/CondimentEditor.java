@@ -13,7 +13,7 @@ import javax.swing.JTextField;
 
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -27,7 +27,7 @@ public class CondimentEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public CondimentEditor(Rom rom, XMLPreferences prefs) {
+    public CondimentEditor(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
 
@@ -46,12 +46,12 @@ public class CondimentEditor extends EbHackModule implements ActionListener
      */
     public static class CondimentEntry
     {
-        private Rom rom;
+        private AbstractRom rom;
         private int num, address;
         private int item, condiment[] = new int[2], effect, goodRev, badRev,
                 runTime;
 
-        public CondimentEntry(int num, Rom rom) {
+        public CondimentEntry(int num, AbstractRom rom) {
             this.rom = rom;
             this.num = num;
             this.address = 0x15EC5B + (num * 7) + 28;
@@ -313,7 +313,7 @@ public class CondimentEditor extends EbHackModule implements ActionListener
             + "Table discovered by michael_cayer and BlueAntoid";
     }
 
-    public static void readFromRom(Rom rom)
+    public static void readFromRom(AbstractRom rom)
     {
         for (int i = 0; i < entries.length; i++)
         {

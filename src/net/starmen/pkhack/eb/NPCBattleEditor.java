@@ -3,7 +3,7 @@
  */
 package net.starmen.pkhack.eb;
 
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -18,7 +18,8 @@ public class NPCBattleEditor extends EbHackModule
      * @param rom
      * @param prefs
      */
-    public NPCBattleEditor(Rom rom, XMLPreferences prefs) {
+    public NPCBattleEditor(AbstractRom rom, XMLPreferences prefs)
+    {
         super(rom, prefs);
     }
 
@@ -29,7 +30,7 @@ public class NPCBattleEditor extends EbHackModule
      */
     public static class NPCBattleEntry
     {
-        private Rom rom;
+        private AbstractRom rom;
         private int address;
         private int num;
         private int target;
@@ -39,7 +40,8 @@ public class NPCBattleEditor extends EbHackModule
         /**
          *  
          */
-        public NPCBattleEntry(int n, Rom rom) {
+        public NPCBattleEntry(int n, AbstractRom rom)
+        {
             this.rom = rom;
             num = n;
             address = 0x15912D + (n * 2); //TODO length?
@@ -101,7 +103,7 @@ public class NPCBattleEditor extends EbHackModule
     public static final int NUM_ENTRIES = 13;
     public static NPCBattleEntry[] npcbEntries = new NPCBattleEntry[NUM_ENTRIES];
 
-    public static void readFromRom(Rom rom)
+    public static void readFromRom(AbstractRom rom)
     {
         for (int i = 0; i < NUM_ENTRIES; i++)
             npcbEntries[i] = new NPCBattleEntry(i, rom);
@@ -114,7 +116,7 @@ public class NPCBattleEditor extends EbHackModule
 
     public void reset()
     {
-        readFromRom();
+        npcbEntries = new NPCBattleEntry[NUM_ENTRIES];
     }
 
     /*

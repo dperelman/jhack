@@ -3,7 +3,7 @@
  */
 package net.starmen.pkhack.eb;
 
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -18,7 +18,7 @@ public class ItemDumper extends EbHackModule
      * @param rom
      * @param prefs
      */
-    public ItemDumper(Rom rom, XMLPreferences prefs) {
+    public ItemDumper(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
 

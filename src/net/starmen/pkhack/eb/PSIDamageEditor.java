@@ -11,7 +11,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -25,7 +25,7 @@ public class PSIDamageEditor extends EbHackModule implements ActionListener
 	 * @param rom
 	 * @param prefs
 	 */
-	public PSIDamageEditor(Rom rom, XMLPreferences prefs) {
+	public PSIDamageEditor(AbstractRom rom, XMLPreferences prefs) {
 		super(rom, prefs);
 		
 	}

@@ -14,7 +14,7 @@ public class IPSInfo
 {
 //	public static void main(ResetButton rb)
 //	{
-//		JFileChooser jfc = new JFileChooser(Rom.defaultDir);
+//		JFileChooser jfc = new JFileChooser(AbstractRom.defaultDir);
 //		jfc.setFileFilter(new FileFilter()
 //		{
 //			public boolean accept(File f)

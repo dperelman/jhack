@@ -9,15 +9,15 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
  * Editor for what exp gives a level-up for each character.
  * 
  * @author AnyoneEB
- * @see #readExp(int, int, Rom)
- * @see #writeExp(int, int, int, Rom)
+ * @see #readExp(int, int, AbstractRom)
+ * @see #writeExp(int, int, int, AbstractRom)
  */
 public class LevelUpEditor extends EbHackModule implements ActionListener
 {
@@ -25,7 +25,7 @@ public class LevelUpEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public LevelUpEditor(Rom rom, XMLPreferences prefs) {
+    public LevelUpEditor(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
     private JComboBox charSelector, levelSelector;
@@ -122,7 +122,7 @@ public class LevelUpEditor extends EbHackModule implements ActionListener
      * @return Exp needed by character <code>chr</code> to get to level
      *         <code>lvl</code>.
      */
-    public static int readExp(int chr, int lvl, Rom rom)
+    public static int readExp(int chr, int lvl, AbstractRom rom)
     {
         //each entry 4 bytes, 99 entries/character
         return rom.readMulti(0x159151 + (((lvl + (chr * 100)) - 2) * 4), 4);
@@ -137,7 +137,7 @@ public class LevelUpEditor extends EbHackModule implements ActionListener
      * @param lvl Level to set exp needed for. (2-99)
      * @param exp Value to set as the new exp needed.
      */
-    public static void writeExp(int chr, int lvl, int exp, Rom rom)
+    public static void writeExp(int chr, int lvl, int exp, AbstractRom rom)
     {
         //each entry 4 bytes, 99 entries/character
         rom.write(0x159151 + (((lvl + (chr * 100)) - 2) * 4), exp, 4);

@@ -6,12 +6,12 @@ package net.starmen.pkhack.eb;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 public class PSIAnimEditor extends EbHackModule implements ActionListener
 {
-    public PSIAnimEditor(Rom rom, XMLPreferences prefs)
+    public PSIAnimEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }

@@ -15,7 +15,7 @@ import javax.swing.JTextField;
 import net.starmen.pkhack.AutoSearchBox;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -30,7 +30,7 @@ public class BattleAnimEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public BattleAnimEditor(Rom rom, XMLPreferences prefs)
+    public BattleAnimEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -306,7 +306,7 @@ public class BattleAnimEditor extends EbHackModule implements ActionListener
         public BA(int BANumber, HackModule hm)
         {
             this.hm = hm;
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
             this.number = BANumber;
 
             this.address = 0xCF24D + this.number * 12;
@@ -350,7 +350,7 @@ public class BattleAnimEditor extends EbHackModule implements ActionListener
          */
         public void writeInfo()
         {
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
 
             rom.seek(this.address);
 

@@ -50,7 +50,7 @@ import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.NodeSelectionListener;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
@@ -64,7 +64,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 {
     public static final int NUM_TOWN_MAPS = 6;
 
-    public TownMapEditor(Rom rom, XMLPreferences prefs)
+    public TownMapEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
 
@@ -145,7 +145,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
          */
         private boolean readOrgInfo(boolean[] toRead)
         {
-            Rom r = JHack.main.getOrginalRomFile(hm.rom.getRomType());
+            AbstractRom r = JHack.main.getOrginalRomFile(hm.rom.getRomType());
 
             byte[] buffer = new byte[18496];
             System.out.println("About to attempt decompressing "
@@ -1684,6 +1684,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
     private static boolean checkMap(TownMapImportData tmid, int i)
     {
+        townMaps[i].readInfo();
         if (tmid.tiles != null)
         {
             //check tiles
@@ -1696,9 +1697,8 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         if (tmid.arrangement != null)
         {
             //check arrangement
-            //TODO does this work?
-            if (!Arrays.equals(tmid.arrangement, townMaps[i].arrangementList))
-                ;
+            if (!Arrays.equals(tmid.arrangement, townMaps[i].getArrangementArr()))
+                return false;
         }
         if (tmid.palette != null)
         {

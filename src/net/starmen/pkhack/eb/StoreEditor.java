@@ -12,7 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -28,7 +28,7 @@ public class StoreEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public StoreEditor(Rom rom, XMLPreferences prefs) {
+    public StoreEditor(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
     private JComboBox selector;
@@ -151,7 +151,7 @@ public class StoreEditor extends EbHackModule implements ActionListener
      * @see StoreEditor.Store
      * @see #stores
      */
-    public static void readFromRom(Rom rom)
+    public static void readFromRom(AbstractRom rom)
     {
         for (int i = 0; i < stores.length; i++)
         {
@@ -229,7 +229,7 @@ public class StoreEditor extends EbHackModule implements ActionListener
      */
     public static class Store
     {
-        private Rom rom;
+        private AbstractRom rom;
         private int address, num;
         private int[] items = new int[7];
         /**
@@ -237,7 +237,7 @@ public class StoreEditor extends EbHackModule implements ActionListener
          * 
          * @param num Store number to read information on.
          */
-        public Store(int num, Rom rom)
+        public Store(int num, AbstractRom rom)
         {
             this.rom =rom;
             this.num = num;

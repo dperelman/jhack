@@ -18,7 +18,7 @@ import net.starmen.pkhack.AutoSearchBox;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -33,7 +33,7 @@ public class ActionEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public ActionEditor(Rom rom, XMLPreferences prefs)
+    public ActionEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -426,7 +426,7 @@ public class ActionEditor extends EbHackModule implements ActionListener
         public Action(int actionNumber, HackModule hm)
         {
             this.hm = hm;
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
             this.number = actionNumber;
 
             this.address = 0x157D68 + this.number * 12;
@@ -442,7 +442,7 @@ public class ActionEditor extends EbHackModule implements ActionListener
 
         public void writeInfo()
         {
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
 
             rom.seek(this.address);
 

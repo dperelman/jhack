@@ -11,7 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -30,7 +30,7 @@ public class ItemTransformationEditor
      * @param rom
      * @param prefs
      */
-    public ItemTransformationEditor(Rom rom, XMLPreferences prefs) {
+    public ItemTransformationEditor(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
 	private JTextField soundFreq, delay;
@@ -114,7 +114,7 @@ public class ItemTransformationEditor
 	/**
 	 * Reads information from the ROM into {@link #its}.
 	 */
-	public static void readFromRom(Rom rom)
+	public static void readFromRom(AbstractRom rom)
 	{
 		for (int i = 0; i < its.length; i++)
 		{
@@ -224,7 +224,7 @@ public class ItemTransformationEditor
 	 */
 	public static class ItemTransformation
 	{
-	    private Rom rom;
+	    private AbstractRom rom;
 		/** Where this is located in the ROM.
 		 */
 		public int address;
@@ -255,7 +255,7 @@ public class ItemTransformationEditor
 		 * 
 		 * @param entryNum Entry number to read in. (0-3)
 		 */
-		public ItemTransformation(int entryNum, Rom rom)
+		public ItemTransformation(int entryNum, AbstractRom rom)
 		{
 		    this.rom = rom;
 			this.num = entryNum;

@@ -19,7 +19,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import net.starmen.pkhack.CommentedLineNumberReader;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -33,7 +33,7 @@ public class PointerEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public PointerEditor(Rom rom, XMLPreferences prefs)
+    public PointerEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }

@@ -17,7 +17,7 @@ import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IPSDatabase;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.MaxLengthDocument;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -33,13 +33,13 @@ public class DontCare extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public DontCare(Rom rom, XMLPreferences prefs) {
+    public DontCare(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
     private JTextField[][] textBoxes = new JTextField[7][7];
     private static IPSDatabase.DatabaseEntry sixCharHack = null;
 
-    public static boolean isSixByteNamedHacked(Rom rom)
+    public static boolean isSixByteNamedHacked(AbstractRom rom)
     {
         if (sixCharHack == null)
         {
@@ -50,7 +50,7 @@ public class DontCare extends EbHackModule implements ActionListener
             return sixCharHack.isApplied();
         }
     }
-    public static int maxLength(int colnum, Rom rom)
+    public static int maxLength(int colnum, AbstractRom rom)
     {
         if (colnum < 4)
         {
@@ -64,8 +64,9 @@ public class DontCare extends EbHackModule implements ActionListener
 
     protected void init()
     {
-        IPSDatabase.readXML(rom);
+        IPSDatabase.readXML();
         sixCharHack = IPSDatabase.getPatch("Six Character Name");
+        sixCharHack.checkApplied(rom);
 
         if (JHack.main.getPrefs().getValue("sixCharHack") == null
             && sixCharHack != null
@@ -101,6 +102,7 @@ public class DontCare extends EbHackModule implements ActionListener
         {
             sixCharHack.apply();
         }
+        sixCharHack.checkApplied(rom);
 
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());

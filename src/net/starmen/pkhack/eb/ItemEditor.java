@@ -35,7 +35,7 @@ import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.JSearchableComboBox;
 import net.starmen.pkhack.MaxLengthDocument;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -49,7 +49,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public ItemEditor(Rom rom, XMLPreferences prefs)
+    public ItemEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -467,7 +467,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
         public Item(int itemNumber, HackModule hm)
         {
             this.hm = hm;
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
             this.number = itemNumber;
 
             this.address = 0x155200 + (itemNumber * 39);
@@ -514,7 +514,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
             if (number == 0)
                 return;
 
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
 
             rom.seek(this.address);
 

@@ -6,7 +6,7 @@ package net.starmen.pkhack.som;
 import java.io.EOFException;
 
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -20,7 +20,7 @@ public abstract class SomHackModule extends HackModule
      * @param rom
      * @param prefs
      */
-    public SomHackModule(Rom rom, XMLPreferences prefs) {
+    public SomHackModule(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
 

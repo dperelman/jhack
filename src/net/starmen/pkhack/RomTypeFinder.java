@@ -51,7 +51,7 @@ public class RomTypeFinder
                 }
             }
 
-            public boolean check(Rom rom)
+            public boolean check(AbstractRom rom)
             {
                 return rom.compare(offset, bytes);
                 //                boolean tmp = rom.compare(offset, bytes);
@@ -90,7 +90,7 @@ public class RomTypeFinder
             addCheck(new RomTypeCheck(line));
         }
 
-        public boolean isRomOfType(Rom rom)
+        public boolean isRomOfType(AbstractRom rom)
         {
             for (Iterator i = checks.iterator(); i.hasNext();)
                 if (!((RomTypeCheck) i.next()).check(rom))
@@ -162,7 +162,7 @@ public class RomTypeFinder
         loaded = true;
     }
 
-    public static String getRomType(Rom rom)
+    public static String getRomType(AbstractRom rom)
     {
         //make sure ROM types are loaded
         loadRomTypeFile();

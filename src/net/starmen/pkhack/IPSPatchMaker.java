@@ -17,11 +17,11 @@ public class IPSPatchMaker extends GeneralHackModule
      * @param rom
      * @param prefs
      */
-    public IPSPatchMaker(Rom rom, XMLPreferences prefs) {
+    public IPSPatchMaker(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
 
-    Rom orgRom = new RomMem(); //ROM to base patch off of
+    AbstractRom orgRom = new RomMem(); //ROM to base patch off of
 
 	protected void init()
 	{}
@@ -84,7 +84,7 @@ public class IPSPatchMaker extends GeneralHackModule
 		}
 		else
 		{
-			JFileChooser jfc = new JFileChooser(Rom.getDefaultDir());
+			JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
 			jfc.setFileFilter(new FileFilter()
 			{
 				public boolean accept(File f)

@@ -15,7 +15,7 @@ import java.util.Arrays;
  * 
  * @author AnyoneEB
  */
-public class RomMem extends Rom
+public class RomMem extends AbstractRom
 {
     /**
      * Contains the loaded ROM. It is perfered that you don't access this
@@ -112,7 +112,7 @@ public class RomMem extends Rom
         return returnValue;
     }
 
-    public void resetArea(int offset, int len, Rom orgRom)
+    public void resetArea(int offset, int len, AbstractRom orgRom)
     {
         //only works if neither is direct file IO
         if (orgRom instanceof RomMem)
@@ -152,7 +152,7 @@ public class RomMem extends Rom
         return rom.length;
     }
 
-    public IPSFile createIPS(Rom orgRom, int start, int end)
+    public IPSFile createIPS(AbstractRom orgRom, int start, int end)
     {
         if (orgRom instanceof RomMem)
         {
@@ -201,7 +201,7 @@ public class RomMem extends Rom
         }
     }
 
-    public boolean unapply(IPSFile ips, Rom orgRom)
+    public boolean unapply(IPSFile ips, AbstractRom orgRom)
     {
         if (orgRom instanceof RomMem)
         {

@@ -28,7 +28,7 @@ import javax.swing.event.ListDataListener;
 
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 import net.starmen.pkhack.eb.FontEditor.StringViewer;
 
@@ -43,7 +43,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public EnemyEditor(Rom rom, XMLPreferences prefs)
+    public EnemyEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -957,7 +957,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             this.num = num;
             this.address = /* 0x1597e7 */0x159789 + (num * 94);
 
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
 
             rom.seek(this.address);
 
@@ -1048,7 +1048,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             if (num == 0)
                 return;
 
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
 
             rom.seek(this.address);
 

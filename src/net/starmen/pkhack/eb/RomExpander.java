@@ -2,7 +2,7 @@ package net.starmen.pkhack.eb;
 
 import javax.swing.JOptionPane;
 
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -17,7 +17,7 @@ public class RomExpander extends EbHackModule
      * @param rom
      * @param prefs
      */
-    public RomExpander(Rom rom, XMLPreferences prefs) {
+    public RomExpander(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
     protected void init()

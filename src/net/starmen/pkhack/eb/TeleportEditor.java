@@ -18,7 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -32,7 +32,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public TeleportEditor(Rom rom, XMLPreferences prefs) {
+    public TeleportEditor(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
     private JTextField[][] tfs = new JTextField[16][4];
@@ -276,7 +276,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener
             this.num = num;
             this.address = 0x157a9f + (num * 31);
 
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
 
             rom.seek(this.address);
 
@@ -292,7 +292,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener
          */
         public void writeInfo()
         {
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
 
             rom.seek(this.address);
 
