@@ -411,7 +411,15 @@ public class MapEditor extends EbHackModule implements ActionListener,
         // System.out.println("A menu action: " + n1 + n2);
     	if (Integer.parseInt(n1) == 0)
 		{
-			JOptionPane.showMessageDialog(mainWindow, "Hah! The Map Editor saves live!");
+    		if (Integer.parseInt(n2) == 1)
+    		{
+    			JOptionPane.showMessageDialog(mainWindow,
+    					"Hah! The Map Editor saves live!");
+    		}
+    		else if (Integer.parseInt(n2) == 2)
+    		{
+    			hide();
+    		}
 		}
         else if (Integer.parseInt(n1) == 1)
         {
