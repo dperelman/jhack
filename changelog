@@ -1,4 +1,6 @@
-NEXT VERSION (after v0.5.2):
+NEXT VERSION (after v0.5.3):
+
+v0.5.3:
 # A few SPT names additions from JeffMan
 # SPT Editor: BUGFIX: horizontally flipped sprites are shown correctly (address bit 1 set)
 # BUGFIX: Special properties of destinationless doors write correctly
@@ -7,6 +9,7 @@ NEXT VERSION (after v0.5.2):
 # Photo Editor: BUGFIX: now displays flags/palettes in their fields correctly
 # BUGFIX: 6MB expansion now changes byte to trigger SNES9x's ToP workaround, 
 	so 6MB ROMs work in SNES9x now.
+# Map Editor and Photo Editor have better dragging
 
 v0.5.2:
 # BUGFIX: FindFreeRange now only finds ranges that are within a single bank.

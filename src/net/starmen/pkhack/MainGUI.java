@@ -63,7 +63,7 @@ import net.starmen.pkhack.eb.EbHackModule;
  * buttons. This is called by {@link JHack#main(String[])}.
  * 
  * @author AnyoneEB
- * @version 0.5.2
+ * @version 0.5.3
  */
 //Made by AnyoneEB.
 //Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
@@ -491,7 +491,7 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public static String getVersion()
     {
-        return "0.5.2";
+        return "0.5.3";
     }
 
     /**
