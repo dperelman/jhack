@@ -112,6 +112,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
                                 preview.setMapXY(x, y);
                                 preview.disablePreviewBox();
                             }
+                            preview.reloadMap();
                             preview.remoteRepaint();
                             return;
                         }
@@ -268,6 +269,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
             preview.setPreviewBoxXY(td[0].x, td[0].y);
         else
             preview.disablePreviewBox();
+        preview.reloadMap();
         preview.remoteRepaint();
     }
 
@@ -339,6 +341,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
                         preview.setMapXY(x, y);
                         preview.disablePreviewBox();
                     }
+                    preview.reloadMap();
                     preview.remoteRepaint();
                     return;
                 }

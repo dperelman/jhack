@@ -273,6 +273,7 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener,
 							newY = Integer.parseInt(y.getText());
 						preview.setMapXY(newX / 4, newY / 4);
 						preview.setPreviewBoxXY(newX, newY);
+						preview.reloadMap();
 						preview.remoteRepaint();
 					}
 				}
@@ -360,6 +361,7 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener,
 		
 		preview.setMapXY(t.getX() / 4, t.getY() / 4);
 		preview.setPreviewBoxXY(t.getX(), t.getY());
+		preview.reloadMap();
 		preview.remoteRepaint();
 		x.setText(Integer.toString(t.getX()));
 		y.setText(Integer.toString(t.getY()));
@@ -412,6 +414,7 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener,
 		this.y.setText(Integer.toString(newY));
 		preview.setMapXY(newX / 4, newY / 4);
 		preview.setPreviewBoxXY(newX, newY);
+		preview.reloadMap();
 		preview.remoteRepaint();
 	}
 }
