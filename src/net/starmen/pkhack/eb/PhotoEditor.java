@@ -363,7 +363,7 @@ public class PhotoEditor extends EbHackModule
 		}
 	}
 	
-	private static boolean readPalettes(HackModule hm, boolean allowFailure)
+	public static boolean readPalettes(HackModule hm, boolean allowFailure)
 	{
 		AbstractRom r = hm.rom;
 		
