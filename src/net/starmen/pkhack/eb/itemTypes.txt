@@ -1,0 +1,18 @@
+0 - ??? (Franklin badge)
+4 - NPC item
+8 - Broken item
+16 - Bashing weapon
+17 - Shooting weapon
+20 - Body armour
+24 - Arm armour
+28 - Other armour
+32 - Edible food
+36 - Edible liquid
+40 - Condiment
+44 - Edible food for all characters
+48 - Non-edible medicine
+52 - Battle item (performs a combat move)
+53 - ??? (Fly honey, Defense shower, Sudden guts pill)
+56 - Items used outside of battle (like an Eraser)
+58 - ??? (Hawk eye, bicycle, zombie paper)
+59 - Key items (can't be tossed)

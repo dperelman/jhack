@@ -26,9 +26,10 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	/**
 	 * The JComboBox this is a wrapper for.
 	 */
-	public JComboBox comboBox;
+	private JComboBox comboBox;
 	private JTextField tf;
 	private JLabel label;
+	private boolean incTf; //include the text field
 	private int size;
 	/**
 	 * Creates a new AutoSearchBox wrapper for the specified JComboBox.
@@ -80,7 +81,44 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 		comboBox.setActionCommand("effectSel");
 		comboBox.addActionListener(this);
 		size = searchSize;
+		incTf = true;
 		this.tf = new JTextField(size);
+		tf.getDocument().addDocumentListener(new DocumentListener()
+				{
+			public void changedUpdate(DocumentEvent de)
+			{
+			}
+			public void insertUpdate(DocumentEvent de)
+			{
+				tfChanged();
+			}
+			public void removeUpdate(DocumentEvent de)
+			{
+				tfChanged();
+			}
+		});
+		this.label = new JLabel(text);
+		this.initGraphics(searchLeft);
+	}
+
+	/**
+	 * Makes the specified JTextField a new AutoSearchBox wrapper for the 
+	 * specified JComboBox.
+	 * 
+	 * @param jcb The JComboBox this is a wrapper for.
+	 * @param text Text to label the JComboBox with.
+	 * @param searchSize The size of the search text field
+	 * @param searchLeft If true, search box is left of combo box
+	 */
+	public AutoSearchBox(JComboBox jcb, JTextField jtf, String text, 
+		boolean searchLeft, boolean incTf)
+	{
+		super();
+		this.comboBox = jcb;
+		comboBox.setActionCommand("effectSel");
+		comboBox.addActionListener(this);
+		this.tf = jtf;
+		this.incTf = incTf;
 		tf.getDocument().addDocumentListener(new DocumentListener()
 				{
 			public void changedUpdate(DocumentEvent de)
@@ -105,11 +143,9 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 
 		tf.addKeyListener(this);
 
-		add(
-				tf,
-				(searchLeft ? BorderLayout.WEST : BorderLayout.EAST));
-		add(
-				HackModule.pairComponents(label, comboBox, true),
+		if(incTf)
+			add(tf,	(searchLeft ? BorderLayout.WEST : BorderLayout.EAST));
+		add(HackModule.pairComponents(label, comboBox, true),
 				(searchLeft ? BorderLayout.EAST : BorderLayout.WEST));
 	}
 
@@ -120,8 +156,7 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	 */
 	public void actionPerformed(ActionEvent ae)
 	{
-		tf.setText(comboBox.getSelectedItem().toString().
-				substring(0, size));	
+		tf.setText(comboBox.getSelectedItem().toString());	
 	}
 
 	/*
@@ -185,6 +220,15 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 		tf.setText(text);
 	}
 	
+	public JTextField getTF()
+	{
+		return tf;
+	}
+	
+	public JComboBox getCB()
+	{
+		return comboBox;
+	}
 	/**
 	 * Searches for a <code>String</code> in a <code>JComboBox</code>. If
 	 * the <code>String</code> is found inside an item in the

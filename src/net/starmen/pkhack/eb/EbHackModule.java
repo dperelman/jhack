@@ -4,9 +4,12 @@
 package net.starmen.pkhack.eb;
 
 import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 
 import net.starmen.pkhack.AbstractRom;
+import net.starmen.pkhack.CommentedLineNumberReader;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.XMLPreferences;
 
@@ -120,6 +123,8 @@ public abstract class EbHackModule extends HackModule
      */
     public final static String[] logoScreenNames = new String[LogoScreenEditor.NUM_LOGO_SCREENS];
 
+    public static String[] itemTypes = new String[17];
+    
     private static boolean bigArraysInited = false;
     
     public boolean isRomSupported()
@@ -921,6 +926,17 @@ public abstract class EbHackModule extends HackModule
             readArray(DEFAULT_BASE_DIR,"musiclisting.txt", true, musicNames);
             //readEffects(null);
             initCreditsChars();
+            try
+            {
+                itemTypes = new CommentedLineNumberReader(new InputStreamReader(
+                    ClassLoader.getSystemResourceAsStream(DEFAULT_BASE_DIR
+                        + "itemTypes.txt"))).readUsedLines();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                itemTypes = new String[0];
+            }
 
             bigArraysInited = true;
         }

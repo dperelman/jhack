@@ -3418,4 +3418,32 @@ public abstract class HackModule
             return;
         }
     }
+    
+    public static int numberize(String ib)
+    {
+    	System.out.println(ib);
+    	String in = ib;
+    	//remove preceding spaces
+    	for (int i = 0; i < in.length(); i++)
+    	{
+    		if((in.charAt(i) < '9') && (in.charAt(i) > '0'))
+    		{
+    			in = in.substring(i);
+    			break;
+    		}    		
+    	}
+    	//get number
+    	for (int i = 0; i < in.length(); i++)
+    	{
+    		if(!((in.charAt(i) < '9') && (in.charAt(i) > '0')))
+    		{
+    			if (i==0)
+    			{
+    				return 0;
+    			}
+    			return Integer.parseInt(in.substring(0,i));
+    		}
+    	}
+    	return Integer.parseInt(in);
+    }
 }
