@@ -10,6 +10,8 @@ NEXT VERSION (after v0.5.0.2):
 	an image with invalid colors (instead of dying).
 # Disallows editing of default ROM. Disallows load in direct IO mode, and
 	disallows save in non-direct IO mode.
+# SPT Editor: BUGFIXes: Paste without copy does nothing instead of dying,
+	and hex text fields only allow hex digits to be entered.
 
 v0.5.0.2:
 # IPSFile: BUGFIX: IPS creation no longer uses recursion, should fix obscure

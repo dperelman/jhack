@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBoxMenuItem;
@@ -61,7 +62,8 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
     {
         super(rom, prefs);
     }
-    private JComboBox selector, palNum;
+    private JComboBox selector, palNum, tileset, tilesetPal;
+    private Box tilesetBox;
     private JTextField zoom, search;
     private JLabel addressLabel;
     private IntArrDrawingArea spriteDrawingArea;
@@ -109,6 +111,25 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             palNum = createJComboBoxFromArray(new Object[8])));
         palNum.setActionCommand("palNumChanged");
         palNum.addActionListener(this);
+        tilesetBox = new Box(BoxLayout.Y_AXIS)
+        {
+            public void setEnabled(boolean b)
+            {
+                super.setEnabled(b);
+                tileset.setEnabled(b);
+                tilesetPal.setEnabled(b);
+            }
+        };
+        tilesetBox.add(getLabeledComponent("Tileset: ",
+            tileset = createComboBox(TileEditor.TILESET_NAMES, this)));
+        tileset.setActionCommand("tilesetSel");
+        tilesetBox.add(getLabeledComponent("Tileset Palette:",
+            tilesetPal = new JComboBox()));
+        tilesetPal.setActionCommand("palNumChanged");
+        tilesetPal.addActionListener(this);
+        tileset.setSelectedIndex(0);
+        entryEast.add(tilesetBox);
+        tilesetBox.setEnabled(false);
         entryEast.add(HackModule.pairComponents(getLabeledComponent("Zoom: ",
             pairComponents(zoom = new JTextField(4), new JLabel("%"), true)),
             new JLabel(), false));
@@ -285,8 +306,9 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         //spriteDrawingArea.setImage(sp.getImage());
         spriteDrawingArea.setImage(sp.getSprite());
         palNum.setSelectedIndex(sp.si.getPalette());
-        spal.setPalette(sp.getPalette());
-        spal.repaint();
+        palNum.repaint();
+        //        spal.setPalette(sp.getPalette());
+        //        spal.repaint();
 
         addressLabel.setText("0x"
             + HackModule.addZeros(
@@ -488,6 +510,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
 
     private void setBgCol(Color tc)
     {
+//      TODO this needs to work for map palettes
         if (tc == null)
             return;
         SpriteEditor.bgColor = new Color((tc.getRed() >= 255 ? 254 : tc
@@ -500,13 +523,32 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         }
     }
 
+    private boolean usingMapPal = false;
+
     private void changePaletteCol(int num, Color col)
     {
         Sprite sp = new Sprite(getSpriteInfo(HackModule.getNumberOfString(
             selector.getSelectedItem().toString(), false)), this);
         sp.setImage(this.spriteDrawingArea.getIntArrImage());
-        sp.palette[num] = col;
-        this.spal.setPalette(sp.getPalette());
+        if (usingMapPal)
+        {
+            if (num != 0)
+            {
+                TileEditor.Tileset ts = TileEditor.tilesets[tileset
+                    .getSelectedIndex()];
+                int pn = tilesetPal.getSelectedIndex();
+                int subpal = (ts.getPaletteColor(0, pn, 2).getRed() >> 3) - 2;
+                ts.setPaletteColor(num, pn, subpal, col);
+                Color[] tmp = ts.getPaletteColors(pn, subpal);
+                tmp[0] = Sprite.pals[0][0]; //use user background col
+                this.spal.setPalette(tmp);
+            }
+        }
+        else
+        {
+            sp.palette[num] = col;
+            this.spal.setPalette(sp.getPalette());
+        }
         spal.repaint();
         this.spriteDrawingArea.setImage(sp.getSprite());
     }
@@ -520,7 +562,25 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         sib[spi.sptNum].palette = num;
         Sprite sp = new Sprite(spi, this);
         sp.setImage(this.spriteDrawingArea.getIntArrImage());
-        this.spal.setPalette(sp.getPalette());
+        // palette 4 is special, means to use map palette
+        if (num == 4)
+        {
+            usingMapPal = true;
+            tilesetBox.setEnabled(true);
+            TileEditor.Tileset ts = TileEditor.tilesets[tileset
+                .getSelectedIndex()];
+            int pn = tilesetPal.getSelectedIndex();
+            int subpal = (ts.getPaletteColor(0, pn, 2).getRed() >> 3) - 2;
+            Color[] tmp = ts.getPaletteColors(pn, subpal);
+            tmp[0] = Sprite.pals[0][0]; //use user background col
+            this.spal.setPalette(tmp);
+        }
+        else
+        {
+            usingMapPal = false;
+            tilesetBox.setEnabled(false);
+            this.spal.setPalette(sp.getPalette());
+        }
         spal.repaint();
         this.spriteDrawingArea.setImage(sp.getSprite());
     }
@@ -544,6 +604,17 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         else if (ae.getActionCommand().equals("palNumChanged"))
         {
             changePalette(palNum.getSelectedIndex());
+        }
+        else if (ae.getActionCommand().equals("tilesetSel"))
+        {
+            tilesetPal.removeActionListener(this);
+            tilesetPal.removeAllItems();
+            TileEditor.Tileset ts = TileEditor.tilesets[tileset
+                .getSelectedIndex()];
+            for (int i = 0; i < ts.getPaletteCount(); i++)
+                tilesetPal.addItem(ts.getPaletteName(i));
+            tilesetPal.addActionListener(this);
+            tilesetPal.setSelectedIndex(0);
         }
         else if (ae.getActionCommand().equals("hFlip"))
         {
@@ -619,6 +690,11 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             JHack.main.showModule(SPTEditor.class, new Integer(
                 getSpriteInfo(HackModule.getNumberOfString(selector
                     .getSelectedItem().toString(), false)).sptNum));
+        }
+        else
+        {
+            System.out.println("SpriteEditor: WARNING: Uncaught action: "
+                + ae.getActionCommand());
         }
     }
 
@@ -754,7 +830,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         {
             sprite[x][y] = (byte) pixel;
         }
-        
+
         /**
          * Returns the Color at given coordinate.
          * 
@@ -762,12 +838,12 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          * @param y Coordinate to read
          * @return Color at the given coordinate
          */
-        
+
         public Color getPixelColor(int x, int y)
         {
-        	return getPixelColor(x, y, false);
+            return getPixelColor(x, y, false);
         }
-        
+
         /**
          * Returns the Color at given coordinate.
          * 
@@ -778,16 +854,15 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          */
         public Color getPixelColor(int x, int y, boolean trans)
         {
-        	int colorNum = this.getPixel(x,y);
-        	if ((colorNum == 0)
-        			&& trans)
-        	{
-        		return new Color(0,0,0,0);
-        	}
-        	else
-        	{
-        		return this.palette[this.getPixel(x, y)];
-        	}
+            int colorNum = this.getPixel(x, y);
+            if ((colorNum == 0) && trans)
+            {
+                return new Color(0, 0, 0, 0);
+            }
+            else
+            {
+                return this.palette[this.getPixel(x, y)];
+            }
         }
 
         /**
@@ -864,7 +939,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
                 for (int y = 0; y < sprite[0].length; y++)
                     sprite[x][y] = (byte) in[x][y];
         }
-        
+
         /**
          * Returns an image of this Sprite.
          * 
@@ -874,7 +949,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          */
         public BufferedImage getImage()
         {
-        	return getImage(false);
+            return getImage(false);
         }
 
         /**
@@ -1282,6 +1357,8 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          */
         public void paste(SpriteInfoBlock newsib)
         {
+            if (newsib == null)
+                return;
             if (this.numSprites != newsib.numSprites)
             {
                 if (JOptionPane.showConfirmDialog(null,
@@ -1308,24 +1385,6 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             {
                 this.unknown[i] = newsib.unknown[i];
             }
-        }
-    }
-
-    //TODO there must be a good way to do this!
-    private static class StringHolder
-    {
-        public String value;
-        private int i;
-
-        public StringHolder(int i, String value)
-        {
-            this.i = i;
-            this.value = value;
-        }
-
-        public String toString()
-        {
-            return HackModule.getNumberedString(value, i);
         }
     }
 

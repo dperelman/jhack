@@ -131,19 +131,19 @@ public class SPTEditor extends EbHackModule implements ActionListener
         JPanel entry = new JPanel();
         entry.setLayout(new BoxLayout(entry, BoxLayout.Y_AXIS));
         entry.add(getLabeledComponent("Name: ", name = new JTextField(20)));
-        entry.add(getLabeledComponent("Width: ",
-            width = createSizedJTextField(3, true)));
+        entry.add(getLabeledComponent("Width: ", width = createSizedJTextField(
+            3, true)));
         entry.add(getLabeledComponent("Height: ",
             height = createSizedJTextField(3, true)));
         entry.add(getLabeledComponent("Palette: ",
             palette = createJComboBoxFromArray(new Object[8])));
-        entry
-            .add(getLabeledComponent("Bank: ", bank = createSizedJTextField(2)));
+        entry.add(getLabeledComponent("Bank: ", bank = createSizedJTextField(2,
+            true, true)));
         // bank and addresses shown in hex
         for (int i = 0; i < address.length; i++)
         {
             entry.add(getLabeledComponent("Address #" + i + ": ",
-                address[i] = createSizedJTextField(4)));
+                address[i] = createSizedJTextField(4, true, true)));
         }
         JPanel buttons = new JPanel(new FlowLayout());
 
@@ -185,7 +185,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
         for (int i = 0; i < unknown.length; i++)
         {
             unknowns.add(getLabeledComponent("Unknown #" + i + ": ",
-                unknown[i] = createSizedJTextField(2)));
+                unknown[i] = createSizedJTextField(2, true, true)));
             if (i == 0)
                 unknowns.add(Box.createVerticalStrut(5));
         }
@@ -413,9 +413,12 @@ public class SPTEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("Paste"))
         {
-            sib.paste(clipboard);
-            updateTFs();
-            updateImages();
+            if (clipboard != null)
+            {
+                sib.paste(clipboard);
+                updateTFs();
+                updateImages();
+            }
         }
         else if (ae.getActionCommand().startsWith("pics"))
         {

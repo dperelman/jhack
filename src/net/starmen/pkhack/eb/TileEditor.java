@@ -489,6 +489,32 @@ public class TileEditor extends EbHackModule implements ActionListener
             return -1;
         }
 
+        /**
+         * Returns the display name of the specified palette. This will be in
+         * the form (map tileset number)/(map palette number). For example:
+         * "11/2".
+         * 
+         * @param palette index of the palette to get the name of
+         * @return palette "name" in a mtileset/mpalette <code>String</code>.
+         */
+        public String getPaletteName(int palette)
+        {
+            return palettes[palette].mtileset + "/"
+                + palettes[palette].mpalette;
+        }
+
+        /**
+         * Returns the number palettes for this tileset. Note that this may
+         * include palettes for multiple map tilesets, but only for this
+         * graphics tileset.
+         * 
+         * @return number of palettes for this tileset
+         */
+        public int getPaletteCount()
+        {
+            return numPalettes;
+        }
+
         //Tile stuff
 
         //Basics
@@ -3306,9 +3332,9 @@ public class TileEditor extends EbHackModule implements ActionListener
      * Shows a specific arrangement or tile in a specific palette.
      * 
      * @param obj A <code>Integer[]</code> or <code>int[]</code> with 3, 4,
-     *            or 5 elements: graphics tileset, palette index,
-     *            arrangement number, (if 5 elements) [mini]tile number, (if 6
-     *            elements) subpalette number.
+     *            or 5 elements: graphics tileset, palette index, arrangement
+     *            number, (if 5 elements) [mini]tile number, (if 6 elements)
+     *            subpalette number.
      */
     public void show(Object obj)
     {
