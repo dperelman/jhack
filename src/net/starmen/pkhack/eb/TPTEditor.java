@@ -15,13 +15,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JLinkComboBox;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -384,7 +385,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
             "Secondary Pointer", true));
 
         entry.add(HackModule.getLabeledComponent("Movement: ",
-            movement = HackModule.createSizedJTextField(5)));
+            movement = HackModule.createSizedJTextField(5, true)));
 
         entry.add(HackModule.getLabeledComponent("Direction: ",
             direction = HackModule.createJComboBoxFromArray(new String[]{"Up",
@@ -544,36 +545,57 @@ public class TPTEditor extends EbHackModule implements ActionListener
 
     private void saveInfo(int i)
     {
-        TPTEntry e = tptEntries[i];
+        try
+        {
+            TPTEntry e = tptEntries[i];
 
-        e.setSprite(sprite.getSelectedIndex());
-        e.setType(type.getSelectedIndex() + 1);
-        e.setPointer(pointer.getOffset());
-        if (e.getType() != TPTEntry.TYPE_ITEM)
-        {
-            e.setSecPointer(secPointer.getOffset());
-        }
-        else
-        {
-            if (moneyCheckBox.isSelected())
+            e.setSprite(sprite.getSelectedIndex());
+            e.setType(type.getSelectedIndex() + 1);
+            e.setPointer(pointer.getOffset());
+            if (e.getType() != TPTEntry.TYPE_ITEM)
             {
-                e.setMoney(Integer.parseInt(money.getText()));
+                e.setSecPointer(secPointer.getOffset());
             }
             else
             {
-                e.setItem(item.getSelectedIndex());
+                if (moneyCheckBox.isSelected())
+                {
+                    e.setMoney(Integer.parseInt(money.getText()));
+                }
+                else
+                {
+                    e.setItem(item.getSelectedIndex());
+                }
             }
+            e.setMovement(Integer.parseInt(movement.getText()));
+            e.setDirection(direction.getSelectedIndex());
+
+            try
+            {
+                String temp = killSpaces(eventFlag.getText());
+                temp = temp.substring(2, 4) + temp.substring(0, 2);
+                e.setEventFlag(Integer.parseInt(temp, 16));
+            }
+            catch (StringIndexOutOfBoundsException sie)
+            {
+                throw (new NumberFormatException("Flag value too short."));
+            }
+
+            e.setShowSprite(showSprite.getSelectedIndex());
+
+            e.writeInfo();
         }
-        e.setMovement(Integer.parseInt(movement.getText()));
-        e.setDirection(direction.getSelectedIndex());
-
-        String temp = killSpaces(eventFlag.getText());
-        temp = temp.substring(2, 4) + temp.substring(0, 2);
-        e.setEventFlag(Integer.parseInt(temp, 16));
-
-        e.setShowSprite(showSprite.getSelectedIndex());
-
-        e.writeInfo();
+        catch (NumberFormatException nfe)
+        {
+            JOptionPane.showMessageDialog(mainWindow,
+                "Unable to save TPT entry due to invalid input.\n"
+                    + "Please make sure that you use only hexidecimal\n"
+                    + "for the flag field. The digits 0-9 and the \n"
+                    + "letters a-f are allowed. The flag field should\n"
+                    + "be two hex digits, a space, and another two\n"
+                    + "hex digits.", "Invalid input.",
+                JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void actionPerformed(ActionEvent ae)

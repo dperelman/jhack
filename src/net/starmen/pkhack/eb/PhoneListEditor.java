@@ -331,7 +331,7 @@ public class PhoneListEditor extends EbHackModule implements ActionListener
             JOptionPane.showMessageDialog(mainWindow,
                 "Unable to save phone entry due to invalid input.\n"
                     + "Please make sure that you use only hexidecimal\n"
-                    + "for the flag and point fields. The digits 0-9 \n"
+                    + "for the flag and pointer fields. The digits 0-9 \n"
                     + "and the letters a-f are allowed. The flag field\n"
                     + "should be two hex digits, a space, and another \n"
                     + "two hex digits.", "Invalid input.",

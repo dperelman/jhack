@@ -794,6 +794,11 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             return super.makeArrangementNumber(tile, subPalette - 2, hFlip,
                 vFlip);
         }
+        
+        public int getTileOfArr(int arr)
+        {
+            return arr & 0x00ff;
+        }
 
         protected int getCurrentTile()
         {

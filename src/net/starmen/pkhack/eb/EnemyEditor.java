@@ -652,7 +652,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         maxCall.setText(Integer.toString(enemies[i].getMaxCall()));
 
         //gfx/sound tab
-        outsidePic.setSelectedIndex(enemies[i].getOutsidePic());
+        outsidePic.setSelectedIndex(enemies[i].getOutsidePic()
+            % outsidePic.comboBox.getItemCount());
         movement.setText(Integer.toString(enemies[i].getMovement()));
         row.setSelectedIndex(enemies[i].getRow());
         insidePic.setSelectedIndex(enemies[i].getInsidePic());
@@ -1521,7 +1522,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
          * Returns the gender.
          * 
          * @return int
-         * @deprecated @see #getGender()
+         * @deprecated
+         * @see #getGender()
          */
         public int getUnknowna()
         {
@@ -1582,7 +1584,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
          * Returns the final action arugment.
          * 
          * @return int
-         * @deprecated @see #getArguement(int)
+         * @deprecated
+         * @see #getArguement(int)
          */
         public int getUnknowng()
         {
@@ -1613,7 +1616,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
          * Returns the row.
          * 
          * @return int
-         * @deprecated @see #getRow()
+         * @deprecated
+         * @see #getRow()
          */
         public int getUnknowni()
         {
@@ -1979,7 +1983,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
          * Sets the gender.
          * 
          * @param gender The gender to set
-         * @deprecated @see #setGender(int)
+         * @deprecated
+         * @see #setGender(int)
          */
         public void setUnknowna(int gender)
         {
@@ -2040,7 +2045,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
          * Sets the final action arugment.
          * 
          * @param unknowng The unknowng to set
-         * @deprecated @see #setArguement(int, int)
+         * @deprecated
+         * @see #setArguement(int, int)
          */
         public void setUnknowng(int unknowng)
         {
@@ -2142,7 +2148,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
          * Sets the row.
          * 
          * @param row The row to set
-         * @deprecated @see #setRow(int)
+         * @deprecated
+         * @see #setRow(int)
          */
         public void setUnknowni(int row)
         {

@@ -19,12 +19,25 @@ v0.5.0.2:
 # Sprite Editor: Error message shown if imported sprite image is too big.
 # Tile Editor: Added abort/retry/fail upon decompression errors like the
 	other graphics editors.
+# Tile Editor: Error message on palette reading failure.
 # Misc. Text Editor: BUGFIX: Strings can now be set to blank/empty.
 # Text Editor: BUGFIX: Can save strings that deparse to longer than 8 KB 
 	and can load strings that are longer than 8 KB and/or parse to longer
 	than 80 KB. Should also	improve text editor memory usage.
 # Reset Button: BUGFIX: Entry of ranges with an end before the start is
 	no longer permitted. If attempted, the start and end will be switched.
+# Hex Editor: BUGFIX: You can't edit address and text columns, could
+	result in trying to edit outside of ROM.
+# Battle Sprite Editor: BUGFIX: Typing in no digits (and zero or more other
+	symbols) into the palette selector and hitting enter caused an error.
+# Store Editor: Added null entry to start.
+# Attempts to save, save as, or close ROM will no longer cause errors when
+	no ROM has been loaded.
+# Text Editor: Warns user about losing changes if they switch text blocks
+	with a "Save"/"Don't Save"/"Cancel" dialog.
+# XMLPreferences: Added error dialogs.
+# Enemy Editor: BUGFIX: Doesn't die on out of range out of battle sprite value.
+# Phone List Editor: BUGFIX: Shows error message on invalid input instead of dying.
 
 v0.5.0.1
 # BUGFIX: IMPORTANT: AFFECTS MOST EDITORS. Number text fields work right. 

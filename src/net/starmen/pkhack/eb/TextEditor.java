@@ -119,6 +119,7 @@ public class TextEditor extends EbHackModule implements ActionListener
     {
         private JList src;
         private String ac;
+        private ListSelectionEvent lastlse;
 
         public ActionCreator(JList src, ActionListener al, String ac)
         {
@@ -130,6 +131,9 @@ public class TextEditor extends EbHackModule implements ActionListener
 
         public void valueChanged(ListSelectionEvent lse)
         {
+            if (lastlse != null && lastlse == lse)
+                return;
+            lastlse = lse;
             fireActionPerformed(new ActionEvent(src, 0, "textList" + ac
                 + src.getSelectedIndex()));
         }
@@ -266,8 +270,9 @@ public class TextEditor extends EbHackModule implements ActionListener
                 {
                     if (me.getButton() == 1)
                     {
-                        if (textJLists[j].getSelectedIndex() > -1)
-                            showInfo(j, textJLists[j].getSelectedIndex());
+                        int i = textJLists[j].getSelectedIndex();
+                        if (j == currentList && i > -1 && i == currentSelection)
+                            showInfo(j, i);
                     }
                     else if (me.getButton() == 3)
                     {
@@ -322,24 +327,29 @@ public class TextEditor extends EbHackModule implements ActionListener
         ta.setRows(7);
         ta.getDocument().addDocumentListener(new DocumentListener()
         {
-            public void changedUpdate(DocumentEvent de)
+            public void doStuff()
             {
+                isModified = true;
                 updateCurrSize();
                 updateCurrPos();
+            }
+
+            public void changedUpdate(DocumentEvent de)
+            {
+                doStuff();
             }
 
             public void insertUpdate(DocumentEvent de)
             {
-                updateCurrSize();
-                updateCurrPos();
+                doStuff();
             }
 
             public void removeUpdate(DocumentEvent de)
             {
+                isModified = true;
                 if (!ta.getText().equals(""))
                 {
-                    updateCurrSize();
-                    updateCurrPos();
+                    doStuff();
                 }
             }
         });
@@ -564,7 +574,7 @@ public class TextEditor extends EbHackModule implements ActionListener
 
             this.snes = snesDisplay;
 
-            tf = HackModule.createSizedJTextField(6);
+            tf = HackModule.createSizedJTextField(6, true, true);
 
             this.add(tf, BorderLayout.EAST);
 
@@ -672,6 +682,11 @@ public class TextEditor extends EbHackModule implements ActionListener
             quickCodeDialog;
     private List undo;
     private int undoPos;
+    /**
+     * Indicates whether a correct text block is being shown. showInfo(int, int)
+     * is forced to run if this is false.
+     */
+    private boolean isLoaded = false;
 
     /*
      * (non-Javadoc)
@@ -682,6 +697,7 @@ public class TextEditor extends EbHackModule implements ActionListener
     {
         super.show();
 
+        isLoaded = false;
         readFromRom(this);
         for (int i = 0; i < textJLists.length; i++)
         {
@@ -764,7 +780,12 @@ public class TextEditor extends EbHackModule implements ActionListener
         textJLists[currentList].updateUI();
     }
 
-    private void saveInfo()
+    /**
+     * Saves the current text block to the ROM.
+     * 
+     * @return true if save done, false if save did not occur due to any error
+     */
+    private boolean saveInfo()
     {
         CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
 
@@ -782,7 +803,7 @@ public class TextEditor extends EbHackModule implements ActionListener
                     + "and all brackets are correctly paired.",
                 "Pre-Write Error: Unmatched brackets",
                 JOptionPane.ERROR_MESSAGE);
-            return;
+            return false;
         }
         String text = comp ? cct.compressString(ta.getText()) : ta.getText();
         StrInfo si = (StrInfo) textLists[currentList].get(currentSelection);
@@ -795,7 +816,7 @@ public class TextEditor extends EbHackModule implements ActionListener
                     + "NOTE: Do not uncheck \"Prevent Overwrites\"\n"
                     + "unless you know what you are doing!",
                 "Pre-Write Error: Text too long", JOptionPane.ERROR_MESSAGE);
-            return;
+            return false;
         }
         String towrite = cct.deparseString(text);
         if (towrite == null)
@@ -809,12 +830,13 @@ public class TextEditor extends EbHackModule implements ActionListener
                         + "0123456789ABCDEFabcdef<space>\n"
                         + "Use of other characters will result in an error.",
                     "Pre-Write Error: Unknown error", JOptionPane.ERROR_MESSAGE);
-            return;
+            return false;
         }
         cct.writeString(towrite, si.address);
         loadText(currentList, this);
         resetList();
         showInfo();
+        return true;
     }
 
     private StrInfo si;
@@ -848,10 +870,17 @@ public class TextEditor extends EbHackModule implements ActionListener
             showEntry.setEnabled(false);
 
         clearUndo();
+        isModified = false;
+        updateCurrPos();
+        updateCurrSize();
     }
 
-    public int currentList = TPT;
-    public int currentSelection = 0;
+    /* Index of text list current selection is in. */
+    private int currentList = TPT;
+    /* Index on current text list current selection is. */
+    private int currentSelection = 0;
+    /* True if current selection has unsaved changes. */
+    private boolean isModified = false;
 
     public void actionPerformed(ActionEvent ae)
     {
@@ -862,10 +891,12 @@ public class TextEditor extends EbHackModule implements ActionListener
             {
                 if (tmp.equals(tabShortNames[i]))
                 {
-                    currentList = i;
-                    currentSelection = Integer.parseInt(ae.getActionCommand()
-                        .substring(11));
-                    showInfo();
+                    //                    currentList = i;
+                    //                    currentSelection = Integer.parseInt(ae.getActionCommand()
+                    //                        .substring(11));
+                    //                    showInfo();
+                    showInfo(i, Integer.parseInt(ae.getActionCommand()
+                        .substring(11)));
                     return;
                 }
             }
@@ -1078,12 +1109,43 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     private void showInfo(int list, int sel)
     {
+        if (list < 0 || list >= NUM_TEXT_TYPES || sel < 0
+            || sel >= textJLists[list].getModel().getSize())
+        {
+            System.out.println("List #" + list + " line #" + sel
+                + " does not exist and cannot be selected.");
+            return;
+        }
+        //don't select the same thing twice unless user is trying to reload
+        if (list == currentList && sel == currentSelection && !isModified
+            && isLoaded)
+            return;
+        if (isModified)
+        {
+            Object[] options = new String[]{"Save", "Don't Save", "Cancel"};
+            int ans = JOptionPane.showOptionDialog(mainWindow,
+                "Unsaved changes have been made to the current\n"
+                    + "text block. If you continue, those changes "
+                    + "will be lost.", "Save changes?",
+                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+                null, options, options[2]);
+            switch (ans)
+            {
+                case JOptionPane.CLOSED_OPTION:
+                case JOptionPane.CANCEL_OPTION:
+                    return;
+                case JOptionPane.YES_OPTION:
+                    if (!saveInfo())
+                        return;
+            }
+        }
         selectorArea.setSelectedIndex(list);
         textJLists[list].setSelectedIndex(sel);
         textJLists[list].ensureIndexIsVisible(sel);
         currentList = list;
         currentSelection = sel;
         showInfo();
+        isLoaded = true;
     }
 
     private boolean isOffsetInStr(StrInfo si, int offset)
@@ -1327,6 +1389,9 @@ public class TextEditor extends EbHackModule implements ActionListener
         {
             currSizeLabel.setText("Current Size: "
                 + a
+                + " ("
+                + (isModified ? "" : "un")
+                + "modified)"
                 + (comp ? "" : (comp == (cct.isAllowComp() && useComp
                     .isSelected())
                     ? " (uncompressed)"

@@ -61,7 +61,7 @@ import javax.swing.filechooser.FileFilter;
  * buttons. This is called by {@link JHack#main(String[])}.
  * 
  * @author AnyoneEB
- * @version 0.5.0.1
+ * @version 0.5.0.2
  */
 //Made by AnyoneEB.
 //Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
@@ -466,7 +466,7 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public static String getVersion()
     {
-        return "0.5.0.1";
+        return "0.5.0.2";
     }
 
     /**
@@ -919,6 +919,13 @@ public class MainGUI implements ActionListener, WindowListener
      */
     private void doBackup()
     {
+        if (rom.isLoaded && rom.getRomType().equals("Unknown"))
+        {
+            System.out
+                .println("Warning: Unknown ROM type. No backups will be made.");
+            return;
+        }
+        
         try
         {
             writeBackup();
@@ -1373,20 +1380,27 @@ public class MainGUI implements ActionListener, WindowListener
             }
             else if (ae.getActionCommand().equalsIgnoreCase("save"))
             {
-                rom.saveRom();
-                doBackup();
+                if (rom.isLoaded)
+                {
+                    rom.saveRom();
+                    doBackup();
+                }
             }
             else if (ae.getActionCommand().equalsIgnoreCase("saveAs"))
             {
-                rom.saveRomAs();
-                //ROM file name changed, add to recent list
-                addRecentLoad(rom.getPath());
-                refreshRecentLoads();
-                doBackup();
+                if (rom.isLoaded)
+                {
+                    rom.saveRomAs();
+                    //ROM file name changed, add to recent list
+                    addRecentLoad(rom.getPath());
+                    refreshRecentLoads();
+                    doBackup();
+                }
             }
             else if (ae.getActionCommand().equalsIgnoreCase("closeRom"))
             {
-                closeRom();
+                if (rom.isLoaded)
+                    closeRom();
             }
             else if (ae.getActionCommand().startsWith("revert-"))
             {

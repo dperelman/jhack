@@ -2114,6 +2114,16 @@ public class TileEditor extends EbHackModule implements ActionListener
                 - rom.readMulti(0x2F12FB + (i * 4), 4);
             if (i == 31)
                 k = 0xDAFAA7 - rom.readMulti(0x2F12FB + (i * 4), 4);
+            if (t < 0 || k < 0)
+            {
+                JOptionPane
+                    .showMessageDialog(null,
+                        "Unknown error reading tileset palettes.\n"
+                            + "Some or all palettes may be missing.",
+                        "Error reading tileset palettes",
+                        JOptionPane.ERROR_MESSAGE);
+                continue;
+            }
             for (int j = 0; j < k / 0xC0; j++)
             {
                 Tileset.Palette tempPal = new Tileset.Palette();

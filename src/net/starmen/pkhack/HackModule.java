@@ -499,6 +499,28 @@ public abstract class HackModule
      * @param len Maximum length for the <code>JTextField</code>
      * @param numbersOnly if true, a <code>NumericMaxLengthDocument</code> is
      *            used to allow only numbers to be typed
+     * @param hex True for hex numbers, false for decimal
+     * @return A new <code>JTextField</code>, which limits the number of
+     *         input characters to <code>len</code>
+     * @see net.starmen.pkhack.MaxLengthDocument
+     * @see NumericMaxLengthDocument
+     */
+    public static JTextField createSizedJTextField(int len,
+        boolean numbersOnly, boolean hex)
+    {
+        return new JTextField(numbersOnly ? new NumericMaxLengthDocument(len,
+            hex ? "[^0-9a-fA-F]" : null) : new MaxLengthDocument(len), "", len);
+    }
+
+    /**
+     * Creates a <code>JTextField</code> with a maximum length. This
+     * <code>JTextField</code> uses a
+     * {@link net.starmen.pkhack.MaxLengthDocument}or a
+     * {@link net.starmen.pkhack.NumericMaxLengthDocument}.
+     * 
+     * @param len Maximum length for the <code>JTextField</code>
+     * @param numbersOnly if true, a <code>NumericMaxLengthDocument</code> is
+     *            used to allow only numbers to be typed
      * @return A new <code>JTextField</code>, which limits the number of
      *         input characters to <code>len</code>
      * @see net.starmen.pkhack.MaxLengthDocument
@@ -506,9 +528,7 @@ public abstract class HackModule
      */
     public static JTextField createSizedJTextField(int len, boolean numbersOnly)
     {
-        return new JTextField(numbersOnly
-            ? new NumericMaxLengthDocument(len)
-            : new MaxLengthDocument(len), "", len);
+        return createSizedJTextField(len, false, false);
     }
 
     /**

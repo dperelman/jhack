@@ -469,9 +469,16 @@ public class FontEditor extends EbHackModule implements ActionListener
         {
             for (int i = 0; i < text.length(); i++)
             {
-                Character ch = chars[text.charAt(i) - 0x20];
-                ch.drawImage(g, x, y, true, zoom);
-                x += (ch.width + (num == BATTLE ? 0 : 1)) * zoom;
+                try
+                {
+                    Character ch = chars[text.charAt(i) - 0x20];
+                    ch.drawImage(g, x, y, true, zoom);
+                    x += (ch.width + (num == BATTLE ? 0 : 1)) * zoom;
+                }
+                catch (ArrayIndexOutOfBoundsException e)
+                {
+                    //character not part of font
+                }
             }
         }
 
@@ -483,7 +490,7 @@ public class FontEditor extends EbHackModule implements ActionListener
 
     /** Number of fonts. */
     public final static int NUM_FONTS = 5;
-    
+
     /** Names of fonts. */
     public final static String[] FONT_NAMES = new String[]{"Main", "Saturn",
         "Large", "Battle", "Tiny"};
@@ -494,7 +501,7 @@ public class FontEditor extends EbHackModule implements ActionListener
     public final static int BIG = 2;
     public final static int BATTLE = 3;
     public final static int TINY = 4;
-    
+
     /** Constants for font sizes. */
     public final static int FONT_SIZE_NORMAL = 0;
     public final static int FONT_SIZE_SMALL = 1;
@@ -1355,23 +1362,23 @@ public class FontEditor extends EbHackModule implements ActionListener
 
         mainWindow.setVisible(true);
     }
-    
+
     public void show(Object in)
     {
         super.show(in);
-        
-        if(in instanceof Integer)
+
+        if (in instanceof Integer)
         {
             int i = ((Integer) in).intValue();
-            if(i >= 0 && i < NUM_FONTS)
+            if (i >= 0 && i < NUM_FONTS)
                 fontSelector.setSelectedIndex(i);
         }
         else
         {
             String str = in.toString().toLowerCase();
-            for(int i = 0; i < NUM_FONTS; i++)
+            for (int i = 0; i < NUM_FONTS; i++)
             {
-                if(str.indexOf(FONT_NAMES[i].toLowerCase()) != -1)
+                if (str.indexOf(FONT_NAMES[i].toLowerCase()) != -1)
                 {
                     fontSelector.setSelectedIndex(i);
                     break;

@@ -3,6 +3,8 @@
  */
 package net.starmen.pkhack;
 
+import java.util.regex.Pattern;
+
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
@@ -15,9 +17,36 @@ import javax.swing.text.SimpleAttributeSet;
  */
 public class NumericMaxLengthDocument extends MaxLengthDocument
 {
+    private Pattern p;
+
+    /**
+     * Creates a new <code>Document</code> that can never be more than
+     * <code>maxLength</code> characters long and may only hold decimal
+     * digits.
+     * 
+     * @param maxLength maximum character length of this document
+     */
     public NumericMaxLengthDocument(int maxLength)
     {
+        this(maxLength, null);
+    }
+
+    /**
+     * Creates a new <code>Document</code> that can never be more than
+     * <code>maxLength</code> characters long and may not hold characters
+     * matched by <code>pattern</code>.
+     * 
+     * @param maxLength maximum character length of this document
+     * @param pattern a regular expression pattern which should match any
+     *            <em>single</em> character that may not be in this document.
+     *            The default is "[^\\d]".
+     */
+    public NumericMaxLengthDocument(int maxLength, String pattern)
+    {
         super(maxLength);
+        if (pattern == null)
+            pattern = "[^\\d]";
+        p = Pattern.compile(pattern + "+");
         try
         {
             insertString(0, "0", new SimpleAttributeSet());
@@ -35,7 +64,7 @@ public class NumericMaxLengthDocument extends MaxLengthDocument
             if (offs > 0)
                 offs--;
         }
-        super.insertString(offs, str.replaceAll("[^\\d]+", ""), a);
+        super.insertString(offs, p.matcher(str).replaceAll(""), a);
         //remove leading zeros
         if (this.getLength() > 1 && this.getText(0, 1).equals("0"))
             remove(0, 1);

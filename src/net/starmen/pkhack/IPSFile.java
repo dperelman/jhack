@@ -217,6 +217,19 @@ public class IPSFile
         // file1 is the modified file, file2 is the orginal file
 
         //System.out.println("Creating a .IPS file");
+        if (start > file1.length - 1 || start > file2.length - 1
+            || end > file1.length || end > file2.length)
+        {
+            JOptionPane.showMessageDialog(null,
+                "An IPS file cannot be made for this range\n"
+                    + "because it is past the end of either the\n"
+                    + "original or modified file.\n" + "\n" + "The range is ["
+                    + start + ", " + end + ") in decimal,\n" + "or [0x"
+                    + Integer.toHexString(start) + ", 0x"
+                    + Integer.toHexString(end) + ") in hex.",
+                "Error: Illegal Range", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
 
         IPSFile out = new IPSFile();
 

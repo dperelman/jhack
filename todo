@@ -5,9 +5,8 @@ NON-RELEASE
 DONE? (CHANGES TO CONFIRM/DEBUG)
 
 NEXT v0.0.0.x (bugfix) RELEASE
-# Text Editor: Warn user about losing changes if they switch text blocks.
-	Use "Save" "Don't Save" "Cancel" dialog.
 # Look into threading of error console GUI building (ERROR#65895)
+# Look into use of JOptionPane.showOptionDialog() for abort/retry/fail.
 
 NEXT v0.0.x (minor) RELEASE
 

@@ -1769,16 +1769,30 @@ public abstract class AbstractRom
      * 
      * @see #createIPS(AbstractRom)
      * @param orgRom ROM to base patch off of.
-     * @param start Byte offset to start looking for differences.
-     * @param end Byte offset to stop looking for differences.
+     * @param start Byte offset to start looking for differences inclusive.
+     * @param end Byte offset to stop looking for differences exclusive.
      * @return IPSFile
      */
     public IPSFile createIPS(AbstractRom orgRom, int start, int end)
     {
+        if (start > this.length() - 1 || start > orgRom.length() - 1
+            || end > this.length() || end > orgRom.length())
+        {
+            JOptionPane.showMessageDialog(null,
+                "An IPS file cannot be made for this range\n"
+                    + "because it is past the end of either the\n"
+                    + "original or modified file.\n" + "\n" + "The range is ["
+                    + start + ", " + end + ") in decimal,\n" + "or [0x"
+                    + Integer.toHexString(start) + ", 0x"
+                    + Integer.toHexString(end) + ") in hex.",
+                "Error: Illegal Range", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+
         IPSFile out = new IPSFile();
 
         int cStart = -1;
-        int len = end - start + 1;
+        int len = end - start;
 
         byte[] romData = readByte(start, len);
 
