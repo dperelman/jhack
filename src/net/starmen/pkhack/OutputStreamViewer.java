@@ -281,13 +281,11 @@ public class OutputStreamViewer
                     BorderLayout.SOUTH);
 
                 Box entry = new Box(BoxLayout.Y_AXIS);
-                //FIXME What's with these JLabels?
-                entry.add(new JLabel("An error has occured in JHack.",
-                    SwingConstants.CENTER));
-                entry
-                    .add(new JLabel("Please enter your username and any "
+                entry.add(HackModule.createFlowLayout(new JLabel(
+                    "An error has occured in JHack. "
+                        + "Please enter your username and any "
                         + "information related to the error.",
-                        SwingConstants.CENTER));
+                    SwingConstants.CENTER)));
                 entry.add(HackModule.getLabeledComponent("Username: ", usertf));
                 entry.add(HackModule.getLabeledComponent("Comment: ", comment));
 

@@ -1285,8 +1285,6 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public void actionPerformed(ActionEvent ae)
     {
-        //FIXME DEBUG line, remove
-        System.err.println("No error has occured.");
         //stuff that can be done while ROM is loading
         if (ae.getActionCommand().equalsIgnoreCase("about"))
         {
