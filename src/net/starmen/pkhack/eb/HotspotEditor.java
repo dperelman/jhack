@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.XMLPreferences;
+import net.starmen.pkhack.eb.MapEditor.EbMap;
 import net.starmen.pkhack.eb.MapEditor.MapGraphics;
 
 /**
@@ -46,9 +47,6 @@ public class HotspotEditor extends EbHackModule implements ActionListener, SeekL
 
 	protected void init()
 	{
-		if (!alreadyRead)
-			readFromRom(this);
-		
 		mainWindow = createBaseWindow(this);
 		mainWindow.setTitle(getDescription());
 		
@@ -125,6 +123,7 @@ public class HotspotEditor extends EbHackModule implements ActionListener, SeekL
 	public void show()
 	{
 		super.show();
+		readFromRom(this);
 		mainWindow.setVisible(true);
 		if (entryChooser.getSelectedIndex() >= 0)
 			updateComponents();
@@ -179,20 +178,33 @@ public class HotspotEditor extends EbHackModule implements ActionListener, SeekL
 	
 	public void reset()
 	{
+		alreadyRead = false;
+	}
+	
+	public void readFromRom()
+	{
 		readFromRom(this);
+		
+		EbMap.loadDrawTilesets(rom);
+		TPTEditor.readFromRom(this);
+		SpriteEditor.readFromRom(rom);
+		EbMap.loadSpriteData(rom);
 	}
 	
 	public static void readFromRom(HackModule hm)
-	{
-		alreadyRead = true;
-		entries = new Hotspot[NUM_HOTSPOTS];
-		for (int i = 0; i < entries.length; i++)
+	{	
+		if (!alreadyRead)
 		{
-			short x1 = (short) hm.rom.readMulti(HOTSPOTS_ADDR + (i * 8),2),
-				y1 = (short) hm.rom.readMulti(HOTSPOTS_ADDR + (i * 8) + 2,2),
-				x2 = (short) hm.rom.readMulti(HOTSPOTS_ADDR + (i * 8) + 4,2),
-				y2 = (short) hm.rom.readMulti(HOTSPOTS_ADDR + (i * 8) + 6,2);
-			entries[i] = new Hotspot(x1,y1,x2,y2);
+			alreadyRead = true;
+			entries = new Hotspot[NUM_HOTSPOTS];
+			for (int i = 0; i < entries.length; i++)
+			{
+				short x1 = (short) hm.rom.readMulti(HOTSPOTS_ADDR + (i * 8),2),
+					y1 = (short) hm.rom.readMulti(HOTSPOTS_ADDR + (i * 8) + 2,2),
+					x2 = (short) hm.rom.readMulti(HOTSPOTS_ADDR + (i * 8) + 4,2),
+					y2 = (short) hm.rom.readMulti(HOTSPOTS_ADDR + (i * 8) + 6,2);
+				entries[i] = new Hotspot(x1,y1,x2,y2);
+			}
 		}
 	}
 
