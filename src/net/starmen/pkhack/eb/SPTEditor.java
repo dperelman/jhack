@@ -292,8 +292,8 @@ public class SPTEditor extends EbHackModule implements ActionListener
         {
             if (i < sib.numSprites)
             {
-                SpriteEditor.Sprite sp = new SpriteEditor.Sprite(sib
-                    .getSpriteInfo(i), this);
+                SpriteEditor.SpriteInfo si = sib.getSpriteInfo(i);
+                SpriteEditor.Sprite sp = new SpriteEditor.Sprite(si, this);
                 byte[][] spb = sp.getSpriteByte();
                 Color[] pal;
                 if (sib.palette == 4)
@@ -308,7 +308,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
                 {
                     pal = sp.getPalette();
                 }
-                BufferedImage img = drawImage(spb, pal);
+                BufferedImage img = drawImage(spb, pal, si.isHFliped(), false);
                 pics[i].setIcon(new ImageIcon(zoomImage(img, 2)));
                 pics[i].setEnabled(true);
             }

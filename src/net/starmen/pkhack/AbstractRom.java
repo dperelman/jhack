@@ -254,12 +254,20 @@ public abstract class AbstractRom
                 return "SNES ROMs (*.smc, *.sfc, *.fig)";
             }
         });
-        if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+        try
         {
-            return loadRom(jfc.getSelectedFile());
+            if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+            {
+                return loadRom(jfc.getSelectedFile());
+            }
+            else
+            {
+                return false;
+            }
         }
-        else
+        catch (Exception e)
         {
+            e.printStackTrace();
             return false;
         }
     }
@@ -1679,6 +1687,7 @@ public abstract class AbstractRom
         else
             return false;
     }
+
     /**
      * Actual implementation of ROM expansion from 24 to 32 megabits. Called
      * only when this contains a 0x300200 byte EarthBound ROM. Adds a megabyte
@@ -1708,6 +1717,7 @@ public abstract class AbstractRom
         else
             return false;
     }
+
     /**
      * Actual implementation of ROM expansion from 32 to 48 megabits. Called
      * only when this contains a 0x400200 byte EarthBound ROM. Adds 2MB of zeros

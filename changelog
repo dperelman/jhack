@@ -1,5 +1,6 @@
 NEXT VERSION (after v0.5.2):
 # A few SPT names additions from JeffMan
+# SPT Editor: BUGFIX: horizontally flipped sprites are shown correctly (address bit 1 set)
 # BUGFIX: Special properties of destinationless doors write correctly
 # Map Editor: can jump to destinations
 # Door Editor: can edit special properties of destinationless doors
