@@ -140,7 +140,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             int[] tmp = hm.decomp(tilePointer, tileBuffer);
             if (tmp[0] < 0)
             {
-                System.out.println("Error " + tmp[0]
+                System.err.println("Error " + tmp[0]
                     + " decompressing logo screen #" + num + ".");
                 return false;
             }
@@ -155,7 +155,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             tmp = hm.decomp(palPointer, palBuffer);
             if (tmp[0] < 0)
             {
-                System.out.println("Error " + tmp[0]
+                System.err.println("Error " + tmp[0]
                     + " decompressing logo screen #" + num + " palette.");
                 return false;
             }
@@ -170,7 +170,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             tmp = hm.decomp(arngPointer, arngBuffer);
             if (tmp[0] < 0)
             {
-                System.out.println("Error " + tmp[0]
+                System.err.println("Error " + tmp[0]
                     + " decompressing logo screen #" + num + " palette.");
                 return false;
             }
@@ -996,7 +996,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         mainWindow.setVisible(false);
     }
 
-    private void doMapSelectAction()
+    private void doLogoSelectAction()
     {
         name.setText(logoScreenNames[getCurrentScreen()]);
         if (!getSelectedScreen().readInfo())
@@ -1012,13 +1012,13 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 mapSelector
                     .setSelectedIndex((mapSelector.getSelectedIndex() + 1)
                         % mapSelector.getItemCount());
-                doMapSelectAction();
+                doLogoSelectAction();
                 return;
             }
             else if (opt.equals("Retry"))
             {
                 mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
-                doMapSelectAction();
+                doLogoSelectAction();
                 return;
             }
             else if (opt.equals("Fail"))
@@ -1048,7 +1048,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("mapSelector"))
         {
-            doMapSelectAction();
+            doLogoSelectAction();
         }
         else if (ae.getActionCommand().equals("tileSelector"))
         {
