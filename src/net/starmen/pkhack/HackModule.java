@@ -15,6 +15,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.StringTokenizer;
@@ -291,8 +292,10 @@ public abstract class HackModule
     {
         JPanel out = new JPanel();
         out.setLayout(new BorderLayout());
-        if (comp1 == null) comp1 = new JLabel();
-        if (comp2 == null) comp2 = new JLabel();
+        if (comp1 == null)
+            comp1 = new JLabel();
+        if (comp2 == null)
+            comp2 = new JLabel();
         comp1.setMaximumSize(comp1.getPreferredSize());
         if (tooltip1 != null)
         {
@@ -784,7 +787,8 @@ public abstract class HackModule
     {
         JMenuItem j = new JMenuItem(name);
         j.setMnemonic(m);
-        if (key != null) j.setAccelerator(KeyStroke.getKeyStroke(key));
+        if (key != null)
+            j.setAccelerator(KeyStroke.getKeyStroke(key));
         j.setActionCommand(ac);
         j.addActionListener(al);
         return j;
@@ -842,7 +846,10 @@ public abstract class HackModule
             {
                 if ((f.getAbsolutePath().toLowerCase().endsWith("." + ext) || f
                     .isDirectory())
-                    && (f.exists() || save)) { return true; }
+                    && (f.exists() || save))
+                {
+                    return true;
+                }
                 return false;
             }
 
@@ -941,7 +948,8 @@ public abstract class HackModule
         for (int i = 0; i < len; i++)
         {
             c[i] = simpToRegChar(c[i]);
-            if (c[i] == 0) return new String(c, 0, i);
+            if (c[i] == 0)
+                return new String(c, 0, i);
         }
         return new String(c);
     }
@@ -980,7 +988,8 @@ public abstract class HackModule
         for (int i = 0; i < len; i++)
         {
             c[i] = simpToRegChar(c[i]);
-            if (c[i] == 0) return new String(c, 0, i);
+            if (c[i] == 0)
+                return new String(c, 0, i);
         }
         return new String(c);
     }
@@ -1498,7 +1507,8 @@ public abstract class HackModule
     public static int read2BPPArea(byte[][] target, byte[] source, int off,
         int x, int y, int bitOffset)
     {
-        if (bitOffset < 0) bitOffset = 0;
+        if (bitOffset < 0)
+            bitOffset = 0;
         int offset = off;
         for (int i = 0; i < 8; i++)
         {
@@ -1609,7 +1619,8 @@ public abstract class HackModule
     public static int write2BPPArea(byte[][] source, byte[] target, int off,
         int x, int y, int bitOffset)
     {
-        if (bitOffset < 0) bitOffset = 0;
+        if (bitOffset < 0)
+            bitOffset = 0;
         int offset = off;
         for (int i = 0; i < 8; i++)
         {
@@ -1720,7 +1731,8 @@ public abstract class HackModule
     public static int read4BPPArea(byte[][] target, byte[] source, int off,
         int x, int y, int bitOffset)
     {
-        if (bitOffset < 0) bitOffset = 0;
+        if (bitOffset < 0)
+            bitOffset = 0;
         read2BPPArea(target, source, off, x, y, bitOffset);
         read2BPPArea(target, source, off + 16, x, y, bitOffset + 2);
         return 32;
@@ -1821,7 +1833,8 @@ public abstract class HackModule
     public static int write4BPPArea(byte[][] source, byte[] target, int off,
         int x, int y, int bitOffset)
     {
-        if (bitOffset < 0) bitOffset = 0;
+        if (bitOffset < 0)
+            bitOffset = 0;
         write2BPPArea(source, target, off, x, y, bitOffset);
         write2BPPArea(source, target, off + 16, x, y, bitOffset + 2);
         return 32;
@@ -2251,6 +2264,7 @@ public abstract class HackModule
      * @param in Array to be added to
      * @param arg <code>String</code> to add to the array
      * @return A <code>String[]</code> with a length one greater.
+     * @deprecated Use <code>ArrayList</code>
      */
     public static String[] addToArr(String[] in, String arg)
     {
@@ -2428,7 +2442,8 @@ public abstract class HackModule
         SimpleComboBoxModel model = createComboBoxModel(array, zeroBased,
             zeroString);
         final JComboBox out = new JComboBox(model);
-        if (al != null) out.addActionListener(al);
+        if (al != null)
+            out.addActionListener(al);
         ListDataListener ldl = new ListDataListener()
         {
 
@@ -2515,10 +2530,11 @@ public abstract class HackModule
     public static void readArray(String baseDir, String filename,
         String romPath, boolean hexNum, String[] out, int size)
     {
-        if (out == null) out = new String[size];
+        if (out == null)
+            out = new String[size];
         //if the first one is null, the rest are
-        if (out[0] == null) for (int i = 0; i < size; i++)
-            out[i] = new String();
+        if (out[0] == null)
+            Arrays.fill(out, new String());
         try
         {
             String[] list;
