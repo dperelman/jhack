@@ -301,6 +301,7 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
             NPCBattleEditor.npcbEntries[j].setTarget(getNumberOfString(
                 (String) target.getSelectedItem(), false));
             NPCBattleEditor.npcbEntries[j].setEnemy(enemy.getSelectedIndex());
+            NPCBattleEditor.npcbEntries[j].writeInfo();
         }
     }
 
