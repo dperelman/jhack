@@ -63,3 +63,4 @@ eb.TileEditor		#Edits map tiles, tile arrangements, and collision info,
 					#when you walk over them
 #eb.ItemDumper		#Dumps the item info for walkthru
 eb.MapEditor		#Edits the map
+eb.PhotoEditor		#Edits the photos shown during the credits
