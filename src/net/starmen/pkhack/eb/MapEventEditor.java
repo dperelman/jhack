@@ -51,12 +51,12 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 	
 	private ButtonGroup group;
 	private JPanel tilesPanel;
-	private JButton add, del;
-	private JComboBox tileset, palette, page;
+	private JButton add, del, addGroup, delGroup;
+	private JComboBox tileset, palette, page, flagGroup;
 	private JCheckBox reverse;
 	private JTextField flag, limit;
 	private TileChooser tileChooser;
-	private static TilesetChange[] entries;
+	private static ArrayList[] entries;
 	private int selected = -1;
 	private static final int end = 0x101a80;
 	private static final String[] errorMessages = new String[] {
@@ -80,6 +80,9 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		tileset = new JComboBox(tsetNames);
 		tileset.addActionListener(this);
 		
+		flagGroup = new JComboBox();
+		flagGroup.addActionListener(this);
+		
 		flag = HackModule.createSizedJTextField(3, false);
 		flag.addActionListener(this);
 		
@@ -94,6 +97,12 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		
 		del = new JButton("Delete Tile Change");
 		del.addActionListener(this);
+		
+		addGroup = new JButton("Add Flag Group");
+		addGroup.addActionListener(this);
+		
+		delGroup = new JButton("Delete Flag Group");
+		delGroup.addActionListener(this);
 		
 		tilesPanel = new JPanel();
 		tilesPanel.setLayout(new BoxLayout(tilesPanel, BoxLayout.Y_AXIS));
@@ -111,10 +120,15 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		JPanel topPanel = new JPanel();
 		topPanel.add(HackModule.getLabeledComponent("Tileset: ", tileset));
 		topPanel.add(HackModule.getLabeledComponent("Preview palette: ", palette));
-		topPanel.add(HackModule.getLabeledComponent("Flag: ", flag));
-		topPanel.add(HackModule.getLabeledComponent("Reversal: ", reverse));
-		topPanel.add(add);
-		topPanel.add(del);
+		topPanel.add(HackModule.getLabeledComponent("Flag Group : ", flagGroup));
+		topPanel.add(addGroup);
+		topPanel.add(delGroup);
+		
+		JPanel middlePanel = new JPanel();
+		middlePanel.add(HackModule.getLabeledComponent("Flag: ", flag));
+		middlePanel.add(HackModule.getLabeledComponent("Reversal: ", reverse));
+		middlePanel.add(add);
+		middlePanel.add(del);
 		
 		JPanel bottomPanel = new JPanel();
 		bottomPanel.add(new JLabel("Limit per page: "));
@@ -125,6 +139,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.add(topPanel);
+		panel.add(middlePanel);
 		panel.add(tilesPanel);
 		panel.add(tileChooser);
 		panel.add(tileChooser.getScrollBar());
@@ -174,7 +189,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		if (tileset.getSelectedIndex() < 0)
 			tileset.setSelectedIndex(0);
 		else
-			updateComponents(true);
+			updateComponents(true, false, false);
 	}
 	
 	public void show(Object obj)
@@ -191,88 +206,132 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		readFromRom(rom);
 	}
 	
-	private void updateComponents(boolean changingTileset)
+	private void updateComponents(boolean changingTileset, boolean updatePage, boolean ignorePalette)
 	{
-		TilesetChange entry = entries[tileset.getSelectedIndex()];
 		if (changingTileset)
 		{
-			flag.setText(Integer.toHexString(entry.getFlag() & 0xffff));
-			reverse.setSelected(entry.isFlagReversed());
-	        palette.removeActionListener(this);
-	        palette.removeAllItems();
-	        TileEditor.Tileset tset = TileEditor.tilesets[tileset.getSelectedIndex()];
-	        for (int i = 0; i < tset.getPaletteCount(); i++)
-	        {
-	            palette.addItem(new String(
-	               tset.getPalette(i).mtileset + "/"
-	                    + tset.getPalette(i).mpalette));
-	        }
-	        palette.addActionListener(this);
-			int formerPage = page.getSelectedIndex();
+			if (! ignorePalette)
+			{
+				palette.removeActionListener(this);
+		        palette.removeAllItems();
+		        TileEditor.Tileset tset = TileEditor.tilesets[tileset.getSelectedIndex()];
+		        for (int i = 0; i < tset.getPaletteCount(); i++)
+		        	palette.addItem(new String(
+				               tset.getPalette(i).mtileset + "/"
+				                    + tset.getPalette(i).mpalette));
+		        palette.addActionListener(this);
+			}
+	        
+			flagGroup.removeActionListener(this);
+			flagGroup.removeAllItems();
+			for (int i = 0; i < entries[tileset.getSelectedIndex()].size(); i++)
+				flagGroup.addItem("Group #" + i);
+			flagGroup.setEnabled(entries[tileset.getSelectedIndex()].size() > 0);
+			if (entries[tileset.getSelectedIndex()].size() > 0)
+				flagGroup.setSelectedIndex(0);
+			else
+				flagGroup.setSelectedIndex(-1);
+			flagGroup.addActionListener(this);
+		}
+		add.setEnabled(flagGroup.getSelectedIndex() != -1);
+		delGroup.setEnabled(flagGroup.getSelectedIndex() != -1);
+		flag.setEnabled(flagGroup.getSelectedIndex() != -1);
+		reverse.setEnabled(flagGroup.getSelectedIndex() != -1);
+		page.setEnabled(flagGroup.getSelectedIndex() != -1);
+		if (flagGroup.getSelectedIndex() == -1)
+		{
+			del.setEnabled(false);
+			flag.setText("");
+			reverse.setSelected(false);
 			page.removeActionListener(this);
 			page.removeAllItems();
-			int extra = 0;
-			if ((entry.size() % Integer.parseInt(limit.getText()) > 0) || (entry.size() == 0))
-				extra = 1;
-			if (Integer.parseInt(limit.getText()) > 0)
-				for (int i = 0; i < (entry.size() / Integer.parseInt(limit.getText())) + extra; i++)
-					page.addItem("Page " + (i + 1));
-			for (int i = formerPage; i >= 0; i--)
-				if (page.getItemAt(i) != null)
-				{
-					page.setSelectedIndex(i);
-					i = -1;
-				}
 			page.addActionListener(this);
-		}
-		
-		tilesPanel.removeAll();
-		flag.setEnabled(entry.size() > 0);
-		reverse.setEnabled(entry.size() > 0);
-		del.setEnabled(entry.size() > 0);
-		if (entry.size() > 0)
-		{
-			group = new ButtonGroup();
-			int start = Integer.parseInt(limit.getText()) * page.getSelectedIndex(), end;
-			if (start + Integer.parseInt(limit.getText()) > entry.size())
-				end = entry.size();
-			else
-				end = start + Integer.parseInt(limit.getText());
-			if (entry.size() - 1 < selected / 2)
-				selected = -1;
-			for (int i = start; i < end; i++)
-			{
-				TilesetChange.TileChange change = entry.getTileChange(i);
-				JPanel row = new JPanel();
-				row.add(new JLabel("#" + (i + 1) + " Before: "));
-				TileButton button = new TileButton(change.getTile1(), tileset.getSelectedIndex(), palette.getSelectedIndex());
-				if (i * 2 == selected)
-				{
-					button.setSelected(true);
-					if (changingTileset)
-						tileChooser.setSelected(change.getTile1());
-				}
-				group.add(button);
-				button.setActionCommand(Integer.toString(i * 2));
-				button.addActionListener(this);
-				row.add(button);
-				row.add(new JLabel(" After: "));
-				button = new TileButton(change.getTile2(), tileset.getSelectedIndex(), palette.getSelectedIndex());
-				if (i * 2 + 1 == selected)
-				{
-					button.setSelected(true);
-					if (changingTileset)
-						tileChooser.setSelected(change.getTile1());
-				}
-				group.add(button);
-				button.setActionCommand(Integer.toString(i * 2 + 1));
-				button.addActionListener(this);
-				row.add(button);
-				tilesPanel.add(row);
-			}
+			tilesPanel.removeAll();
+			tilesPanel.add(new JLabel("This tileset has no flag groups."));
+			selected = -1;
 		}
 		else
-			tilesPanel.add(new JLabel("No tile changes."));
+		{
+			TilesetChange entry = (TilesetChange) entries[tileset.getSelectedIndex()].get(
+					flagGroup.getSelectedIndex());
+			if (changingTileset)
+			{
+				flagGroup.removeActionListener(this);
+				flagGroup.removeAllItems();
+				for (int i = 0; i < entries[tileset.getSelectedIndex()].size(); i++)
+					flagGroup.addItem("Group #" + i);
+				flagGroup.setSelectedIndex(0);
+				flagGroup.addActionListener(this);
+				flag.setText(Integer.toHexString(entry.getFlag() & 0xffff));
+				reverse.setSelected(entry.isFlagReversed());
+			}
+			
+			if (changingTileset || updatePage)
+			{
+				int formerPage = page.getSelectedIndex();
+				page.removeActionListener(this);
+				page.removeAllItems();
+				int extra = 0;
+				if ((entry.size() % Integer.parseInt(limit.getText()) > 0) || (entry.size() == 0))
+					extra = 1;
+				if (Integer.parseInt(limit.getText()) > 0)
+					for (int i = 0; i < (entry.size() / Integer.parseInt(limit.getText())) + extra; i++)
+						page.addItem("Page " + (i + 1));
+				for (int i = formerPage; i >= 0; i--)
+					if (page.getItemAt(i) != null)
+					{
+						page.setSelectedIndex(i);
+						i = -1;
+					}
+				page.addActionListener(this);
+			}
+			
+			tilesPanel.removeAll();
+			del.setEnabled(entry.size() > 0);
+			if (entry.size() > 0)
+			{
+				group = new ButtonGroup();
+				int start = Integer.parseInt(limit.getText()) * page.getSelectedIndex(), end;
+				if (start + Integer.parseInt(limit.getText()) > entry.size())
+					end = entry.size();
+				else
+					end = start + Integer.parseInt(limit.getText());
+				if (entry.size() - 1 < selected / 2)
+					selected = -1;
+				for (int i = start; i < end; i++)
+				{
+					TilesetChange.TileChange change = entry.getTileChange(i);
+					JPanel row = new JPanel();
+					row.add(new JLabel("#" + (i + 1) + " Before: "));
+					TileButton button = new TileButton(change.getTile1(), tileset.getSelectedIndex(), palette.getSelectedIndex());
+					if (i * 2 == selected)
+					{
+						button.setSelected(true);
+						if (changingTileset)
+							tileChooser.setSelected(change.getTile1());
+					}
+					group.add(button);
+					button.setActionCommand(Integer.toString(i * 2));
+					button.addActionListener(this);
+					row.add(button);
+					row.add(new JLabel(" After: "));
+					button = new TileButton(change.getTile2(), tileset.getSelectedIndex(), palette.getSelectedIndex());
+					if (i * 2 + 1 == selected)
+					{
+						button.setSelected(true);
+						if (changingTileset)
+							tileChooser.setSelected(change.getTile1());
+					}
+					group.add(button);
+					button.setActionCommand(Integer.toString(i * 2 + 1));
+					button.addActionListener(this);
+					row.add(button);
+					tilesPanel.add(row);
+				}
+			}
+			else
+				tilesPanel.add(new JLabel("No tile changes."));
+		}
 		
 		tileChooser.setTsetPal(tileset.getSelectedIndex(), palette.getSelectedIndex());
 		tileChooser.repaint();
@@ -282,46 +341,54 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 	
 	public static void readFromRom(AbstractRom rom)
 	{
-		entries = new TilesetChange[MapEditor.drawTsetNum];
+		entries = new ArrayList[MapEditor.drawTsetNum];
 		for (int i = 0; i < entries.length; i++)
 		{
+			entries[i] = new ArrayList();
 			int address = 0x100200 + rom.readMulti(toRegPointer(rom.readMulti(asmPointer,3)) + (i * 2), 2);
-			boolean reverse = false;
-			int flag = rom.readMulti(address,2);
-			if (flag >= 0x8000)
+			while (rom.readMulti(address, 2) != 0)
 			{
-				reverse = true;
-				flag -= 0x8000;
-			}
-			entries[i] = new TilesetChange((short) flag, reverse);
-			if (flag > 0)
-			{
+				boolean reverse = false;
+				int flag = rom.readMulti(address,2);
+				if (flag >= 0x8000)
+				{
+					reverse = true;
+					flag -= 0x8000;
+				}
+				TilesetChange tilesetChange = new TilesetChange((short) flag, reverse);
 				int num = rom.readMulti(address + 2, 2);
 				for (int j = 0; j < num; j++)
-					entries[i].addTileChange(new TilesetChange.TileChange(
+					tilesetChange.addTileChange(new TilesetChange.TileChange(
 							rom.readByte(address + ((j + 1) * 4)),
 							rom.readByte(address + ((j + 1) * 4) + 1),
 							rom.readByte(address + ((j + 1) * 4) + 2),
 							rom.readByte(address + ((j + 1) * 4) + 3)));
+				entries[i].add(tilesetChange);
+				address += (num + 1) * 4;
 			}
 		}
 	}
 	
 	private int saveInfo()
 	{
-		TilesetChange entry = entries[tileset.getSelectedIndex()];
-		if ((flag.getText().length() == 0))
-			return 0;
-		else
+		ArrayList tilesetEntries = entries[tileset.getSelectedIndex()];
+		if (tilesetEntries.size() > 0)
 		{
-			int flagNum = Integer.parseInt(flag.getText(), 16);
-			if ((flagNum <= 0) && (entry.size() > 0))
-				return -1;
+			TilesetChange entry = (TilesetChange) tilesetEntries.get(
+					flagGroup.getSelectedIndex());
+			if ((flag.getText().length() == 0))
+				return 0;
 			else
-				entry.setFlag((short) flagNum);
+			{
+				int flagNum = Integer.parseInt(flag.getText(), 16);
+				if ((flagNum <= 0) && (entry.size() > 0))
+					return -1;
+				else
+					entry.setFlag((short) flagNum);
+			}
+			
+			entry.setReverse(reverse.isSelected());
 		}
-		
-		entry.setReverse(reverse.isSelected());
 		
 		return 1;
 	}
@@ -337,24 +404,39 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 			{
 				if (nullAddress == -1)
 				{
-					if (pointer + entries[i].toByteArray().length >= end)
+					if (pointer + 2 >= end)
 						return false;
 					nullAddress = pointer;
-					data[i] = entries[i].toByteArray();
-					pointer += entries[i].toByteArray().length;
+					data[i] = new byte[] { 0, 0 };
+					pointer += data[i].length;
 				}
 				pointers[i * 2] = (byte) ((nullAddress - 0x100200) & 0xff);
 				pointers[i * 2 + 1] = (byte) (((nullAddress - 0x100200) & 0xff00) / 0x100);
 			}
 			else
 			{
-				byte[] entry = entries[i].toByteArray();
-				if (pointer + entry.length >= end)
+				byte[][] entry = new byte[entries[i].size()][];
+				int length = 0;
+				for (int j = 0; j < entry.length; j++)
+				{
+					entry[j] = ((TilesetChange) entries[i].get(j)).toByteArray();
+					length += entry[j].length;
+				}
+				byte[] entryData = new byte[length + 2];
+				int pos = 0;
+				for (int j = 0; j < entry.length; j++)
+				{
+					System.arraycopy(entry[j],0,entryData,pos,entry[j].length);
+					pos += entry[j].length;
+				}
+				System.arraycopy(new byte[] { 0, 0 }, 0, entryData, pos, 2);
+				
+				if (pointer + entryData.length >= end)
 					return false;
-				data[i] = entry;
+				data[i] = entryData;
 				pointers[i * 2] = (byte) ((pointer - 0x100200) & 0xff);
 				pointers[i * 2 + 1] = (byte) (((pointer - 0x100200) & 0xff00) / 0x100);
-				pointer += entry.length;
+				pointer += entryData.length;
 			}
 		}
 		
@@ -368,15 +450,21 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		return true;
 	}
 	
-	public static TilesetChange.TileChange getTileChange(int tileset, int num)
+	public static TilesetChange.TileChange getTileChange(int tileset, int group, int num)
 	{
-		return entries[tileset].getTileChange(num);
+		return ((TilesetChange) entries[tileset].get(group)).getTileChange(num);
 	}
 	
-	public static int countTileChanges(int tileset)
+	public static int countGroups(int tileset)
 	{
 		return entries[tileset].size();
 	}
+	
+	public static int countTileChanges(int tileset, int group)
+	{
+		return ((TilesetChange) entries[tileset].get(group)).size();
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
@@ -399,17 +487,37 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
         }
         else if (e.getActionCommand().equals("close"))
         	hide();
+        else if (e.getSource().equals(addGroup))
+        {
+        	TilesetChange change = new TilesetChange((short) 1, false);
+        	entries[tileset.getSelectedIndex()].add(change);
+        	updateComponents(true, false, true);
+        	flagGroup.setSelectedIndex(entries[tileset.getSelectedIndex()].indexOf(change));
+        }
+        else if (e.getSource().equals(delGroup))
+        {
+        	int confirm = JOptionPane.showConfirmDialog(
+        		    mainWindow,
+        		    "Do you really want to delete this flag group?",
+        		    "Are you sure?",
+        		    JOptionPane.YES_NO_OPTION);
+        	if (confirm == JOptionPane.YES_OPTION)
+        		entries[tileset.getSelectedIndex()].remove(flagGroup.getSelectedIndex());
+        	updateComponents(true, false, true);
+        }
         else if (e.getSource().equals(tileset))
-        	updateComponents(true);
+        	updateComponents(true, false, false);
+        else if (e.getSource().equals(flagGroup))
+        	updateComponents(false, false, true);
         else if (e.getSource().equals(palette))
-        	updateComponents(false);
+        	updateComponents(false, false, false);
         else if (e.getSource().equals(page))
-        	updateComponents(false);
+        	updateComponents(false, false, false);
         else if (e.getSource().equals(add))
         {
-        	entries[tileset.getSelectedIndex()].addTileChange(
-        			new TilesetChange.TileChange((short) 0, (short) 0));
-        	updateComponents(false);
+        	((TilesetChange) entries[tileset.getSelectedIndex()].get(
+        			flagGroup.getSelectedIndex())).addTileChange(new TilesetChange.TileChange((short) 0, (short) 0));
+        	updateComponents(false, true, false);
         }
         else if (e.getSource().equals(del))
         {
@@ -420,13 +528,14 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
         	if ((input != null) && (input.length() > 0))
         	{
         		int num = Integer.parseInt(input) - 1;
-        		TilesetChange entry = entries[tileset.getSelectedIndex()];
+        		TilesetChange entry = (TilesetChange) entries[tileset.getSelectedIndex()].get(
+            			flagGroup.getSelectedIndex());
         		if ((num >= 0) && (num <= entry.size()))
         		{
         			if (selected / 2 == num)
         				selected = -1;
         			entry.removeTileChange(num);
-        			updateComponents(false);
+        			updateComponents(false, true, false);
         		}
         		else
         			JOptionPane.showMessageDialog(mainWindow,
@@ -437,19 +546,23 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
         }
         else if ((e.getSource().equals(tileChooser)) && (selected != -1))
         {
+        	TilesetChange change = ((TilesetChange) entries[tileset.getSelectedIndex()].get(
+        			flagGroup.getSelectedIndex()));
         	if (selected % 2 == 0)
-    			entries[tileset.getSelectedIndex()].getTileChange(selected / 2).setTile1((short) tileChooser.getSelected());
+    			change.getTileChange(selected / 2).setTile1((short) tileChooser.getSelected());
     		else
-    			entries[tileset.getSelectedIndex()].getTileChange(selected / 2).setTile2((short) tileChooser.getSelected());
-    		updateComponents(false);	
+    			change.getTileChange(selected / 2).setTile2((short) tileChooser.getSelected());
+    		updateComponents(false, false, false);	
         }
         else if (e.getSource() instanceof TileButton)
         {
         	selected = Integer.parseInt(e.getActionCommand());
+        	TilesetChange change = ((TilesetChange) entries[tileset.getSelectedIndex()].get(
+        			flagGroup.getSelectedIndex()));
         	if (selected % 2 == 0)
-        		tileChooser.setSelected(entries[tileset.getSelectedIndex()].getTileChange(selected / 2).getTile1());
+        		tileChooser.setSelected(change.getTileChange(selected / 2).getTile1());
         	else
-        		tileChooser.setSelected(entries[tileset.getSelectedIndex()].getTileChange(selected / 2).getTile2());
+        		tileChooser.setSelected(change.getTileChange(selected / 2).getTile2());
         	if (! tileChooser.isSelectedVisible())
         		tileChooser.scrollToSelected();
         	tileChooser.repaint();
@@ -466,7 +579,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 				&& (limit.getText().length() > 0)
 				&& (Integer.parseInt(limit.getText()) > 0))
 		{
-			updateComponents(true);
+			updateComponents(true, false, true);
 		}
 	}
 
@@ -555,7 +668,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		public byte[] toByteArray()
 		{
 			if (size() == 0)
-				return new byte[] { 0, 0 };
+				return new byte[0];
 			else
 			{
 				byte[] out = new byte[(size() + 1) * 4];
@@ -613,7 +726,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		}
 	}
 	
-	public class TileButton extends JToggleButton implements MouseListener
+	public static class TileButton extends JToggleButton implements MouseListener
 	{
 		private int tile, tileset, palette;
 		
