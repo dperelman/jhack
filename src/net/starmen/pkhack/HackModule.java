@@ -1264,6 +1264,7 @@ public abstract class HackModule
      * @param oldLen length of orginal data; that many bytes starting at the old
      *            pointer at pointerLoc will be set to null
      * @param newLen how many bytes to read from <code>data</code>
+     * @param beginAt the last byte that can be changed
      * @param mustBeInExpanded whether the data must be written to the expanded area
      * @return true on success, false on failure (no change will be made to the
      *         ROM on failure)
@@ -1271,7 +1272,7 @@ public abstract class HackModule
      */
 
     public boolean writetoFree(byte[] data, int pointerLoc, int pointerLen,
-        int oldLen, int newLen, boolean mustBeInExpanded)
+        int oldLen, int newLen, int beginAt, boolean mustBeInExpanded)
     {
         //make sure ROM is expanded if needed
         if (newLen > oldLen)
@@ -1281,7 +1282,8 @@ public abstract class HackModule
         int oldPointer = toRegPointer(rom.readMulti(pointerLoc, pointerLen));
         if ((newLen <= oldLen)
         		&& !((mustBeInExpanded || (oldPointer >= 0x300200))
-        				&& !(oldPointer >= 0x300200)))
+        				&& !(oldPointer >= 0x300200))
+				&& (oldPointer + oldLen <= beginAt))
         {
             //if it fits in the same place, then write there
             nullifyArea(oldPointer, oldLen);
@@ -1298,8 +1300,15 @@ public abstract class HackModule
             nullifyArea(oldPointer, oldLen);
             try
             {
+            	System.out.println(newLen);
                 //look for space...
-                int newPointer = findFreeRange(rom.length(), newLen);
+                int newPointer = findFreeRange(beginAt - newLen, newLen);
+                System.out.println("newLen " + newLen
+                		+ " address " + Integer.toHexString(newPointer));
+                String debug = "";
+                for (int i = 0; i < data.length; i++)
+                	debug = debug + " " + Integer.toHexString(data[i]);
+                System.out.println("data" + debug);
                 //write data there
                 rom.write(newPointer, data, newLen);
                 //change pointer
@@ -1314,6 +1323,31 @@ public abstract class HackModule
                 return false;
             }
         }
+    }
+    
+    /**
+     * Writes the specified data into a free spot in the ROM and nulls the
+     * previous copy. If a free spot large enough cannot be found, false will be
+     * returned and the ROM will not be changed.
+     * 
+     * @param data data to write
+     * @param pointerLoc location of pointer to data, will be set to point to
+     *            the location <code>data</code> is written to
+     * @param pointerLen length of the pointer at PointerLoc in bytes
+     * @param oldLen length of orginal data; that many bytes starting at the old
+     *            pointer at pointerLoc will be set to null
+     * @param newLen how many bytes to read from <code>data</code>
+     * @param mustBeInExpanded whether the data must be written to the expanded area
+     * @return true on success, false on failure (no change will be made to the
+     *         ROM on failure)
+     * @see #findFreeRange(int, int)
+     */
+
+    public boolean writetoFree(byte[] data, int pointerLoc, int pointerLen,
+        int oldLen, int newLen, boolean mustBeInExpanded)
+    {
+    	return writetoFree(data, pointerLoc, pointerLen, oldLen, newLen,
+    			rom.length(), mustBeInExpanded);
     }
 
     /**
