@@ -6,6 +6,7 @@ Next version (after v0.4.7.1):
 # eb.MiscTextEditor v0.5: Added Lumine hall text, max window width (250px)
 # HexEditor: fixed bug where the goto switched regular and snes pointers
 # Most recently loaded ROM is automatically loaded when JHack is opened.
+	(suggested by JamesPicard_007)
 # SpriteEditor: hitting cancel on import/export no longer results in
 	an error
 # Added log files. Two log files are created for each session with filenames
@@ -14,6 +15,9 @@ Next version (after v0.4.7.1):
 	before release.
 # Added some of JeffMan's graphics work to IPS Database
 # Automated error reporting (doesn't work with -c/--console argument)
+# New version notification only shown once. (suggested by JamesPicard_007)
+# BUGFIX: A few comp() bugs fixed (thanks to Faolan for the bug report
+	and Goplat for helping fix them)
 
 v0.4.7.1:
 # IPSDatabase extensions:
