@@ -2865,16 +2865,29 @@ public class TileEditor extends EbHackModule implements ActionListener
 
         protected boolean isDrawGridLines()
         {
+            //            try
+            //            {
+            //                System.out
+            //                    .println(net.starmen.pkhack.eb.TileEditor.this == null
+            //                        ? "TE.this is null"
+            //                        : "TE.this is not null");
+            //            }
+            //            catch (RuntimeException e)
+            //            {
+            //                System.out.println("TE.this...?");
+            //                e.printStackTrace();
+            //            }
+            //XMLPreferences prefs = JHack.main.getPrefs();
             try
             {
-                System.out.println(prefs == null ? "prefs is null" : "prefs isn't null");
+                return prefs
+                    .getValueAsBoolean("eb.TileEditor.arrEditor.gridLines");
             }
-            catch (RuntimeException e)
+            catch (NullPointerException e)
             {
-                System.out.println("prefs...?");
-                e.printStackTrace();
+                return JHack.main.getPrefs().getValueAsBoolean(
+                    "eb.TileEditor.arrEditor.gridLines");
             }
-            return prefs.getValueAsBoolean("eb.TileEditor.arrEditor.gridLines");
         }
 
         protected boolean isGuiInited()
@@ -3599,16 +3612,24 @@ public class TileEditor extends EbHackModule implements ActionListener
 
             public boolean isDrawGridLines()
             {
-                TileEditor t = TileEditor.this;
-                System.out.println(t == null
-                    ? "TileEditor.this is null"
-                    : "TileEditor.this is good!");
-                XMLPreferences prefs = JHack.main.getPrefs();
-                System.out.println(JHack.main.getPrefs() == prefs
-                    ? "the same"
-                    : "different");
-                return prefs
-                    .getValueAsBoolean("eb.TileEditor.tileSelector.gridLines");
+                //                TileEditor t = TileEditor.this;
+                //                System.out.println(t == null
+                //                    ? "TileEditor.this is null"
+                //                    : "TileEditor.this is good!");
+                //                XMLPreferences prefs = JHack.main.getPrefs();
+                //                System.out.println(JHack.main.getPrefs() == prefs
+                //                    ? "the same"
+                //                    : "different");
+                try
+                {
+                    return prefs
+                        .getValueAsBoolean("eb.TileEditor.tileSelector.gridLines");
+                }
+                catch (NullPointerException e)
+                {
+                    return JHack.main.getPrefs().getValueAsBoolean(
+                        "eb.TileEditor.tileSelector.gridLines");
+                }
             }
 
             public int getTileCount()

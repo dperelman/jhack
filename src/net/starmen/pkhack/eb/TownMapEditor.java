@@ -47,6 +47,7 @@ import net.starmen.pkhack.CopyAndPaster;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IntArrDrawingArea;
+import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.PrefsCheckBox;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.SpritePalette;
@@ -117,7 +118,8 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
         public boolean readInfo()
         {
-            if (isInited) return true;
+            if (isInited)
+                return true;
 
             byte[] buffer = new byte[18496];
             System.out.println("About to attempt decompressing "
@@ -165,7 +167,8 @@ public class TownMapEditor extends EbHackModule implements ActionListener
          */
         public void initToNull()
         {
-            if (isInited) return;
+            if (isInited)
+                return;
 
             //EMPTY PALETTES
             for (int i = 0; i < palette.length; i++)
@@ -189,7 +192,8 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
         public boolean writeInfo()
         {
-            if (!isInited) return false;
+            if (!isInited)
+                return false;
 
             byte[] udata = new byte[18496];
             int offset = 0;
@@ -613,8 +617,16 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
         protected boolean isDrawGridLines()
         {
-            return prefs
-                .getValueAsBoolean("eb.TownMapEditor.arrEditor.gridLines");
+            try
+            {
+                return prefs
+                    .getValueAsBoolean("eb.TownMapEditor.arrEditor.gridLines");
+            }
+            catch (NullPointerException e)
+            {
+                return JHack.main.getPrefs().getValueAsBoolean(
+                    "eb.TownMapEditor.arrEditor.gridLines");
+            }
         }
 
         protected boolean isEditable()
@@ -835,8 +847,16 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
             public boolean isDrawGridLines()
             {
-                return prefs
-                    .getValueAsBoolean("eb.TownMapEditor.tileSelector.gridLines");
+                try
+                {
+                    return prefs
+                        .getValueAsBoolean("eb.TownMapEditor.tileSelector.gridLines");
+                }
+                catch (RuntimeException e)
+                {
+                    return JHack.main.getPrefs().getValueAsBoolean(
+                        "eb.TownMapEditor.tileSelector.gridLines");
+                }
             }
 
             public int getTileCount()
@@ -1386,7 +1406,8 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             new JLabel("<html>" + "Select which items you wish to export."
                 + "</html>"), new JScrollPane(checkTree), false),
             "Export What?", JOptionPane.OK_CANCEL_OPTION,
-            JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION) return;
+            JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
+            return;
 
         boolean[][] a = new boolean[NUM_TOWN_MAPS][4];
         for (int m = 0; m < NUM_TOWN_MAPS; m++)
@@ -1394,14 +1415,16 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                 a[m][i] = mapNodes[m][i].isSelected();
 
         File f = getFile(true, "tnm", "TowN Map");
-        if (f != null) exportData(f, a);
+        if (f != null)
+            exportData(f, a);
     }
 
     private void importData()
     {
         File f = getFile(false, "tnm", "TowN Map");
         TownMapImportData[] tmid;
-        if (f == null || (tmid = importData(f)) == null) return;
+        if (f == null || (tmid = importData(f)) == null)
+            return;
 
         CheckNode topNode = new CheckNode("Town Maps", true, true);
         topNode.setSelectionMode(CheckNode.DIG_IN_SELECTION);
@@ -1542,7 +1565,8 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         targetDialog.pack();
 
         targetDialog.setVisible(true);
-        if (targetDialog.getTitle().equals("Canceled")) return;
+        if (targetDialog.getTitle().equals("Canceled"))
+            return;
 
         //        if (JOptionPane
         //            .showConfirmDialog(mainWindow,

@@ -45,6 +45,7 @@ import net.starmen.pkhack.CopyAndPaster;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IntArrDrawingArea;
+import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.PrefsCheckBox;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.SpritePalette;
@@ -137,7 +138,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
          */
         public boolean readInfo(boolean allowFailure)
         {
-            if (isInited) return true;
+            if (isInited)
+                return true;
 
             byte[] tileBuffer = new byte[49153];
             byte[][] palBuffer = new byte[NUM_PALETTES][512];
@@ -268,36 +270,37 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         public void initToNull()
         {
             readInfo(true);
-//            if (isInited) return;
-//
-//            //EMPTY PALETTES
-//            for (int i = 0; i < palette.length; i++)
-//                for (int j = 0; j < palette[i].length; j++)
-//                    palette[i][j] = Color.BLACK;
-//            for (int i = 0; i < palLen.length; i++)
-//                palLen[i] = 0;
-//
-//            //EMPTY ARRANGEMENTS
-//            for (int i = 0; i < arrangementList.length; i++)
-//                arrangementList[i] = 0;
-//            for (int x = 0; x < arrangement.length; x++)
-//                for (int y = 0; y < arrangement[x].length; y++)
-//                    arrangement[x][y] = 0;
-//            arngLen = 0;
-//
-//            //EMPTY TILES
-//            for (int i = 0; i < tiles.length; i++)
-//                for (int x = 0; x < tiles[i].length; x++)
-//                    for (int y = 0; y < tiles[i][x].length; y++)
-//                        tiles[i][x][y] = 0;
-//            tileLen = 0;
-//
-//            isInited = true;
+            //            if (isInited) return;
+            //
+            //            //EMPTY PALETTES
+            //            for (int i = 0; i < palette.length; i++)
+            //                for (int j = 0; j < palette[i].length; j++)
+            //                    palette[i][j] = Color.BLACK;
+            //            for (int i = 0; i < palLen.length; i++)
+            //                palLen[i] = 0;
+            //
+            //            //EMPTY ARRANGEMENTS
+            //            for (int i = 0; i < arrangementList.length; i++)
+            //                arrangementList[i] = 0;
+            //            for (int x = 0; x < arrangement.length; x++)
+            //                for (int y = 0; y < arrangement[x].length; y++)
+            //                    arrangement[x][y] = 0;
+            //            arngLen = 0;
+            //
+            //            //EMPTY TILES
+            //            for (int i = 0; i < tiles.length; i++)
+            //                for (int x = 0; x < tiles[i].length; x++)
+            //                    for (int y = 0; y < tiles[i][x].length; y++)
+            //                        tiles[i][x][y] = 0;
+            //            tileLen = 0;
+            //
+            //            isInited = true;
         }
 
         public boolean writeInfo()
         {
-            if (!isInited) return false;
+            if (!isInited)
+                return false;
 
             byte[] udataTiles = new byte[49153], udataPal[] = new byte[NUM_PALETTES][512], udataArng = new byte[2048];
             int tileOff = 0, arngOff = 0;
@@ -310,7 +313,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 byte[] compPal;
                 int palCompLen = comp(udataPal[i], compPal = new byte[600], 512);
                 if (!hm.writeToFreeASMLink(compPal, palPointerArray[i],
-                    palLen[i], palCompLen)) return false;
+                    palLen[i], palCompLen))
+                    return false;
                 System.out
                     .println("Wrote "
                         + (palLen[i] = palCompLen)
@@ -337,7 +341,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             byte[] compArng;
             int arngCompLen = comp(udataArng, compArng = new byte[3000]);
             if (!hm.writeToFreeASMLink(compArng, arngPointerArray[num],
-                arngLen, arngCompLen)) return false;
+                arngLen, arngCompLen))
+                return false;
             System.out.println("Wrote "
                 + (arngLen = arngCompLen)
                 + " bytes of the Gas Station #"
@@ -357,7 +362,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             byte[] compTile;
             int tileCompLen = comp(udataTiles, compTile = new byte[30000]);
             if (!hm.writeToFreeASMLink(compTile, tilePointerArray[num],
-                tileLen, tileCompLen)) return false;
+                tileLen, tileCompLen))
+                return false;
             System.out.println("Wrote "
                 + (tileLen = tileCompLen)
                 + " bytes of the Gas Station #"
@@ -742,8 +748,16 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
         protected boolean isDrawGridLines()
         {
-            return prefs
-                .getValueAsBoolean("eb.GasStationEditor.arrEditor.gridLines");
+            try
+            {
+                return prefs
+                    .getValueAsBoolean("eb.GasStationEditor.arrEditor.gridLines");
+            }
+            catch (NullPointerException e)
+            {
+                return JHack.main.getPrefs().getValueAsBoolean(
+                    "eb.GasStationEditor.arrEditor.gridLines");
+            }
         }
 
         protected boolean isEditable()
@@ -961,8 +975,16 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
             public boolean isDrawGridLines()
             {
-                return prefs
-                    .getValueAsBoolean("eb.GasStationEditor.tileSelector.gridLines");
+                try
+                {
+                    return prefs
+                        .getValueAsBoolean("eb.GasStationEditor.tileSelector.gridLines");
+                }
+                catch (NullPointerException e)
+                {
+                    return JHack.main.getPrefs().getValueAsBoolean(
+                        "eb.GasStationEditor.tileSelector.gridLines");
+                }
             }
 
             public int getTileCount()
@@ -1048,8 +1070,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         super.show();
 
         readFromRom();
-        if(doMapSelectAction())
-        mainWindow.setVisible(true);
+        if (doMapSelectAction())
+            mainWindow.setVisible(true);
     }
 
     public void hide()
@@ -1085,7 +1107,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         arrangementEditor.clearSelection();
         arrangementEditor.repaint();
         updateTileEditor();
-        
+
         return true;
     }
 
@@ -1541,7 +1563,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             new JLabel("<html>" + "Select which items you wish to export."
                 + "</html>"), new JScrollPane(checkTree), false),
             "Export What?", JOptionPane.OK_CANCEL_OPTION,
-            JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION) return;
+            JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
+            return;
 
         boolean[][] a = new boolean[NUM_GAS_STATIONS][4];
         for (int m = 0; m < NUM_GAS_STATIONS; m++)
@@ -1549,14 +1572,16 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 a[m][i] = mapNodes[m][i].isSelected();
 
         File f = getFile(true, "gas", "Gas Station");
-        if (f != null) exportData(f, a);
+        if (f != null)
+            exportData(f, a);
     }
 
     private void importData()
     {
         File f = getFile(false, "gas", "Gas Station");
         GasImportData[] tmid;
-        if (f == null || (tmid = importData(f)) == null) return;
+        if (f == null || (tmid = importData(f)) == null)
+            return;
 
         CheckNode[][] mapNodes = new CheckNode[NUM_GAS_STATIONS][4];
         for (int i = 0; i < mapNodes.length; i++)

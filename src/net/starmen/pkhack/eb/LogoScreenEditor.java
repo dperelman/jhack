@@ -47,6 +47,7 @@ import net.starmen.pkhack.CopyAndPaster;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IntArrDrawingArea;
+import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.PrefsCheckBox;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.SpritePalette;
@@ -139,7 +140,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
          */
         public boolean readInfo(boolean allowFailure)
         {
-            if (isInited) return true;
+            if (isInited)
+                return true;
 
             byte[] tileBuffer = new byte[4096];
             byte[] palBuffer = new byte[512];
@@ -159,7 +161,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                     //EMPTY TILES
                     for (int i = 0; i < tiles.length; i++)
                         for (int x = 0; x < tiles[i].length; x++)
-                                Arrays.fill(tiles[i][x], (byte) 0);
+                            Arrays.fill(tiles[i][x], (byte) 0);
                     tileLen = 0;
                 }
                 else
@@ -301,7 +303,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         public boolean writeInfo()
         {
-            if (!isInited) return false;
+            if (!isInited)
+                return false;
 
             byte[] udataTiles = new byte[4096], udataPal = new byte[512], udataArng = new byte[2048];
             int tileOff = 0, palOff = 0, arngOff = 0;
@@ -316,7 +319,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             byte[] compPal;
             int palCompLen = comp(udataPal, compPal = new byte[600]);
             if (!hm.writeToFreeASMLink(compPal, palPointerArray[num], palLen,
-                palCompLen)) return false;
+                palCompLen))
+                return false;
             System.out.println("Wrote "
                 + (palLen = palCompLen)
                 + " bytes of the logo screen #"
@@ -342,7 +346,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             byte[] compArng;
             int arngCompLen = comp(udataArng, compArng = new byte[3000]);
             if (!hm.writeToFreeASMLink(compArng, arngPointerArray[num],
-                arngLen, arngCompLen)) return false;
+                arngLen, arngCompLen))
+                return false;
             System.out.println("Wrote "
                 + (arngLen = arngCompLen)
                 + " bytes of the logo screen #"
@@ -364,7 +369,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             byte[] compTile;
             int tileCompLen = comp(udataTiles, compTile = new byte[5000]);
             if (!hm.writeToFreeASMLink(compTile, tilePointerArray[num],
-                tileLen, tileCompLen)) return false;
+                tileLen, tileCompLen))
+                return false;
             System.out.println("Wrote "
                 + (tileLen = tileCompLen)
                 + " bytes of the logo screen #"
@@ -761,8 +767,16 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         protected boolean isDrawGridLines()
         {
-            return prefs
-                .getValueAsBoolean("eb.LogoScreenEditor.arrEditor.gridLines");
+            try
+            {
+                return prefs
+                    .getValueAsBoolean("eb.LogoScreenEditor.arrEditor.gridLines");
+            }
+            catch (NullPointerException e)
+            {
+                return JHack.main.getPrefs().getValueAsBoolean(
+                    "eb.LogoScreenEditor.arrEditor.gridLines");
+            }
         }
 
         protected boolean isEditable()
@@ -880,8 +894,9 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             int[] y = new int[]{40, 10, 10, 00, 10, 10, 40};
             int[] x = new int[]{22, 22, 15, 25, 35, 28, 28};
 
-            if (!focus) for (int i = 0; i < y.length; i++)
-                y[i] = 50 - y[i];
+            if (!focus)
+                for (int i = 0; i < y.length; i++)
+                    y[i] = 50 - y[i];
 
             g.fillPolygon(x, y, 7);
         }
@@ -983,8 +998,16 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
             public boolean isDrawGridLines()
             {
-                return prefs
-                    .getValueAsBoolean("eb.LogoScreenEditor.tileSelector.gridLines");
+                try
+                {
+                    return prefs
+                        .getValueAsBoolean("eb.LogoScreenEditor.tileSelector.gridLines");
+                }
+                catch (NullPointerException e)
+                {
+                    return JHack.main.getPrefs().getValueAsBoolean(
+                        "eb.LogoScreenEditor.tileSelector.gridLines");
+                }
             }
 
             public int getTileCount()
@@ -1537,7 +1560,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             new JLabel("<html>" + "Select which items you wish to export."
                 + "</html>"), new JScrollPane(checkTree), false),
             "Export What?", JOptionPane.OK_CANCEL_OPTION,
-            JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION) return;
+            JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
+            return;
 
         boolean[][] a = new boolean[NUM_LOGO_SCREENS][4];
         for (int m = 0; m < NUM_LOGO_SCREENS; m++)
@@ -1545,14 +1569,16 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 a[m][i] = mapNodes[m][i].isSelected();
 
         File f = getFile(true, "lscn", "Logo SCreeN");
-        if (f != null) exportData(f, a);
+        if (f != null)
+            exportData(f, a);
     }
 
     private void importData()
     {
         File f = getFile(false, "lscn", "Logo SCreeN");
         LogoScreenImportData[] tmid;
-        if (f == null || (tmid = importData(f)) == null) return;
+        if (f == null || (tmid = importData(f)) == null)
+            return;
 
         CheckNode topNode = new CheckNode("Logo Screens", true, true);
         topNode.setSelectionMode(CheckNode.DIG_IN_SELECTION);
@@ -1693,7 +1719,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         targetDialog.pack();
 
         targetDialog.setVisible(true);
-        if (targetDialog.getTitle().equals("Canceled")) return;
+        if (targetDialog.getTitle().equals("Canceled"))
+            return;
 
         //        if (JOptionPane
         //            .showConfirmDialog(mainWindow,
