@@ -545,6 +545,8 @@ public class TPTEditor extends EbHackModule implements ActionListener
 
     private void saveInfo(int i)
     {
+        if (i < 0)
+            return;
         try
         {
             TPTEntry e = tptEntries[i];
