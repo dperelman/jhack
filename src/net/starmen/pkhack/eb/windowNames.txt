@@ -48,6 +48,6 @@
 2F - 
 30 - 
 31 - 
-32 - 
+32 - Windows Flavor Chooser
 33 - 
 34 - 
