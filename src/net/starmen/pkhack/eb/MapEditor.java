@@ -636,7 +636,7 @@ public class MapEditor extends EbHackModule implements ActionListener
 
     public String getVersion()
     {
-        return "0.4";
+        return "0.4.1";
     }
 
     public String getCredits()
@@ -2983,8 +2983,19 @@ public class MapEditor extends EbHackModule implements ActionListener
            				(short) (data[2 + (j * 4)] +
            						(data[3 + (j * 4)] 
 									  * 0x100));
-                	TPTEditor.TPTEntry tptEntry = 
-                		TPTEditor.tptEntries[tpt];
+           			TPTEditor.TPTEntry tptEntry;
+           			try
+					{
+           				tptEntry = TPTEditor.tptEntries[tpt];
+					}
+           			catch (java.lang.ArrayIndexOutOfBoundsException e)
+					{
+           				System.out.println("Sprite entry #" + j + " of area #" + areaNum 
+           						+ " has a bad tpt value (0x" + Integer.toHexString(tpt) + ")");
+           				tpt = 0;
+           				tptEntry = TPTEditor.tptEntries[tpt];
+					}
+                	
                 	SpriteEditor.SpriteInfoBlock sib =
                 		SpriteEditor.sib[tptEntry.getSprite()];
                 	short spriteX = 
@@ -3211,7 +3222,7 @@ public class MapEditor extends EbHackModule implements ActionListener
             }
 
             return retVal;
-          }
+        }
         
         public static void nullSpriteData()
         {
@@ -3266,7 +3277,7 @@ public class MapEditor extends EbHackModule implements ActionListener
         public static void loadDoorData(AbstractRom rom, int areaX, int areaY)
         {
         	loadDoorData(rom, areaX + (areaY * MapEditor.widthInSectors));
-       	}
+        }
         
         public static boolean isDoorDataLoaded(int areaNum)
         {
