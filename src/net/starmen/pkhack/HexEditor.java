@@ -94,8 +94,8 @@ public class HexEditor extends GeneralHackModule implements ActionListener
 
         if (!inited)
         {
-            JHexEdit t = new JHexEdit(new HexRom(rom));
             mainWindow.getContentPane().remove(hexEdit);
+            JHexEdit t = hexEdit = new JHexEdit(new HexRom(rom));
             mainWindow.getContentPane().add(t, BorderLayout.CENTER);
             table = t.table;
             inited = true;
@@ -140,6 +140,7 @@ public class HexEditor extends GeneralHackModule implements ActionListener
         if (off >= rom.length() || off < 0)
             return false;
         table.gotoOff(off);
+        mainWindow.validate();
         return true;
     }
     private int findOff = 0;
