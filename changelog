@@ -1,4 +1,10 @@
-NEXT VERSION (after v0.5):
+NEXT VERSION (after v0.5.0.1):
+
+v0.5.0.1
+# BUGFIX: IMPORTANT: AFFECTS MOST EDITORS. Number text fields work right. 
+	(Would load incorrect values in v0.5)
+# Text Editor: Improved error handling.
+# Dialog window now informs user if a ROM file is not found.
 
 v0.5:
 # eb.TextEditor v0.6: Added support for multiple CC parsers. Used for

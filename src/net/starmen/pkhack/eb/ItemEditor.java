@@ -609,6 +609,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
 
     private void setLabels(int type)
     {
+        type &= 0xff;
         this.strLabel.setText(this.labels[0][type]);
         this.epLabel.setText(this.labels[1][type]);
         this.incLabel.setText(this.labels[2][type]);

@@ -122,7 +122,8 @@ public class CCInfo
     private boolean allowComp = false, crdChr = false;
     private static final int asciiOff = 0x30;
 
-    public CCInfo(String codefile, AbstractRom rom, boolean allowComp, boolean crdChr)
+    public CCInfo(String codefile, AbstractRom rom, boolean allowComp,
+        boolean crdChr)
     {
         this.rom = rom;
         this.allowComp = allowComp;
@@ -1054,23 +1055,20 @@ public class CCInfo
 
                 do
                 {
-                    ch = str.charAt(i++);
-
-                    if (ch == ']')
+                    try
                     {
-                        t[j] = 0;
-
-                        int a = Integer.parseInt(new String(t).trim(), 16) & 0xFF;
-                        buffer[pos++] = (char) a;
-
-                        j = 0;
-                        i -= 2;
-                        break;
+                        ch = str.charAt(i++);
+                    }
+                    catch (StringIndexOutOfBoundsException e)
+                    {
+                        System.out.println("WARNING: Bracket error detected: "
+                            + str);
+                        return null;
                     }
 
-                    if (ch == ' ' || ch == ']')
+                    try
                     {
-                        if (j != 0)
+                        if (ch == ']')
                         {
                             t[j] = 0;
 
@@ -1078,11 +1076,34 @@ public class CCInfo
                             buffer[pos++] = (char) a;
 
                             j = 0;
+                            i -= 2;
+                            break;
                         }
 
+                        if (ch == ' ' || ch == ']')
+                        {
+                            if (j != 0)
+                            {
+                                t[j] = 0;
+
+                                int a = Integer.parseInt(new String(t).trim(),
+                                    16) & 0xFF;
+                                buffer[pos++] = (char) a;
+
+                                j = 0;
+                            }
+
+                        }
+                        else
+                            t[j++] = (char) ch;
                     }
-                    else
-                        t[j++] = (char) ch;
+                    catch (NumberFormatException e)
+                    {
+                        System.out
+                            .println("WARNING: Invalid data between brackets: "
+                                + str);
+                        return null;
+                    }
 
                     if (j == 32)
                         break;
@@ -1243,7 +1264,8 @@ public class CCInfo
                 for (int i = 0; i < nodestrtmp.length; i++)
                 {
                     char fc = nodestrtmp[i].charAt(0); //first char
-                    //check if first and second are both equal and not hex digits
+                    //check if first and second are both equal and not hex
+                    // digits
                     //isDigit() checks if it's a number, isLetter() checks
                     //if it is a letter and then checks if it's a letter A-F
                     if (fc == nodestrtmp[i].charAt(1)

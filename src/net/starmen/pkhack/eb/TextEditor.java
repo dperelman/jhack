@@ -771,9 +771,20 @@ public class TextEditor extends EbHackModule implements ActionListener
         CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
 
         boolean comp = useComp.isSelected();
-        if (comp && cct.getStringLength(ta.getText(), true) == 0)
+        int len = cct.getStringLength(ta.getText(), true);
+        if (comp && len == 0)
         {
             comp = false;
+        }
+        else if (len == -1)
+        {
+            JOptionPane.showMessageDialog(mainWindow,
+                "Please recheck that all control codes\n"
+                    + "are enclosed in square brackets [ & ]\n"
+                    + "and all brackets are correctly paired.",
+                "Pre-Write Error: Unmatched brackets",
+                JOptionPane.ERROR_MESSAGE);
+            return;
         }
         String text = comp ? cct.compressString(ta.getText()) : ta.getText();
         StrInfo si = (StrInfo) textLists[currentList].get(currentSelection);
@@ -788,7 +799,21 @@ public class TextEditor extends EbHackModule implements ActionListener
                 "Pre-Write Error: Text too long", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        cct.writeString(cct.deparseString(text), si.address);
+        String towrite = cct.deparseString(text);
+        if (towrite == null)
+        {
+            JOptionPane
+                .showMessageDialog(
+                    mainWindow,
+                    "Unknown error converting text to EarthBound format.\n"
+                        + "This was probably caused by invalid characters between\n"
+                        + "sqare brackets [ & ]. Only use:\n"
+                        + "0123456789ABCDEFabcdef<space>\n"
+                        + "Use of other characters will result in an error.",
+                    "Pre-Write Error: Unknown error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        cct.writeString(towrite, si.address);
         loadText(currentList, this);
         resetList();
         showInfo();
@@ -902,6 +927,17 @@ public class TextEditor extends EbHackModule implements ActionListener
                 && cct.getStringLength(ta.getText(), true) > 0 ? cct
                 .compressString(ta.getText()) : ta.getText();
             String tmp = cct.deparseString(text);
+            if (tmp == null)
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Please check that all square brackets [ & ]\n"
+                        + "are paired and that only the characters \n"
+                        + "0123456789ABCDEFabcdef<space>\n"
+                        + "appear between brackets.", "Bracket Error",
+                    JOptionPane.ERROR_MESSAGE);
+                codesOnly.setSelected(!codesOnly.isSelected());
+                return;
+            }
             if (isCodesOnly())
             {
                 ta.setText(cct.parseCodesOnly(tmp));
@@ -976,6 +1012,16 @@ public class TextEditor extends EbHackModule implements ActionListener
         if (findTF == null)
             return;
         String f = cct.deparseString(findTF.getText().toLowerCase());
+        if (f == null)
+        {
+            JOptionPane.showMessageDialog(findWindow,
+                "Please check that all square brackets [ & ]\n"
+                    + "are paired and that only the characters \n"
+                    + "0123456789ABCDEFabcdef<space>\n"
+                    + "appear between brackets.", "Invalid Search",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         int tmp = 0, s = textLists[currentList].size(), c = currentSelection + 1;
         for (int i = 0; i < textLists[currentList].size(); i++)
         {
@@ -1094,7 +1140,7 @@ public class TextEditor extends EbHackModule implements ActionListener
             return true;
         else if (offset >= 0x210200 && offset <= 0x210E79)
             return gotoList(TEA, offset);
-        else if(offset >= 0x21433F && offset <= 0x214FE7)
+        else if (offset >= 0x21433F && offset <= 0x214FE7)
             return gotoList(ECD, offset);
         else if (gotoList(TPT, offset))
             return true;

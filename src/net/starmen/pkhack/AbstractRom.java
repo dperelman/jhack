@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -196,6 +197,9 @@ public abstract class AbstractRom
         }
         catch (FileNotFoundException e)
         {
+            JOptionPane.showMessageDialog(null, "File not found:\n"
+                + rompath.getAbsolutePath(), "Error Loading ROM",
+                JOptionPane.ERROR_MESSAGE);
             System.err.println("Error: File not loaded: File not found.");
             e.printStackTrace();
             return false;
@@ -1823,7 +1827,8 @@ public abstract class AbstractRom
     public abstract int length();
 
     /**
-     * Returns whether this AbstractRom object writes directly to the filesystem.
+     * Returns whether this AbstractRom object writes directly to the
+     * filesystem.
      * 
      * @return boolean
      */
@@ -1853,7 +1858,8 @@ public abstract class AbstractRom
         {
             if (romData[i] != orgRom.readByte(i + start))
             {
-                if (cStart == -1) cStart = i;
+                if (cStart == -1)
+                    cStart = i;
             }
             else
             {
@@ -2002,7 +2008,8 @@ public abstract class AbstractRom
                     for (int j = 0; j < ipsr.getSize(); j++)
                     {
                         if (this.read(ipsr.getOffset() + j) != ipsr.getInfo()
-                            .charAt(j)) return false;
+                            .charAt(j))
+                            return false;
                     }
                 }
                 else
@@ -2010,7 +2017,8 @@ public abstract class AbstractRom
                     for (int j = 0; j < ipsr.getRleSize(); j++)
                     {
                         if (this.read(ipsr.getOffset() + j) != ipsr
-                            .getRleInfo()) return false;
+                            .getRleInfo())
+                            return false;
                     }
                 }
             }
@@ -2021,7 +2029,8 @@ public abstract class AbstractRom
                     for (int j = 0; j < ipsr.getSize(); j++)
                     {
                         if (this.read(ipsr.getOffset() + j) != ipsr.getInfoBB()
-                            .get(j)) return false;
+                            .get(j))
+                            return false;
                     }
                 }
                 else
@@ -2029,7 +2038,8 @@ public abstract class AbstractRom
                     for (int j = 0; j < ipsr.getRleSize(); j++)
                     {
                         if (this.read(ipsr.getOffset() + j) != ipsr
-                            .getRleInfo()) return false;
+                            .getRleInfo())
+                            return false;
                     }
                 }
             }
