@@ -419,7 +419,8 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
         da = new IntArrDrawingArea(dt, pal);
         da.setZoom(10);
-        da.setPreferredSize(new Dimension(10 * 32, 10 * 32));
+        //default size for first battle sprite at default zoom (32x32@1000%)
+        da.setPreferredSize(new Dimension(321, 321));
         entry.add(jsp = new JScrollPane(da), BorderLayout.CENTER);
 
         mainWindow.getContentPane().add(entry, BorderLayout.CENTER);
@@ -501,6 +502,9 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
     private void doSpriteSelectAction()
     {
+        //don't even try if selector is -1
+        if (getCurrentSprite() == -1)
+            return;
         if (!getSelectedSprite().readInfo())
         {
             Object opt = JOptionPane.showInputDialog(mainWindow,
@@ -625,13 +629,15 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         }
         else if (ae.getActionCommand().equals("apply"))
         {
-            getSelectedSprite().setSprite(da.getByteArrImage());
-            getSelectedSprite().writeInfo();
+            // cache current sprite for when combobox gets changed
+            int curr = getCurrentSprite();
+            battleSprites[curr].setSprite(da.getByteArrImage());
+            battleSprites[curr].writeInfo();
 
             writePalettes(rom);
 
-            battleSpriteNames[spriteSelector.getSelectedIndex()] = name
-                .getText();
+            battleSpriteNames[curr] = name.getText();
+            notifyDataListeners(battleSpriteNames, this, curr);
             writeArray("insideSprites.txt", false, battleSpriteNames);
         }
         else if (ae.getActionCommand().equals("close"))
@@ -733,7 +739,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
     private int getCurrentPalNum()
     {
-    	//make sure nothing ever thinks palette is #-1
+        //make sure nothing ever thinks palette is #-1
         int tmp = palSelector.getSelectedIndex();
         if (tmp != -1)
             currPal = tmp;
