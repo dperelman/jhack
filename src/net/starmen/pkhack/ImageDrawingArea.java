@@ -1089,11 +1089,39 @@ public class ImageDrawingArea extends DrawingArea
     public void paste()
     {
         if (!cb.isClipboardEmpty())
+            paste(cb.img, (Rectangle) cb.size.clone());
+    }
+
+    /**
+     * Pastes a given selection. It stays as a selection until the user flattens
+     * it.
+     * 
+     * @param img Image to paste, must fit exactly in sel
+     * @param sel Selection rectangle to place image in
+     */
+    public void paste(BufferedImage img, Rectangle sel)
+    {
+        paste(img, sel, false);
+    }
+    
+    /**
+     * Pastes a given selection. If flatten is false, it stays as a selection until the user flattens
+     * it.
+     * 
+     * @param img Image to paste, must fit exactly in sel
+     * @param sel Selection rectangle to place image in
+     * @param flatten Immediately flatten image
+     */
+    public void paste(BufferedImage img, Rectangle sel, boolean flatten)
+    {
+        this.selectImg = getNewImage(img);
+        this.selection = sel;
+        if(flatten)
         {
-            this.selectImg = getNewImage(cb.img);
-            this.selection = (Rectangle) cb.size.clone();
-            fireChanged();
+            flattenSelection();
+            selection = new Rectangle();
         }
+        fireChanged();
     }
 
     /**

@@ -902,11 +902,117 @@ public class IntArrDrawingArea extends ImageDrawingArea
     public void paste()
     {
         if (!cb.isClipboardEmpty())
+            paste(cb.getImgAsIntArr(), (Rectangle) cb.size.clone());
+    }
+
+    /**
+     * Pastes a given selection in the top-left corner. It stays as a selection
+     * until the user flattens it.
+     * 
+     * @param img byte[][] to paste, must fit exactly in sel
+     */
+    public void paste(byte[][] img)
+    {
+        paste(img, false);
+    }
+
+    /**
+     * Pastes a given selection in the top-left corner. If flatten is false, it
+     * stays as a selection until the user flattens it.
+     * 
+     * @param img byte[][] to paste, must fit exactly in sel
+     * @param flatten Immediately flatten image
+     */
+    public void paste(byte[][] img, boolean flatten)
+    {
+        paste(img, new Rectangle(img.length, img[0].length), flatten);
+    }
+
+    /**
+     * Pastes a given selection. It stays as a selection until the user flattens
+     * it.
+     * 
+     * @param img byte[][] to paste, must fit exactly in sel
+     * @param sel Selection rectangle to place image in
+     */
+    public void paste(byte[][] img, Rectangle sel)
+    {
+        paste(img, sel, false);
+    }
+
+    /**
+     * Pastes a given selection. If flatten is false, it stays as a selection
+     * until the user flattens it.
+     * 
+     * @param img byte[][] to paste, must fit exactly in sel
+     * @param sel Selection rectangle to place image in
+     * @param flatten Immediately flatten image
+     */
+    public void paste(byte[][] img, Rectangle sel, boolean flatten)
+    {
+        this.selectImg = getNewImage(img);
+        this.selection = sel;
+        if (flatten)
         {
-            this.selectImg = getNewImage(cb.getImgAsIntArr());
-            this.selection = (Rectangle) cb.size.clone();
-            fireChanged();
+            flattenSelection();
+            selection = new Rectangle();
         }
+        fireChanged();
+    }
+
+    /**
+     * Pastes a given selection in the top-left corner. It stays as a selection
+     * until the user flattens it.
+     * 
+     * @param img int[][] to paste, must fit exactly in sel
+     */
+    public void paste(int[][] img)
+    {
+        paste(img, false);
+    }
+
+    /**
+     * Pastes a given selection in the top-left corner. If flatten is false, it
+     * stays as a selection until the user flattens it.
+     * 
+     * @param img int[][] to paste, must fit exactly in sel
+     * @param flatten Immediately flatten image
+     */
+    public void paste(int[][] img, boolean flatten)
+    {
+        paste(img, new Rectangle(img.length, img[0].length), flatten);
+    }
+
+    /**
+     * Pastes a given selection. It stays as a selection until the user flattens
+     * it.
+     * 
+     * @param img int[][] to paste, must fit exactly in sel
+     * @param sel Selection rectangle to place image in
+     */
+    public void paste(int[][] img, Rectangle sel)
+    {
+        paste(img, sel, false);
+    }
+
+    /**
+     * Pastes a given selection. If flatten is false, it stays as a selection
+     * until the user flattens it.
+     * 
+     * @param img int[][] to paste, must fit exactly in sel
+     * @param sel Selection rectangle to place image in
+     * @param flatten Immediately flatten image
+     */
+    public void paste(int[][] img, Rectangle sel, boolean flatten)
+    {
+        this.selectImg = getNewImage(img);
+        this.selection = sel;
+        if (flatten)
+        {
+            flattenSelection();
+            selection = new Rectangle();
+        }
+        fireChanged();
     }
 
     /*

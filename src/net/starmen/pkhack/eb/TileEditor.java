@@ -34,6 +34,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -327,9 +328,9 @@ public class TileEditor extends EbHackModule implements ActionListener
          */
         public Palette getPalette(int palette)
         {
-        	return palettes[palette];
+            return palettes[palette];
         }
-        
+
         /**
          * Finds the internal palette number used for the specified map palette.
          * 
@@ -2532,6 +2533,10 @@ public class TileEditor extends EbHackModule implements ActionListener
     private FocusIndicator drawingAreaFocusIndicator,
             arrangementFocusIndicator;
 
+    private JDialog cbdia; //clipboard dialog
+    private TileSelector cbsel; //clipboard tile selector
+    private byte[][][][] cb; //clipboard
+
     private class ArrangementSelector extends AbstractButton implements
         MouseListener, MouseMotionListener, AdjustmentListener
     {
@@ -3019,6 +3024,67 @@ public class TileEditor extends EbHackModule implements ActionListener
         }
     }
 
+    private class MinitileSelector extends TileSelector
+    {
+        public int getTilesWide()
+        {
+            return 32;
+        }
+
+        public int getTilesHigh()
+        {
+            return 16;
+        }
+
+        public int getTileSize()
+        {
+            return 8;
+        }
+
+        public int getZoom()
+        {
+            return 2;
+        }
+
+        public boolean isDrawGridLines()
+        {
+            //                TileEditor t = TileEditor.this;
+            //                System.out.println(t == null
+            //                    ? "TileEditor.this is null"
+            //                    : "TileEditor.this is good!");
+            //                XMLPreferences prefs = JHack.main.getPrefs();
+            //                System.out.println(JHack.main.getPrefs() == prefs
+            //                    ? "the same"
+            //                    : "different");
+            try
+            {
+                return prefs
+                    .getValueAsBoolean("eb.TileEditor.tileSelector.gridLines");
+            }
+            catch (NullPointerException e)
+            {
+                return JHack.main.getPrefs().getValueAsBoolean(
+                    "eb.TileEditor.tileSelector.gridLines");
+            }
+        }
+
+        public int getTileCount()
+        {
+            return 512;
+        }
+
+        public Image getTileImage(int tile)
+        {
+            return getSelectedTileset().getTileImage(tile, getCurrentPalette(),
+                getCurrentSubPalette());
+        }
+
+        protected boolean isGuiInited()
+        {
+            return guiInited && paletteIsInited;
+        }
+    }
+
     private class FocusIndicator extends AbstractButton implements
         FocusListener, MouseListener
     {
@@ -3209,6 +3275,11 @@ public class TileEditor extends EbHackModule implements ActionListener
         editMenu.add(HackModule.createJMenuItem("Delete Both", 'h',
             "shift DELETE", "deleteBoth", this));
 
+        editMenu.addSeparator();
+
+        editMenu.add(createJMenuItem("Show Multi-Clipboard", 'm', "alt M",
+            "cb_show", this));
+
         mb.add(editMenu);
 
         JMenu optionsMenu = new JMenu("Options");
@@ -3246,66 +3317,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         JPanel scrolledArea = new JPanel(new BorderLayout());
         JPanel display = new JPanel(new BorderLayout());
 
-        display.add(tileSelector = new TileSelector()
-        {
-            public int getTilesWide()
-            {
-                return 32;
-            }
-
-            public int getTilesHigh()
-            {
-                return 16;
-            }
-
-            public int getTileSize()
-            {
-                return 8;
-            }
-
-            public int getZoom()
-            {
-                return 2;
-            }
-
-            public boolean isDrawGridLines()
-            {
-                //                TileEditor t = TileEditor.this;
-                //                System.out.println(t == null
-                //                    ? "TileEditor.this is null"
-                //                    : "TileEditor.this is good!");
-                //                XMLPreferences prefs = JHack.main.getPrefs();
-                //                System.out.println(JHack.main.getPrefs() == prefs
-                //                    ? "the same"
-                //                    : "different");
-                try
-                {
-                    return prefs
-                        .getValueAsBoolean("eb.TileEditor.tileSelector.gridLines");
-                }
-                catch (NullPointerException e)
-                {
-                    return JHack.main.getPrefs().getValueAsBoolean(
-                        "eb.TileEditor.tileSelector.gridLines");
-                }
-            }
-
-            public int getTileCount()
-            {
-                return 512;
-            }
-
-            public Image getTileImage(int tile)
-            {
-                return getSelectedTileset().getTileImage(tile,
-                    getCurrentPalette(), getCurrentSubPalette());
-            }
-
-            protected boolean isGuiInited()
-            {
-                return guiInited && paletteIsInited;
-            }
-        }, BorderLayout.NORTH);
+        display.add(tileSelector = new MinitileSelector(), BorderLayout.NORTH);
         tileSelector.setActionCommand("tileSelector");
         tileSelector.addActionListener(this);
 
@@ -3434,7 +3446,7 @@ public class TileEditor extends EbHackModule implements ActionListener
      */
     public String getVersion()
     {
-        return "0.6";
+        return "0.7";
     }
 
     /*
@@ -3570,16 +3582,6 @@ public class TileEditor extends EbHackModule implements ActionListener
         //respond to each component
         if (ae.getActionCommand().equals("tilesetSelector"))
         {
-            //            getSelectedTileset().init();
-            //            updatePaletteSelector();
-            //            updateTileSelector();
-            //            updateArrangementSelector();
-            //            resetArrangementUndo();
-            //            updateCollisionEditor();
-            //            arrangementEditor.clearSelection();
-            //            updateArrangementEditor();
-            //            updatePaletteDisplay();
-            //            updateTileGraphicsEditor();
             doTilesetSelectAction();
         }
         else if (ae.getActionCommand().equals("paletteSelector"))
@@ -3622,11 +3624,8 @@ public class TileEditor extends EbHackModule implements ActionListener
             setFocus((Component) ae.getSource());
             getSelectedTileset().setTile(getCurrentTile(),
                 tileDrawingArea.getIntArrImage());
-            //updateTileSelector();
             tileSelector.repaintCurrent();
-            //updateArrangementSelector();
             arrangementSelector.repaintCurrentTile();
-            //updateArrangementEditor();
             arrangementEditor.repaintCurrentTile();
         }
         else if (ae.getActionCommand().equals("paletteEditor"))
@@ -3712,6 +3711,39 @@ public class TileEditor extends EbHackModule implements ActionListener
         else if (ae.getActionCommand().equals("deleteBoth"))
         {
             this.deleteBoth();
+        }
+        //copy&paste cb stuff
+        else if (ae.getActionCommand().equals("cb_show"))
+        {
+            if (cbdia == null)
+                initCbDia();
+            cbdia.show();
+        }
+        else if (ae.getActionCommand().equals("cb_copy"))
+        {
+            int i = cbsel.getCurrentTile();
+            byte[][] fg = tileForegroundDrawingArea.getByteArrImage(), bg = tileDrawingArea
+                .getByteArrImage();
+            for (int x = 0; x < 8; x++)
+            {
+                System.arraycopy(bg[x], 0, cb[i][0][x], 0, 8);
+                System.arraycopy(fg[x], 0, cb[i][1][x], 0, 8);
+            }
+            cbsel.repaintCurrent();
+        }
+        else if (ae.getActionCommand().equals("cb_paste"))
+        {
+            int i = cbsel.getCurrentTile();
+            byte[][] fg = new byte[8][8], bg = new byte[8][8];
+            for (int x = 0; x < 8; x++)
+            {
+                System.arraycopy(cb[i][0][x], 0, bg[x], 0, 8);
+                System.arraycopy(cb[i][1][x], 0, fg[x], 0, 8);
+            }
+            tileDrawingArea.paste(bg, true);
+            tileDrawingArea.repaint();
+            tileForegroundDrawingArea.paste(fg, true);
+            tileForegroundDrawingArea.repaint();
         }
         //backgroud <--> foreground copies
         else if (ae.getActionCommand().equals("bfCopy"))
@@ -3847,6 +3879,11 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             cycleFocus();
         }
+        else
+        {
+            System.err.println("Uncaught action command in eb.TileEditor: "
+                + ae.getActionCommand());
+        }
     }
 
     // update/redraw methods
@@ -3866,6 +3903,8 @@ public class TileEditor extends EbHackModule implements ActionListener
     private void updateTileSelector()
     {
         tileSelector.repaint();
+        if (cbsel != null)
+            cbsel.repaint();
     }
 
     private void updateArrangementSelector()
@@ -4096,6 +4135,42 @@ public class TileEditor extends EbHackModule implements ActionListener
             collisionEditor.delete();
             arrangementEditor.delete();
         }
+    }
+
+    /** Initialize the clipboard dialog window. */
+    private void initCbDia()
+    {
+        cb = new byte[256][2][8][8];
+        cbdia = new JDialog(mainWindow, "Tile Editor Clipboard");
+        JButton copy = new JButton("Copy to clipboard"), paste = new JButton(
+            "Paste from clipboard");
+        copy.setActionCommand("cb_copy");
+        copy.addActionListener(this);
+        paste.setActionCommand("cb_paste");
+        paste.addActionListener(this);
+        cbdia.getContentPane().setLayout(new BorderLayout());
+        cbdia.getContentPane().add(cbsel = new MinitileSelector()
+        {
+            public int getTileCount()
+            {
+                return cb.length;
+            }
+
+            public int getTilesWide()
+            {
+                return 16;
+            }
+
+            public Image getTileImage(int i)
+            {
+                return drawImage(cb[i][0], getSelectedTileset()
+                    .getPaletteColors(getCurrentPalette(),
+                        getCurrentSubPalette()));
+            }
+        }, BorderLayout.CENTER);
+        cbdia.getContentPane().add(
+            createFlowLayout(new JButton[]{copy, paste}), BorderLayout.SOUTH);
+        cbdia.pack();
     }
 
     //import and export stuff
