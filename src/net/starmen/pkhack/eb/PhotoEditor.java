@@ -71,10 +71,7 @@ public class PhotoEditor extends EbHackModule
 	private boolean muteEvents = false;
 
 	protected void init()
-	{
-		SpriteCharacterTableEditor.readFromRom(rom);
-		readFromRom(this);
-		
+	{		
 		String[] palNames = new String[NUM_PALETTES];
 		for (int i = 0; i < NUM_PALETTES; i++)
 			palNames[i] = "Palette #" + i;
@@ -305,8 +302,10 @@ public class PhotoEditor extends EbHackModule
 	{
 		super.show();
 		
+		SpriteCharacterTableEditor.readFromRom(rom);
 		TPTEditor.readFromRom(this);
 		SpriteEditor.readFromRom(rom);
+		readFromRom(this);
 		if (entryChooser.getSelectedIndex() >= 0)
 			updateComponents();
 		else
@@ -402,11 +401,6 @@ public class PhotoEditor extends EbHackModule
             }
         }
         return true;
-	}
-	
-	public void reset()
-	{
-		readFromRom(this);
 	}
 	
 	public void writeToRom()
