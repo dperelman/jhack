@@ -1,6 +1,5 @@
 package net.starmen.pkhack;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -34,9 +33,9 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -50,6 +49,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -860,7 +860,8 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public Rom getOrginalRomFile(String romType)
     {
-        if (orgRom != null && orgRom.isLoaded && orgRom.romType.equals(romType))
+        if (orgRom != null && orgRom.isLoaded
+            && orgRom.getRomType().equals(romType))
             return orgRom;
         Rom out = requestOrgRomFile(romType);
         if (out != null)
@@ -1121,7 +1122,9 @@ public class MainGUI implements ActionListener, WindowListener
 
     private void resetModules()
     {
-        int tmp = -1;
+        //offset in module list where IPSDatabase is
+        //used to make sure IPSDatabase's reset() is called last
+        int ipsdOffset = -1;
         for (int i = 0; i < getModuleCount(); i++)
         {
             try
@@ -1134,7 +1137,7 @@ public class MainGUI implements ActionListener, WindowListener
                     modButtons[i].setVisible(true);
                     //make sure IPSDatabase is reset last
                     if (getModuleAt(i) instanceof IPSDatabase)
-                        tmp = i;
+                        ipsdOffset = i;
                     else
                         getModuleAt(i).reset();
                 }
@@ -1154,8 +1157,8 @@ public class MainGUI implements ActionListener, WindowListener
         }
         try
         {
-            if (tmp != -1)
-                getModuleAt(tmp).reset();
+            if (ipsdOffset != -1)
+                getModuleAt(ipsdOffset).reset();
         }
         catch (NullPointerException npe)
         {
@@ -1172,8 +1175,70 @@ public class MainGUI implements ActionListener, WindowListener
         }
         else if (!rom.loadRom(loc))
             return;
-        //make sure spt names are read for other resets
-        //SpriteEditor.initSptNames(rom.getPath());
+        //if a Earthbound ROM was just loaded and it is unexpanded (3 MB + 512
+        // byte header) then we may want to expand it
+        if (rom.getRomType().equals("Earthbound") && rom.length() == 0x300200)
+        {
+            //name of the automatic expansion preference
+            String prefName = "Earthbound.autoExpand";
+            //check preferences for user set default
+            //Earthbound.autoExpand:
+            // true = always expand unexpanded ROMs on load
+            // false = never expand unexpanded ROMs on load
+            // null (unset) = ask user
+            if (getPrefs().hasValue(prefName))
+            {
+                if (getPrefs().getValueAsBoolean(prefName))
+                {
+                    //if user selected always expand, do so
+                    rom.expand();
+                }
+                //if user selected never expand, do nothing
+            }
+            else
+            {
+                //if user has not set preference, or choose to have it ask
+                //pop up a dialog explaining preference, with a remember
+                //my preference checkbox
+
+                JCheckBox remember = new JCheckBox(
+                    "Remember my choice and use it next time.", false);
+
+                JTextArea text = new JTextArea(
+                    "The Earthbound ROM you loaded is "
+                        + "not expanded. Expanding a ROM allows you to "
+                        + "have an extra megabyte of storage for more "
+                        + "of anything. ROM expansion cannot not be "
+                        + "undone. If you do not expand your ROM now "
+                        + "you can do so later by using the "
+                        + "ROM Expander located in the \"General\" "
+                        + "group.\n\nDo you wish to expand this ROM?", 10, 30);
+                //make sure text area looks right and does word wrap
+                text.setEditable(false);
+                text.setEnabled(false);
+                text.setLineWrap(true);
+                text.setWrapStyleWord(true);
+                //little L&F specific stuff, hopefully it won't mess up other
+                //L&F's
+                //makes text in the JTextArea look like the text in
+                //the JCheckBox
+                text.setBackground(remember.getBackground());
+                text.setDisabledTextColor(remember.getForeground());
+                text.setFont(remember.getFont());
+
+                int opt = JOptionPane.showConfirmDialog(mainWindow,
+                    new JComponent[]{text, remember}, "Expand ROM?",
+                    JOptionPane.YES_NO_OPTION);
+                //yes is true if user selected yes, false if they did not
+                boolean yes = opt == JOptionPane.YES_OPTION;
+                if (yes)
+                    rom.expand();
+                //if user selected to remember their selection, put it into
+                //the preferences
+                if (remember.isSelected())
+                    getPrefs().setValueAsBoolean(prefName, yes);
+            }
+        }
         resetModules();
         mainWindow.setTitle(MainGUI.getDescription() + " "
             + MainGUI.getVersion() + " - " + rom.getPath());
