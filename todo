@@ -24,8 +24,6 @@ NEXT v0.0.x (minor) RELEASE
 	so you can paste them into a different tile set. Or the ability 
 	to copy multiple mini tiles, but then it would be hard to paste them... 
 	I think it would be very handy. Razz
-# "game order" enemies list like in PK Hack v0.2 and v0.3
-	Use enemyGameOrder.txt, readArray() so ROM-specific versions could be made
 
 LONG TERM
 

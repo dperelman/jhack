@@ -12,6 +12,7 @@ import java.util.Iterator;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
@@ -19,6 +20,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -26,10 +28,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JLinkComboBox;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 import net.starmen.pkhack.eb.FontEditor.StringViewer;
 
@@ -48,16 +50,24 @@ public class EnemyEditor extends EbHackModule implements ActionListener
     {
         super(rom, prefs);
     }
+
+    public static final int NUM_ENEMIES = 231;
+
     /**
      * Array of the all entries in the Earthbound enemies table.
      * 
      * @see EnemyEditor.Enemy
      * @see #readFromRom(HackModule)
      */
-    public static Enemy[] enemies = new Enemy[231]; //data
+    public static Enemy[] enemies = new Enemy[NUM_ENEMIES]; //data
+    private static short[] gameOrder = new short[NUM_ENEMIES];
+    private static boolean useGameOrder = false;
+
     private static Icon fobbyIcon = initIcon();
     private JComboBox selector;
     private JTextField search;
+
+    private JRadioButton ordGame, ordReg;
 
     //stats tab stuff
     private JTextField name, hp, pp, exp, money, speed, offense, defense,
@@ -99,22 +109,28 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
         mainWindow.setIconImage(((ImageIcon) this.getIcon()).getImage());
-        //mainWindow.setSize(550, 400);
         mainWindow.setResizable(false);
 
         selector = EnemyEditor.createEnemyComboBox(this);
         selector.setActionCommand("enemySelector");
 
-        //		JButton searchb = new JButton("Find");
-        //		searchb.addActionListener(this);
+        ButtonGroup ordBG = new ButtonGroup();
+        ordGame = new JRadioButton("Game Order");
+        ordGame.setSelected(false);
+        ordGame.setActionCommand("ordGame");
+        ordGame.addActionListener(this);
+        ordBG.add(ordGame);
+        ordReg = new JRadioButton("ROM Order");
+        ordReg.setSelected(true);
+        ordReg.setActionCommand("ordReg");
+        ordReg.addActionListener(this);
+        ordBG.add(ordReg);
 
         mainWindow.getContentPane().add(
-            new JSearchableComboBox(selector, "Enemy: "),
-            //			pairComponents(
-            //				pairComponents(search = new JTextField(10), searchb, true),
-            //				getLabeledComponent("Enemy:", selector),
-            //				true),
-            BorderLayout.NORTH);
+            pairComponents(
+                createFlowLayout(new JRadioButton[]{ordGame, ordReg}),
+                createFlowLayout(new JSearchableComboBox(selector, "Enemy: ")),
+                true), BorderLayout.NORTH);
 
         JTabbedPane tabs = new JTabbedPane();
 
@@ -187,7 +203,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         bossFlag.setToolTipText("If checked, attempts to use the run battle "
             + "command automatically fail.");
         statsTabRight.add(Box.createVerticalStrut(10));
-        statsTabRight.add(item = new ItemEditor.ItemEntry("Item", this, this));
+        statsTabRight.add(item = new ItemEditor.ItemEntry("Item", this, null));
         statsTabRight.add(getLabeledComponent("Item Freq: ",
             itemFreq = new JComboBox()));
         //init itemFreq
@@ -294,9 +310,6 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         appearenceTab.add(outsidePic = new JLinkComboBox(SPTEditor.class,
             sptNames, "Outside Pic", JSearchableComboBox.SEARCH_EDIT));
         outsidePic.setToolTipText("Appearance out of battle.");
-        //        appearenceTab.add(getLabeledComponent("Outside Pic: ",
-        //            outsidePic = createComboBox(sptNames, true, this),
-        //            "Appearance out of battle. Subtract one for SPT entry number."));
         appearenceTab.add(Box.createVerticalStrut(5));
         appearenceTab.add(getLabeledComponent("Movement: ",
             movement = createSizedJTextField(5, true),
@@ -310,9 +323,6 @@ public class EnemyEditor extends EbHackModule implements ActionListener
                 createComboBox(battleSpriteNames, "Invisible"),
                 "Battle Sprite", JSearchableComboBox.SEARCH_EDIT));
         insidePic.setToolTipText("Appearance in battle.");
-        //        appearenceTab.add(getLabeledComponent("Battle Sprite: ",
-        //            insidePic = createComboBox(battleSpriteNames, "Invisible"),
-        //            "Appearence in battle"));
         insidePic.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)
@@ -320,16 +330,6 @@ public class EnemyEditor extends EbHackModule implements ActionListener
                 updateInsidePicPrev();
             }
         });
-        //        insidePic.setEditable(true);
-        //        insidePic.addActionListener(new ActionListener()
-        //        {
-        //            public void actionPerformed(ActionEvent ae)
-        //            {
-        //                if (ae.getActionCommand().equals("comboBoxEdited"))
-        //                    HackModule.search((String) insidePic.getSelectedItem(),
-        //                        insidePic);
-        //            }
-        //        });
         appearenceTab.add(getLabeledComponent("Palette: ",
             palette = createSizedJTextField(3, true),
             "Colors used for battle sprite (0-31)"));
@@ -452,7 +452,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
      */
     public String getVersion()
     {
-        return "0.5";
+        return "0.6";
     }
 
     /**
@@ -482,33 +482,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         super.show();
         readFromRom();
         BattleSpriteEditor.readFromRom(this);
+        selector.setSelectedIndex(selector.getSelectedIndex());
         mainWindow.setVisible(true);
-
-        //        //stuff
-        //        String[] weaknessNames =
-        //            new String[] {
-        //                "PSI Fire",
-        //                "PSI Freeze",
-        //                "PSI Flash",
-        //                "Paralysis",
-        //                "Hypnosis/Brainshock" };
-        //        String[] weakness_list = new String[enemies.length];
-        //        for(int i = 0; i < enemies.length;i++)
-        //        {
-        //            selector.setSelectedIndex(i);
-        //            String tmp = enemies[i].getName() + ":\n";
-        //            for(int w = 0; w < enemies[i].weakness.length; w++)
-        //            tmp += weaknessNames[w] + ":" +
-        // weakness[w].getSelectedItem().toString().split("]")[1] + "\n";
-        //            tmp += "\n";
-        //            
-        //            weakness_list[i] = tmp;
-        //        }
-        //        //Arrays.sort(weakness_list);
-        //        for(int i = 0; i < enemies.length;i++)
-        //        {
-        //            System.out.print(weakness_list[i]);
-        //        }
     }
 
     /**
@@ -534,7 +509,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
     private void updateArguements(int j)
     {
-        int temp = arguements[j].getSelectedIndex();
+        int temp = getNumberOfString(arguements[j].getSelectedItem().toString());
         //make arguements[j] have the right list
         switch (actionType[actions[j].getSelectedIndex()])
         {
@@ -564,7 +539,9 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         }
         try
         {
-            arguements[j].setSelectedIndex(temp);
+            if (!search(getNumberedString("", temp), arguements[j]))
+                arguements[j].setSelectedIndex(0);
+            //arguements[j].setSelectedIndex(temp);
         }
         catch (IllegalArgumentException e)
         {
@@ -651,7 +628,11 @@ public class EnemyEditor extends EbHackModule implements ActionListener
                 arguements[j].setSelectedIndex(0);
             }
             else
-                arguements[j].setSelectedIndex(earg);
+            {
+                if (!search(getNumberedString("", earg), arguements[j]))
+                    arguements[j].setSelectedIndex(0);
+                //arguements[j].setSelectedIndex(earg);
+            }
         }
         actionOrder.setSelectedIndex(enemies[i].getOrder());
         //finalAction.setSelectedIndex(enemies[i].getFinalAction());
@@ -745,7 +726,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             for (int j = 0; j < actions.length; j++)
             {
                 enemies[i].setAction(j, actions[j].getSelectedIndex());
-                enemies[i].setArguement(j, arguements[j].getSelectedIndex());
+                enemies[i].setArguement(j, getNumberOfString(arguements[j]
+                    .getSelectedItem().toString()));
             }
             enemies[i].setOrder(actionOrder.getSelectedIndex());
             //enemies[i].setFinalAction(finalAction.getSelectedIndex());
@@ -817,11 +799,12 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals(selector.getActionCommand()))
         {
-            showInfo(selector.getSelectedIndex());
+            int i = getNumberOfString(selector.getSelectedItem().toString());
+            showInfo(i);
         }
         else if (ae.getActionCommand().equals("apply"))
         {
-            int i = selector.getSelectedIndex();
+            int i = getNumberOfString(selector.getSelectedItem().toString());
             if (i == 0)
                 JOptionPane.showMessageDialog(mainWindow,
                     "Writing to enemy #0 is not allowed.", "Write Failed",
@@ -837,6 +820,39 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         {
             search(search.getText().toLowerCase(), selector);
         }
+        else if (ae.getActionCommand().equals("ordGame"))
+        {
+            useGameOrder = true;
+            notifyEnemyDataListeners(new ListDataEvent(this,
+                ListDataEvent.CONTENTS_CHANGED, 0, NUM_ENEMIES));
+        }
+        else if (ae.getActionCommand().equals("ordReg"))
+        {
+            useGameOrder = false;
+            notifyEnemyDataListeners(new ListDataEvent(this,
+                ListDataEvent.CONTENTS_CHANGED, 0, NUM_ENEMIES));
+        }
+        else
+        {
+            System.err.println("Uncaught action command in eb.EnemyEditor: "
+                + ae.getActionCommand());
+        }
+    }
+
+    private void loadGameOrder()
+    {
+        String[] ord = readArray("enemyGameOrder.txt", false, NUM_ENEMIES);
+        for (int i = 0; i < ord.length; i++)
+        {
+            try
+            {
+                gameOrder[i] = (short) (Integer.parseInt(ord[i]) + 1);
+            }
+            catch (NumberFormatException e)
+            {
+                gameOrder[i] = 0;
+            }
+        }
     }
 
     /*
@@ -846,6 +862,9 @@ public class EnemyEditor extends EbHackModule implements ActionListener
      */
     public void reset()
     {
+        //load game order
+        loadGameOrder();
+
         //outsidePic = createJComboBoxFromArray(oobSpriteNames);
         selector.setSelectedIndex(selector.getSelectedIndex());
     }
@@ -877,9 +896,10 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             public Object getElementAt(int i)
             {
                 String out;
+                int j = useGameOrder ? gameOrder[i] : i;
                 try
                 {
-                    out = enemies[i].toString();
+                    out = enemies[j].toString();
                 }
                 catch (NullPointerException e)
                 {
@@ -889,7 +909,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
                 {
                     return getElementAt(0);
                 }
-                return HackModule.getNumberedString(out, i);
+                return HackModule.getNumberedString(out, j);
             }
         };
         addEnemyDataListener(out);
@@ -924,7 +944,6 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         out.addActionListener(al);
         model.addListDataListener(new ListDataListener()
         {
-
             public void contentsChanged(ListDataEvent lde)
             {
                 if (out.getSelectedIndex() == -1)

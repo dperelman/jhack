@@ -3296,7 +3296,7 @@ public abstract class HackModule
             for (int i = 0; i < list.length; i++)
             {
                 if (list[i].substring(0, Math.min(7, list[i].length()))
-                    .matches(".*-.*"))
+                    .matches("[^#]*-[^#]*.*"))
                 {
                     tempStr = list[i].split("-", 2);
                     int num = Integer.parseInt(tempStr[0].trim(), (hexNum
