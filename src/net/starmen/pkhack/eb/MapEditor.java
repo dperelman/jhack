@@ -93,6 +93,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     private JMenu modeMenu;
     private boolean changingSectors = false;
     private boolean movingSprite = false;
+    private boolean userShown;
     private int[] movingSpriteInfo;
     private short copyTpt = -1;
 
@@ -847,14 +848,25 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 		gfxcontrol.remoteRepaint();
             		}
         		}
-        		else if (gfxcontrol.getModeProps()[5] >= 1)
+        		else if (gfxcontrol.getMode() == 3)
         		{
         			doorEditor.setDestXY(
         					(gfxcontrol.getMapX() * 4) + (e.getX() / 8),
 							(gfxcontrol.getMapY() * 4) + (e.getY() / 8));
         			doorEditor.enableSetXY();
-        			gfxcontrol.changeMode(2);
+        			gfxcontrol.changeMode(gfxcontrol.getOldMode());
         			gfxcontrol.remoteRepaint();
+        		}
+        		else if (gfxcontrol.getMode() == 4)
+        		{
+        			gfxcontrol.getSeekSource().returnSeek(
+        					e.getX(), e.getY(),
+        					gfxcontrol.getMapX(), gfxcontrol.getMapY());
+        			gfxcontrol.changeMode(gfxcontrol.getOldMode());
+        			if (userShown)
+        				gfxcontrol.remoteRepaint();
+        			else
+        				hide();
         		}
         	}
             else if (e.getButton() == 3)
@@ -1181,6 +1193,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
     public void show()
     {
+    	show(true);
+    }
+    
+    public void show(boolean userShown)
+    {
         super.show();
         // this.reset();
         mainWindow.setVisible(true);
@@ -1207,11 +1224,24 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			"\nIt will be moved and the rom will be expanded if necessary.");
         	EbMap.moveSpriteData();
         }*/
+        if (! this.userShown)
+        	this.userShown = userShown;
+    }
+    
+    public void show(Object source)
+    {
+    	SeekListener seekSource = (SeekListener) source;
+    	show(false);
+    	gfxcontrol.setSeekSource(seekSource);
+    	gfxcontrol.changeMode(4);
+    	gfxcontrol.remoteRepaint();
     }
 
     public void hide()
     {
         mainWindow.setVisible(false);
+        doorEditor.hide();
+        userShown = false;
     }
     
     public void reset()
@@ -1244,12 +1274,12 @@ public class MapEditor extends EbHackModule implements ActionListener,
         private int[][] maparray;
         private boolean maparrayisset = false;
         // modes: 0 = map editing (text), 1 = map editing (graphics)
-        private int x = 0, y = 0, mode, sectorx, sectory, crossX, crossY;
+        private int x = 0, y = 0, mode, sectorx, sectory, crossX, crossY, oldMode;
         private JFormattedTextField xField, yField;
         private JScrollBar xScroll, yScroll;
         private JMenu modeMenu;
-        private boolean grid;
-        private boolean spriteBoxes;
+        private boolean grid, spriteBoxes;
+        private SeekListener seekSource;
         
         private boolean knowsmap = false;
         private boolean knowssector = false;
@@ -1266,7 +1296,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
 			{2, 2, 1, 0, 0, 0, 0}, 
 			{0, 2, 0, 1, 0, 0, 0},
 			{0, 2, 0, 0, 2, 0, 0},
-			{0, 2, 0, 0, 1, 1, 1}
+			{0, 2, 0, 0, 1, 1, 1},
+			{0, 2, 0, 0, 0, 1, 1}
 			};
         private int[] spriteProps;
 
@@ -1655,6 +1686,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
         public void changeMode(int mode)
         {
+        	this.oldMode = this.mode;
             this.mode = mode;
             if (getModeProps()[6] >= 1)
             	modeMenu.setEnabled(false);
@@ -1689,6 +1721,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
         public int getMode()
         {
             return this.mode;
+        }
+        
+        public int getOldMode()
+        {
+        	return oldMode;
         }
 
         public int[] getModeProps()
@@ -1761,6 +1798,16 @@ public class MapEditor extends EbHackModule implements ActionListener,
         public int getMapY()
         {
         	return y;
+        }
+        
+        public void setSeekSource(SeekListener seekSource)
+        {
+        	this.seekSource = seekSource;
+        }
+        
+        public SeekListener getSeekSource()
+        {
+        	return seekSource;
         }
     }
 
@@ -2407,6 +2454,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	int spPtrsAddress = 
         		HackModule.toRegPointer(rom.readMulti(spAsmPointer,3));
         	int ptr = rom.readMulti(spPtrsAddress + (areaNum * 2), 2);
+        	System.out.println("loading areaNum " + areaNum);
         	spData[areaNum] = new ArrayList();
        		if (ptr > 0)
        		{
@@ -2497,7 +2545,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         public static int getSpritesNum(int areaX, int areaY)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
-        	
+        	System.out.println("getting areanum " + areaNum);
         	return spData[areaNum].size();
         }
         
@@ -3505,13 +3553,16 @@ public class MapEditor extends EbHackModule implements ActionListener,
     	 */
     	public void hide()
     	{
-    		mainWindow.hide();
-    		
-    		if (gfxcontrol.getMode() == 3)
+    		if (isInited)
     		{
-    			gfxcontrol.changeMode(2);
-    			gfxcontrol.remoteRepaint();
-    			enableSetXY();
+    			mainWindow.setVisible(false);
+        		
+        		if (gfxcontrol.getMode() == 3)
+        		{
+        			gfxcontrol.changeMode(2);
+        			gfxcontrol.remoteRepaint();
+        			enableSetXY();
+        		}
     		}
     	}
     	
