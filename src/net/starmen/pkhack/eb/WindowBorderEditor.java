@@ -15,7 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -257,10 +257,12 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         //            }
         //        }
         oldLens[0] = readGraphics(0x47E47, 416, hm); // and B798
-        if (oldLens[0] < 0) return false;
+        if (oldLens[0] < 0)
+            return false;
         //oldLens[0] = readGraphics(0xB798);
         oldLens[1] = readGraphics(0x47EAA, 7, hm);
-        if (oldLens[1] < 0) return false;
+        if (oldLens[1] < 0)
+            return false;
         readPalettes(hm.rom);
         readSubPalNums();
         readFlavorNames(hm);
@@ -276,7 +278,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
     private static int writeGraphics(int[] pointerLoc, int oldLen, int num,
         EbHackModule hm)
     {
-        if (oldLen < 0) return oldLen;
+        if (oldLen < 0)
+            return oldLen;
         byte[] buffer = new byte[8192]; //new byte[num * 16];
         for (int i = 0; i < num; i++)
             HackModule.write2BPPArea(graphics[wOff++], buffer, 16 * i, 0, 0);
@@ -346,7 +349,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                 int w = 0;
                 for (int j = 0; j < 8; j++)
                 {
-                    if (i < 423) w |= (subPalNums[i++] & 7) << (j * 3);
+                    if (i < 423)
+                        w |= (subPalNums[i++] & 7) << (j * 3);
                 }
                 out.write(w);
                 out.write(w >> 8);
@@ -378,7 +382,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
     private void drawTile(int i, Graphics g, int subpal, boolean zeroBlack,
         boolean hFlip, boolean vFlip, int x, int y, int zoom)
     {
-        if (getCurrentFlavor() == -1) return;
+        if (getCurrentFlavor() == -1)
+            return;
         byte[][] img = graphics[i];
         //        if (hFlip)
         //        {
@@ -494,7 +499,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         {
             //new char
             int nc = ((y / TILE_SIZE) * TILES_WIDE) + (x / TILE_SIZE);
-            if (nc < 423 && nc > -1) setCurrentTile(nc);
+            if (nc < 423 && nc > -1)
+                setCurrentTile(nc);
         }
 
         private int x(int i)
@@ -585,7 +591,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         {
             if (!(me.getX() < 0 || me.getY() < 0
                 || me.getX() > TILES_WIDE * TILE_SIZE - 1 || me.getY() > TILES_HIGH
-                * TILE_SIZE - 1)) setCurrentTile(me.getX(), me.getY());
+                * TILE_SIZE - 1))
+                setCurrentTile(me.getX(), me.getY());
             //            if (rightPress) changeSubPal();
         }
 
@@ -650,7 +657,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
 
         private void initArr()
         {
-            if (arrInited) return;
+            if (arrInited)
+                return;
             try
             {
                 DataInputStream in = new DataInputStream((ClassLoader
@@ -757,7 +765,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         protected Image getTileImage(int tile, int subPal, boolean hFlip,
             boolean vFlip)
         {
-            if (getCurrentFlavor() > 0 && tile > 15 && tile < 23) tile += 400;
+            if (getCurrentFlavor() > 0 && tile > 15 && tile < 23)
+                tile += 400;
             Image img = this.createImage(8, 8);
             WindowBorderEditor.this.drawTile(tile, img.getGraphics(), subPal,
                 true, hFlip, vFlip, 0, 0, 1);
@@ -1245,7 +1254,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("flavorSelector"))
         {
-            if (getCurrentFlavor() == -1) return;
+            if (getCurrentFlavor() == -1)
+                return;
             updatePalette();
             da.repaint();
             tileSelector.repaint();
@@ -1378,7 +1388,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         for (int i = 0; i < flavorNames.length; i++)
             flavorSelector.addItem(HackModule.getNumberedString(flavorNames[i],
                 i));
-        if (tmp != -1) flavorSelector.setSelectedIndex(tmp);
+        if (tmp != -1)
+            flavorSelector.setSelectedIndex(tmp);
     }
 
     private void updatePalette()
@@ -1480,57 +1491,62 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         }
     }
 
+    public static WindowBorderImportData importData(InputStream in)
+        throws IOException
+    {
+        WindowBorderImportData out = new WindowBorderImportData();
+
+        //FileInputStream in = new FileInputStream(f);
+
+        byte version = (byte) in.read();
+        if (version > WBG_VERSION)
+        {
+            if (JOptionPane.showConfirmDialog(null,
+                "WBG file version not supported." + "Try to load anyway?",
+                "WBG Version " + version + " Not Supported",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION)
+                return null;
+        }
+        byte whichMaps = (byte) in.read();
+        for (int m = 0; m < 8; m++)
+        {
+            //if bit for this flavor/tiles set...
+            if (((whichMaps >> m) & 1) != 0)
+            {
+                //if tiles...
+                if (m == 0)
+                {
+                    byte[] b = new byte[graphics.length * 32];
+                    in.read(b);
+
+                    int offset = 0;
+                    out.tiles = new byte[graphics.length][8][8];
+                    for (int i = 0; i < graphics.length; i++)
+                        offset += read2BPPArea(out.tiles[i], b, offset, 0, 0);
+                }
+                //... else flavor (palettes)
+                else
+                {
+                    byte[] pal = new byte[8 * 4 * 2];
+                    in.read(pal);
+
+                    out.palettes[m - 1] = new Color[8][4];
+                    for (int i = 0; i < out.palettes[m - 1].length; i++)
+                        readPalette(pal, i * 4 * 2, out.palettes[m - 1][i]);
+                }
+            }
+        }
+
+        in.close();
+
+        return out;
+    }
+
     public static WindowBorderImportData importData(File f)
     {
         try
         {
-            WindowBorderImportData out = new WindowBorderImportData();
-
-            FileInputStream in = new FileInputStream(f);
-
-            byte version = (byte) in.read();
-            if (version > WBG_VERSION)
-            {
-                if (JOptionPane.showConfirmDialog(null,
-                    "WBG file version not supported." + "Try to load anyway?",
-                    "WBG Version " + version + " Not Supported",
-                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION)
-                    return null;
-            }
-            byte whichMaps = (byte) in.read();
-            for (int m = 0; m < 8; m++)
-            {
-                //if bit for this flavor/tiles set...
-                if (((whichMaps >> m) & 1) != 0)
-                {
-                    //if tiles...
-                    if (m == 0)
-                    {
-                        byte[] b = new byte[graphics.length * 32];
-                        in.read(b);
-
-                        int offset = 0;
-                        out.tiles = new byte[graphics.length][8][8];
-                        for (int i = 0; i < graphics.length; i++)
-                            offset += read2BPPArea(out.tiles[i], b, offset, 0,
-                                0);
-                    }
-                    //... else flavor (palettes)
-                    else
-                    {
-                        byte[] pal = new byte[8 * 4 * 2];
-                        in.read(pal);
-
-                        out.palettes[m - 1] = new Color[8][4];
-                        for (int i = 0; i < out.palettes[m - 1].length; i++)
-                            readPalette(pal, i * 4 * 2, out.palettes[m - 1][i]);
-                    }
-                }
-            }
-
-            in.close();
-
-            return out;
+            return importData(new FileInputStream(f));
         }
         catch (FileNotFoundException e)
         {
@@ -1543,6 +1559,21 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         {
             System.err.println("IO error importing window border data from "
                 + f.getAbsolutePath() + ".");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static WindowBorderImportData importData(byte[] b)
+    {
+        try
+        {
+            return importData(new ByteArrayInputStream(b));
+        }
+        catch (IOException e)
+        {
+            System.err.println("IO error importing window border data "
+                + "from byte array.");
             e.printStackTrace();
         }
         return null;
@@ -1635,22 +1666,29 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             new JLabel("<html>" + "Select which items you wish to export."
                 + "</html>"), new JScrollPane(checkTree), false),
             "Export What?", JOptionPane.OK_CANCEL_OPTION,
-            JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION) return;
+            JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
+            return;
 
         boolean[] a = new boolean[8];
         for (int m = 0; m < 8; m++)
             a[m] = flavorNodes[m].isSelected();
 
         File f = getFile(true, "wbg", "Window Border Graphics & palettes");
-        if (f != null) exportData(f, a);
+        if (f != null)
+            exportData(f, a);
     }
 
     private void importData()
     {
         File f = getFile(false, "wbg", "Window Border Graphics & palettes");
         WindowBorderImportData wbid;
-        if (f == null || (wbid = importData(f)) == null) return;
+        if (f == null || (wbid = importData(f)) == null)
+            return;
+        importData(wbid);
+    }
 
+    private void importData(WindowBorderImportData wbid)
+    {
         CheckNode topNode = new CheckNode("Window Border Graphics & Palettes",
             true, true);
         topNode.setSelectionMode(CheckNode.DIG_IN_SELECTION);
@@ -1774,7 +1812,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             targetDialog.pack();
 
             targetDialog.setVisible(true);
-            if (targetDialog.getTitle().equals("Canceled")) return;
+            if (targetDialog.getTitle().equals("Canceled"))
+                return;
         }
 
         //        if (JOptionPane
@@ -1811,5 +1850,20 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             }
         }
         mainWindow.repaint();
+    }
+
+    /**
+     * Imports data from the given <code>byte[]</code> based on user input.
+     * User input will always be expected by this method. This method exists to
+     * be called by <code>IPSDatabase</code> for "applying" files with .wbg
+     * extensions.
+     * 
+     * @param b <code>byte[]</code> containing exported data
+     * @param wbe instance of <code>WindowBorderEditor</code> to call
+     *            <code>importData()</code> on
+     */
+    public static void importData(byte[] b, WindowBorderEditor wbe)
+    {
+        wbe.importData(importData(b));
     }
 }

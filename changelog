@@ -1,0 +1,19 @@
+Next version (after v0.4.6.2):
+# Text Editor: raw text range start moved from 0x51D12 to 0x50200.
+	Index of text entries will no longer match that of other text editors.
+# IPSFile: .ips code has been made faster in all areas except for checking
+	if the .ips has been applied.
+# IPS Database v0.5: Added API for support for non-ips files.
+	Used by Font Editor, etc. Modified database to take advantage of this.
+# Font Editor v0.4: Added support for IPS Database entries
+# Reset Button: Major speed increase on reset area.
+	Mainly affects Direct File IO mode.
+# Battle Sprite Editor: bugfix: sprite renaming now works correctly
+	(thanks FaulkFan420)
+# (IntArr|Image)DrawingArea: bugfix: attempts to drag selections outside
+	of allowed area now are ignored. (thanks FaulkFan420)
+# (IntArr|Image)DrawingArea: width and height increased by one pixel so
+	the bottom/right edge gridline is drawn where is should be.
+	Makes selections on those edges visible.
+# Added dialog when an unexpanded Earthbound ROM is loaded asking if the user
+	wants to expand the ROM with a remember checkbox.

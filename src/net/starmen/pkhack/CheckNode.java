@@ -44,9 +44,9 @@ public class CheckNode extends DefaultMutableTreeNode {
 
     if ((selectionMode == DIG_IN_SELECTION)
         && (children != null)) {
-      Enumeration enum = children.elements();
-      while (enum.hasMoreElements()) {
-        CheckNode node = (CheckNode)enum.nextElement();
+      Enumeration e = children.elements();
+      while (e.hasMoreElements()) {
+        CheckNode node = (CheckNode)e.nextElement();
         node.setSelected(isSelected);
       }
     }

@@ -148,7 +148,10 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
     {
         for (int i = 0; i < this.pal.length; i++)
         {
-            if (this.pal[i].equals(c)) { return i; }
+            if (this.pal[i].equals(c))
+            {
+                return i;
+            }
         }
         return 0;
     }
@@ -177,7 +180,8 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
     {
         //if out of range, don't even look at it
         if (me.getX() < 0 || me.getX() > squareSize * cols || me.getY() < 0
-            || me.getY() > squareSize * rows) return;
+            || me.getY() > squareSize * rows)
+            return;
         int x = me.getX() - 1, y = me.getY() - 1;
         if (x < (squareSize * cols))
         {
@@ -195,7 +199,8 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
                     //if right mouse button clicked
                     Color cc = JColorChooser.showDialog(this,
                         "Select a new color", this.getSelectedColor());
-                    if (cc == null) return;
+                    if (cc == null)
+                        return;
                     this.newColor = new Color(cc.getRed() & 0xf8,
                         cc.getGreen() & 0xf8, cc.getBlue() & 0xf8);
                     this.fireActionPerformed(new ActionEvent(this,
@@ -238,7 +243,8 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
     {
         //      if out of range, don't even look at it
         if (me.getX() < 0 || me.getX() > squareSize * cols || me.getY() < 0
-            || me.getY() > squareSize * rows) return;
+            || me.getY() > squareSize * rows)
+            return;
         int x = me.getX() - 1, y = me.getY() - 1;
         if (x < squareSize * cols)
         {
@@ -246,7 +252,8 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
 
             int newCol = (x / (this.squareSize)) + (y / this.squareSize) * cols;
             //            System.out.println("Selected color #" + newCol);
-            if (newCol < pal.length) this.setSelectedColorIndex(newCol);
+            if (newCol < pal.length)
+                this.setSelectedColorIndex(newCol);
         }
     }
 
@@ -263,7 +270,8 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
      */
     public void paint(Graphics g)
     {
-        if (pal == null) return;
+        if (pal == null)
+            return;
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, ((pal.length / rows) * squareSize) + 1,
             (rows * squareSize) + 1);

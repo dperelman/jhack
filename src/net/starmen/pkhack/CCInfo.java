@@ -101,7 +101,7 @@ public class CCInfo
             {
                 System.out
                     .println("Compression Pattern ERROR: compareTo() called wrong.");
-                return pattern.toString().compareTo(obj);
+                return pattern.toString().compareTo(obj.toString());
             }
         }
     }
