@@ -590,9 +590,12 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
             {
                 try
                 {
-                    palSelector.setSelectedIndex(Integer.parseInt(palSelector
-                        .getSelectedItem().toString().trim().replaceAll(
-                            "[^\\d]", "")));
+                    String numstr = palSelector.getSelectedItem().toString()
+                        .trim().replaceAll("[^\\d]", "");
+                    if (numstr.length() == 0)
+                        palSelector.setSelectedIndex(currPal);
+                    else
+                        palSelector.setSelectedIndex(Integer.parseInt(numstr));
                 }
                 catch (NumberFormatException nfe)
                 {
