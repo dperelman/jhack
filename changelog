@@ -1,4 +1,7 @@
-Next version (after v0.4.6.2):
+Next version (after v0.4.7):
+# Add new changes here
+
+v0.4.7:
 # Text Editor: raw text range start moved from 0x51D12 to 0x50200.
 	Index of text entries will no longer match that of other text editors.
 # IPSFile: .ips code has been made faster in all areas except for checking
@@ -17,3 +20,4 @@ Next version (after v0.4.6.2):
 	Makes selections on those edges visible.
 # Added dialog when an unexpanded Earthbound ROM is loaded asking if the user
 	wants to expand the ROM with a remember checkbox.
+# Added IPS Database entry support in Window Border and Logo Screen Editors

@@ -52,6 +52,7 @@ import net.starmen.pkhack.IPSDatabase;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.MaxLengthDocument;
+import net.starmen.pkhack.NodeSelectionListener;
 import net.starmen.pkhack.PrefsCheckBox;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.SpritePalette;
@@ -1611,68 +1612,6 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         return null;
     }
 
-    private static class NodeSelectionListener extends MouseAdapter
-    {
-        JTree tree;
-
-        NodeSelectionListener(JTree tree)
-        {
-            this.tree = tree;
-        }
-
-        public void mouseClicked(MouseEvent e)
-        {
-            int x = e.getX();
-            int y = e.getY();
-            int row = tree.getRowForLocation(x, y);
-            TreePath path = tree.getPathForRow(row);
-            //TreePath path = tree.getSelectionPath();
-            if (path != null)
-            {
-                CheckNode node = (CheckNode) path.getLastPathComponent();
-                boolean isSelected = !(node.isSelected());
-                node.setSelected(isSelected);
-                if (node.getSelectionMode() == CheckNode.DIG_IN_SELECTION)
-                {
-                    if (isSelected)
-                    {
-                        tree.expandPath(path);
-                    }
-                    else
-                    {
-                        tree.collapsePath(path);
-                    }
-                }
-                if (row != 0)
-                {
-                    CheckNode parent = (CheckNode) node.getParent();
-                    if (node.isSelected() && !parent.isSelected())
-                    {
-                        parent.setSelected(true);
-                        for (int p = 0; p < parent.getChildCount(); p++)
-                            if (parent.getChildAt(p) != node)
-                                ((CheckNode) parent.getChildAt(p))
-                                    .setSelected(false);
-                    }
-                    unSel: if (!node.isSelected() && parent.isSelected())
-                    {
-                        for (int p = 0; p < parent.getChildCount(); p++)
-                            if (((CheckNode) parent.getChildAt(p)).isSelected())
-                                break unSel;
-                        parent.setSelected(false);
-                    }
-                }
-                ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
-                // I need revalidate if node is root. but why?
-                if (row == 0)
-                {
-                    tree.revalidate();
-                    tree.repaint();
-                }
-            }
-        }
-    }
-
     private void exportData()
     {
         boolean[] a = showChecklist(null, "<html>"
@@ -1844,25 +1783,6 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                 return false;
         }
 
-        //        if (JOptionPane
-        //            .showConfirmDialog(mainWindow,
-        //                pairComponents(new JLabel("<html>"
-        //                    + "Select which map you would like<br>"
-        //                    + "the data to be imported into.<br>"
-        //                    + "For example, if you wish to import<br>" + "the "
-        //                    + flavorNames[0] + " map into the<br>" + flavorNames[1]
-        //                    + " map, then change the pull-down menu<br>" + "labeled "
-        //                    + flavorNames[0] + " to " + flavorNames[1]
-        //                    + ". If you do not<br>"
-        //                    + "wish to make any changes, just click ok.<br>" + "<br>"
-        //                    + "The T, A, and P indictate that you will be<br>"
-        //                    + "importing tiles, arrangements, and palettes<br>"
-        //                    + "respectively from that map." + "</html>"), targetMap,
-        //                    false), "Select import targets",
-        //                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) ==
-        // JOptionPane.CANCEL_OPTION)
-        //            return;
-
         for (int m = 0; m < a.length; m++)
         {
             if (a[m])
@@ -1894,7 +1814,14 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
      */
     public static boolean importData(byte[] b, WindowBorderEditor wbe)
     {
-        return wbe.importData(importData(b));
+        boolean out = wbe.importData(importData(b));
+        if (out)
+        {
+            writeInfo(wbe);
+            if (wbe.mainWindow != null)
+                wbe.mainWindow.repaint();
+        }
+        return out;
     }
 
     private static boolean checkPal(Color[][] pal, int p)
@@ -1958,7 +1885,9 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
      */
     public static void restoreData(byte[] b, WindowBorderEditor wbe)
     {
-        boolean[] a = showChecklist(null, "<html></html>", "Restore what?");
+        boolean[] a = showChecklist(null, "<html>Select which items you wish"
+            + "to restore to the orginal EarthBound verions.</html>",
+            "Restore what?");
         if (a[0])
         {
             readGraphics(wbe, true);
@@ -1974,6 +1903,9 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                 wbe.rom.resetArea(0x2021C8 + (i - 1) * 64, 64, orgRom);
         //reread palettes
         readPalettes(wbe.rom);
+
+        if (wbe.mainWindow != null)
+            wbe.mainWindow.repaint();
     }
 
     /*

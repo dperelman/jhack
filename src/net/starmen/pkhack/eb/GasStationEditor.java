@@ -13,7 +13,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -35,8 +34,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.starmen.pkhack.CheckNode;
@@ -46,6 +43,7 @@ import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
+import net.starmen.pkhack.NodeSelectionListener;
 import net.starmen.pkhack.PrefsCheckBox;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.SpritePalette;
@@ -1474,68 +1472,6 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             e.printStackTrace();
         }
         return null;
-    }
-
-    private class NodeSelectionListener extends MouseAdapter
-    {
-        JTree tree;
-
-        NodeSelectionListener(JTree tree)
-        {
-            this.tree = tree;
-        }
-
-        public void mouseClicked(MouseEvent e)
-        {
-            int x = e.getX();
-            int y = e.getY();
-            int row = tree.getRowForLocation(x, y);
-            TreePath path = tree.getPathForRow(row);
-            //TreePath path = tree.getSelectionPath();
-            if (path != null)
-            {
-                CheckNode node = (CheckNode) path.getLastPathComponent();
-                boolean isSelected = !(node.isSelected());
-                node.setSelected(isSelected);
-                if (node.getSelectionMode() == CheckNode.DIG_IN_SELECTION)
-                {
-                    if (isSelected)
-                    {
-                        tree.expandPath(path);
-                    }
-                    else
-                    {
-                        tree.collapsePath(path);
-                    }
-                }
-                if (row != 0)
-                {
-                    CheckNode parent = (CheckNode) node.getParent();
-                    if (node.isSelected() && !parent.isSelected())
-                    {
-                        parent.setSelected(true);
-                        for (int p = 0; p < parent.getChildCount(); p++)
-                            if (parent.getChildAt(p) != node)
-                                ((CheckNode) parent.getChildAt(p))
-                                    .setSelected(false);
-                    }
-                    unSel: if (!node.isSelected() && parent.isSelected())
-                    {
-                        for (int p = 0; p < parent.getChildCount(); p++)
-                            if (((CheckNode) parent.getChildAt(p)).isSelected())
-                                break unSel;
-                        parent.setSelected(false);
-                    }
-                }
-                ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
-                // I need revalidate if node is root. but why?
-                if (row == 0)
-                {
-                    tree.revalidate();
-                    tree.repaint();
-                }
-            }
-        }
     }
 
     private void exportData()

@@ -39,21 +39,17 @@
 		name = "Start at Daytime (&amp; music)" sdesc = "Changes the starting pal and music to day."
 		sshot = "day.png" sssize = "7522" type = "misc" romtype = "Earthbound" />
 	<!-- BA Logos -->
-	<ips src = "pkhack_hal_logo_ba.ips" size = "584" author = "Blue Antoid"
+	<ips src = "blueantoid_pkhack.lscn" size = "10283" author = "Blue Antoid"
 		name = "PKHack Logo" sdesc = "Replaces Halken logo with PK Hack logo."
 		sshot = "pkhack_hal_logo_ba.png" sssize = "1119" type = "halscreen" romtype = "Earthbound" />
-	<!-- Mr. Tenda Logos -->
-	<ips src = "MrTendaAPE.ips" size = "992" author = "Mr. Tenda"
-		name = "Mr. Tenda Logo" sdesc = "Replaces APE logo with Mr. Tenda logo."
-		sshot = "MrTendaAPE.png" sssize = "825" type = "apescreen" romtype = "Earthbound" />
 	<!-- Chris_Davis Logos -->
-	<ips src = "ManiManiLogo.ips" size = "490" author = "Chris_Davis"
+	<ips src = "manimani.lscn" size = "8235" author = "Chris_Davis"
 		name = "ManiMani Logo" sdesc = "Replaces ape logo with ManiMani logo."
 		sshot = "ManiManiLogo.png" sssize = "873" type = "apescreen" romtype = "Earthbound" />
 	<ips src = "NewTitleCD.ips" size = "4239" author = "Chris_Davis"
 		name = "New Title Screen" sdesc = "Changes title screen."
 		sshot = "NewTitleCD.png" sssize = "2631" type = "titlescreen" romtype = "Earthbound" />
-	<ips src = "PKHackLogoCD.ips" size = "138" author = "Chris_Davis"
+	<ips src = "PKHackLogoCD.lscn" size = "10283" author = "Chris_Davis"
 		name = "PKHack Logo" sdesc = "Replaces Nintendo logo with PK Hack logo."
 		sshot = "PKHackLogoCD.png" sssize = "960" type = "nintendoscreen" romtype = "Earthbound" />
 	<ips src = "smnet.ips" size = "6316" author = "Chris_Davis"
@@ -68,16 +64,12 @@
 	<ips src = "christmashalken.ips" size = "7593" author = "Chris_Davis"
 		name = "Christmas Halken Logo" sdesc = "Replaces Halken logo with Christmas Hal logo."
 		sshot = "christmashalken.png" sssize = "5004" type = "halscreen" romtype = "Earthbound" />
-	<ips src = "StarmanLogo.ips" size = "300" author = "Chris_Davis"
+	<ips src = "starman_mini.lscn" size = "8235" author = "Chris_Davis"
 		name = "Starman Logo" sdesc = "Replaces Ape logo with starman logo."
 		sshot = "StarmanLogo.png" sssize = "827" type = "apescreen" romtype = "Earthbound" />
-	<ips src = "ZombiePossessorLogo.ips" size = "294" author = "Chris_Davis"
+	<ips src = "possesor.lscn" size = "8235" author = "Chris_Davis"
 		name = "Zombie Possessor Logo" sdesc = "Replaces Ape logo with zombie logo."
 		sshot = "ZombiePossessorLogo.png" sssize = "993" type = "apescreen" romtype = "Earthbound" />
-	<!-- JeffMan Logos -->
-	<ips src = "JeffmanLogo.ips" size = "497" author = "Jeffman"
-		name = "Jeffman Logo" sdesc = "Replaces Halken logo with Jeffman logo."
-		sshot = "JeffmanLogo.png" sssize = "534" type = "halscreen" romtype = "Earthbound" />
 	<!-- n42 logos -->
 	<ips src = "smnet_nintendo.ips" size = "1711" author = "n42"
 		name = "Starman Logo" sdesc = "Replaces Nintendo logo with starmen.net logo."

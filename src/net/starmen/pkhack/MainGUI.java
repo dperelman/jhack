@@ -61,7 +61,7 @@ import javax.swing.filechooser.FileFilter;
  * buttons. This is called by {@link JHack#main(String[])}.
  * 
  * @author AnyoneEB
- * @version 0.4.6.2
+ * @version 0.4.7
  */
 //Made by AnyoneEB.
 //Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
@@ -469,7 +469,7 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public static String getVersion()
     {
-        return "0.4.6.2";
+        return "0.4.7";
     }
 
     /**
