@@ -153,6 +153,8 @@ public abstract class EbHackModule extends HackModule
 	                + " bytes long found.");
 	        if (i < 0x410200 && i >= 0x408200)
 	            startAt = i = 0x4081ff;
+	        if (((i - 0x200) & 0xffff) == 0xffff)
+	            startAt = i;
 	        int ch = rom.read(i);
 	
 	        if (((i + 1) % 0x100) == 0 && i < 0x400200)

@@ -206,9 +206,10 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 System.out.println("About to attempt decompressing "
                     + palBuffer.length + " bytes of the Gas Station palette #"
                     + i + ".");
-                int[] tmp = EbHackModule.decomp(readOrg ? r
-                    .readRegAsmPointer(palPointerArray[i]) : palPointer[i],
-                    palBuffer, r);
+                int addr = readOrg
+                    ? r.readRegAsmPointer(palPointerArray[i])
+                    : palPointer[i];
+                int[] tmp = EbHackModule.decomp(addr, palBuffer, r);
                 if (tmp[0] < 0)
                 {
                     System.out.println("Error " + tmp[0]
@@ -228,7 +229,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                     palLen[i] = tmp[1];
                     System.out.println("Gas Station palette #" + i
                         + ": Decompressed " + tmp[0] + " bytes from a "
-                        + tmp[1] + " byte compressed block.");
+                        + tmp[1] + " byte compressed block at "
+                        + Integer.toHexString(addr) + ".");
 
                     HackModule.readPalette(palBuffer, 0, palette[i]);
                 }
@@ -354,6 +356,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         private boolean writePalettes()
         {
             /* COMPRESS PALETTES */
+            boolean same = hm.rom.readAsmPointer(palPointerArray[0]) == hm.rom
+                .readAsmPointer(palPointerArray[2]);
             for (int i = 0; i < NUM_PALETTES; i++)
             {
                 byte[] udataPal = new byte[512];
@@ -361,8 +365,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
                 byte[] compPal;
                 int palCompLen = comp(udataPal, compPal = new byte[600], 512);
-                if (!hm.writeToFreeASMLink(compPal, palPointerArray[i],
-                    palLen[i], palCompLen))
+                if (!hm.writeToFreeASMLink(compPal, palPointerArray[i], (i == 2
+                    && same ? 0 : palLen[i]), palCompLen, true))
                     return false;
                 System.out
                     .println("Wrote "
@@ -725,7 +729,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
          */
         public void setSubPal(int i, Color[] paltmp)
         {
-            if (paltmp.length >= 256 && i < NUM_PALETTES && i > 0)
+            if (paltmp.length >= 256 && i < NUM_PALETTES && i >= 0)
                 System.arraycopy(paltmp, 0, palette[i], 0, 256);
         }
     }
@@ -1063,7 +1067,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         da = new IntArrDrawingArea(dt, pal, this);
         da.setActionCommand("drawingArea");
         da.setZoom(10);
-        da.setPreferredSize(new Dimension(80, 80));
+        da.setPreferredSize(new Dimension(81, 81));
 
         //        mapSelector = createComboBox(gasStationNames, this);
         //        mapSelector.setActionCommand("mapSelector");
@@ -1165,14 +1169,17 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
     private void pastePal()
     {
-        Color[] paltmp = new Color[256];
-        System.arraycopy(palcb, 0, paltmp, 0, 256);
-        getSelectedStation().setSubPal(getCurrentSubPalette(), paltmp);
+        if (palcb != null)
+        {
+            Color[] paltmp = new Color[256];
+            System.arraycopy(palcb, 0, paltmp, 0, 256);
+            getSelectedStation().setSubPal(getCurrentSubPalette(), paltmp);
 
-        updatePaletteDisplay();
-        da.repaint();
-        tileSelector.repaint();
-        arrangementEditor.repaint();
+            updatePaletteDisplay();
+            da.repaint();
+            tileSelector.repaint();
+            arrangementEditor.repaint();
+        }
     }
 
     public void actionPerformed(ActionEvent ae)

@@ -1,4 +1,10 @@
 NEXT VERSION (after v0.5.1.2):
+# BUGFIX: FindFreeRange now only finds ranges that are within a single bank.
+# Gas Station Editor: BUGFIX: Pasting palette before copying does nothing.
+# Gas Station Editor: BUGFIX: Saves correctly if palette before and after
+	flash are read from the same place.
+# BUGFIX: Title of main window is correctly changed after a "save as"
+# Added Window Position Editor.
 
 v0.5.1.2:
 # Map Editor: BUGFIX: Map Editor handles event flags in door destinations correctly
