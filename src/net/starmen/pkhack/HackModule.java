@@ -1352,6 +1352,7 @@ public abstract class HackModule
         if (rawData == null || pointerLoc == null)
             return false;
         int pointerDelay = 0;
+        int orgNewLen = newLen;
         byte[] data;
         // 0xff shielding if the new data starts or ends with 0
         if ((rawData[0] == 0) && (rawData[rawData.length - 1] == 0))
@@ -1392,14 +1393,14 @@ public abstract class HackModule
         else
             oldPointer = toRegPointer(rom.readMulti(pointerLoc[0], pointerLen)
                 + pointerBase);
-        if ((newLen <= oldLen)
-            && !(mustBeInExpanded && (oldPointer < 0x300200))
+        //do not bother with shielding before 0x300200.
+        if (((!(mustBeInExpanded && (oldPointer < 0x300200)) && (orgNewLen <= oldLen)) || (newLen <= oldLen))
             && (oldPointer + oldLen <= beginAt))
         {
             //if it fits in the same place, then write there
             nullifyArea(oldPointer, oldLen);
             if (oldPointer < 0x300200)
-                rom.write(oldPointer, rawData, newLen);
+                rom.write(oldPointer, rawData, orgNewLen);
             else
             {
                 if (pointerLen < 0)

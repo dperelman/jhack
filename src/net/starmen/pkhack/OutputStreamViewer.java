@@ -125,6 +125,8 @@ public class OutputStreamViewer
             });
             errDia.getContentPane().add(close, BorderLayout.SOUTH);
             errDia.pack();
+            errDia.invalidate();
+            errDia.validate();
 
             t = new Thread()
             {
