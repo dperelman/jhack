@@ -268,7 +268,6 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 	{
 		if (ae.getActionCommand().equals("apply"))
 		{
-			System.out.println("Applying changes");
 			saveChanges();
 			writeToRom();
 		}
