@@ -1,6 +1,6 @@
 00,"Drop to next line";
 01,"Start on blank line";
-02,"Signal end of block or string";
+}02,"Signal end of block or string";
 03,"Wait with prompt, brief pause in battle";
 04 XX XX,"Toggle flag $XXXX on";
 05 XX XX,"Toggle flag $XXXX off";
@@ -8,7 +8,7 @@
 07 XX XX,"Set binary flag with the status of flag $XXXX";
 08 XX XX XX XX,"Parse text at $XXXXXXXX and continue here";
 !09 XX YY YY YY YY,"Multiple-entry pointer table (Jump to address)";
-0A XX XX XX XX,"Jump to text at address $XXXXXXXX";
+/0A XX XX XX XX,"Jump to text at address $XXXXXXXX";
 0B XX,"Set binary flag to true if number in memory = $XX";
 0C XX,"Set binary flag to true if number in memory != $XX";
 0D XX,"Copy data to argumentary memory";
@@ -30,7 +30,7 @@
 18 09 XX XX XX,"UNKNOWN";
 18 0A,"Open wallet window and display current cash on hand";
 18 0D XX XX,"UNKNOWN";
-19 02,"Load a text string into memory (end with [02])"
+{19 02,"Load a text string into memory (end with [02])"
 19 04,"UNKNOWN";
 19 05 XX YY YY,"Inflict ailment YY YY on character $XX";
 19 10 XX,"Return the character number of the person in party position $XX"
