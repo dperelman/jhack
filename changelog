@@ -1,4 +1,6 @@
-Next version (after v0.4.7):
+Next version (after v0.4.7.1):
+
+v0.4.7.1:
 # IPSDatabase extensions:
 	# Gas station editor
 	# Town map editor
@@ -9,6 +11,7 @@ Next version (after v0.4.7):
 # Text Editor: [0A XX XX XX XX] correctly reconized as end of text block
 # Font Editor: offers to apply battle font width hack, 
 	and correctly reacts to it being applied
+# DrawingToolset: [ctrl]+[1-8] changes selected drawing tool
 
 v0.4.7:
 # Text Editor: raw text range start moved from 0x51D12 to 0x50200.
