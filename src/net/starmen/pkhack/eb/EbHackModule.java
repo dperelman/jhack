@@ -27,6 +27,11 @@ public abstract class EbHackModule extends HackModule
 //    public final static String DEFAULT_BASE_DIR = "net" + File.separator +
 // "starmen" + File.separator + "pkhack"
 //    + File.separator + "eb" + File.separator;
+    /**
+     * Base directory for Earthbound files within the .jar file. Use with
+     * {@link ClassLoader#getSystemResourceAsStream(java.lang.String)}in order
+     * to read files within the .jar.
+     */
     public final static String DEFAULT_BASE_DIR = "net/starmen/pkhack/eb/";
     /**
      * List of the names of the sound effects. Listed by the number Earthbound
