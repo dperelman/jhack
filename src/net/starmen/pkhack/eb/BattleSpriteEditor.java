@@ -875,6 +875,13 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
             System.out.println("Unable to read image: " + f.toString());
             e.printStackTrace();
         }
+        catch (NullPointerException e)
+        {
+            JOptionPane.showMessageDialog(mainWindow,
+                "Invalid colors in image. Image may only contain "
+                    + "colors existing in a 16-color non-paletted BMP.",
+                "Error Reading Image", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /**
