@@ -3305,8 +3305,8 @@ public class TileEditor extends EbHackModule implements ActionListener
     /**
      * Shows a specific arrangement or tile in a specific palette.
      * 
-     * @param obj A <code>Integer[]</code> or <code>int[]</code> with 4, 5,
-     *            or 6 elements: graphics tileset, map tileset, map palette,
+     * @param obj A <code>Integer[]</code> or <code>int[]</code> with 3, 4,
+     *            or 5 elements: graphics tileset, palette index,
      *            arrangement number, (if 5 elements) [mini]tile number, (if 6
      *            elements) subpalette number.
      */
@@ -3325,17 +3325,14 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             int[] arr = (int[]) obj;
             tilesetSelector.setSelectedIndex(arr[0]);
-            String pal = arr[1] + "/" + arr[2];
-            for (int i = 0; i < paletteSelector.getItemCount(); i++)
-                if (paletteSelector.getItemAt(i).equals(pal))
-                    paletteSelector.setSelectedIndex(i);
-            arrangementSelector.setCurrentArrangement(arr[3]);
-            if (arr.length > 4)
+            paletteSelector.setSelectedIndex(arr[1]);
+            arrangementSelector.setCurrentArrangement(arr[2]);
+            if (arr.length > 3)
             {
-                tileSelector.setCurrentTile(arr[4]);
-                if (arr.length > 5)
+                tileSelector.setCurrentTile(arr[3]);
+                if (arr.length > 4)
                 {
-                    subPaletteSelector.setSelectedIndex(arr[5]);
+                    subPaletteSelector.setSelectedIndex(arr[4]);
                 }
             }
         }
