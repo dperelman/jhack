@@ -265,7 +265,6 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
             }
         rbs[0].setSelected(true);
         preview.setMapXY(td[0].x / 4, td[0].y / 4);
-        System.out.println(td[0].x + " " + td[0].y);
         if (ppuBox.getSelectedIndex() == 0)
             preview.setPreviewBoxXY(td[0].x, td[0].y);
         else
