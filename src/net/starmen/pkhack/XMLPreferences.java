@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
+import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -25,11 +26,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
- * This is a simple XML prefences class. It has no application specific
- * methods. The XML file is validated by preferences.dtd.
+ * This is a simple XML prefences class. It has no application specific methods.
+ * The XML file is validated by preferences.dtd.
  * 
  * @author AnyoneEB
  */
@@ -44,14 +47,15 @@ public class XMLPreferences
     protected static int PREFERENCES_DTD_FILESIZE = 157;
 
     /**
-     * Read preferences in from a file, using the given default values. If
-     * there is an IO error reading the file, a new file will be created based
-     * on the provided defaults.
+     * Read preferences in from a file, using the given default values. If there
+     * is an IO error reading the file, a new file will be created based on the
+     * provided defaults.
      * 
      * @param f File to read from.
      * @param defaults Values to use for unspecified values indexed by Strings.
      */
-    public XMLPreferences(File f, HashMap defaults) {
+    public XMLPreferences(File f, HashMap defaults)
+    {
         this.f = f;
 
         File preferencesDTD = new File(f.getAbsoluteFile().getParent()
@@ -73,12 +77,13 @@ public class XMLPreferences
                 e.printStackTrace();
             }
         }
-        //second part of that if is really JHack specific
-        if ((dom = parseFile(f)) == null
-            && (dom = parseFile(new File(f.getName()))) == null)
+        if ((dom = parseFile(f)) == null)
         {
             try
             {
+                File g = new File(f.toString());
+                if (g.exists())
+                    g.renameTo(new File(g.toString() + ".old"));
                 copy(ClassLoader.getSystemResourceAsStream("emptyPrefs.xml"),
                     new FileOutputStream(f), EMPTY_PREFS_XML_FILESIZE);
                 copy(ClassLoader.getSystemResourceAsStream("preferences.dtd"),
@@ -89,8 +94,8 @@ public class XMLPreferences
             }
             catch (FileNotFoundException e)
             {
-                System.out
-                    .println("Some idiot didn't include emptyPrefs.xml or preferences.dtd in the .jar.");
+                System.out.println("Some idiot didn't include emptyPrefs.xml"
+                    + " or preferences.dtd in the .jar.");
                 e.printStackTrace();
             }
             catch (IOException e)
@@ -112,11 +117,12 @@ public class XMLPreferences
             for (int i = 0; i < defs.length; i++)
             {
                 String[] s = defs[i].toString().split("=");
-                if (getValue(s[0]) == null) setValue(s[0], s[1]);
+                if (getValue(s[0]) == null)
+                    setValue(s[0], s[1]);
             }
         }
     }
-    
+
     private String correctName(String name)
     {
         name = name.replace(' ', '_');
@@ -160,8 +166,10 @@ public class XMLPreferences
         for (int i = 0; i < nl.getLength(); i++)
         {
             NamedNodeMap nnm = nl.item(i).getAttributes();
-            if (nnm.getNamedItem("id").getNodeValue().equals(id)) { return (Element) nl
-                .item(i); }
+            if (nnm.getNamedItem("id").getNodeValue().equals(id))
+            {
+                return (Element) nl.item(i);
+            }
         }
         return null;
     }
@@ -176,8 +184,10 @@ public class XMLPreferences
      */
     public void setValue(String name, String value)
     {
-        if (name == null) name = "null";
-        if (value == null) value = "null";
+        if (name == null)
+            name = "null";
+        if (value == null)
+            value = "null";
         name = correctName(name);
         Element e;
         if ((e = getElementById(name)) == null)
@@ -288,7 +298,8 @@ public class XMLPreferences
 
             // Use the contained exception, if any
             Throwable x = tce;
-            if (tce.getException() != null) x = tce.getException();
+            if (tce.getException() != null)
+                x = tce.getException();
             x.printStackTrace();
 
         }
@@ -300,7 +311,8 @@ public class XMLPreferences
 
             // Use the contained exception, if any
             Throwable x = te;
-            if (te.getException() != null) x = te.getException();
+            if (te.getException() != null)
+                x = te.getException();
             x.printStackTrace();
         }
         catch (FileNotFoundException e)
@@ -320,7 +332,7 @@ public class XMLPreferences
         return save(f);
     }
 
-    private static Document parseFile(File f)
+    private static Document parseFile(final File f)
     {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setValidating(true);
@@ -328,15 +340,61 @@ public class XMLPreferences
         try
         {
             DocumentBuilder builder = factory.newDocumentBuilder();
-            return builder.parse(f);
+            builder.setErrorHandler(new ErrorHandler()
+            {
 
+                public void error(SAXParseException sxe) throws SAXException
+                {
+                    Exception x = sxe;
+                    if (sxe.getException() != null)
+                        x = sxe.getException();
+                    Object[] options = new Object[]{"Continue Anyway",
+                        "Exit Program"};
+                    int ans = JOptionPane.showOptionDialog(null,
+                        "Preferences file has some errors, "
+                            + "but may be recoverable:\n" + x.getClass() + ": "
+                            + x.getMessage() + "\n\n"
+                            + "Would you like continue anyway or exit and\n"
+                            + "attempt to correct the problem yourself?"
+                            + "\n(the preferences file is located at: "
+                            + f.getAbsolutePath() + ")",
+                        "Error Reading Preferences", JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+                    if (ans == 1)
+                        System.exit(0);
+                }
+
+                public void fatalError(SAXParseException sxe)
+                    throws SAXException
+                {
+                    Exception x = sxe;
+                    if (sxe.getException() != null)
+                        x = sxe.getException();
+                    Object[] options = new Object[]{"Discard Preferences",
+                        "Exit Program"};
+                    int ans = JOptionPane.showOptionDialog(null,
+                        "Invalid or corrupted preferences file:\n"
+                            + x.getClass() + ": " + x.getMessage() + "\n\n"
+                            + "Would you like discard the preferences file"
+                            + "and create a new one or exit and attempt to"
+                            + "correct the problem yourself?"
+                            + "\n(the preferences file is located at: "
+                            + f.getAbsolutePath() + ")",
+                        "Error Reading Preferences", JOptionPane.YES_NO_OPTION,
+                        JOptionPane.ERROR_MESSAGE, null, options, options[1]);
+                    if (ans == JOptionPane.CLOSED_OPTION || ans == 1)
+                        System.exit(0);
+                    else
+                        throw (sxe);
+                }
+
+                public void warning(SAXParseException sxe) throws SAXException
+                {}
+            });
+            return builder.parse(f);
         }
         catch (SAXException sxe)
         {
-            // Error generated during parsing)
-            Exception x = sxe;
-            if (sxe.getException() != null) x = sxe.getException();
-            x.printStackTrace();
             return null;
         }
         catch (ParserConfigurationException pce)
