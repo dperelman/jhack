@@ -37,9 +37,9 @@ public class HexEditor extends GeneralHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public HexEditor(Rom rom, XMLPreferences prefs) {
+    public HexEditor(Rom rom, XMLPreferences prefs)
+    {
         super(rom, prefs);
-        // TODO Auto-generated constructor stub
     }
     private HexTable table;
     /*
@@ -52,6 +52,7 @@ public class HexEditor extends GeneralHackModule implements ActionListener
     protected void init()
     {
         mainWindow = new JFrame(getDescription());
+        mainWindow.setLocationRelativeTo(JHack.main.getMainWindow());
         mainWindow.getContentPane().setLayout(new BorderLayout());
         JButton close = new JButton("Close");
         close.setActionCommand("close");
@@ -109,7 +110,8 @@ public class HexEditor extends GeneralHackModule implements ActionListener
     {
         if (ae.getActionCommand().equals("goto"))
         {
-            if (gotoDialog == null) initGotoDialog();
+            if (gotoDialog == null)
+                initGotoDialog();
             gotoDialog.setVisible(true);
         }
         else if (ae.getActionCommand().equals("find"))
@@ -125,7 +127,8 @@ public class HexEditor extends GeneralHackModule implements ActionListener
 
     private boolean gotoOffset(int off)
     {
-        if (off > rom.length() || off < 0) return false;
+        if (off >= rom.length() || off < 0)
+            return false;
         table.gotoOff(off);
         return true;
     }
@@ -170,6 +173,7 @@ public class HexEditor extends GeneralHackModule implements ActionListener
     private void initGotoDialog()
     {
         gotoDialog = new JDialog(mainWindow, "Goto Offset", true);
+        gotoDialog.setLocation(gotoDialog.getOwner().getLocation());
         final JTextField tf = HackModule.createSizedJTextField(6);
         final JLabel prefix = new JLabel("0x");
         prefix.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -206,13 +210,13 @@ public class HexEditor extends GeneralHackModule implements ActionListener
                 int offset;
                 try
                 {
-                    offset = regType.isSelected() ? Integer.parseInt(tf
-                        .getText(), 16) : HackModule.toRegPointer(Integer.parseInt(
-                        tf.getText(), 16));
+                    offset = Integer.parseInt(HackModule.killSpaces(tf
+                        .getText()), 16);
+                    if (regType.isSelected())
+                        offset = HackModule.toRegPointer(offset);
                 }
                 catch (NumberFormatException e)
                 {
-                    e.printStackTrace();
                     return;
                 }
                 if (!gotoOffset(offset))
@@ -242,6 +246,7 @@ public class HexEditor extends GeneralHackModule implements ActionListener
         if (findWindow == null)
         {
             findWindow = new JDialog(mainWindow, "Hex Editor Find", false);
+            findWindow.setLocation(findWindow.getOwner().getLocation());
             findWindow.getContentPane().setLayout(new BorderLayout());
             findWindow.getContentPane().add(findTA = new JTextArea(5, 30),
                 BorderLayout.NORTH);

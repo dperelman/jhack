@@ -62,13 +62,14 @@ public class HexTableModel
   
   public boolean isCellEditable(int row, int col)
   {
-    if (row == (getRowCount() - 1) &&
-      col >= data.getLastRowSize())
-    {
-      return false;
-    }
-    int max = getColumnCount() - 1;
-    return col != 0 && col != max;
+      return true;
+//    if (row == (getRowCount() - 1) &&
+//      col >= data.getLastRowSize())
+//    {
+//      return false;
+//    }
+//    int max = getColumnCount() - 1;
+//    return col != 0 && col != max;
   }
  
   public Object getValueAt(int row, int col)
@@ -82,11 +83,11 @@ public class HexTableModel
     {
       return new String(data.getRow(row));
     }
-    if (row == (data.getRowCount() - 1) &&
-      col >= data.getLastRowSize())
-    {
-      return "";
-    }
+//    if (row == (data.getRowCount() - 1) &&
+//      col >= data.getLastRowSize())
+//    {
+//      return "";
+//    }
     return HackModule.addZeros(Integer.toHexString(0xff & data.getByte(row, col - 1)), 2);
   }
   

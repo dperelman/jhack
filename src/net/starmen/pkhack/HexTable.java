@@ -51,16 +51,23 @@ public class HexTable extends JTable
         }
         else
         {
-            throw new IllegalArgumentException("HexTable expects to use a HexTableModel");
+            throw new IllegalArgumentException(
+                "HexTable expects to use a HexTableModel");
         }
     }
 
     public void gotoOff(int offset)
     {
-        offset++;
-        int r = offset / 16, c = offset % 16;
-        setRowSelectionInterval(r, r);
-        setColumnSelectionInterval(c, c);
-        scrollRectToVisible(getCellRect(r, c, true));
+        int r = offset / 16, c = (offset % 16) + 1;
+        try
+        {
+            setRowSelectionInterval(r, r);
+            setColumnSelectionInterval(c, c);
+            scrollRectToVisible(getCellRect(r, c, true));
+        }
+        catch (IllegalArgumentException e)
+        {
+            e.printStackTrace();
+        }
     }
 }
