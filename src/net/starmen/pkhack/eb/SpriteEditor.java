@@ -470,6 +470,18 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         exportImg(getFile(true, "png", "Portable Network Graphics"));
     }
 
+    private void setBgCol(Color tc)
+    {
+        SpriteEditor.bgColor = new Color((tc.getRed() >= 255 ? 254 : tc
+            .getRed()) | 1, (tc.getGreen() >= 255 ? 254 : tc.getGreen()) | 1,
+            (tc.getBlue() >= 255 ? 254 : tc.getBlue()) | 1);
+        this.changePaletteCol(0, bgColor);
+        for (int i = 0; i < Sprite.pals.length; i++)
+        {
+            Sprite.pals[i][0] = bgColor;
+        }
+    }
+
     private void changePaletteCol(int num, Color col)
     {
         Sprite sp = new Sprite(getSpriteInfo(HackModule.getNumberOfString(
@@ -564,22 +576,17 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         }
         else if (ae.getActionCommand().equals("setBgColor"))
         {
-            Color tc = JColorChooser.showDialog(null,
-                "Select a new background color", SpriteEditor.bgColor);
-            SpriteEditor.bgColor = new Color((tc.getRed() >= 255 ? 254 : tc
-                .getRed()) | 1,
-                (tc.getGreen() >= 255 ? 254 : tc.getGreen()) | 1,
-                (tc.getBlue() >= 255 ? 254 : tc.getBlue()) | 1);
-            this.changePaletteCol(0, bgColor);
-            for (int i = 0; i < Sprite.pals.length; i++)
-            {
-                Sprite.pals[i][0] = bgColor;
-            }
+            setBgCol(JColorChooser.showDialog(null,
+                "Select a new background color", SpriteEditor.bgColor));
         }
         else if (ae.getActionCommand().equals("spal"))
         {
-            this.changePaletteCol(spal.getSelectedColorIndex(), spal
-                .getNewColor());
+            int cnum = spal.getSelectedColorIndex();
+            Color col = spal.getNewColor();
+            if (cnum == 0)
+                setBgCol(col);
+            else
+                this.changePaletteCol(cnum, col);
         }
         else if (ae.getActionCommand().equals("importImg"))
         {
@@ -689,6 +696,8 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             // don't write transparent color differently
             pals[pal][0] = rom.readPalette(0x30200 + (pal * 32));
             rom.writePalette(0x30200 + (pal * 32), pals[pal]);
+            // set transparent color back to user selection
+            pals[pal][0] = SpriteEditor.bgColor;
         }
 
         /**
