@@ -39,6 +39,14 @@ NEXT RELEASE
 [18:07:41] <Faolan> 8/11/04 3:05 PM: 	at java.awt.EventDispatchThread.pumpEvents(Unknown Source)
 [18:07:44] <Faolan> 8/11/04 3:05 PM: 	at java.awt.EventDispatchThread.run(Unknown Source)
 [18:07:45] <Faolan> 8/11/04 3:05 PM: 
+# [21:42:57] <JamesPicard_007> 1) If JHack notifies you of a new download and 
+	you choose not to download it it'd be nice if the prompt wouldn't return 
+	unless a newer version comes out. I use JHack 4.7 and I keep getting the 
+	prompt if I want to download 4.7.1 when I don't want to use it yet. 
+  JP007: New version DL only ask once per new version
+	(save pref with newest version denied?)
+# [21:43:52] <JamesPicard_007> 2) It'd be nice to have the ability for Jhack 
+	to automatically load the last ROM used. Just for convenience. 
 
 LONG TERM
 
