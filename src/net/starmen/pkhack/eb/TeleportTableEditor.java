@@ -19,6 +19,7 @@ import javax.swing.event.DocumentListener;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
+import net.starmen.pkhack.eb.MapEditor.EbMap;
 import net.starmen.pkhack.eb.MapEditor.MapGraphics;
 
 /**
@@ -208,6 +209,12 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener,
 	private void readFromRom()
 	{
 	    readFromRom(rom);
+	    
+	    EbMap.loadDrawTilesets(rom);
+	    TPTEditor.readFromRom(this);
+	    SpriteEditor.readFromRom(rom);
+	    EbMap.loadSpriteData(rom);
+	    EbMap.loadDoorData(rom);
 	}
 
 	/** Array of Strings describing the different warp styles. */
@@ -229,7 +236,7 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener,
 	private JTextField x, y;
 	private JComboBox dir, style;
 	private JTextField[] unknown = new JTextField[2];
-	private JButton mapSet;
+	private JButton mapSet, jumpButton;
 	private MapGraphics preview;
 
 	protected void init()
@@ -250,7 +257,11 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener,
 		
 		mapSet = new JButton("Set X & Y using the Map Editor");
 		mapSet.addActionListener(this);
-		entry.add(mapSet);
+		
+		jumpButton = new JButton("Go to in Map Editor");
+		jumpButton.addActionListener(this);
+		
+		entry.add(createFlowLayout(HackModule.pairComponents(mapSet, jumpButton, true)));
 
 		entry.add(
 			HackModule.getLabeledComponent(
@@ -348,6 +359,11 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener,
 	public void show()
 	{
 		super.show();
+		
+		TPTEditor.readFromRom(this);
+		SpriteEditor.readFromRom(rom);
+		EbMap.loadSpriteData(rom);
+		EbMap.loadDoorData(rom);
 
 		readFromRom();
 		selector.setSelectedIndex(0);
@@ -395,6 +411,14 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener,
 		else if (ae.getSource().equals(mapSet))
 		{
 			net.starmen.pkhack.JHack.main.showModule(MapEditor.class, this);
+		}
+		else if (ae.getSource().equals(jumpButton))
+		{
+			net.starmen.pkhack.JHack.main.showModule(
+        			MapEditor.class, new Integer[] { 
+        					new Integer(preview.getMapTileX()),
+							new Integer(preview.getMapTileY())
+        			});
 		}
 		else if (ae.getActionCommand().equals("apply"))
 		{

@@ -27,6 +27,7 @@ import javax.swing.event.DocumentListener;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
+import net.starmen.pkhack.eb.MapEditor.EbMap;
 import net.starmen.pkhack.eb.MapEditor.MapGraphics;
 
 /**
@@ -49,7 +50,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
     private JRadioButton[] rbs = new JRadioButton[16];
     private JComboBox ppuBox;
     private MapGraphics preview;
-    private JButton seekButton;
+    private JButton seekButton, jumpButton;
 
     /**
      * Array of teleport destination entries.
@@ -145,10 +146,13 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
         preview.setPreferredSize(new Dimension((MapEditor.tileWidth * preview
             .getScreenWidth()), (MapEditor.tileHeight * preview
             .getScreenHeight())));
-        prev.add(preview, BorderLayout.CENTER);
+        prev.add(preview, BorderLayout.NORTH);
         seekButton = new JButton("Seek");
         seekButton.addActionListener(this);
-        prev.add(createFlowLayout(seekButton), BorderLayout.SOUTH);
+        prev.add(createFlowLayout(seekButton), BorderLayout.CENTER);
+        jumpButton = new JButton("Go To");
+        jumpButton.addActionListener(this);
+        prev.add(createFlowLayout(jumpButton), BorderLayout.SOUTH);
         mapStuff.add(pairComponents(prev, new JLabel(), false));
         mapStuff.add(Box.createVerticalGlue());
 
@@ -227,7 +231,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
      * @see TeleportData
      */
     public static void readFromRom(HackModule hm)
-    {
+    { 	
         td = new TeleportData[16];
         for (int i = 0; i < td.length; i++)
         {
@@ -238,6 +242,11 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
     private void readFromRom()
     {
         readFromRom(this);
+        
+        EbMap.loadDrawTilesets(rom);
+        TPTEditor.readFromRom(this);
+        SpriteEditor.readFromRom(rom);
+        EbMap.loadSpriteData(rom);
     }
 
     private void showInfo()
@@ -323,6 +332,14 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
         else if (ae.getSource().equals(seekButton))
         {
             net.starmen.pkhack.JHack.main.showModule(MapEditor.class, this);
+        }
+        else if (ae.getSource().equals(jumpButton))
+        {
+			net.starmen.pkhack.JHack.main.showModule(
+        			MapEditor.class, new Integer[] { 
+        					new Integer(preview.getMapTileX()),
+							new Integer(preview.getMapTileY())
+        			});
         }
         else if (ae.getSource() instanceof JRadioButton)
         {
