@@ -177,7 +177,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
 
     public void reset()
     {
-        checkAllApplied(rom);
+        readXML(rom);
     }
 
     private static void readAll(byte[] b, InputStream in) throws IOException
@@ -409,6 +409,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         super.show();
 
         reset();
+        ipsTable.revalidate();
 
         mainWindow.setVisible(true);
     }
