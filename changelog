@@ -1,4 +1,13 @@
-NEXT VERSION (after v0.5.5):
+NEXT VERSION (after v0.5.5.1):
+
+v0.5.5.1
+# Added "Hide Error Dialog" option
+# Map Editor: Re-added sprite caching
+# Map Editor: Added limit on sprite entries per sector (30)
+# Map Editor: BUGFIX: Vertical door dragging fixed
+# Door Editor: BUGFIX: Switching destinations doesn't break stuff
+# Event-Based Map Changes Editor: BUGFIX: Flag field updates when switching flag groups
+# Added description for window 0x32 (Windows Flavor Chooser)
 
 v0.5.5
 # Added auxillary windows and type AutoSearchBox to Item Editor
