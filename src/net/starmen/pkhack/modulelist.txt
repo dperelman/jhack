@@ -18,6 +18,7 @@ eb.ItemTransformationEditor
 					#Edits item transformation table
 eb.CondimentEditor	#Edits the effect on condiments (item type-40) on
 					#food (item type-32)
+eb.StoreEditor		#Edits what items stores sell and their prices
 ----------------------Teleport-------------------------------------------------
 eb.TeleportEditor	#Edits teleport destination names and locations
 eb.TeleportTableEditor #Edits the [1F 21 XX] teleport table
@@ -28,7 +29,6 @@ eb.PhoneListEditor	#Edits phone list
 eb.FlyoverEditor	#Edits flyover sequence
 eb.TPTEditor		#Edits Text Pointer Table
 eb.TextEditor		#Edits Text
-eb.StoreEditor		#Edits what items stores sell and their prices
 ----------------------Stats----------------------------------------------------
 eb.StartingStatsEditor 
 					#Edits starting stats for each of the chosen 4:

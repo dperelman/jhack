@@ -50,6 +50,11 @@ public class JHack
             System.setOut(out.getPrintStream());
             System.setErr(err.getPrintStream());
         }
+        else
+        {
+            out.stop();
+            err.stop();
+        }
 
         main = new MainGUI();
     }

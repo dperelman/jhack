@@ -35,7 +35,10 @@ public class OutputStreamViewer
 {
     private PrintStream errps;
     private JFrame errDia;
+    private JTextArea errArea;
+    private Thread t;
     private boolean enabled = true;
+    private boolean run = true;
 
     /**
      * @return Returns the PrintStream.
@@ -56,60 +59,66 @@ public class OutputStreamViewer
             errout = new PipedOutputStream(in = new PipedInputStream());
             errps = new PrintStream(errout);
 
-            new Thread()
+            
+            errDia = new JFrame(title);
+            errArea = new JTextArea(20, 60);
+            errArea.setEditable(false);
+            errArea.append(DateFormat.getInstance().format(new Date())
+                + ": ");
+            errDia.getContentPane().setLayout(new BorderLayout());
+            errDia.getContentPane().add(new JScrollPane(errArea),
+                BorderLayout.CENTER);
+            JButton close = new JButton("Close");
+            errDia.addWindowListener(new WindowAdapter()
             {
-                private JTextArea errArea;
-
+                public void windowClosing(WindowEvent e)
+                {
+                    errArea.append("\n\n------------------------\n"
+                        + "Window closed."
+                        + "\n------------------------\n\n");
+                }
+            });
+            close.addActionListener(new ActionListener()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    errDia.setVisible(false);
+                    errArea.append("\n\n------------------------\n"
+                        + "Window closed."
+                        + "\n------------------------\n\n");
+                }
+            });
+            errDia.getContentPane().add(close, BorderLayout.SOUTH);
+            errDia.pack();
+            
+            
+            t = new Thread()
+            {
                 public void run()
                 {
-                    errDia = new JFrame(title);
-                    errArea = new JTextArea(20, 60);
-                    errArea.setEditable(false);
-                    errArea.append(DateFormat.getInstance().format(new Date())
-                        + ": ");
-                    errDia.getContentPane().setLayout(new BorderLayout());
-                    errDia.getContentPane().add(new JScrollPane(errArea),
-                        BorderLayout.CENTER);
-                    JButton close = new JButton("Close");
-                    errDia.addWindowListener(new WindowAdapter()
-                    {
-                        public void windowClosing(WindowEvent e)
-                        {
-                            errArea.append("\n\n------------------------\n"
-                                + "Window closed."
-                                + "\n------------------------\n\n");
-                        }
-                    });
-                    close.addActionListener(new ActionListener()
-                    {
-                        public void actionPerformed(ActionEvent e)
-                        {
-                            errDia.setVisible(false);
-                            errArea.append("\n\n------------------------\n"
-                                + "Window closed."
-                                + "\n------------------------\n\n");
-                        }
-                    });
-                    errDia.getContentPane().add(close, BorderLayout.SOUTH);
-                    errDia.pack();
-
-                    Reader ir = new InputStreamReader(in);
-                    while (true)
+                    while (run)
                     {
                         try
                         {
-                            char c = (char) ir.read();
-                            errArea.append(Character.toString(c));
-                            if (c == '\n')
-                                errArea.append(DateFormat.getInstance().format(
-                                    new Date())
-                                    + ": ");
-                            if (!errDia.isVisible() && isEnabled())
+                            if (in.available() > 0)
                             {
-                                errDia.setVisible(true);
-                                Rectangle r = errArea.getBounds();
-                                errArea.scrollRectToVisible(new Rectangle(0,
-                                    r.height, 1, 1));
+                                char c = (char) in.read();
+                                errArea.append(Character.toString(c));
+                                if (c == '\n')
+                                    errArea.append(DateFormat.getInstance()
+                                        .format(new Date())
+                                        + ": ");
+                                if (!errDia.isVisible() && isEnabled())
+                                {
+                                    errDia.setVisible(true);
+                                    Rectangle r = errArea.getBounds();
+                                    errArea.scrollRectToVisible(new Rectangle(
+                                        0, r.height, 1, 1));
+                                }
+                            }
+                            else
+                            {
+                                sleep(2000);
                             }
                         }
                         catch (Exception e)
@@ -118,7 +127,10 @@ public class OutputStreamViewer
                         }
                     }
                 }
-            }.start();
+            };
+            t.setDaemon(true);
+            t.setPriority(Thread.MIN_PRIORITY);
+            t.start();
         }
         catch (IOException e)
         {
@@ -153,5 +165,11 @@ public class OutputStreamViewer
     public boolean isEnabled()
     {
         return enabled;
+    }
+    
+    /** Stops the thread so it cannot be restarted. */
+    public void stop()
+    {
+        run = false;
     }
 }
