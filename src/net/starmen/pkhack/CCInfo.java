@@ -256,10 +256,10 @@ public class CCInfo
                 // xx]"))
                 if (activeNode.endcc && activeNode.cc != null)
                 {
-                    if (ch == 10)
-                    {
-                        System.out.println();
-                    }
+//                    if (ch == 10)
+//                    {
+//                        System.out.println();
+//                    }
                     endcc = true;
                 }
                 //                else if (
