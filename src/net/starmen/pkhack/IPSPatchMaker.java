@@ -21,7 +21,7 @@ public class IPSPatchMaker extends GeneralHackModule
         super(rom, prefs);
     }
 
-    Rom orgRom = new Rom(); //ROM to base patch off of
+    Rom orgRom = new RomMem(); //ROM to base patch off of
 
 	protected void init()
 	{}

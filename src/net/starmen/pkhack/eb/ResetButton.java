@@ -38,6 +38,7 @@ import net.starmen.pkhack.CommentedLineNumberReader;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.RomMem;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -717,7 +718,7 @@ public class ResetButton extends EbHackModule implements ActionListener
             Rom tmpRom = orgRom;
             if (orgRom == JHack.main.getOrginalRomFile(rom.getRomType()))
             {
-                orgRom = new Rom();
+                orgRom = new RomMem();
             }
             //if user cancels load, use previously loaded ROM
             if (orgRom.loadRom())

@@ -158,7 +158,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             System.out.println("About to attempt decompressing "
                 + tileBuffer.length + " bytes of Gas Station #" + num
                 + " graphics.");
-            int[] tmp = hm.decomp(readOrg ? r
+            int[] tmp = EbHackModule.decomp(readOrg ? r
                 .readRegAsmPointer(tilePointerArray[0]) : tilePointer,
                 tileBuffer, r);
             if (tmp[0] < 0)
@@ -209,7 +209,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 System.out.println("About to attempt decompressing "
                     + palBuffer.length + " bytes of the Gas Station palette #"
                     + i + ".");
-                int[] tmp = hm.decomp(readOrg ? r
+                int[] tmp = EbHackModule.decomp(readOrg ? r
                     .readRegAsmPointer(palPointerArray[i]) : palPointer[i],
                     palBuffer, r);
                 if (tmp[0] < 0)
@@ -251,7 +251,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             System.out.println("About to attempt decompressing "
                 + arngBuffer.length + " bytes of Gas Station #" + num
                 + " arrangement.");
-            int[] tmp = hm.decomp(readOrg ? r
+            int[] tmp = EbHackModule.decomp(readOrg ? r
                 .readRegAsmPointer(arngPointerArray[0]) : arngPointer,
                 arngBuffer, r);
             if (tmp[0] < 0)

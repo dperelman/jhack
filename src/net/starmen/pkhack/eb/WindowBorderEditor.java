@@ -149,7 +149,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         int address = r.readRegAsmPointer(pointerAddress);
         System.out.println("Reading from address: 0x"
             + Integer.toHexString(address) + " (" + address + ")");
-        tmp = hm.decomp(address, buffer, r);
+        tmp = EbHackModule.decomp(address, buffer, r);
         if (tmp[0] < 0)
         {
             System.err.println("Error #" + tmp[0]

@@ -150,7 +150,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             byte[] buffer = new byte[18496];
             System.out.println("About to attempt decompressing "
                 + buffer.length + " bytes of town map #" + num + ".");
-            int[] tmp = hm.decomp(oldPointer, buffer, r);
+            int[] tmp = EbHackModule.decomp(oldPointer, buffer, r);
             if (tmp[0] < 0)
             {
                 System.err.println("Error " + tmp[0]

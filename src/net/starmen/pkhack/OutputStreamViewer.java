@@ -27,22 +27,19 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 /**
- * TODO Write javadoc for this class
+ * Creates a window to graphicly display the output of a
+ * <code>OutputStream</code>. Intended for making a window to show a user the
+ * console output (STD_OUT/STD_ERR).
  * 
  * @author AnyoneEB
  */
 public class OutputStreamViewer
 {
     private PrintStream errps;
-
     private JFrame errDia;
-
     private JTextArea errArea;
-
     private Thread t;
-
     private boolean enabled = true;
-
     private boolean run = true;
 
     /**
@@ -54,7 +51,7 @@ public class OutputStreamViewer
     }
 
     public OutputStreamViewer(final String title, final String date,
-            final String ext)
+        final String ext)
     {
         OutputStream errout;
         final PipedInputStream in;
@@ -62,22 +59,26 @@ public class OutputStreamViewer
         {
             final DateFormat dfi = DateFormat.getInstance();
             String logdir = new StringBuffer().append(
-                    System.getProperty("user.home")).append(File.separator)
-                    .append(".jhack").append(File.separator).append("logs").toString();
+                JHack.JHACK_DIR.toString()).append(File.separator).append(
+                "logs").toString();
             File logdirf = new File(logdir);
-            String logfile = new StringBuffer().append(logdir)
-                    .append(File.separator).append(date).append(".")
-                    .append(ext).append(".log").toString();
+            if (!logdirf.exists())
+                logdirf.mkdir();
+            String logfile = new StringBuffer().append(logdir).append(
+                File.separator).append(date).append(".").append(ext).append(
+                ".log").toString();
+            FileWriter l = null;
             try
             {
-                final FileWriter log = new FileWriter(logfile);
+                l = new FileWriter(logfile);
             }
             catch (IOException fioe)
             {
-                JOptionPane.showMessageDialog(null, "Unable to open file ",
-                        "Logging error", JOptionPane.WARNING_MESSAGE);
-                final FileWriter log = null;
+                JOptionPane.showMessageDialog(null, "Unable to open file "
+                    + logfile + "\n for writing.", "Logging error",
+                    JOptionPane.WARNING_MESSAGE);
             }
+            final FileWriter log = (l == null ? null : l);
             //            PipedInputStream tmp;
             //            in = new InputStreamReader(tmp = new PipedInputStream());
             errout = new PipedOutputStream(in = new PipedInputStream());
@@ -89,15 +90,14 @@ public class OutputStreamViewer
             errArea.append(dfi.format(new Date()) + ": ");
             errDia.getContentPane().setLayout(new BorderLayout());
             errDia.getContentPane().add(new JScrollPane(errArea),
-                    BorderLayout.CENTER);
+                BorderLayout.CENTER);
             JButton close = new JButton("Close");
             errDia.addWindowListener(new WindowAdapter()
             {
                 public void windowClosing(WindowEvent e)
                 {
                     errArea.append("\n\n------------------------\n"
-                            + "Window closed."
-                            + "\n------------------------\n\n");
+                        + "Window closed." + "\n------------------------\n\n");
                 }
             });
             close.addActionListener(new ActionListener()
@@ -106,8 +106,7 @@ public class OutputStreamViewer
                 {
                     errDia.setVisible(false);
                     errArea.append("\n\n------------------------\n"
-                            + "Window closed."
-                            + "\n------------------------\n\n");
+                        + "Window closed." + "\n------------------------\n\n");
                 }
             });
             errDia.getContentPane().add(close, BorderLayout.SOUTH);
@@ -121,14 +120,18 @@ public class OutputStreamViewer
                 {
                     String sbs = sb.toString();
                     errArea.append(sbs);
-                    try
+                    if (log != null)
                     {
-                        log.write(sbs);
-                    }
-                    catch (IOException e)
-                    {
-                        System.out.println("An error occured writing "
+                        try
+                        {
+                            log.write(sbs);
+                            log.flush();
+                        }
+                        catch (IOException e)
+                        {
+                            System.out.println("An error occured writing "
                                 + "to log file.");
+                        }
                     }
                     sb = new StringBuffer();
                     if (!errDia.isVisible() && isEnabled())
@@ -136,7 +139,7 @@ public class OutputStreamViewer
                         errDia.setVisible(true);
                         Rectangle r = errArea.getBounds();
                         errArea.scrollRectToVisible(new Rectangle(0, r.height,
-                                1, 1));
+                            1, 1));
                     }
                 }
 
@@ -154,16 +157,7 @@ public class OutputStreamViewer
                                 {
                                     sb.append(dfi.format(new Date()) + ": ");
                                     appendToErrArea();
-                                    //                                    errArea.append(sb.toString());
-                                    //                                    sb = new StringBuffer();
                                 }
-                                //                                if (!errDia.isVisible() && isEnabled())
-                                //                                {
-                                //                                    errDia.setVisible(true);
-                                //                                    Rectangle r = errArea.getBounds();
-                                //                                    errArea.scrollRectToVisible(new Rectangle(
-                                //                                            0, r.height, 1, 1));
-                                //                                }
                             }
                             else
                             {
@@ -177,6 +171,15 @@ public class OutputStreamViewer
                             //e.printStackTrace(System.err);
                         }
                     }
+                    try
+                    {
+                        log.close();
+                    }
+                    catch (IOException e)
+                    {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
             };
             t.setDaemon(true);
@@ -185,15 +188,9 @@ public class OutputStreamViewer
         }
         catch (IOException e)
         {
-            JOptionPane
-                    .showMessageDialog(
-                            null,
-                            "Unable to init "
-                                    + title
-                                    + "."
-                                    + "Subsequent messages will only be displayed to the console.",
-                            "Error Initing Display",
-                            JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Unable to init " + title + "."
+                + "Subsequent messages will only be displayed to the console.",
+                "Error Initing Display", JOptionPane.WARNING_MESSAGE);
             e.printStackTrace();
         }
     }

@@ -6,6 +6,12 @@ Next version (after v0.4.7.1):
 # eb.MiscTextEditor v0.5: Added Lumine hall text, max window width (250px)
 # HexEditor: fixed bug where the goto switched regular and snes pointers
 # Most recently loaded ROM is automatically loaded when JHack is opened.
+# SpriteEditor: hitting cancel on import/export no longer results in
+	an error
+# Added log files. Two log files are created for each session with filenames
+	in the format ~/.jhack/logs/yyyyMMddHHmmss.out.log (and .err.log).
+# Rom class separated into Rom and RomMem. Rom may be renamed to AbstractRom
+	before release.
 
 v0.4.7.1:
 # IPSDatabase extensions:

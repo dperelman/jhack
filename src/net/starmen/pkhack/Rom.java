@@ -20,22 +20,13 @@ import javax.swing.filechooser.FileFilter;
  */
 //Made by AnyoneEB.
 //Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
-public class Rom
+public abstract class Rom
 {
     /** Size in bytes of a regular Earthbound ROM. */
     public final static long EB_ROM_SIZE_REGULAR = 3146240;
 
     /** Size in bytes of an expanded Earthbound ROM. */
     public final static long EB_ROM_SIZE_EXPANDED = 4194816;
-
-    /**
-     * Contains the loaded ROM. It is perfered that you don't access this
-     * directly.
-     * 
-     * @see #write(int, int)
-     * @see #read(int)
-     */
-    private byte[] rom;
 
     /** Path to the ROM. */
     protected File path; //path to the rom
@@ -317,19 +308,8 @@ public class Rom
      * @throws FileNotFoundException
      * @throws IOException
      */
-    protected void readFromRom(File rompath) throws FileNotFoundException,
-        IOException
-    {
-        this.rom = new byte[(int) rompath.length()];
-        //byte[] b = new byte[rom.length];
-        FileInputStream in = new FileInputStream(rompath);
-        in.read(rom);
-        //for (int i = 0; i < this.rom.length; i++)
-        //{
-        //	this.rom[i] = (b[i] & 255);
-        //}
-        in.close();
-    }
+    protected abstract void readFromRom(File rompath)
+        throws FileNotFoundException, IOException;
 
     /**
      * Loads the ROM from a location selected by the user.
@@ -379,37 +359,7 @@ public class Rom
      * @see #saveRom()
      * @see #saveRomAs()
      */
-    public boolean saveRom(File rompath)
-    {
-        if (!this.isLoaded) //don't try to save if nothing is loaded
-        {
-            return false;
-        }
-        this.path = rompath;
-        setDefaultDir(rompath.getParent());
-
-        try
-        {
-            FileOutputStream out = new FileOutputStream(rompath);
-            out.write(this.rom);
-            out.close();
-        }
-        catch (FileNotFoundException e)
-        {
-            System.err.println("Error: File not saved: File not found.");
-            e.printStackTrace();
-            return false;
-        }
-        catch (IOException e)
-        {
-            System.err.println("Error: File not saved: Could write file.");
-            e.printStackTrace();
-            return false;
-        }
-        System.out.println("Saved ROM: " + this.path.length() + " bytes");
-        saveRomType();
-        return true;
-    }
+    public abstract boolean saveRom(File rompath);
 
     /**
      * Saves the ROM to the location {@link #loadRom(File)}was last called for.
@@ -481,15 +431,7 @@ public class Rom
      * @see #write(int, char)
      * @see #write(int, char[])
      */
-    public void write(int offset, int arg) //main write method
-    {
-        if (offset > this.rom.length) //don't write past the end of the ROM
-        {
-            return;
-        }
-
-        this.rom[offset] = (byte) (arg & 255);
-    }
+    public abstract void write(int offset, int arg); //main write method
 
     /**
      * Writes the specified length multibyte value <code>arg</code> at
@@ -576,8 +518,11 @@ public class Rom
      * Writes <code>len</code> bytes of <code>arg</code> at
      * <code>offset</code> in the rom. This writes more than one byte to
      * <code>offset</code>. The first byte is written to <code>offset</code>,
-     * next to <code>offset</code>+ 1, etc. This does not actually write to
-     * the filesystem. {@link #saveRom(File)}writes to the filesystem.
+     * next to <code>offset</code>+ 1, etc. It is suggested that this is
+     * overrided in order to provide a faster way to do this. The default
+     * implementation uses a for loop, which is universal, but slow. This does
+     * not actually write to the filesystem. {@link #saveRom(File)}writes to
+     * the filesystem.
      * 
      * @param offset Where in the ROM to write the value. Counting starts at
      *            zero, as normal.
@@ -589,21 +534,19 @@ public class Rom
     public void write(int offset, byte[] arg, int len) //write a [multibyte]
     // string to a place
     {
-        //OK to use this instead of write()?
-        System.arraycopy(arg, 0, rom, offset, len);
-        //        for (int i = 0; i < len; i++)
-        //        {
-        //            if (!(offset + i > this.length()))
-        //            //don't write past the end of the ROM
-        //            {
-        //                this.write(offset + i, arg[i]);
-        //            }
-        //            else
-        //            { /***/
-        //                //System.out.println("Error: attempted write past end of
-        //                // ROM.");
-        //            }
-        //        }
+        for (int i = 0; i < len; i++)
+        {
+            if (!(offset + i > this.length()))
+            //don't write past the end of the ROM
+            {
+                this.write(offset + i, arg[i]);
+            }
+            else
+            {   /***/
+                //System.out.println("Error: attempted write past end of
+                // ROM.");
+            }
+        }
     }
 
     /**
@@ -725,19 +668,7 @@ public class Rom
      * @return <code>int</code> at <code>offset</code>. If
      *         <code>offset &gt; the rom.length</code> then it is -1.
      */
-    public int read(int offset)
-    {
-        if ((offset & 0x7fffffff) >= this.length()) //don't write past the end
-        // of the ROM
-        {
-            //			System.out.println(
-            //				"Attempted read past end of rom, (0x"
-            //					+ Integer.toHexString(offset)
-            //					+ ")");
-            return -1;
-        }
-        return this.rom[offset] & 255;
-    }
+    public abstract int read(int offset);
 
     /**
      * Reads a <code>byte</code> from <code>offset</code> in the rom.
@@ -771,7 +702,10 @@ public class Rom
     }
 
     /**
-     * Reads a <code>byte[]</code> from <code>offset</code> in the rom.
+     * Reads a <code>byte[]</code> from <code>offset</code> in the rom. It
+     * is highly recommended that this method is overriden with a faster
+     * version. The default implementation uses a for loop, which always works,
+     * but it very slow.
      * 
      * @param offset Where to read from.
      * @param length Number of bytes to read.
@@ -783,19 +717,10 @@ public class Rom
     public byte[] readByte(int offset, int length)
     {
         byte[] returnValue = new byte[length];
-        try
+        for (int i = 0; i < length; i++)
         {
-            //OK to not end up going to read function?
-            System.arraycopy(rom, offset, returnValue, 0, length);
+            returnValue[i] = this.readByte(offset + i);
         }
-        catch (IndexOutOfBoundsException e)
-        {
-            return null;
-        }
-        //        for (int i = 0; i < length; i++)
-        //        {
-        //            returnValue[i] = this.readByte(offset + i);
-        //        }
         return returnValue;
     }
 
@@ -1693,12 +1618,7 @@ public class Rom
      */
     public void resetArea(int offset, int len, Rom orgRom)
     {
-        //only works if neither is direct file IO
-        if (!this.isDirectFileIO() && !orgRom.isDirectFileIO())
-            System.arraycopy(orgRom.rom, offset, rom, offset, len);
-        //otherwise, use normal methods to read/write
-        else
-            write(offset, orgRom.readByte(offset, len));
+        write(offset, orgRom.readByte(offset, len));
     }
 
     /**
@@ -1728,7 +1648,8 @@ public class Rom
      */
     public int find(int offset, int[] values, int len)
     {
-        for (int i = offset; i < rom.length; i++)
+        int rl = length(); //rom length
+        for (int i = offset; i < rl; i++)
         {
             if (compare(i, values, len))
                 return i;
@@ -1787,7 +1708,8 @@ public class Rom
      */
     public int find(int offset, byte[] values, int len)
     {
-        for (int i = offset; i < rom.length; i++)
+        int rl = length(); //rom length
+        for (int i = offset; i < rl; i++)
         {
             if (compare(i, values, len))
                 return i;
@@ -1811,7 +1733,8 @@ public class Rom
 
     /**
      * Expands an Earthbound ROM. Will fail if ROM is already expanded or is not
-     * Earthbound.
+     * Earthbound. Important implementation note: override {@link #_expand()}to
+     * do actual expansion, not this.
      * 
      * @return True if succesful, false if ROM already expanded or not
      *         Earthbound.
@@ -1822,26 +1745,17 @@ public class Rom
         {
             return false;
         }
-
-        byte[] out = new byte[this.length() + (4096 * 256)];
-        for (int i = 0; i < this.length(); i++)
-        {
-            out[i] = (byte) read(i);
-        }
-        for (int j = 0; j < 4096; j++)
-        {
-            for (int i = 0; i < 255; i++)
-            {
-                out[((j * 256) + i) + this.length()] = 0;
-            }
-            out[((j * 256) + 255) + this.length()] = 2;
-        }
-
-        rom = out;
-        //        isExpanded = true;
-
-        return true;
+        return _expand();
     }
+
+    /**
+     * Actual implementation of ROM expansion. Called only when this contains a
+     * 0x300200 byte EarthBound ROM. Adds a megabyte of 4096 copies of the same
+     * 256 byte set. This 256 set is all zeros except the last byte is 0x02.
+     * 
+     * @return true if expansion was successful
+     */
+    protected abstract boolean _expand();
 
     //class info functions
     /**
@@ -1906,20 +1820,14 @@ public class Rom
      * 
      * @return int
      */
-    public int length()
-    {
-        return rom.length;
-    }
+    public abstract int length();
 
     /**
      * Returns whether this Rom object writes directly to the filesystem.
      * 
      * @return boolean
      */
-    public boolean isDirectFileIO()
-    {
-        return false;
-    }
+    public abstract boolean isDirectFileIO();
 
     /**
      * Returns an {@link IPSFile}object containing the differences between this
@@ -1934,7 +1842,31 @@ public class Rom
      */
     public IPSFile createIPS(Rom orgRom, int start, int end)
     {
-        return IPSFile.createIPS(this.rom, orgRom.rom, start, end);
+        IPSFile out = new IPSFile();
+
+        int cStart = -1;
+        int len = end - start + 1;
+
+        byte[] romData = readByte(start, len);
+
+        for (int i = 0; i < len; i++)
+        {
+            if (romData[i] != orgRom.readByte(i + start))
+            {
+                if (cStart == -1) cStart = i;
+            }
+            else
+            {
+                if (cStart != -1)
+                {
+                    out.addRecord(cStart + start, ByteBlock.wrap(romData,
+                        cStart, i - cStart));
+                    cStart = -1;
+                }
+            }
+        }
+
+        return out;
     }
 
     /**
@@ -1961,7 +1893,47 @@ public class Rom
     {
         try
         {
-            ips.apply(this.rom);
+            for (int i = 0; i < ips.getRecordCount(); i++)
+            {
+                IPSFile.IPSRecord ipsr = ips.getRecord(i);
+                if (ipsr.isInfoString())
+                {
+                    if (ipsr.getSize() > 0)
+                    {
+                        for (int j = 0; j < ipsr.getSize(); j++)
+                        {
+                            this.write(ipsr.getOffset() + j, (byte) ipsr
+                                .getInfo().charAt(j));
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 0; j < ipsr.getRleSize(); j++)
+                        {
+                            this.write(ipsr.getOffset() + j, (byte) ipsr
+                                .getRleInfo());
+                        }
+                    }
+                }
+                else
+                {
+                    if (ipsr.getSize() > 0)
+                    {
+                        for (int j = 0; j < ipsr.getSize(); j++)
+                        {
+                            this.write(ipsr.getOffset() + j, ipsr.getInfoBB()
+                                .get(j));
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 0; j < ipsr.getRleSize(); j++)
+                        {
+                            this.write(ipsr.getOffset() + j, ipsr.getRleInfo());
+                        }
+                    }
+                }
+            }
             return true;
         }
         catch (ArrayIndexOutOfBoundsException e)
@@ -1982,7 +1954,28 @@ public class Rom
     {
         try
         {
-            ips.unapply(this.rom, orgRom.rom);
+            for (int i = 0; i < ips.getRecordCount(); i++)
+            {
+                IPSFile.IPSRecord ipsr = ips.getRecord(i);
+                if (ipsr.getSize() > 0)
+                {
+                    for (int j = 0; j < ipsr.getSize(); j++)
+                    {
+                        this.write(ipsr.getOffset() + j, orgRom.read(ipsr
+                            .getOffset()
+                            + j));
+                    }
+                }
+                else
+                {
+                    for (int j = 0; j < ipsr.getRleSize(); j++)
+                    {
+                        this.write(ipsr.getOffset() + j, orgRom.read(ipsr
+                            .getOffset()
+                            + j));
+                    }
+                }
+            }
             return true;
         }
         catch (ArrayIndexOutOfBoundsException e)
@@ -1999,6 +1992,48 @@ public class Rom
      */
     public boolean check(IPSFile ips)
     {
-        return ips.check(rom);
+        for (int i = 0; i < ips.getRecordCount(); i++)
+        {
+            IPSFile.IPSRecord ipsr = ips.getRecord(i);
+            if (ipsr.isInfoString())
+            {
+                if (ipsr.getSize() > 0)
+                {
+                    for (int j = 0; j < ipsr.getSize(); j++)
+                    {
+                        if (this.read(ipsr.getOffset() + j) != ipsr.getInfo()
+                            .charAt(j)) return false;
+                    }
+                }
+                else
+                {
+                    for (int j = 0; j < ipsr.getRleSize(); j++)
+                    {
+                        if (this.read(ipsr.getOffset() + j) != ipsr
+                            .getRleInfo()) return false;
+                    }
+                }
+            }
+            else
+            {
+                if (ipsr.getSize() > 0)
+                {
+                    for (int j = 0; j < ipsr.getSize(); j++)
+                    {
+                        if (this.read(ipsr.getOffset() + j) != ipsr.getInfoBB()
+                            .get(j)) return false;
+                    }
+                }
+                else
+                {
+                    for (int j = 0; j < ipsr.getRleSize(); j++)
+                    {
+                        if (this.read(ipsr.getOffset() + j) != ipsr
+                            .getRleInfo()) return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 }
