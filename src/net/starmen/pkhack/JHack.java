@@ -70,6 +70,8 @@ public class JHack
         }
 
         main = new MainGUI();
-        main.loadLastRom();
+        if (!main.getPrefs().hasValue("autoLoad")
+            || main.getPrefs().getValueAsBoolean("autoLoad"))
+            main.loadLastRom();
     }
 }

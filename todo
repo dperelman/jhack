@@ -7,6 +7,7 @@ DONE? (CHANGES TO CONFIRM/DEBUG)
 NEXT RELEASE
 
 # ??? --> [03:09:02] <EBisumaru> Dammit, JHack can't do the compression.
+	Fixed by comp() bug fixes?
 # [12:38:45] <JeffMan> oh and you should add the mother 2 font 
 	and the debug menu font to jhack's font editor if you can
 

@@ -271,6 +271,8 @@ public class MainGUI implements ActionListener, WindowListener
             "useDirectFileIO", false, 'd', null, "directio", this));
         optionsMenu.add(new PrefsCheckBox("Auto Check for Updates", prefs,
             "checkVersion", true, 'u'));
+        optionsMenu.add(new PrefsCheckBox("Load Last ROM on Startup", prefs,
+            "autoLoad", true, 'l'));
         optionsMenu.add(HackModule.createJMenuItem("Change Default ROM...",
             'c', null, "selectDefROM", this));
 
@@ -1693,7 +1695,7 @@ public class MainGUI implements ActionListener, WindowListener
                 }
                 else
                 {
-                    //TODO remember version to not update, done?
+                    //remember version to not update
                     //message telling user we did this, no more news about this
                     //update
                     getPrefs().setValue("ignoreUpdateVer", ver);
