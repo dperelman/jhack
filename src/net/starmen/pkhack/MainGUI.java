@@ -587,7 +587,7 @@ public class MainGUI implements ActionListener, WindowListener
         }
         if (this.getPrefs().getValue("consoleDialog") != null)
         {
-            if (JHack.isUseConsole())
+            if (!JHack.isUseConsole())
                 JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
                     "consoleDialog"));
         }
@@ -1174,7 +1174,7 @@ public class MainGUI implements ActionListener, WindowListener
         }
         else if (ae.getActionCommand().equalsIgnoreCase("consoleDialog"))
         {
-            if (JHack.isUseConsole())
+            if (!JHack.isUseConsole())
                 JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
                     "consoleDialog"));
         }
