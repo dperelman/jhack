@@ -61,8 +61,12 @@ public class JHack
             File outlog = new File(logbasestr + ".out.log"), errlog = new File(
                 logbasestr + ".err.log");
 
-            outlog.deleteOnExit();
-            errlog.deleteOnExit();
+            if (outlog.exists())
+                while (!outlog.delete())
+                    ;
+            if (errlog.exists())
+                while (!errlog.delete())
+                    ;
         }
 
         main = new MainGUI();
