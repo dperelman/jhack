@@ -545,7 +545,14 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         }
         catch (IllegalArgumentException e)
         {
-            //new list doesn't cotain old number
+            //new list doesn't contain old number
+            JOptionPane.showMessageDialog(mainWindow,
+                "The argument of action #" + (j + 1)
+                    + " had an illegal value for the action type.\n"
+                    + "The value was 0x" + Integer.toHexString(temp) + " ("
+                    + temp + " decimal). It will now be set to zero.",
+                "Illegal Argument Value", JOptionPane.WARNING_MESSAGE);
+            arguements[j].setSelectedIndex(0);
         }
     }
 
@@ -593,8 +600,23 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         for (int j = 0; j < actions.length; j++)
         {
             actions[j].setSelectedIndex(enemies[i].getAction(j));
+            //set to zero to make sure no incorrect error message is 
+            //shown by updateArguements()
+            arguements[j].setSelectedIndex(0);
             updateArguements(j);
-            arguements[j].setSelectedIndex(enemies[i].getArguement(j));
+            int earg = enemies[i].getArguement(j);
+            if (earg >= arguements[j].getItemCount())
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "The argument of action #" + (j + 1)
+                        + " had an illegal value for the action type.\n"
+                        + "The value was 0x" + Integer.toHexString(earg) + " ("
+                        + earg + " decimal). It will now be set to zero.",
+                    "Illegal Argument Value", JOptionPane.WARNING_MESSAGE);
+                arguements[j].setSelectedIndex(0);
+            }
+            else
+                arguements[j].setSelectedIndex(earg);
         }
         actionOrder.setSelectedIndex(enemies[i].getOrder());
         //finalAction.setSelectedIndex(enemies[i].getFinalAction());
