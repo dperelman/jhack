@@ -29,7 +29,8 @@ public class DoorEditor extends EbHackModule
 	implements ActionListener, SeekListener
 {
 	private JTextField areaXField, areaYField, entryNumField, 
-		numField, ptrField, flagField;
+		numField, flagField;
+	private TextEditor.TextOffsetEntry ptrField;
 	private JComboBox typeBox, dirClimbBox, typeDestBox, styleBox, dirBox;
 	private JLabel warnLabel;
 	private JButton setXYButton, jumpButton;
@@ -62,15 +63,9 @@ public class DoorEditor extends EbHackModule
 	 */
 	protected void init()
 	{
-		readFromRom();
 		TeleportTableEditor.initWarpStyleNames();
 		destPreview = new MapEditor.MapGraphics(this, 5, 5, 5, false, false, true, 8, true);
 		createGUI();
-	}
-	
-	public void reset()
-	{
-		readFromRom();
 	}
 
 	/* (non-Javadoc)
@@ -108,6 +103,7 @@ public class DoorEditor extends EbHackModule
 	public void show()
 	{
 		super.show();
+		readFromRom();
 		updateComponents(true,true,true);
 		this.mainWindow.setVisible(true);
 	}
@@ -115,6 +111,7 @@ public class DoorEditor extends EbHackModule
 	public void show(Object obj)
 	{
 		super.show();
+		readFromRom();
 		mainWindow.setVisible(true);
 		int[] data = (int[]) obj;
 		muteEvents = true;
@@ -127,6 +124,10 @@ public class DoorEditor extends EbHackModule
 	
 	public void readFromRom()
 	{
+		EbMap.loadDrawTilesets(rom);
+		TPTEditor.readFromRom(this);
+		SpriteEditor.readFromRom(rom);
+		EbMap.loadSpriteData(rom);
 		EbMap.loadDoorData(rom);
 	}
 
@@ -202,7 +203,9 @@ public class DoorEditor extends EbHackModule
 				HackModule.getLabeledComponent(
 						"Type: ", typeDestBox));
 		
-		ptrField = HackModule.createSizedJTextField(6, false);
+		//ptrField = HackModule.createSizedJTextField(6, false);
+		ptrField = new TextEditor.TextOffsetEntry("Text", true);
+		
 		destPanel.add(
 				HackModule.getLabeledComponent(
 						"Pointer: ", ptrField));
@@ -280,13 +283,13 @@ public class DoorEditor extends EbHackModule
 	
 	private void disableDestGUI()
 	{
-		ptrField.setText(null);
+		//ptrField.setText(null);
 		dirBox.setSelectedIndex(0);
 		flagField.setText(null);
 		reverseCheck.setSelected(false);
 		styleBox.setSelectedIndex(0);
 		typeDestBox.setEnabled(false);
-		ptrField.setEditable(false);
+		ptrField.setEnabled(false);
 		setXYButton.setEnabled(false);
 		jumpButton.setEnabled(false);
 		dirBox.setEnabled(false);
@@ -384,7 +387,7 @@ public class DoorEditor extends EbHackModule
 				
 				if (typeDestBox.getSelectedIndex() == 0)
 				{
-					ptrField.setEditable(true);
+					ptrField.setEnabled(true);
 					dirBox.setEnabled(true);
 					flagField.setEditable(true);
 					reverseCheck.setEnabled(true);
@@ -394,7 +397,7 @@ public class DoorEditor extends EbHackModule
 					
 					if (loadDest)
 					{
-						ptrField.setText(Integer.toHexString(dest.getPointer()));
+						ptrField.setOffset(dest.getPointer());
 						destPreview.setMapXY(dest.getX(), dest.getY());
 						destPreview.reloadMap();
 						destPreview.updateComponents();
@@ -411,7 +414,7 @@ public class DoorEditor extends EbHackModule
 					dirBox.setEnabled(false);
 					styleBox.setSelectedIndex(0);
 					styleBox.setEnabled(false);
-					ptrField.setEditable(true);
+					ptrField.setEnabled(true);
 					setXYButton.setEnabled(false);
 					jumpButton.setEnabled(false);
 					flagField.setEditable(true);
@@ -419,7 +422,7 @@ public class DoorEditor extends EbHackModule
 					
 					if (loadDest)
 					{
-						ptrField.setText(Integer.toHexString(dest.getPointer()));
+						ptrField.setOffset(dest.getPointer());
 						flagField.setText(Integer.toHexString(dest.getFlag()));
 		    			reverseCheck.setSelected(dest.isFlagReversed());
 					}
@@ -430,7 +433,7 @@ public class DoorEditor extends EbHackModule
 					flagField.setText(null);
 					reverseCheck.setSelected(false);
 					styleBox.setSelectedIndex(0);
-					ptrField.setEditable(true);
+					ptrField.setEnabled(true);
 					setXYButton.setEnabled(false);
 					jumpButton.setEnabled(false);
 					dirBox.setEnabled(false);
@@ -439,7 +442,7 @@ public class DoorEditor extends EbHackModule
 					styleBox.setEnabled(false);
 					
 					if (loadDest)
-						ptrField.setText(Integer.toHexString(dest.getPointer()));
+						ptrField.setOffset(dest.getPointer());
 				}
 			}
 		}
@@ -476,10 +479,8 @@ public class DoorEditor extends EbHackModule
 		    		if (typeDestBox.isEnabled())
 		    			dest.setType((byte) 
 								typeDestBox.getSelectedIndex());
-		    		if (ptrField.isEditable())
-		    			dest.setPointer(
-		        				Integer.parseInt(
-		        						ptrField.getText(),16));
+		    		if (ptrField.isEnabled())
+		    			dest.setPointer(ptrField.getOffset());
 		    		if (flagField.isEditable())
 		    			dest.setFlag(
 		        				(short) Integer.parseInt(
