@@ -6,17 +6,11 @@ package net.starmen.pkhack.eb;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -28,12 +22,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -43,10 +35,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.CheckNode;
 import net.starmen.pkhack.CheckRenderer;
 import net.starmen.pkhack.DrawingToolset;
@@ -57,7 +48,6 @@ import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.MaxLengthDocument;
 import net.starmen.pkhack.NodeSelectionListener;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
 
@@ -155,7 +145,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         tmp = EbHackModule.decomp(address, buffer, r);
         if (tmp[0] < 0)
         {
-            System.err.println("Error #" + tmp[0]
+            System.out.println("Error #" + tmp[0]
                 + " decompressing window graphics.");
             Object opt = JOptionPane.showInputDialog(null, "Error " + tmp[0]
                 + " decompressing the window border graphics.",

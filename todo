@@ -6,9 +6,6 @@ DONE? (CHANGES TO CONFIRM/DEBUG)
 
 NEXT RELEASE
 
-# Fixed by comp() bug fixes??? --> [03:09:02] <EBisumaru> Dammit,
-	JHack can't do the compression.
-	(Note to self: Don't worry about it. Can't find EBi, anyway.)
 # Allow selection of compression for auto-update download (zip, 7z, bz2, rar)
 # TextEditor: Routine Map
 # Window positions editor
@@ -22,6 +19,14 @@ NEXT RELEASE
 # [12:38:45] <JeffMan> oh and you should add the mother 2 font 
 	and the debug menu font to jhack's font editor if you can
 # Sprite Placement Editor API (GUI to be done by MrTenda), see 20040826 log for how to edit
+# Text Editor: Preview of next text block (optional) (in separate window?)
+# Error reporting: (All need testing)
+	/ Comment window scrolling
+	/ Error reporting error copy & paste
+	/ Make sure whole error gets submitted
+/ IPS Database: BUGFIX: Click apply with nothing selected
+# Tile Editor: Abort/retry/fail on tiles and arrangements
+# AbstractRom: React to loadRom() returning false, at least in MainGUI
 
 LONG TERM
 
@@ -47,6 +52,7 @@ LONG TERM
   [21:46:31] <BlueAntoid> 1F946 - 1F94C = Pointer to "Strawberry flavor"
   [21:46:33] <BlueAntoid> 1F961 - 1F967 = Pointer to "Banana flavor"
   [21:46:35] <BlueAntoid> 1F97B - 1F982 = Pointer to "Peanut flavor"
+# Sprite Editor rotation
   
 NEVER
 # JHack: Convert settings and module list to XML. Create a format for simplier modules (up to enemy editor complexity) to be XML. Organize by appearence in editor (have <tab> & <column> tags) on <input> tags have offset and length attribs, maybe type, too (item, pointer (multiple types of pointers?), spt, etc)

@@ -146,7 +146,7 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
         tmp = EbHackModule.decomp(address, buffer, r);
         if (tmp[0] < 0)
         {
-            System.err.println("Error #" + tmp[0]
+            System.out.println("Error #" + tmp[0]
                 + " decompressing credits font.");
             Object opt = JOptionPane.showInputDialog(null, "Error " + tmp[0]
                 + " decompressing the credits font.", "Decompression Error",

@@ -144,9 +144,15 @@ public class TileEditor extends EbHackModule implements ActionListener
             if (!isInited)
             {
                 if (!readTiles())
+                {
+                    //TODO Abort/retry/fail
                     return false;
+                }
                 if (!readArrangements())
+                {
+                    //TODO Abort/retry/fail
                     return false;
+                }
                 readCollision();
                 //readPalettes();
                 //all palettes must be done at the same time by
@@ -198,7 +204,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             int[] tmp;
             if ((tmp = hm.decomp(tileAddress, buffer, 28673))[0] != 28673)
             {
-                System.err.println("Error bad compressed data on tileset #"
+                System.out.println("Error bad compressed data on tileset #"
                     + num + " tiles. (" + tmp[0] + ")");
                 return false;
             }
@@ -256,7 +262,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             int[] tmp;
             if ((tmp = hm.decomp(this.arrangmentsAddress, arrBuffer, 32768))[0] < 0)
             {
-                System.err.println("Error bad compressed data on tileset #"
+                System.out.println("Error bad compressed data on tileset #"
                     + num + " arrangments. (" + tmp + ")");
                 return false;
             }
@@ -1889,9 +1895,9 @@ public class TileEditor extends EbHackModule implements ActionListener
          * and returns bytes written. Do next write at
          * <code>offset + return value</code>. Best to call this instead of
          * the individual methods unless you have a good reason. Even better to
-         * call {@link TileEditor#writeInfo(int, AbstractRom)}, which also writes
-         * collision info. Will only write if data was read from the expanded
-         * meg or if data was changed.
+         * call {@link TileEditor#writeInfo(int, AbstractRom)}, which also
+         * writes collision info. Will only write if data was read from the
+         * expanded meg or if data was changed.
          * 
          * @see #writeTiles(int)
          * @see #writeArrangements(int)
@@ -2019,9 +2025,9 @@ public class TileEditor extends EbHackModule implements ActionListener
          * Writes the tile and arrangment information to the ROM and returns
          * bytes written. Best to call this instead of the individual methods
          * unless you have a good reason. Even better to call
-         * {@link TileEditor#writeInfo(AbstractRom)}, which also writes collision info.
-         * Will only write if data was read from the expanded meg or if data was
-         * changed.
+         * {@link TileEditor#writeInfo(AbstractRom)}, which also writes
+         * collision info. Will only write if data was read from the expanded
+         * meg or if data was changed.
          * 
          * @see #writeTiles()
          * @see #writeArrangements()

@@ -153,7 +153,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             int[] tmp = EbHackModule.decomp(oldPointer, buffer, r);
             if (tmp[0] < 0)
             {
-                System.err.println("Error " + tmp[0]
+                System.out.println("Error " + tmp[0]
                     + " decompressing town map #" + num + ".");
                 return false;
             }
@@ -210,8 +210,9 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             int[] tmp = hm.decomp(oldPointer, buffer);
             if (tmp[0] < 0)
             {
-                System.err.println("Error " + tmp[0]
-                    + " decompressing town map #" + num + ".");
+                String err = "Error " + tmp[0]
+                    + " decompressing town map #" + num + ".";
+                System.out.println(err);
                 return false;
             }
             oldLen = tmp[1];

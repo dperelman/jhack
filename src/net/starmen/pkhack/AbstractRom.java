@@ -2,9 +2,7 @@ package net.starmen.pkhack;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -200,8 +198,8 @@ public abstract class AbstractRom
             JOptionPane.showMessageDialog(null, "File not found:\n"
                 + rompath.getAbsolutePath(), "Error Loading ROM",
                 JOptionPane.ERROR_MESSAGE);
-            System.err.println("Error: File not loaded: File not found.");
-            e.printStackTrace();
+            System.out.println("Error: File not loaded: File not found.");
+//            e.printStackTrace();
             return false;
         }
         catch (IOException e)

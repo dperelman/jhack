@@ -1,4 +1,13 @@
 NEXT VERSION (after v0.5.0.1):
+# IPSFile: BUGFIX: IPS creation no longer uses recursion, should fix obscure
+	bug Red80 was getting.
+# Error console: waits for 4 seconds no output before asking to send error.
+# Error console: "error reporting error" messages can be copy and pasted from.
+# Made compressed graphics editors not output errors for decompression errors,
+	just dialogs and to the regular console.
+# IPS Database: BUGFIX: Click apply with nothing selected
+# AbstractRom: File not found errors no longer printed to error console,
+	dialog still appears.
 
 v0.5.0.1
 # BUGFIX: IMPORTANT: AFFECTS MOST EDITORS. Number text fields work right. 

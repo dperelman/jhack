@@ -95,10 +95,18 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
             size = rom.readSeek();
         }
 
-        public boolean readInfo()
+        /**
+         * Attempts to read battle sprite graphics and returns error code.
+         * Negitive return value indicates failure. Non-negitive indicates
+         * success.
+         * 
+         * @return 0 on success or negitive error code from
+         *         {@link EbHackModule#decomp(int, byte[])}on failure
+         */
+        public int readInfo()
         {
             if (isInited)
-                return true;
+                return 0;
 
             //            System.out.println("Reading battle sprite #" + num + " from 0x"
             //                + Integer.toHexString(orgPointer));
@@ -114,7 +122,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
                 System.err.println("Error #" + tmp[0]
                     + " decompressing battle sprite " + num + " ("
                     + EbHackModule.battleSpriteNames[num] + ")");
-                return false;
+                return tmp[0];
             }
             else
             {
@@ -139,7 +147,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
                 }
                 isInited = true;
                 //                System.out.println("Finished reading battle sprite #" + num);
-                return true;
+                return 0;
             }
         }
 
@@ -516,12 +524,13 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         //don't even try if selector is -1
         if (getCurrentSprite() == -1)
             return;
-        if (!getSelectedSprite().readInfo())
+        int err = getSelectedSprite().readInfo();
+        if (err < 0)
         {
-            Object opt = JOptionPane.showInputDialog(mainWindow,
-                "Error decompressing the "
-                    + battleSpriteNames[getCurrentSprite()] + " sprite (#"
-                    + getCurrentSprite() + ").", "Decompression Error",
+            Object opt = JOptionPane.showInputDialog(mainWindow, "Error #"
+                + err + " decompressing the "
+                + battleSpriteNames[getCurrentSprite()] + " sprite (#"
+                + getCurrentSprite() + ").", "Decompression Error",
                 JOptionPane.ERROR_MESSAGE, null, new String[]{"Abort", "Retry",
                     "Fail"}, "Retry");
             if (opt == null || opt.equals("Abort"))

@@ -38,6 +38,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreeSelectionModel;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.CheckNode;
 import net.starmen.pkhack.CheckRenderer;
 import net.starmen.pkhack.CopyAndPaster;
@@ -48,11 +49,9 @@ import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.NodeSelectionListener;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
-import net.starmen.pkhack.eb.LogoScreenEditor.LogoScreenImportData;
 
 /**
  * TODO Write javadoc for this class
@@ -148,9 +147,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
         private boolean readGraphics(boolean allowFailure, boolean readOrg)
         {
-            AbstractRom r = readOrg
-                ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
-                : hm.rom;
+            AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(hm.rom
+                .getRomType()) : hm.rom;
 
             byte[] tileBuffer = new byte[49153];
 
@@ -163,7 +161,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 tileBuffer, r);
             if (tmp[0] < 0)
             {
-                System.err.println("Error " + tmp[0]
+                System.out.println("Error " + tmp[0]
                     + " decompressing Gas Station #" + num + ".");
                 if (allowFailure)
                 {
@@ -198,9 +196,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
         private boolean readPalettes(boolean allowFailure, boolean readOrg)
         {
-            AbstractRom r = readOrg
-                ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
-                : hm.rom;
+            AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(hm.rom
+                .getRomType()) : hm.rom;
 
             /** * DECOMPRESS PALETTE ** */
             for (int i = 0; i < NUM_PALETTES; i++)
@@ -214,7 +211,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                     palBuffer, r);
                 if (tmp[0] < 0)
                 {
-                    System.err.println("Error " + tmp[0]
+                    System.out.println("Error " + tmp[0]
                         + " decompressing Gas Station #" + num + " palette.");
                     if (allowFailure)
                     { //EMPTY PALETTES
@@ -242,9 +239,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
         private boolean readArrangement(boolean allowFailure, boolean readOrg)
         {
-            AbstractRom r = readOrg
-                ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
-                : hm.rom;
+            AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(hm.rom
+                .getRomType()) : hm.rom;
 
             byte[] arngBuffer = new byte[2048];
             /** * DECOMPRESS ARRANGEMENT ** */
@@ -256,7 +252,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 arngBuffer, r);
             if (tmp[0] < 0)
             {
-                System.err.println("Error " + tmp[0]
+                System.out.println("Error " + tmp[0]
                     + " decompressing Gas Station #" + num + " palette.");
                 if (allowFailure)
                 { //EMPTY ARRANGEMENTS
@@ -299,6 +295,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
          *            will continue
          * @return true if everything is read or if allowFailure is true, false
          *         if any decompression failed and allowFailure is false
+         * @throws DecompressionException on bad compressed data
          */
         public boolean readInfo(boolean allowFailure)
         {

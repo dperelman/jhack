@@ -456,8 +456,8 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
      * 
      * @param rom AbstractRom to check against
      * @param force If true, checking is done even if it has already been done
-     *            on this AbstractRom. (The AbstractRom could have been changed by JHack modules
-     *            since it was loaded.)
+     *            on this AbstractRom. (The AbstractRom could have been changed
+     *            by JHack modules since it was loaded.)
      */
     public static void readFromRom(AbstractRom rom, boolean force)
     {
@@ -511,6 +511,12 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
      */
     public void actionPerformed(ActionEvent ae)
     {
+        if (ae.getActionCommand().equals("close"))
+        {
+            hide();
+        }
+        if (ipsTable.getSelectedRow() == -1)
+            return;
         if (ae.getActionCommand().equals("apply"))
         {
             DatabaseEntry de = (DatabaseEntry) entries.get(ipsTable
@@ -530,10 +536,6 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
             de.unapply();
             checkAllApplied(rom);
             ipsTable.repaint();
-        }
-        else if (ae.getActionCommand().equals("close"))
-        {
-            hide();
         }
     }
 

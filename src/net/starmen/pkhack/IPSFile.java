@@ -403,9 +403,16 @@ public class IPSFile
      */
     public void addRecord(int offset, ByteBlock info)
     {
+        int i = 0, tmp;
+        while ((tmp = _addRecord(offset + i, info.subBlock(i))) != -1)
+            i += tmp;
+    }
+
+    private int _addRecord(int offset, ByteBlock info)
+    {
         if (info.getLength() == 0)
         {
-            return;
+            return -1;
         }
         byte rle = info.get(0);
         int streak = 1;
@@ -417,9 +424,10 @@ public class IPSFile
                 this.addRecord(new IPSRecord(offset, info.subBlock(0, i)));
                 if (info.getLength() >= i) //if there's more.
                 {
-                    this.addRecord(offset + i, info.subBlock(i));
+                    //this.addRecord(offset + i, info.subBlock(i));
+                    return i;
                 }
-                return;
+                return -1;
             }
             else if (info.get(i) == rle)
             {
@@ -439,10 +447,11 @@ public class IPSFile
                     //make compressed record of streak
                     if (info.getLength() >= i) //if there's more...
                     {
-                        this.addRecord(offset + i, info.subBlock(i));
+                        //this.addRecord(offset + i, info.subBlock(i));
                         //add records for after compressed part
+                        return i;
                     }
-                    return;
+                    return -1;
                 }
                 else
                 {
@@ -453,6 +462,7 @@ public class IPSFile
         }
 
         addRecord(new IPSRecord(offset, info));
+        return -1;
     }
 
     /**

@@ -164,7 +164,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 tileBuffer, r);
             if (tmp[0] < 0)
             {
-                System.err.println("Error " + tmp[0]
+                System.out.println("Error " + tmp[0]
                     + " decompressing logo screen #" + num + " graphics.");
                 if (allowFailure)
                 {
@@ -213,7 +213,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 palBuffer, r);
             if (tmp[0] < 0)
             {
-                System.err.println("Error " + tmp[0]
+                System.out.println("Error " + tmp[0]
                     + " decompressing logo screen #" + num + " palette.");
                 if (allowFailure)
                 { //EMPTY PALETTES
@@ -259,7 +259,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 arngBuffer, r);
             if (tmp[0] < 0)
             {
-                System.err.println("Error " + tmp[0]
+                System.out.println("Error " + tmp[0]
                     + " decompressing logo screen #" + num + " arrangement.");
                 if (allowFailure)
                 { //EMPTY ARRANGEMENTS

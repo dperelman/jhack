@@ -129,6 +129,7 @@ public class OutputStreamViewer
             t = new Thread()
             {
                 StringBuffer sb = new StringBuffer();
+                int wait = 0;
 
                 private void appendToErrArea()
                 {
@@ -165,6 +166,7 @@ public class OutputStreamViewer
                         {
                             if (in.available() > 0)
                             {
+                                wait = 0;
                                 char c = (char) in.read();
                                 sb.append(Character.toString(c));
                                 if (c == '\n')
@@ -181,8 +183,17 @@ public class OutputStreamViewer
                                     appendToErrArea();
                                 if (send)
                                 {
-                                    sendError();
-                                    send = false;
+                                    wait++;
+                                    /*
+                                     * Output has to stop for 4 seconds before
+                                     * it is considered finished.
+                                     */
+                                    if (wait > 2)
+                                    {
+                                        sendError();
+                                        send = false;
+                                        wait = 0;
+                                    }
                                 }
                                 sleep(2000);
                             }
@@ -250,7 +261,18 @@ public class OutputStreamViewer
 
             try
             {
-                int id = Integer.parseInt(instr);
+                int id;
+                try
+                {
+                    id = Integer.parseInt(instr);
+                }
+                catch (NumberFormatException nfe)
+                {
+                    System.out
+                        .println("WARNING: Reading integer failed first time, "
+                            + "trying to remove whitespace.");
+                    id = Integer.parseInt(instr.trim());
+                }
                 einfodia = new JDialog(JHack.main.getMainWindow(),
                     "Error Report", true);
                 JButton sendb = new JButton("Send"), nsendb = new JButton(
@@ -287,7 +309,8 @@ public class OutputStreamViewer
                         + "information related to the error.",
                     SwingConstants.CENTER)));
                 entry.add(HackModule.getLabeledComponent("Username: ", usertf));
-                entry.add(HackModule.getLabeledComponent("Comment: ", comment));
+                entry.add(HackModule.getLabeledComponent("Comment: ",
+                    new JScrollPane(comment)));
 
                 einfodia.getContentPane().add(entry, BorderLayout.CENTER);
                 einfodia.pack();
@@ -325,26 +348,32 @@ public class OutputStreamViewer
 
                     if (uerrstr.trim().length() > 0)
                     {
-                        JOptionPane.showMessageDialog(null,
-                            "An error occured while " + "reporting an error:\n"
-                                + uerrstr, "Error Reporting Error",
+                        JTextArea jta = new JTextArea("An error occured while "
+                            + "reporting an error:\n" + uerrstr);
+                        jta.setEditable(false);
+                        JOptionPane.showMessageDialog(null, jta,
+                            "Error Reporting Error",
                             JOptionPane.WARNING_MESSAGE);
                     }
                 }
             }
             catch (NumberFormatException nfe)
             {
-                JOptionPane.showMessageDialog(null, "An error occured while "
-                    + "reporting an error:\n" + instr, "Error Reporting Error",
-                    JOptionPane.WARNING_MESSAGE);
+                JTextArea jta = new JTextArea("An error occured while "
+                    + "reporting an error:\n" + instr);
+                jta.setEditable(false);
+                JOptionPane.showMessageDialog(null, jta,
+                    "Error Reporting Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
         }
         catch (IOException ioe)
         {
-            JOptionPane.showMessageDialog(null, "An error occured while "
+            JTextArea jta = new JTextArea("An error occured while "
                 + "reporting an error:\n" + ioe.getClass() + ": "
-                + ioe.getMessage(), "Error Reporting Error",
+                + ioe.getMessage());
+            jta.setEditable(false);
+            JOptionPane.showMessageDialog(null, jta, "Error Reporting Error",
                 JOptionPane.WARNING_MESSAGE);
             return;
         }
