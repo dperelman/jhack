@@ -257,6 +257,8 @@
 259-Talking stone
 260-Ship
 261-Casket
+262-Mr. Saturn ball and chain
+263-Mini-ghost
 264-Pencil statue
 265-Tree in pot
 266-Pryamid door
@@ -359,6 +361,8 @@
 364-Mu ghost
 365-Flag of the Extinct Happy People?
 366-Leaves (vefore/during Tessie rises)
+367-Tessie water ripples (top)
+368-Tessie water ripples (bottom)
 369-Giygas to Ness Transform
 371-A Plate
 372-Drapes closed
@@ -407,6 +411,7 @@
 417-Clumsy Robot
 418-Guardian digger
 419-Helicopter blade
+420-Sky Runner electric thingies
 421-Wood box
 422-Ornaments on Poo's Temple
 423-Helicopter back

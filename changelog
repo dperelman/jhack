@@ -1,4 +1,5 @@
 NEXT VERSION (after v0.5.2):
+# A few SPT names additions from JeffMan
 
 v0.5.2:
 # BUGFIX: FindFreeRange now only finds ranges that are within a single bank.
