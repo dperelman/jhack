@@ -1,4 +1,8 @@
-NEXT VERSION (after v0.5.4):
+NEXT VERSION (after v0.5.4.1):
+
+v0.5.4.1:
+# Misc. Crap Editor: BUGFIX: Reads miscData.txt correctly
+# Photo Editor: BUGFIX: Last photo accessible by GUI
 
 v0.5.4:
 # Added Misc. Crap Editor
