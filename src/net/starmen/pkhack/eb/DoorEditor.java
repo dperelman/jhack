@@ -306,7 +306,9 @@ public class DoorEditor extends EbHackModule
 		int x = Integer.parseInt(areaXField.getText()),
 			y = Integer.parseInt(areaYField.getText()),
 			num = Integer.parseInt(entryNumField.getText());
-		if (num >= EbMap.getDoorsNum(x,y))
+		if ((x >= MapEditor.widthInSectors)
+				|| (y >= MapEditor.heightInSectors / 2)
+				|| (num >= EbMap.getDoorsNum(x,y)))
 		{
 			//disable everything if trying to show an invalid entry
 			numField.setEnabled(false);
