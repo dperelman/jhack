@@ -200,6 +200,13 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         {
             return ss;
         }
+        /**
+         * @return Returns the romType.
+         */
+        public String getRomType()
+        {
+            return romType;
+        }
     }
 
     public static void checkAllApplied(Rom rom)
@@ -246,6 +253,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
                 try
                 {
                     DatabaseEntry de = new DatabaseEntry((Element) nl.item(i));
+                    if(rom.getRomType().equals(de.getRomType()))
                     de.checkApplied();
                     entries.add(de);
                 }
