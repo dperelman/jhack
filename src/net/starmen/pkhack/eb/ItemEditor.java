@@ -63,9 +63,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
     //GUI components
     private JComboBox itemSelector, typeSel;
     private ActionEditor.ActionEntry effectSelector;
-    private JTextField name, cost, strength, extraPower, epIncrease,
-            special,
-            //	helpAdd,
+    private JTextField name, cost, strength, extraPower, epIncrease, special,
+    //	helpAdd,
             search;
     private AutoSearchBox type;
     private TextEditor.TextOffsetEntry helpAdd;
@@ -73,14 +72,14 @@ public class ItemEditor extends EbHackModule implements ActionListener
             infinite;
     //labels for relabelable components
     private JLabel strLabel, epLabel, incLabel, specialLabel;
-    
+
     //auxillary panels
     private JPanel foodAux, armorAux, brokenAux;
     private AutoSearchBox recoverType, fixedItem;
     private JRadioButton[] protect;
     private JPanel[] protectSections;
     private ButtonGroup[] bg;
-//    private JButton selectItem; //this isn't working and I'm tired of it.
+    //    private JButton selectItem; //this isn't working and I'm tired of it.
 
     private final DocumentListener protectSetter = new DocumentListener()
     {
@@ -236,36 +235,37 @@ public class ItemEditor extends EbHackModule implements ActionListener
         lowerLeft.add(getLabeledComponent(
             "Cost (0 to make unsellable and undroppable):",
             this.cost = createSizedJTextField(5, true)));
-        
+
         typeSel = new JComboBox(itemTypes);
-        
-        lowerLeft.add(this.type = new AutoSearchBox(typeSel, "Type", 3));
-        this.type.getTF().getDocument().
-		addDocumentListener(new DocumentListener()
-        {
 
-            public void changedUpdate(DocumentEvent de)
+        lowerLeft.add(this.type = new AutoSearchBox(typeSel,
+            createSizedJTextField(3, true), "Type", true, true));
+        this.type.getTF().getDocument().addDocumentListener(
+            new DocumentListener()
             {
-                try
+
+                public void changedUpdate(DocumentEvent de)
                 {
-                    setLabels(Integer.parseInt(type.getText()));
+                    try
+                    {
+                        setLabels(Integer.parseInt(type.getText()));
+                    }
+                    catch (NumberFormatException nfe)
+                    {}
+                    catch (ArrayIndexOutOfBoundsException ae)
+                    {}
                 }
-                catch (NumberFormatException nfe)
-                {}
-                catch (ArrayIndexOutOfBoundsException ae)
-                {}
-            }
 
-            public void insertUpdate(DocumentEvent de)
-            {
-                changedUpdate(de);
-            }
+                public void insertUpdate(DocumentEvent de)
+                {
+                    changedUpdate(de);
+                }
 
-            public void removeUpdate(DocumentEvent de)
-            {
-                changedUpdate(de);
-            }
-        });
+                public void removeUpdate(DocumentEvent de)
+                {
+                    changedUpdate(de);
+                }
+            });
         lowerLeft.add(pairComponents(strLabel = new JLabel(labels[0][255]),
             this.strength = createSizedJTextField(3, true), true));
         strength.addActionListener(this);
@@ -316,73 +316,73 @@ public class ItemEditor extends EbHackModule implements ActionListener
         lower.add(specialFlags);
 
         itemStats.add(lower);
-        
+
         foodAux = new JPanel();
-        
-        recoverType = new AutoSearchBox(new JComboBox(new String[] {
-        		"0 HP", "1 PP", "2 HP & PP", "3 Random IQ-Luck", "4 IQ", "5 Guts",
-				"6 Speed", "7 Vitality", "8 Luck", "9 Cold cure", "10 Poison cure",
-				"11 Nothing"
-        }), strength, "Recovery Type", true, false);
+
+        recoverType = new AutoSearchBox(new JComboBox(new String[]{"0 HP",
+            "1 PP", "2 HP & PP", "3 Random IQ-Luck", "4 IQ", "5 Guts",
+            "6 Speed", "7 Vitality", "8 Luck", "9 Cold cure", "10 Poison cure",
+            "11 Nothing"}), strength, "Recovery Type", true, false);
         foodAux.add(recoverType);
-        
+
         brokenAux = new JPanel();
-        
-        fixedItem = new AutoSearchBox(createDecItemComboBox(this,this), extraPower, 
-        		"Fixed Item", true, false);
+
+        fixedItem = new AutoSearchBox(createDecItemComboBox(this, this),
+            extraPower, "Fixed Item", true, false);
         fixedItem.setNumberIndex(1);
         brokenAux.add(fixedItem);
-        
-/*        selectItem = new JButton("Edit this item");
-        selectItem.setActionCommand("editCurr");
-        selectItem.addActionListener(this);
-        brokenAux.add(selectItem);*/
-        
-        protect = new JRadioButton[16];        
+
+        /*
+         * selectItem = new JButton("Edit this item");
+         * selectItem.setActionCommand("editCurr");
+         * selectItem.addActionListener(this); brokenAux.add(selectItem);
+         */
+
+        protect = new JRadioButton[16];
         protectSections = new JPanel[4];
         bg = new ButtonGroup[4];
-        
-        for(int i = 0; i < 4; i++)
+
+        for (int i = 0; i < 4; i++)
         {
-        	protectSections[i] = new JPanel();
-        	bg[i] = new ButtonGroup();
+            protectSections[i] = new JPanel();
+            bg[i] = new ButtonGroup();
         }
-        
-        for(int i = 0; i < 16; i++)
+
+        for (int i = 0; i < 16; i++)
         {
-        	protect[i] = new JRadioButton(i%4 + "");
-        	protectSections[i/4].add(protect[i]);
-        	bg[i/4].add(protect[i]);
-        	protect[i].addActionListener(this);
-        	protect[i].setActionCommand("protect");
+            protect[i] = new JRadioButton(i % 4 + "");
+            protectSections[i / 4].add(protect[i]);
+            bg[i / 4].add(protect[i]);
+            protect[i].addActionListener(this);
+            protect[i].setActionCommand("protect");
         }
-        
+
         JPanel mid = new JPanel(), low = new JPanel(), high = new JPanel();
         mid.setLayout(new FlowLayout());
         high.setLayout(new FlowLayout());
         low.setLayout(new FlowLayout());
-        
+
         armorAux = new JPanel();
         armorAux.setLayout(new BoxLayout(armorAux, BoxLayout.Y_AXIS));
-        
+
         high.add(getLabeledComponent("Paralysis", protectSections[0]));
         high.add(getLabeledComponent("Flash", protectSections[1]));
         mid.add(getLabeledComponent("Freeze", protectSections[2]));
         mid.add(getLabeledComponent("Fire", protectSections[3]));
-        low.add(new JLabel("Set Fire to 1 or 2 and the rest to 0 for " +
-        		"Sleep protection."));
-        
+        low.add(new JLabel("Set Fire to 1 or 2 and the rest to 0 for "
+            + "Sleep protection."));
+
         armorAux.add(high);
         armorAux.add(mid);
         armorAux.add(low);
-        
+
         JPanel aux = new JPanel();
         aux.setLayout(new BoxLayout(aux, BoxLayout.Y_AXIS));
-        aux.add(armorAux); 
-        aux.add(foodAux); 
+        aux.add(armorAux);
+        aux.add(foodAux);
         aux.add(brokenAux);
         itemStats.add(aux);
-        
+
         armorAux.setVisible(false);
         foodAux.setVisible(false);
         brokenAux.setVisible(false);
@@ -456,7 +456,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
     {
         return "Written by AnyoneEB\n" + "Based on source code by Tomato\n"
             + "Str/EP/EPinc/Special meanings by EBisumaru\n"
-			+ "Type/Aux Windows Coolification by EBisumaru";
+            + "Type/Aux Windows Coolification by EBisumaru";
     }
 
     /**
@@ -656,7 +656,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
     }
 
     private void saveItemInfo(int i)
-	//puts the changed info into the Item
+    //puts the changed info into the Item
     // object
     {
         if (i < 0)
@@ -671,13 +671,13 @@ public class ItemEditor extends EbHackModule implements ActionListener
         ItemEditor.notifyItemDataListeners(new ListDataEvent(this,
             ListDataEvent.CONTENTS_CHANGED, i, i));
 
-        items[i].effect = this.effectSelector.getSelectedIndex();
-        items[i].cost = numberize(this.cost.getText());
-        items[i].type = numberize(typeSel.getSelectedItem().toString());
-        items[i].strength = numberize(strength.getText());
-        items[i].extraPower = numberize(this.extraPower.getText());
-        items[i].increase = numberize(this.epIncrease.getText());
-        items[i].specialProperties = numberize(this.special.getText());
+        items[i].effect = this.effectSelector.getSelectedIndex() & 0xffff;
+        items[i].cost = numberize(this.cost.getText()) & 0xffff;
+        items[i].type = numberize(typeSel.getSelectedItem().toString()) & 0xff;
+        items[i].strength = numberize(strength.getText()) & 0xff;
+        items[i].extraPower = numberize(this.extraPower.getText()) & 0xff;
+        items[i].increase = numberize(this.epIncrease.getText()) & 0xff;
+        items[i].specialProperties = numberize(this.special.getText()) & 0xff;
         items[i].descAddress = this.helpAdd.getOffset();
 
         items[i].ownership = 0;
@@ -741,18 +741,18 @@ public class ItemEditor extends EbHackModule implements ActionListener
         brokenAux.setVisible(false);
         recoverType.setCorr(false);
         fixedItem.setCorr(false);
-        if((type == 32) || (type == 36) || (type == 40) || (type == 44))
+        if ((type == 32) || (type == 36) || (type == 40) || (type == 44))
         {
-        	foodAux.setVisible(true);
+            foodAux.setVisible(true);
             recoverType.setCorr(true);
         }
-        else if((type == 20) || (type == 24) || (type == 28))
+        else if ((type == 20) || (type == 24) || (type == 28))
         {
-        	armorAux.setVisible(true);
+            armorAux.setVisible(true);
         }
-        else if((type == 8))
+        else if ((type == 8))
         {
-        	brokenAux.setVisible(true);
+            brokenAux.setVisible(true);
             fixedItem.setCorr(true);
         }
         mainWindow.pack();
@@ -792,15 +792,13 @@ public class ItemEditor extends EbHackModule implements ActionListener
             search(search.getText().toLowerCase(), itemSelector);
         }
         else if (ae.getActionCommand().equals("protect"))
-			setSpecial();
-/*        else if (ae.getActionCommand().equals("editCurr"));
-        {
-        	if(!(extraPower.getText().equals(null)))
-        	{
-        		itemSelector.setSelectedIndex(numberize(extraPower.getText()));
-        		showItemInfo(numberize(extraPower.getText()));
-        	}
-        }*/
+            setSpecial();
+        /*
+         * else if (ae.getActionCommand().equals("editCurr")); {
+         * if(!(extraPower.getText().equals(null))) {
+         * itemSelector.setSelectedIndex(numberize(extraPower.getText()));
+         * showItemInfo(numberize(extraPower.getText())); } }
+         */
     }
 
     public static SimpleComboBoxModel createItemComboBoxModel()
@@ -832,6 +830,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
 
         return out;
     }
+
     public static SimpleComboBoxModel createDecItemComboBoxModel()
     {
         SimpleComboBoxModel out = new SimpleComboBoxModel()
@@ -845,7 +844,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
             {
                 try
                 {
-                    return HackModule.getNumberedString(items[i].toString(), i, false);
+                    return HackModule.getNumberedString(items[i].toString(), i,
+                        false);
                 }
                 catch (NullPointerException e)
                 {
@@ -882,68 +882,68 @@ public class ItemEditor extends EbHackModule implements ActionListener
     }
 
     public static JComboBox createItemComboBox(final ActionListener al,
-            HackModule hm)
+        HackModule hm)
+    {
+        SimpleComboBoxModel model = createItemComboBoxModel();
+        if (items[0] == null)
+            readFromRom(hm);
+        final JComboBox out = new JComboBox(model);
+        if (al != null)
+            out.addActionListener(al);
+        model.addListDataListener(new ListDataListener()
         {
-            SimpleComboBoxModel model = createItemComboBoxModel();
-            if (items[0] == null)
-                readFromRom(hm);
-            final JComboBox out = new JComboBox(model);
-            if (al != null)
-                out.addActionListener(al);
-            model.addListDataListener(new ListDataListener()
+
+            public void contentsChanged(ListDataEvent lde)
             {
-
-                public void contentsChanged(ListDataEvent lde)
+                if (out.getSelectedIndex() == -1)
                 {
-                    if (out.getSelectedIndex() == -1)
-                    {
-                        out.removeActionListener(al);
-                        out.setSelectedIndex(lde.getIndex0());
-                        out.addActionListener(al);
-                    }
+                    out.removeActionListener(al);
+                    out.setSelectedIndex(lde.getIndex0());
+                    out.addActionListener(al);
                 }
+            }
 
-                public void intervalAdded(ListDataEvent arg0)
-                {}
+            public void intervalAdded(ListDataEvent arg0)
+            {}
 
-                public void intervalRemoved(ListDataEvent arg0)
-                {}
-            });
+            public void intervalRemoved(ListDataEvent arg0)
+            {}
+        });
 
-            return out;
-        }
+        return out;
+    }
 
     public static JComboBox createDecItemComboBox(final ActionListener al,
-            HackModule hm)
+        HackModule hm)
+    {
+        SimpleComboBoxModel model = createDecItemComboBoxModel();
+        if (items[0] == null)
+            readFromRom(hm);
+        final JComboBox out = new JComboBox(model);
+        if (al != null)
+            out.addActionListener(al);
+        model.addListDataListener(new ListDataListener()
         {
-            SimpleComboBoxModel model = createDecItemComboBoxModel();
-            if (items[0] == null)
-                readFromRom(hm);
-            final JComboBox out = new JComboBox(model);
-            if (al != null)
-                out.addActionListener(al);
-            model.addListDataListener(new ListDataListener()
+
+            public void contentsChanged(ListDataEvent lde)
             {
-
-                public void contentsChanged(ListDataEvent lde)
+                if (out.getSelectedIndex() == -1)
                 {
-                    if (out.getSelectedIndex() == -1)
-                    {
-                        out.removeActionListener(al);
-                        out.setSelectedIndex(lde.getIndex0());
-                        out.addActionListener(al);
-                    }
+                    out.removeActionListener(al);
+                    out.setSelectedIndex(lde.getIndex0());
+                    out.addActionListener(al);
                 }
+            }
 
-                public void intervalAdded(ListDataEvent arg0)
-                {}
+            public void intervalAdded(ListDataEvent arg0)
+            {}
 
-                public void intervalRemoved(ListDataEvent arg0)
-                {}
-            });
+            public void intervalRemoved(ListDataEvent arg0)
+            {}
+        });
 
-            return out;
-        }
+        return out;
+    }
 
     /**
      * @see net.starmen.pkhack.HackModule#getIcon()
@@ -1471,35 +1471,35 @@ public class ItemEditor extends EbHackModule implements ActionListener
             this(label, hm, null);
         }
     }
-    
+
     public void setRadioButtons(int num)
     {
-    	for(int i = 0; i < 4; i++)
-    	{
-    		protect[(3-i)*4 + num%4].setSelected(true);
-    		num/=4;
-    	}
+        for (int i = 0; i < 4; i++)
+        {
+            protect[(3 - i) * 4 + num % 4].setSelected(true);
+            num /= 4;
+        }
     }
-    
+
     public void setSpecial()
     {
-    	int[] arg = new int[4];
-    	int i = 0, j=0;
-    	for(i=0;i<4;i++)
-    	{
-    		for(j=0;j<4;j++)
-    		{
-    			if(protect[(3-i)*4 + j].isSelected())
-    			{
-    				arg[i] = j;
-    			}
-    		}
-    	}
-    	j=0;
-    	for(i=0; i<4; i++)
-    		j += Math.pow(4,i) * arg[i];
-    	special.getDocument().removeDocumentListener(protectSetter);
-    	special.setText("" + j);
-    	special.getDocument().addDocumentListener(protectSetter);
+        int[] arg = new int[4];
+        int i = 0, j = 0;
+        for (i = 0; i < 4; i++)
+        {
+            for (j = 0; j < 4; j++)
+            {
+                if (protect[(3 - i) * 4 + j].isSelected())
+                {
+                    arg[i] = j;
+                }
+            }
+        }
+        j = 0;
+        for (i = 0; i < 4; i++)
+            j += Math.pow(4, i) * arg[i];
+        special.getDocument().removeDocumentListener(protectSetter);
+        special.setText("" + j);
+        special.getDocument().addDocumentListener(protectSetter);
     }
 }
