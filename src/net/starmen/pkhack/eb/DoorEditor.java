@@ -346,6 +346,8 @@ public class DoorEditor extends EbHackModule
 			numField.setText("");
 			ropeCheck.setEnabled(false);
 			ropeCheck.setSelected(false);
+			typeBox.setEnabled(false);
+			typeBox.setSelectedIndex(0);
 			dirClimbBox.setEnabled(false);
 			dirClimbBox.setSelectedIndex(0);
 			disableDestGUI();
@@ -354,9 +356,9 @@ public class DoorEditor extends EbHackModule
 		{
 			EbMap.DoorLocation doorLocation = EbMap.getDoorLocation(x,y,num);
 			// update entry stuff?
+			typeBox.setEnabled(true);
 			if (loadEntry)
 			{
-				typeBox.setEnabled(true);
 				typeBox.setSelectedIndex(doorLocation.getType());
 				int doorDestType = EbMap.getDoorDestType(doorLocation.getType());
 				if (doorDestType == -1)
@@ -415,6 +417,7 @@ public class DoorEditor extends EbHackModule
 					flagField.setEditable(true);
 					reverseCheck.setEnabled(true);
 					styleBox.setEnabled(true);
+					setXYButton.setEnabled(true);
 					
 					if (loadDest)
 					{
@@ -452,15 +455,12 @@ public class DoorEditor extends EbHackModule
 				}
 				else
 				{
-					typeBox.setEnabled(false);
-					typeBox.setSelectedIndex(0);
 					xField.setText(null);
 					yField.setText(null);
 					dirBox.setSelectedIndex(0);
 					flagField.setText(null);
 					reverseCheck.setSelected(false);
 					styleBox.setSelectedIndex(0);
-					typeDestBox.setEnabled(false);
 					ptrField.setEditable(true);
 					setXYButton.setEnabled(false);
 					xField.setEditable(false);
