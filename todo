@@ -5,13 +5,44 @@ NON-RELEASE
 NEXT RELEASE
 
 # Latest version of Jeffman's logos for ipslisting.xml when he finishes
-# BA's PSIEditor edit
 # ??? --> [03:09:02] <EBisumaru> Dammit, JHack can't do the compression.
 # [12:38:45] <JeffMan> oh and you should add the mother 2 font 
 	and the debug menu font to jhack's font editor if you can
+# BUGFIX:
+[18:06:36] <Faolan> 8/11/04 2:58 PM: java.lang.ArrayIndexOutOfBoundsException: 2048
+[18:06:36] <Faolan> 8/11/04 3:05 PM: 	at net.starmen.pkhack.eb.EbHackModule.comp(EbHackModule.java:494)
+[18:06:36] <Faolan> 8/11/04 3:05 PM: 	at net.starmen.pkhack.eb.EbHackModule.comp(EbHackModule.java:553)
+[18:06:36] <Faolan> 8/11/04 3:05 PM: 	at net.starmen.pkhack.eb.LogoScreenEditor$LogoScreen.writeArrangement(LogoScreenEditor.java:419)
+[18:06:37] <Faolan> 8/11/04 3:05 PM: 	at net.starmen.pkhack.eb.LogoScreenEditor$LogoScreen.writeInfo(LogoScreenEditor.java:444)
+[18:06:40] <Faolan> 8/11/04 3:05 PM: 	at net.starmen.pkhack.eb.LogoScreenEditor.actionPerformed(LogoScreenEditor.java:1307)
+[18:06:44] <Faolan> 8/11/04 3:05 PM: 	at javax.swing.AbstractButton.fireActionPerformed(Unknown Source)
+[18:06:46] <Faolan> 8/11/04 3:05 PM: 	at javax.swing.AbstractButton$ForwardActionEvents.actionPerformed(Unknown Source)
+[18:06:50] <Faolan> 8/11/04 3:05 PM: 	at javax.swing.DefaultButtonModel.fireActionPerformed(Unknown Source)
+[18:06:52] <Faolan> 8/11/04 3:05 PM: 	at javax.swing.DefaultButtonModel.setPressed(Unknown Source)
+[18:06:56] <Faolan> 8/11/04 3:05 PM: 	at javax.swing.plaf.basic.BasicButtonListener.mouseReleased(Unknown Source)
+[18:06:58] <Faolan> 8/11/04 3:05 PM: 	at java.awt.Component.processMouseEvent(Unknown Source)
+[18:07:01] <Faolan> 8/11/04 3:05 PM: 	at java.awt.Component.processEvent(Unknown Source)
+[18:07:03] <Faolan> 8/11/04 3:05 PM: 	at java.awt.Container.processEvent(Unknown Source)
+[18:07:06] <Faolan> 8/11/04 3:05 PM: 	at java.awt.Component.dispatchEventImpl(Unknown Source)
+[18:07:09] <Faolan> 8/11/04 3:05 PM: 	at java.awt.Container.dispatchEventImpl(Unknown Source)
+[18:07:11] <Faolan> 8/11/04 3:05 PM: 	at java.awt.Component.dispatchEvent(Unknown Source)
+[18:07:13] <Faolan> 8/11/04 3:05 PM: 	at java.awt.LightweightDispatcher.retargetMouseEvent(Unknown Source)
+[18:07:16] <Faolan> 8/11/04 3:05 PM: 	at java.awt.LightweightDispatcher.processMouseEvent(Unknown Source)
+[18:07:20] <Faolan> 8/11/04 3:05 PM: 	at java.awt.LightweightDispatcher.dispatchEvent(Unknown Source)
+[18:07:23] <Faolan> 8/11/04 3:05 PM: 	at java.awt.Container.dispatchEventImpl(Unknown Source)
+[18:07:25] <Faolan> 8/11/04 3:05 PM: 	at java.awt.Window.dispatchEventImpl(Unknown Source)
+[18:07:27] <Faolan> 8/11/04 3:05 PM: 	at java.awt.Component.dispatchEvent(Unknown Source)
+[18:07:30] <Faolan> 8/11/04 3:05 PM: 	at java.awt.EventQueue.dispatchEvent(Unknown Source)
+[18:07:31] <Faolan> 8/11/04 3:05 PM: 	at java.awt.EventDispatchThread.pumpOneEventForHierarchy(Unknown Source)
+[18:07:35] <Faolan> 8/11/04 3:05 PM: 	at java.awt.EventDispatchThread.pumpEventsForHierarchy(Unknown Source)
+[18:07:38] <Faolan> 8/11/04 3:05 PM: 	at java.awt.EventDispatchThread.pumpEvents(Unknown Source)
+[18:07:41] <Faolan> 8/11/04 3:05 PM: 	at java.awt.EventDispatchThread.pumpEvents(Unknown Source)
+[18:07:44] <Faolan> 8/11/04 3:05 PM: 	at java.awt.EventDispatchThread.run(Unknown Source)
+[18:07:45] <Faolan> 8/11/04 3:05 PM: 
 
 LONG TERM
 
+# Gas Station image import/export
 # IPSDatabase extensions?
 # Starting stat editor ( 1DAF1 = Value for Ness' starting stats )
 # Battle Animation editor ( http://pkhack.fobby.net/misc/txt/psi_animation_doc.txt )

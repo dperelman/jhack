@@ -4,6 +4,7 @@ Next version (after v0.4.7.1):
 	teacodelist.txt and creditcodelist.txt. Also added option for a 
 	CC parser to not use compression, which is used for those two.
 # eb.MiscTextEditor v0.5: Added Lumine hall text, max window width (250px)
+# HexEditor: fixed bug where the goto switched regular and snes pointers
 
 v0.4.7.1:
 # IPSDatabase extensions:
