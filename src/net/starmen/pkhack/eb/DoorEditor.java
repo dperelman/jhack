@@ -32,7 +32,7 @@ public class DoorEditor extends EbHackModule
 		numField, ptrField, flagField;
 	private JComboBox typeBox, dirClimbBox, typeDestBox, styleBox, dirBox;
 	private JLabel warnLabel;
-	private JButton setXYButton;
+	private JButton setXYButton, jumpButton;
 	private JCheckBox ropeCheck, reverseCheck;
 	private final String[] typeNames = {
 			"Switch", "Rope/Ladder", "Door", "Escalator",
@@ -148,7 +148,7 @@ public class DoorEditor extends EbHackModule
 	        			&& (entryNumField.getText().length() > 0)
 						&& (areaXField.getText().length() > 0)
 						&& (areaYField.getText().length() > 0))
-	        		updateComponents(true, true, true);
+	        		updateComponents(true, ! de.getDocument().equals(numField.getDocument()), true);
 	        }
 
 	        public void insertUpdate(DocumentEvent de)
@@ -219,9 +219,12 @@ public class DoorEditor extends EbHackModule
 						reverseCheck));
 		
 		JPanel buttonPanel = new JPanel();
-		setXYButton = new JButton("Set X&Y using map");
+		setXYButton = new JButton("Set X&Y using Map Editor");
 		setXYButton.addActionListener(this);
 		buttonPanel.add(setXYButton);
+		jumpButton = new JButton("Go to in Map Editor");
+		jumpButton.addActionListener(this);
+		buttonPanel.add(jumpButton);
 		destPanel.add(buttonPanel);
 		
 		destPanel.add(
@@ -285,6 +288,7 @@ public class DoorEditor extends EbHackModule
 		typeDestBox.setEnabled(false);
 		ptrField.setEditable(false);
 		setXYButton.setEnabled(false);
+		jumpButton.setEnabled(false);
 		dirBox.setEnabled(false);
 		flagField.setEditable(false);
 		reverseCheck.setEnabled(false);
@@ -386,6 +390,7 @@ public class DoorEditor extends EbHackModule
 					reverseCheck.setEnabled(true);
 					styleBox.setEnabled(true);
 					setXYButton.setEnabled(true);
+					jumpButton.setEnabled(true);
 					
 					if (loadDest)
 					{
@@ -408,6 +413,7 @@ public class DoorEditor extends EbHackModule
 					styleBox.setEnabled(false);
 					ptrField.setEditable(true);
 					setXYButton.setEnabled(false);
+					jumpButton.setEnabled(false);
 					flagField.setEditable(true);
 					reverseCheck.setEnabled(true);
 					
@@ -426,6 +432,7 @@ public class DoorEditor extends EbHackModule
 					styleBox.setSelectedIndex(0);
 					ptrField.setEditable(true);
 					setXYButton.setEnabled(false);
+					jumpButton.setEnabled(false);
 					dirBox.setEnabled(false);
 					flagField.setEditable(false);
 					reverseCheck.setEnabled(false);
@@ -509,6 +516,14 @@ public class DoorEditor extends EbHackModule
 	    	setXYButton.setEnabled(false);
 	    	net.starmen.pkhack.JHack.main.showModule(MapEditor.class, this);
 	    }
+	    else if (e.getSource() == jumpButton)
+	    {
+	    	net.starmen.pkhack.JHack.main.showModule(
+        			MapEditor.class, new Integer[] {
+        					new Integer(destPreview.getMapTileX()),
+							new Integer(destPreview.getMapTileY())
+        			});
+	    }
 		else if ((e.getSource() == typeBox)
 				&& (! muteEvents))
 		{
@@ -539,119 +554,4 @@ public class DoorEditor extends EbHackModule
 		destPreview.repaint();
 		setXYButton.setEnabled(true);
 	}
-	
-	/*public class DestPreview extends AbstractButton
-	{
-	    private int[][] mapArray;
-	    private boolean knowsMap = false;
-	    private int tileX, tileY, doorX, doorY;
-		private int heightTiles = 5, widthTiles = 5;
-
-	    public void paintComponent(Graphics g)
-	    {
-	        super.paintComponent(g);
-	        Graphics2D g2d = (Graphics2D) g;
-	        drawBorder(g2d);
-	        if (knowsMap)
-	        	drawMap(g, g2d);
-	    }
-	    
-	    private void drawBorder(Graphics2D g2d)
-	    {
-	    	g2d.draw(new Rectangle2D.Double(
-	    			0,0,
-					widthTiles * MapEditor.tileWidth + 1,
-					heightTiles * MapEditor.tileHeight + 1)); 
-	    }
-
-	    private void drawMap(Graphics g, Graphics2D g2d)
-	    {
-	    	int tile_set, tile_tile, tile_pal;
-	        for (int i = 0; i < mapArray.length; i++)
-	        {
-	        	int sectorY = (tileY + i) / MapEditor.sectorHeight;
-	            for (int j = 0; j < mapArray[i].length; j++)
-	            {
-	            	int sectorX = (tileX + j) / MapEditor.sectorWidth;
-	            	if (! EbMap.isSectorDataLoaded(
-	            			sectorX, sectorY))
-	            		EbMap.loadSectorData(rom,
-	            				sectorX, sectorY);
-	            	
-	                tile_set = EbMap.getDrawTileset( 
-	                		EbMap.getTset(sectorX, sectorY));
-	                tile_tile = mapArray[i][j];
-	                tile_pal = 
-	                	TileEditor.tilesets[tile_set].getPaletteNum(
-	                			EbMap.getTset(sectorX, sectorY),
-								EbMap.getPal(sectorX, sectorY));
-	                EbMap.loadTileImage(tile_set, tile_tile, tile_pal);
-
-	                g.drawImage(
-	                    EbMap.getTileImage(tile_set,tile_tile,tile_pal),
-	                    j * MapEditor.tileWidth + 1, i * MapEditor.tileHeight + 1,
-						MapEditor.tileWidth, MapEditor.tileHeight, this);
-	            }
-	        }
-	        g2d.setPaint(Color.blue);
-	    	g2d.draw(new Rectangle2D.Double(
-	    			doorX * 8,
-					doorY * 8,
-					8,8));
-	    }
-	    
-
-	    public void setMapArray(int[][] newMapArray)
-	    {
-	        this.knowsMap = true;
-	        this.mapArray = newMapArray;
-	    }
-	    
-	    public void setXY(int x, int y)
-	    {
-	        int[][] maparray = new int[heightTiles][widthTiles];
-	        tileX = ((x * 8) / MapEditor.tileWidth) - 2;
-	        if (tileX < 0)
-	        	tileX = 0;
-	        else if (tileX + widthTiles > MapEditor.width)
-	        	tileX = MapEditor.width - widthTiles;
-	        for (int i = 0; i < heightTiles; i++)
-	        {
-	        	int y2 = i + ((y * 8) / MapEditor.tileHeight) - 2;
-	            if (y2 < 0)
-	            	y2 = 0;
-	            maparray[i] = EbMap.getTiles(rom, 
-	            		y2, tileX, widthTiles);
-	        }
-	        tileY = (y * 8) / MapEditor.tileHeight - 2;
-	        if (tileY < 0)
-	        	tileY = 0;
-	        else if (tileY + heightTiles > MapEditor.height)
-	        	tileY = MapEditor.height - heightTiles;
-	        doorX = x - (tileX * 4);
-	        doorY = y - (tileY * 4);
-	        setMapArray(maparray);
-	    }
-	    
-	    public void clearMapArray()
-	    {
-	    	this.knowsMap = false;
-	    	this.mapArray = null;
-	    }
-	    
-	    public void remoteRepaint()
-	    {
-	        repaint();
-	    }
-	    
-	    public int getWidthTiles()
-	    {
-	    	return widthTiles;
-	    }
-	    
-	    public int getHeightTiles()
-	    {
-	    	return heightTiles;
-	    }
-	}*/
 }
