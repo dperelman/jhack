@@ -8,7 +8,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -16,10 +15,12 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -51,27 +52,47 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
     public IPSDatabase(Rom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
+
+        try
+        {
+            Class[] c = new Class[]{byte[].class, HackModule.class};
+            registerExtension("ips",
+                IPSDatabase.class.getMethod("applyIPS", c), IPSDatabase.class
+                    .getMethod("unapplyIPS", c), IPSDatabase.class.getMethod(
+                    "checkAppliedIPS", c), this);
+        }
+        catch (SecurityException e)
+        {
+            //no security model, shouldn't have to worry about this
+            e.printStackTrace();
+        }
+        catch (NoSuchMethodException e)
+        {
+            //I just wrote the methods, I'm pretty sure they exist ^_^
+            e.printStackTrace();
+        }
     }
 
-    public static class IPSDatabaseEntry
+    public static class DatabaseEntry
     {
-        private IPSFile ips;
-        private String name, author, sdesc, romType;
+        protected byte[] file;
+        private String filename, name, author, sdesc, romType;
         private ImageIcon ss;
-        private boolean applied;
+        protected boolean applied;
 
-        protected IPSDatabaseEntry(String filename, int filesize, String name,
+        protected DatabaseEntry(String filename, int filesize, String name,
             String author, String sdesc, String ss, int sssize, String romType)
             throws IOException
         {
-            byte[] bips = new byte[filesize + 1], bss = new byte[sssize + 1];
+            this.filename = filename;
+            file = new byte[filesize + 1];
+            byte[] bss = new byte[sssize + 1];
             //			ClassLoader
             //				.getSystemResourceAsStream("net/starmen/pkhack/ips/" + filename)
             //				.read(bips);
-            readAll(bips,
+            readAll(file,
                 ClassLoader.getSystemResourceAsStream("net/starmen/pkhack/ips/"
                     + filename));
-            this.ips = new IPSFile(bips);
             //this.checkApplied(rom);
             this.name = name;
             this.author = author;
@@ -80,9 +101,6 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
                 this.ss = null;
             else
             {
-                //				ClassLoader
-                //					.getSystemResourceAsStream("net/starmen/pkhack/ips/" + ss)
-                //					.read(bss);
                 readAll(bss, ClassLoader
                     .getSystemResourceAsStream("net/starmen/pkhack/ips/" + ss));
                 this.ss = new ImageIcon(bss);
@@ -90,7 +108,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
             this.romType = romType;
         }
 
-        protected IPSDatabaseEntry(Element e) throws NumberFormatException,
+        protected DatabaseEntry(Element e) throws NumberFormatException,
             IOException
         {
             this(e.getAttribute("src"), Integer
@@ -113,9 +131,9 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         /**
          * Rechecks if this has been applied.
          */
-        public void checkApplied(Rom rom)
+        public void checkApplied()
         {
-            this.applied = rom.check(ips);
+            applied = checkAppliedFile(filename, file);
         }
 
         /**
@@ -123,15 +141,9 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
          * 
          * @return false if unable to patch because ROM is not expanded
          */
-        public boolean apply(Rom rom)
+        public boolean apply()
         {
-            boolean out = true;
-            if (!this.applied)
-            {
-                out = rom.apply(this.ips);
-                checkAllApplied(rom);
-            }
-            return out;
+            return applyFile(filename, file);
         }
 
         /**
@@ -140,17 +152,9 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
          * @return false if unable to unpatch because ROM is not expanded or if
          *         ROM not patched
          */
-        public boolean unapply(Rom rom, Rom orgRom)
+        public boolean unapply()
         {
-            boolean out = true;
-            if (this.applied)
-            {
-                out = rom.unapply(this.ips, orgRom);
-                checkAllApplied(rom);
-            }
-            else
-                return false;
-            return out;
+            return unapplyFile(filename, file);
         }
 
         /**
@@ -164,13 +168,45 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         {
             return romType.equalsIgnoreCase(this.romType);
         }
+
+        /**
+         * @return Returns the author.
+         */
+        public String getAuthor()
+        {
+            return author;
+        }
+
+        /**
+         * @return Returns the name.
+         */
+        public String getName()
+        {
+            return name;
+        }
+
+        /**
+         * @return Returns the sdesc.
+         */
+        public String getSdesc()
+        {
+            return sdesc;
+        }
+
+        /**
+         * @return Returns the ss.
+         */
+        public ImageIcon getSs()
+        {
+            return ss;
+        }
     }
 
     public static void checkAllApplied(Rom rom)
     {
         for (int i = 0; i < entries.size(); i++)
         {
-            ((IPSDatabaseEntry) entries.get(i)).checkApplied(rom);
+            ((DatabaseEntry) entries.get(i)).checkApplied();
         }
     }
 
@@ -187,12 +223,13 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
             i += tmp;
     }
 
-    private static ArrayList entries = new ArrayList();
+    private static List entries = new ArrayList();
 
     public static void readXML(Rom rom)
     {
         //don't do this twice
-        if (entries.size() > 0) return;
+        if (entries.size() > 0)
+            return;
         //This is the slow way, the fast way (SAX) looks like too much work.
         Document dom;
         if ((dom = parseFile(ClassLoader
@@ -208,11 +245,9 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
             {
                 try
                 {
-                    IPSDatabaseEntry ide = new IPSDatabaseEntry((Element) nl
-                        .item(i));
-                    ide.checkApplied(rom);
-                    entries.add(ide);
-
+                    DatabaseEntry de = new DatabaseEntry((Element) nl.item(i));
+                    de.checkApplied();
+                    entries.add(de);
                 }
                 catch (NumberFormatException e)
                 {
@@ -268,21 +303,23 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
                 int o = 0;
                 for (int i = 0; i < entries.size(); i++)
                 {
-                    if (((IPSDatabaseEntry) entries.get(i)).forRom(rom
-                        .getRomType())) o++;
+                    if (((DatabaseEntry) entries.get(i)).forRom(rom
+                        .getRomType()))
+                        o++;
                 }
                 return o;
             }
 
-            public IPSDatabaseEntry getRow(int row)
+            public DatabaseEntry getRow(int row)
             {
                 int r = 0;
                 for (int i = 0; i < entries.size(); i++)
                 {
-                    if (((IPSDatabaseEntry) entries.get(i)).forRom(rom
+                    if (((DatabaseEntry) entries.get(i)).forRom(rom
                         .getRomType()))
                     {
-                        if (r == row) return (IPSDatabaseEntry) entries.get(r);
+                        if (r == row)
+                            return (DatabaseEntry) entries.get(r);
                         r++;
                     }
                 }
@@ -293,20 +330,20 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
             {
                 try
                 {
-                    IPSDatabaseEntry e = getRow(row);
+                    DatabaseEntry e = getRow(row);
                     //(IPSDatabaseEntry) entries.get(row);
                     switch (col)
                     {
                         case 0:
-                            return e.name;
+                            return e.getName();
                         case 1:
-                            return e.author;
+                            return e.getAuthor();
                         case 2:
-                            return e.sdesc;
+                            return e.getSdesc();
                         case 3:
-                            return e.ss;
+                            return e.getSs();
                         case 4:
-                            return new Boolean(e.isApplied());
+                            return Boolean.valueOf(e.isApplied());
                     }
                 }
                 catch (IndexOutOfBoundsException e)
@@ -348,7 +385,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
 
     public String getVersion()
     {
-        return "0.3";
+        return "0.5";
     }
 
     public String getDescription()
@@ -381,7 +418,8 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         {
             // Error generated during parsing)
             Exception x = sxe;
-            if (sxe.getException() != null) x = sxe.getException();
+            if (sxe.getException() != null)
+                x = sxe.getException();
             x.printStackTrace();
             return null;
         }
@@ -420,13 +458,16 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
      * @param patchName name of patch to apply as named in the IPSDatabase list
      * @return a {@link IPSDatabaseEntry}or null
      */
-    public static IPSDatabaseEntry getPatch(String patchName)
+    public static DatabaseEntry getPatch(String patchName)
     {
-        IPSDatabaseEntry e;
+        DatabaseEntry e;
         for (Iterator i = entries.iterator(); i.hasNext();)
         {
-            if ((e = ((IPSDatabaseEntry) i.next())).name
-                .equalsIgnoreCase(patchName)) { return e; }
+            if ((e = ((DatabaseEntry) i.next())).getName().equalsIgnoreCase(
+                patchName))
+            {
+                return e;
+            }
         }
         return null;
     }
@@ -440,35 +481,23 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
     {
         if (ae.getActionCommand().equals("apply"))
         {
-            if (!((IPSDatabaseEntry) entries.get(ipsTable.getSelectedRow()))
-                .isApplied())
-            {
-                if (!((IPSDatabaseEntry) entries.get(ipsTable.getSelectedRow()))
-                    .apply(rom))
-                {
-                    rom.expand();
-                    ((IPSDatabaseEntry) entries.get(ipsTable.getSelectedRow()))
-                        .apply(rom);
-                }
-                ipsTable.repaint();
-            }
+            DatabaseEntry de = (DatabaseEntry) entries.get(ipsTable
+                .getSelectedRow());
+            //make sure ROM is expanded
+            rom.expand();
+            de.apply();
+            checkAllApplied(rom);
+            ipsTable.repaint();
         }
         else if (ae.getActionCommand().equals("unapply"))
         {
-            if (((IPSDatabaseEntry) entries.get(ipsTable.getSelectedRow()))
-                .isApplied())
-            {
-                if (!((IPSDatabaseEntry) entries.get(ipsTable.getSelectedRow()))
-                    .unapply(rom, JHack.main
-                        .getOrginalRomFile(rom.getRomType())))
-                {
-                    rom.expand();
-                    ((IPSDatabaseEntry) entries.get(ipsTable.getSelectedRow()))
-                        .unapply(rom, JHack.main.getOrginalRomFile(rom
-                            .getRomType()));
-                }
-                ipsTable.repaint();
-            }
+            DatabaseEntry de = (DatabaseEntry) entries.get(ipsTable
+                .getSelectedRow());
+            //make sure ROM is expanded
+            rom.expand();
+            de.unapply();
+            checkAllApplied(rom);
+            ipsTable.repaint();
         }
         else if (ae.getActionCommand().equals("close"))
         {
@@ -476,51 +505,282 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         }
     }
 
-    protected static HashMap exts = new HashMap();
+    /**
+     * Used to cache <code>IPSFile</code> objects. Accessed by and written to
+     * by <code>getIPSFileFor()</code>.
+     * 
+     * @see IPSFile
+     * @see #getIPSFileFor(byte[])
+     */
+    protected static HashMap ipsFiles = new HashMap();
 
     /**
-     * Method not final, defination subject to change. Registers a static method
-     * which can import files with the specified extension. This should be
-     * called from a static block from any class that has import abilities.
+     * Creates an <code>IPSFile</code> object for the specified
+     * <code>byte[]</code> or returns a cached one. This uses
+     * {@link #ipsFiles}to store the cache of <code>IPSFile</code> objects.
+     * Use this method instead of <code>new IPSFile(byte[])</code> in order to
+     * make sure the <code>IPSFile</code> only gets created once.
+     * 
+     * @param file <code>byte[]</code> containing an .ips file.
+     * @return an <code>IPSFile</code> object based on <code>file</code>
+     */
+    protected static IPSFile getIPSFileFor(byte[] file)
+    {
+        IPSFile ips = (IPSFile) ipsFiles.get(file);
+        if (ips == null)
+        {
+            ips = new IPSFile(file);
+            ipsFiles.put(file, ips);
+        }
+
+        return ips;
+    }
+
+    public static boolean checkAppliedIPS(byte[] file, HackModule hm)
+    {
+        return hm.rom.check(getIPSFileFor(file));
+    }
+
+    public static boolean applyIPS(byte[] file, HackModule hm)
+    {
+        return hm.rom.apply(getIPSFileFor(file));
+    }
+
+    public static boolean unapplyIPS(byte[] file, HackModule hm)
+    {
+        IPSFile ips = getIPSFileFor(file);
+        if (hm.rom.check(ips))
+            return hm.rom.unapply(ips, JHack.main.getOrginalRomFile(hm.rom
+                .getRomType()));
+        else
+            return false;
+    }
+
+    /**
+     * <code>HashMap</code> used by <code>registerExtension()</code> to
+     * store methods to use for imnporting files for different extensions.
+     * 
+     * @see #registerExtension(String, Method, Method, Method, Object)
+     * @see #applyFile(String, byte[], int)
+     */
+    protected static HashMap exts = new HashMap();
+    /**
+     * Indicates the apply method.
+     * 
+     * @see #registerExtension(String, Method, Method, Method, Object)
+     * @see #applyFile(String, byte[], int)
+     * @see #applyFile(String, byte[])
+     */
+    public static final int METHOD_APPLY = 0;
+    /**
+     * Indicates the unapply method.
+     * 
+     * @see #registerExtension(String, Method, Method, Method, Object)
+     * @see #applyFile(String, byte[], int)
+     * @see #unapplyFile(String, byte[])
+     */
+    public static final int METHOD_UNAPPLY = 1;
+    /**
+     * Indicates the check applied method.
+     * 
+     * @see #registerExtension(String, Method, Method, Method, Object)
+     * @see #applyFile(String, byte[], int)
+     * @see #checkAppliedFile(String, byte[])
+     */
+    public static final int METHOD_CHECK = 2;
+    /**
+     * Indicates the object stored in the {@link #exts}<code>HashMap</code>.
+     * 
+     * @see #registerExtension(String, Method, Method, Method, Object)
+     * @see #applyFile(String, byte[], int)
+     */
+    protected static final int METHOD_OBJ = 3;
+
+    /**
+     * Registers a static method which can import files with the specified
+     * extension, optionally another which can undo the changes made by the
+     * first, and also a method which can check if the first has been done to
+     * the current ROM. These should be called from a static block from any
+     * class that has import abilities. Either method may require user
+     * intervention.
      * 
      * @param ext extension given method can read; this is considered to be what
      *            is <em>after</em> the last period (.) in the file name.
-     * @param m method that takes two arguments of a <code>byte[]</code> which
-     *            is the contents of a file with the extension <code>ext</code>
-     *            and any <code>Object</code> for other use
+     * @param apply method that takes two arguments of a <code>byte[]</code>
+     *            which is the contents of a file with the extension
+     *            <code>ext</code> and any <code>Object</code> for other
+     *            use. This method should import the data in the
+     *            <code>byte[]</code> into the ROM.
+     * @param remove method that takes two arguments of a <code>byte[]</code>
+     *            which is the contents of a file with the extension
+     *            <code>ext</code> and any <code>Object</code> for other
+     *            use. This method should look at the <code>byte[]</code> and
+     *            try to undo what calling the <code>apply</code> would do
+     *            with that data. This arugment may be null if such a method is
+     *            unavailable and/or does not make sense in the context.
+     * @param check method that takes two arguments of a <code>byte[]</code>
+     *            which is the contents of a file with the extension
+     *            <code>ext</code> and any <code>Object</code> for other
+     *            use. This method should look at the <code>byte[]</code> and
+     *            return a <code>Boolean</code> or a <code>boolean</code>
+     *            with a <code>true</code> or <code>Boolean.TRUE</code>
+     *            value if the exported data has already been put into the
+     *            current ROM and a <code>false</code> or
+     *            <code>Boolean.FALSE</code> value otherwise.
      * @param obj parameter to send to method along with file. This most likely
      *            will be an instance of <code>HackModule</code> for
      *            reading/writting
+     * @see #applyFile(String, byte[], boolean)
      * @see #applyFile(String, byte[])
+     * @see #unapplyFile(String, byte[])
+     * @see #checkAppliedFile(String, byte[])
      */
-    public static void registerExtension(String ext, Method m, Object obj)
+    public static void registerExtension(String ext, Method apply,
+        Method remove, Method check, Object obj)
     {
-        exts.put(ext, new Object[]{m, obj});
+        if (apply == null)
+            throw (new IllegalArgumentException(
+                "IPSDatabase.registerExtension(): \"apply\" must be non-null"));
+
+        exts.put(ext, new Object[]{apply, remove, check, obj});
     }
 
     /**
      * Method not final, defination subject to change. Imports data from the
      * specified file. Uses <code>filename</code> to identify what the
-     * extension is. Once the extension has been read, the method registered
-     * with {@link #registerExtension(String, Method, Object)}will be used to
-     * process the data. That method may prompt the user for options, but may or
-     * may not allow the user to cancel.
+     * extension is. Once the extension has been read, the apply or remove
+     * method registered with
+     * {@link #registerExtension(String, Method, Method, Object)}will be used
+     * to process the data based on the <code>apply</code> argument. That
+     * method may prompt the user for options, but may or may not allow the user
+     * to cancel.
      * 
      * @param filename filename to get extension from
      * @param file <code>byte[]</code> with the exported data
+     * @param apply Indicates which method to call. Value must be one of the
+     *            <code>METHOD_*</code> constants. May throw
+     *            <code>IllegalArgumentException</code> if unapply is not
+     *            supported for the file type.
+     * @return <code>null</code> for apply or unapply methods. For check
+     *         method <code>Boolean.TRUE</code> if file already applied,
+     *         <code>Boolean.FALSE</code> if not.
+     * @see #applyFile(String, byte[])
+     * @see #unapplyFile(String, byte[])
+     * @see #checkAppliedFile(String, byte[])
+     * @see #registerExtension(String, Method, Method, Object)
+     * @see #METHOD_APPLY
+     * @see #METHOD_UNAPPLY
+     * @see #METHOD_CHECK
+     * @see #METHOD_OBJ
+     */
+    protected static Boolean applyFile(String filename, byte[] file, int method)
+    {
+        Object out = null;
+        try
+        {
+            String ext = filename.substring(filename.lastIndexOf(".") + 1);
+            Object[] obj = (Object[]) exts.get(ext);
+            if (obj == null)
+            {
+                JOptionPane.showMessageDialog(null,
+                    "Error performing specified action in IPS Database:\n"
+                        + "File type ." + ext + " is not supported.",
+                    "Unsupported file type", JOptionPane.ERROR_MESSAGE);
+                return null;
+            }
+            Method m = (Method) obj[method];
+            if (m == null)
+            {
+                final String[] methodNames = new String[]{"Apply", "Unapply",
+                    "Check"};
+                throw (new IllegalArgumentException((methodNames[method]
+                    + " not supported for ." + ext + " files.")));
+            }
+            Object o = obj[METHOD_OBJ];
+            out = m.invoke(null, new Object[]{file, o});
+        }
+        catch (Exception e)
+        {
+            JOptionPane.showMessageDialog(null,
+                "Unexpected error performing specified action in IPS Database.\n"
+                    + "See error console for details.", "Unknown error",
+                JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+        if (out instanceof Boolean)
+            return (Boolean) out;
+        else
+            return null;
+    }
+
+    /**
+     * Imports data from the specified file. Uses <code>filename</code> to
+     * identify what the extension is. Once the extension has been read, the
+     * apply method registered with
+     * {@link #registerExtension(String, Method, Method, Object)}will be used
+     * to process the data. That method may prompt the user for options, but may
+     * or may not allow the user to cancel.
+     * 
+     * @param filename filename to get extension from
+     * @param file <code>byte[]</code> with the exported data
+     * @return <code>true</code> if successful
+     * @see #registerExtension(String, Method, Object)
+     * @see #applyFile(String, byte[], boolean)
+     * @see #unapplyFile(String, byte[])
+     * @see #checkAppliedFile(String, byte[])
+     * @see #METHOD_APPLY
+     */
+    public static boolean applyFile(String filename, byte[] file)
+    {
+        return applyFile(filename, file, METHOD_APPLY).equals(Boolean.TRUE);
+    }
+
+    /**
+     * Unimports data from the specified file. Uses <code>filename</code> to
+     * identify what the extension is. Once the extension has been read, the
+     * remove method registered with
+     * {@link #registerExtension(String, Method, Method, Object)}will be used
+     * to process the data. That method may prompt the user for options, but may
+     * or may not allow the user to cancel.
+     * 
+     * @param filename filename to get extension from
+     * @param file <code>byte[]</code> with the exported data
+     * @return <code>true</code> if successful; <code>false</code> could be
+     *         caused by an unapply method not being available for the file
+     *         type.
+     * @see #registerExtension(String, Method, Object)
+     * @see #applyFile(String, byte[], boolean)
+     * @see #applyFile(String, byte[])
+     * @see #checkAppliedFile(String, byte[])
+     * @see #METHOD_UNAPPLY
+     */
+    public static boolean unapplyFile(String filename, byte[] file)
+    {
+        return applyFile(filename, file, METHOD_UNAPPLY).equals(Boolean.TRUE);
+    }
+
+    /**
+     * Checks if data has been imported from the specified file. Uses
+     * <code>filename</code> to identify what the extension is. Once the
+     * extension has been read, the remove method registered with
+     * {@link #registerExtension(String, Method, Method, Object)}will be used
+     * to process the data.
+     * 
+     * @param filename filename to get extension from
+     * @param file <code>byte[]</code> with the exported data
+     * @return <code>true</code> if specified <code>file</code> has already
+     *         been applied to the current ROM.
      * @throws IllegalArgumentException
      * @throws IllegalAccessException
      * @throws InvocationTargetException
      * @see #registerExtension(String, Method, Object)
+     * @see #applyFile(String, byte[], boolean)
+     * @see #applyFile(String, byte[])
+     * @see #unapplyFile(String, byte[])
+     * @see #METHOD_CHECK
      */
-    public static void applyFile(String filename, byte[] file)
-        throws IllegalArgumentException, IllegalAccessException,
-        InvocationTargetException
+    public static boolean checkAppliedFile(String filename, byte[] file)
     {
-        Object[] obj = (Object[]) exts.get(filename.substring(filename
-            .lastIndexOf(".")));
-        Method m = (Method) obj[0];
-        Object o = (HackModule) obj[1];
-        m.invoke(null, new Object[]{file, o});
+        return applyFile(filename, file, METHOD_CHECK).equals(Boolean.TRUE);
     }
 }

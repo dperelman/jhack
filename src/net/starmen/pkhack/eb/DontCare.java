@@ -38,7 +38,7 @@ public class DontCare extends EbHackModule implements ActionListener
         super(rom, prefs);
     }
     private JTextField[][] textBoxes = new JTextField[7][7];
-    private static IPSDatabase.IPSDatabaseEntry sixCharHack = null;
+    private static IPSDatabase.DatabaseEntry sixCharHack = null;
 
     public static boolean isSixByteNamedHacked(Rom rom)
     {
@@ -89,7 +89,7 @@ public class DontCare extends EbHackModule implements ActionListener
                     JOptionPane.YES_NO_OPTION);
             if (ques == JOptionPane.YES_OPTION)
             {
-                sixCharHack.apply(rom);
+                sixCharHack.apply();
             }
             if (saveSixCharPref.isSelected())
                 JHack.main.getPrefs().setValueAsBoolean(
@@ -100,7 +100,7 @@ public class DontCare extends EbHackModule implements ActionListener
             JHack.main.getPrefs().getValueAsBoolean("sixCharHack")
                 && !isSixByteNamedHacked(rom))
         {
-            sixCharHack.apply(rom);
+            sixCharHack.apply();
         }
 
         mainWindow = createBaseWindow(this);

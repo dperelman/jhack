@@ -87,10 +87,10 @@
 		name = "Six Character Name" sdesc = "Allows 6-character names. (BETA)"
 		sshot = "eb6c_003.png" sssize = "3068" type = "asm" romtype = "Earthbound" />
 	<!-- Font hacks -->
-	<ips src = "ebengsat.ips" size = "2371" author = "Tomato"
+	<ips src = "mato_oldenglish.efn" size = "3168" author = "Tomato"
 		name = "Olde English Font" sdesc = "Changes Mr. Saturn font to Olde English"
 		sshot = "ebengsat.png" sssize = "8460" type = "satfont" romtype = "Earthbound" />
-	<ips src = "newFontNormal.ips" size = "1073" author = "EBisumaru"
+	<ips src = "maru_font.efn" size = "3168" author = "EBisumaru"
 		name = "EBisumaru's Font" sdesc = "Changes normal font"
 		sshot = "newFontNormal.png" sssize = "3581" type = "regfont" romtype = "Earthbound" />
 	<!-- Window border hacks -->

@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.swing.AbstractButton;
 import javax.swing.Box;
@@ -31,16 +32,22 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
+import net.starmen.pkhack.ByteBlock;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
+import net.starmen.pkhack.IPSDatabase;
 import net.starmen.pkhack.IntArrDrawingArea;
+import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
@@ -60,6 +67,27 @@ public class FontEditor extends EbHackModule implements ActionListener
     public FontEditor(Rom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
+
+        try
+        {
+            String[] exts = new String[]{"efn", "efs", "eft"};
+            Class[] c = new Class[]{byte[].class, Integer.class};
+            for (int i = 0; i < exts.length; i++)
+                IPSDatabase.registerExtension(exts[i], FontEditor.class
+                    .getMethod("importFont", c), FontEditor.class.getMethod(
+                    "restore", c), FontEditor.class.getMethod("check", c),
+                    new Integer(i));
+        }
+        catch (SecurityException e)
+        {
+            // no security model, shouldn't have to worry about this
+            e.printStackTrace();
+        }
+        catch (NoSuchMethodException e)
+        {
+            // spelling mistake, maybe? ^_^;
+            e.printStackTrace();
+        }
     }
 
     //TODO Make Font.createFont() create an instance of a NormalFont,
@@ -70,6 +98,7 @@ public class FontEditor extends EbHackModule implements ActionListener
         {
             public static Color FOREGROUND = Color.WHITE;
             public static Color BACKGROUND = Color.BLACK;
+            public static final int[] CHAR_SIZES = new int[]{32, 16, 8};
             private int width, num, size;
             private int address, widthAddress;
             private byte[][] img;
@@ -83,24 +112,28 @@ public class FontEditor extends EbHackModule implements ActionListener
                 this.widthAddress = widthAddress;
                 this.size = size;
                 this.num = num;
+                
+                readInfo();
+            }
+            public void readInfo()
+            {
                 this.width = hm.rom.read(widthAddress);
-
                 int offset = address;
                 if (size == FONT_SIZE_NORMAL)
                 {
                     img = new byte[16][16];
                     offset += hm.read1BPPArea(img, offset, 16, 0, 0);
-                    hm.read1BPPArea(img, offset, 16, 8, 0);
+                    offset += hm.read1BPPArea(img, offset, 16, 8, 0);
                 }
                 else if (size == FONT_SIZE_SMALL)
                 {
                     img = new byte[8][16];
-                    hm.read1BPPArea(img, offset, 16, 0, 0);
+                    offset += hm.read1BPPArea(img, offset, 16, 0, 0);
                 }
                 else if (size == FONT_SIZE_TINY)
                 {
                     img = new byte[8][8];
-                    hm.read1BPPArea(img, offset, 8, 0, 0);
+                    offset += hm.read1BPPArea(img, offset, 8, 0, 0);
                 }
             }
 
@@ -240,8 +273,8 @@ public class FontEditor extends EbHackModule implements ActionListener
              * the width, and the rest being 1BPP image(s) of the character.
              * Length depends on size.
              * 
-             * @return a <code>byte[]</code> with the width and images of
-             *         this character
+             * @return a <code>byte[]</code> with the width and images of this
+             *         character
              * @see #importChar(byte[], int)
              */
             public byte[] exportChar()
@@ -251,7 +284,8 @@ public class FontEditor extends EbHackModule implements ActionListener
                 if (size == FONT_SIZE_NORMAL)
                 {
                     b = new byte[33];
-                    offset += HackModule.write1BPPArea(img, b, offset, 16, 0, 0);
+                    offset += HackModule
+                        .write1BPPArea(img, b, offset, 16, 0, 0);
                     HackModule.write1BPPArea(img, b, offset, 16, 8, 0);
                 }
                 else if (size == FONT_SIZE_SMALL)
@@ -275,8 +309,7 @@ public class FontEditor extends EbHackModule implements ActionListener
 
             /**
              * Imports character from <code>byte[]</code> into this. Takes
-             * <code>byte[]</code>'s like what {@link #exportChar()}
-             * returns.
+             * <code>byte[]</code>'s like what {@link #exportChar()}returns.
              * 
              * @param b <code>byte[]</code> holding the width and 1BPP images
              *            of this character
@@ -308,6 +341,36 @@ public class FontEditor extends EbHackModule implements ActionListener
             }
 
             /**
+             * Checks if character from <code>byte[]</code> is the same as
+             * this. Takes <code>byte[]</code>'s like what
+             * {@link #exportChar()}returns.
+             * 
+             * @param b <code>byte[]</code> holding the width and 1BPP images
+             *            of this character
+             * @param off offset in <code>b</code> char starts from
+             * @return number of bytes read or -1 if a difference is found
+             * @see #exportChar()
+             * @see #importChar(byte[], int)
+             */
+            public boolean checkChar(byte[] b, int off)
+            {
+                byte[] curr = exportChar();
+                byte[] exp = new byte[curr.length];
+                System.arraycopy(b, off, exp, 0, exp.length);
+                return Arrays.equals(curr, exp);
+            }
+
+            public void restoreChar()
+            {
+                Rom rom = hm.rom, orgRom = JHack.main.getOrginalRomFile(rom
+                    .getRomType());
+                rom.write(widthAddress, orgRom.readByte(widthAddress));
+                rom.write(address, orgRom.readByte(address, CHAR_SIZES[size]));
+                
+                readInfo();
+            }
+
+            /**
              * @return Returns the width.
              */
             public int getWidth()
@@ -325,27 +388,55 @@ public class FontEditor extends EbHackModule implements ActionListener
 
         }
 
-        public Character[] chars = new Character[96];
-        private int address, widthAddress, size;
+        /** Number of characters in an Earthbound font. */
+        public static final int NUM_CHARS = 96;
+        public Character[] chars = new Character[NUM_CHARS];
+        private int address, widthAddress, size, charSize;
+        private HackModule hm;
 
         public Font(int address, int widthAddress, int size, HackModule hm)
         {
             this.address = address;
             this.widthAddress = widthAddress;
             this.size = size;
-            int cs = 32;
+            charSize = 32;
             if (size == FONT_SIZE_SMALL)
-                cs = 16;
-            else if (size == FONT_SIZE_TINY) cs = 8;
+                charSize = 16;
+            else if (size == FONT_SIZE_TINY)
+                charSize = 8;
+            this.hm = hm;
+            readInfo();
+        }
+        
+        public void readInfo()
+        {
             for (int c = 0; c < chars.length; c++)
-                chars[c] = new FontEditor.Font.Character(address + c * cs,
-                    widthAddress + c, size, c, hm);
+                chars[c] = new FontEditor.Font.Character(
+                    address + c * charSize, widthAddress + c, size, c, hm);
         }
 
         public void writeInfo()
         {
             for (int i = 0; i < chars.length; i++)
                 chars[i].writeInfo();
+        }
+
+        public boolean checkFont(byte[] b)
+        {
+            int offset = 0;
+            for (int i = 0; i < chars.length; i++)
+            {
+                if (!chars[i].checkChar(b, offset))
+                    return false;
+                offset += charSize + 1;
+            }
+            return true;
+        }
+
+        public void restoreFont()
+        {
+            for (int i = 0; i < chars.length; i++)
+                chars[i].restoreChar();
         }
 
         public Image drawFontImage()
@@ -386,6 +477,9 @@ public class FontEditor extends EbHackModule implements ActionListener
         }
     }
 
+    /** Number of fonts. */
+    public final static int NUM_FONTS = 5;
+
     /** Constants for fonts. */
     public final static int MAIN = 0;
     public final static int SATURN = 1;
@@ -394,15 +488,25 @@ public class FontEditor extends EbHackModule implements ActionListener
     public final static int TINY = 4;
 
     /** Constants for font sizes. */
-    public final static int FONT_SIZE_NORMAL = 1;
-    public final static int FONT_SIZE_SMALL = 2;
-    public final static int FONT_SIZE_TINY = 3;
+    public final static int FONT_SIZE_NORMAL = 0;
+    public final static int FONT_SIZE_SMALL = 1;
+    public final static int FONT_SIZE_TINY = 2;
+
+    /**
+     * File sizes of exported files indexed by font size constants.
+     * 
+     * @see #FONT_SIZE_NORMAL
+     * @see #FONT_SIZE_SMALL
+     * @see #FONT_SIZE_TINY
+     */
+    public final static int FONT_FILE_SIZES[] = new int[]{3168, 1632, 864};
 
     /** Holds the fonts of Earthbound. */
-    public static Font fonts[] = new Font[5];
+    public static Font fonts[] = new Font[NUM_FONTS];
     /**
      * Holds the sizes of the fonts of Earthbound. <code>FONT_SIZES[MAIN]</code>
-     * equals the font size constant for the main font (<code>FONT_SIZE_NORMAL</code>).
+     * equals the font size constant for the main font (
+     * <code>FONT_SIZE_NORMAL</code>).
      */
     public final static int[] FONT_SIZES = new int[]{FONT_SIZE_NORMAL,
         FONT_SIZE_NORMAL, FONT_SIZE_NORMAL, FONT_SIZE_SMALL, FONT_SIZE_TINY};
@@ -449,7 +553,8 @@ public class FontEditor extends EbHackModule implements ActionListener
         {
             //new char
             int nc = ((y / CHAR_SIZE) * CHARS_WIDE) + (x / CHAR_SIZE);
-            if (nc < 96 && nc > -1) setCurrentChar(nc);
+            if (nc < 96 && nc > -1)
+                setCurrentChar(nc);
         }
 
         private void reHighlight(int oldChar, int newChar)
@@ -469,7 +574,7 @@ public class FontEditor extends EbHackModule implements ActionListener
 
         /**
          * TODO Write javadoc for this method
-         * 
+         *  
          */
         public void repaintCurrent()
         {
@@ -539,7 +644,8 @@ public class FontEditor extends EbHackModule implements ActionListener
         {
             if (!(me.getX() < 0 || me.getY() < 0
                 || me.getX() > CHARS_WIDE * CHAR_SIZE - 1 || me.getY() > CHARS_HIGH
-                * CHAR_SIZE - 1)) setCurrentChar(me.getX(), me.getY());
+                * CHAR_SIZE - 1))
+                setCurrentChar(me.getX(), me.getY());
         }
 
         public void mouseMoved(MouseEvent arg0)
@@ -689,8 +795,8 @@ public class FontEditor extends EbHackModule implements ActionListener
         private int zoom = 1;
 
         /**
-         * Constuctor for <code>StringViewer</code>.
-         * Calls {@link FontEditor#readFromRom(HackModule)}.
+         * Constuctor for <code>StringViewer</code>. Calls
+         * {@link FontEditor#readFromRom(HackModule)}.
          * 
          * @param text initial text
          * @param zoom initial zoom factor
@@ -735,8 +841,8 @@ public class FontEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Constuctor for <code>StringViewer</code>. The inital text is set to
-         * an empty string. Calls {@link FontEditor#readFromRom(HackModule)}.
+         * Constuctor for <code>StringViewer</code>. The inital text is set
+         * to an empty string. Calls {@link FontEditor#readFromRom(HackModule)}.
          * 
          * @param zoom initial zoom factor
          * @param font initial font
@@ -748,8 +854,8 @@ public class FontEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Constuctor for <code>StringViewer</code>. The inital text is set to
-         * an empty string. The initial font is set to the main font. Calls 
+         * Constuctor for <code>StringViewer</code>. The inital text is set
+         * to an empty string. The initial font is set to the main font. Calls
          * {@link FontEditor#readFromRom(HackModule)}.
          * 
          * @param zoom initial zoom factor
@@ -761,8 +867,8 @@ public class FontEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Constuctor for <code>StringViewer</code>. The inital text is set to
-         * an empty string. The initial zoom is set to 1 (actual size). The
+         * Constuctor for <code>StringViewer</code>. The inital text is set
+         * to an empty string. The initial zoom is set to 1 (actual size). The
          * initial font is set to the main font. Calls
          * {@link FontEditor#readFromRom(HackModule)}.
          * 
@@ -774,8 +880,8 @@ public class FontEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Returns which of EarthBound's five fonts is being used.
-         * Possibilities are main, saturn, big, battle, and tiny.
+         * Returns which of EarthBound's five fonts is being used. Possibilities
+         * are main, saturn, big, battle, and tiny.
          * 
          * @return Returns the font being used.
          * @see #setEbFont(int)
@@ -832,9 +938,9 @@ public class FontEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Returns the current zoom setting. A zoom of 1 means same size as
-         * the text will appear in EarthBound. A zoom of 2 means twice the
-         * height and twice the width as it will appear in EarthBound.
+         * Returns the current zoom setting. A zoom of 1 means same size as the
+         * text will appear in EarthBound. A zoom of 2 means twice the height
+         * and twice the width as it will appear in EarthBound.
          * 
          * @return Returns the zoom.
          */
@@ -844,9 +950,9 @@ public class FontEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Sets the zoom. A zoom of 1 means same size as the text will appear
-         * in EarthBound. A zoom of 2 means twice the height and twice the
-         * width as it will appear in EarthBound.
+         * Sets the zoom. A zoom of 1 means same size as the text will appear in
+         * EarthBound. A zoom of 2 means twice the height and twice the width as
+         * it will appear in EarthBound.
          * 
          * @param zoom The zoom to set.
          */
@@ -901,9 +1007,9 @@ public class FontEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Attaches a {@link JTextComponent} and changes the text of this
-         * whenever the text of it changes. Note that {@link JTextField} and 
-         * {@link JTextArea} both extend <code>JTextComponent<code>.
+         * Attaches a {@link JTextComponent}and changes the text of this
+         * whenever the text of it changes. Note that {@link JTextField}and
+         * {@link JTextArea}both extend <code>JTextComponent<code>.
          * 
          * @param text <code>JTextComponent<code> to sync the text of this with
          */
@@ -935,13 +1041,14 @@ public class FontEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Creates a <code>StringViewer</code> with a {@link JTextField} for
+         * Creates a <code>StringViewer</code> with a {@link JTextField}for
          * text entry and a font selector.
          * 
          * @param text initial text
          * @param zoom initial zoom
          * @param hm a <code>HackModule</code> with a loaded EarthBound ROM
-         * @return a component for previewing text that allows the user to select the text and font
+         * @return a component for previewing text that allows the user to
+         *         select the text and font
          * @see #StringViewer(String, int, HackModule)
          */
         public static JComponent createWithFontSelector(final JTextField text,
@@ -975,14 +1082,14 @@ public class FontEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Creates a <code>StringViewer</code> with a {@link JTextField} for
-         * text entry and a font selector. Sets the initial zoom to 1
-         * (actual size).
+         * Creates a <code>StringViewer</code> with a {@link JTextField}for
+         * text entry and a font selector. Sets the initial zoom to 1 (actual
+         * size).
          * 
          * @param text initial text
          * @param hm a <code>HackModule</code> with a loaded EarthBound ROM
-         * @return a component for previewing text that allows the user to 
-         * 		select the text and font
+         * @return a component for previewing text that allows the user to
+         *         select the text and font
          * @see #StringViewer(String, int, HackModule)
          */
         public static JComponent createWithFontSelector(JTextField text,
@@ -1111,11 +1218,32 @@ public class FontEditor extends EbHackModule implements ActionListener
         mainWindow.getContentPane().add(dt, BorderLayout.EAST);
 
         mainWindow.pack();
+        
+        addDataListener(fonts, new ListDataListener() {
+
+            public void contentsChanged(ListDataEvent e)
+            {
+                int curr = getCurrentFont();
+                if(e.getIndex0() <= curr && e.getIndex1() >= curr)
+                {
+                    mainWindow.getContentPane().repaint();
+                }
+            }
+
+            public void intervalAdded(ListDataEvent e)
+            {
+                //won't happen
+            }
+
+            public void intervalRemoved(ListDataEvent e)
+            {
+                //won't happen
+            }});
     }
 
     public String getVersion()
     {
-        return "0.3";
+        return "0.4";
     }
 
     public String getDescription()
@@ -1253,11 +1381,11 @@ public class FontEditor extends EbHackModule implements ActionListener
 
     /**
      * Returns the file extension and file type describtion for a font of the
-     * given size. Note that the extension returned does <strong>not</strong>
-     * include the preceeding period. TODO Write javadoc for this method
+     * given size. Note that the extension returned does <strong>not </strong>
+     * include the preceeding period.
      * 
-     * @param fontSize one of <code>FONT_SIZE_NORMAL</code>,<code>FONT_SIZE_SMALL</code>,
-     *            <code>FONT_SIZE_TINY</code>
+     * @param fontSize one of <code>FONT_SIZE_NORMAL</code>,
+     *            <code>FONT_SIZE_SMALL</code>,<code>FONT_SIZE_TINY</code>
      * @return a <code>String[2]</code> of the format {ext, desc}.
      */
     public static String[] fileType(int fontSize)
@@ -1275,6 +1403,52 @@ public class FontEditor extends EbHackModule implements ActionListener
         }
     }
 
+    /**
+     * Imports the font imformation which was exported to the given
+     * <code>byte[]</code> into the specified font.
+     * <em>This does not call <code>writeInfo()</code> or save.</em>
+     * 
+     * @param font number of the font to use
+     * @param b exported data to import
+     * @see #importFont(int, File)
+     * @see #importFont(int)
+     * @see #exportFont(int, File)
+     * @see Font#writeInfo()
+     * @see #fonts
+     * @see #MAIN
+     * @see #SATURN
+     * @see #BIG
+     * @see #BATTLE
+     * @see #TINY
+     */
+    public static void importFont(int font, byte[] b)
+    {
+        int off = 0;
+        for (int i = 0; i < fonts[font].chars.length; i++)
+        {
+            off += fonts[font].chars[i].importChar(b, off);
+        }
+        notifyDataListeners(fonts, b, font);
+    }
+
+    /**
+     * Imports the font imformation which was exported to the given
+     * <code>File</code> into the specified font.
+     * <em>This does not call <code>writeInfo()</code> or save.</em>
+     * 
+     * @param font number of the font to use
+     * @param fn exported data to import
+     * @see #importFont(int, byte[])
+     * @see #importFont(int)
+     * @see #exportFont(int, File)
+     * @see Font#writeInfo()
+     * @see #fonts
+     * @see #MAIN
+     * @see #SATURN
+     * @see #BIG
+     * @see #BATTLE
+     * @see #TINY
+     */
     public static void importFont(int font, File fn)
     {
         try
@@ -1283,11 +1457,7 @@ public class FontEditor extends EbHackModule implements ActionListener
             byte[] b = new byte[(int) fn.length()];
             in.read(b);
             in.close();
-            int off = 0;
-            for (int i = 0; i < fonts[font].chars.length; i++)
-            {
-                off += fonts[font].chars[i].importChar(b, off);
-            }
+            importFont(font, b);
         }
         catch (FileNotFoundException e)
         {
@@ -1297,6 +1467,118 @@ public class FontEditor extends EbHackModule implements ActionListener
         {
             System.out.println("Error reading file to import font from.");
         }
+    }
+
+    /**
+     * Asks the user which normal font they want to select. Used by
+     * {@link #importNormal(byte[], Object)}.
+     * 
+     * @param action text =
+     *            <code>"Select which font you wish to " + action + "."</code>
+     * @return -1 if user cancels or number of font selected
+     */
+    private static int askWhichNormalFont(String action)
+    {
+        String[] options = new String[]{"Main", "Mr. Saturn", "Big"};
+        Object opt = JOptionPane.showInputDialog(null,
+            "Select which font you wish to " + action + ".", "Select Font",
+            JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        if (opt == null)
+            return -1;
+        for (int i = 0; i < options.length; i++)
+            if (opt.equals(options[i]))
+                return i;
+        return -1;
+    }
+
+    private static int getFontOfSize(Integer size, String action)
+    {
+        int i = size.intValue(), font = -1;
+        switch (i)
+        {
+            case FONT_SIZE_NORMAL:
+                font = askWhichNormalFont(action);
+                break;
+            case FONT_SIZE_SMALL:
+                font = BATTLE;
+                break;
+            case FONT_SIZE_TINY:
+                font = TINY;
+                break;
+        }
+        return font;
+    }
+
+    /**
+     * Imports the given <code>byte[]</code> into a font of the specified
+     * size. If <code>size.intValue() == {@link #FONT_SIZE_NORMAL}</code>,
+     * the user will be asked which font they want to import to. This font could
+     * be the "main" font, the "Mr. Saturn" font, or the "big" font. This
+     * <strong>does </strong> call {@link Font#writeInfo()}. This method exists
+     * to be called by <code>IPSDatabase</code> for "applying" files with .ef?
+     * extensions.
+     * 
+     * @param b exported data to import
+     * @param obj ignored, exists as an implementation detail
+     * @see net.starmen.pkhack.IPSDatabase#applyFile(String, byte[])
+     * @see net.starmen.pkhack.IPSDatabase#registerExtension(String, Method,
+     *      Method, Method, Object)
+     * @see #askWhichNormalFont(String)
+     * @see #importFont(int, byte[])
+     * @see #MAIN
+     * @see #SATURN
+     * @see #BIG
+     */
+    public static boolean importFont(byte[] b, Integer size)
+    {
+        int font = getFontOfSize(size, "import to");
+        if (font == -1)
+            return false;
+        importFont(font, b);
+        fonts[font].writeInfo();
+        return true;
+    }
+
+    /**
+     * Imports the given <code>byte[]</code> into the battle font. This
+     * <strong>does </strong> call {@link Font#writeInfo()}. This method exists
+     * to be called by <code>IPSDatabase</code> for "applying" files with the
+     * .efs extension.
+     * 
+     * @param b exported data to import
+     * @param obj ignored, exists as an implementation detail
+     * @see net.starmen.pkhack.IPSDatabase#applyFile(String, byte[])
+     * @see net.starmen.pkhack.IPSDatabase#registerExtension(String, Method,
+     *      Method, Method, Object)
+     * @see #importFont(int, byte[])
+     * @see #BATTLE
+     */
+    public static boolean importSmall(byte[] b, Object obj)
+    {
+        importFont(BATTLE, b);
+        fonts[BATTLE].writeInfo();
+        return true;
+    }
+
+    /**
+     * Imports the given <code>byte[]</code> into the tiny font. This
+     * <strong>does </strong> call {@link Font#writeInfo()}. This method exists
+     * to be called by <code>IPSDatabase</code> for "applying" files with the
+     * .eft extension.
+     * 
+     * @param b exported data to import
+     * @param obj ignored, exists as an implementation detail
+     * @see net.starmen.pkhack.IPSDatabase#applyFile(String, byte[])
+     * @see net.starmen.pkhack.IPSDatabase#registerExtension(String, Method,
+     *      Method, Method, Object)
+     * @see #importFont(int, byte[])
+     * @see #TINY
+     */
+    public static boolean importTiny(byte[] b, Object obj)
+    {
+        importFont(TINY, b);
+        fonts[TINY].writeInfo();
+        return true;
     }
 
     public static void exportFont(int font, File fn)
@@ -1320,14 +1602,135 @@ public class FontEditor extends EbHackModule implements ActionListener
     {
         String[] ft = fileType(fonts[font].size);
         File fn = getFile(false, ft[0], ft[1]);
-        if (fn != null) importFont(font, fn);
+        if (fn != null)
+            importFont(font, fn);
     }
 
     public static void exportFont(int font)
     {
         String[] ft = fileType(fonts[font].size);
         File fn = getFile(true, ft[0], ft[1]);
-        if (fn != null) exportFont(font, fn);
+        if (fn != null)
+            exportFont(font, fn);
+    }
+
+    /**
+     * Filenames of the exported versions of the orginal Earthbound fonts. These
+     * are in the {@link EbHackModule#DEFAULT_BASE_DIR}directory.
+     * 
+     * @see #MAIN
+     * @see #SATURN
+     * @see #BIG
+     * @see #BATTLE
+     * @see #TINY
+     */
+    /*
+     * public static final String[] ORG_FONT_FILENAMES = new
+     * String[]{"main.efn", "saturn.efn", "big.efn", "battle.efs", "tiny.eft"};
+     *//**
+        * Cache of exported versions of orginal Earthbound fonts.
+        * 
+        * @see #ORG_FONT_FILENAMES
+        * @see #MAIN
+        * @see #SATURN
+        * @see #BIG
+        * @see #BATTLE
+        * @see #TINY
+        */
+    /*
+     * protected static byte[][] orgFontFiles = new byte[NUM_FONTS][];
+     *  
+     *//**
+        * Gets the orginal Earthbound font <code>byte[]</code> for the
+        * requested font. The information is cached in <code>orgFontFiles</code>
+        * for future calls to this method.
+        * 
+        * @param font which font to get the orginal Earthbound version of
+        * @return export of the orginal Earthbound version of the specified font
+        * @see #importFont(int, byte[])
+        * @see #ORG_FONT_FILENAMES
+        * @see #orgFontFiles
+        */
+    /*
+     * protected static byte[] getOrgFont(int font) { byte[] b = null; if ((b =
+     * orgFontFiles[font]) != null) return b; try {
+     * ClassLoader.getSystemResourceAsStream( DEFAULT_BASE_DIR +
+     * ORG_FONT_FILENAMES[font]).read( b = new
+     * byte[FONT_FILE_SIZES[FONT_SIZES[font]]]); //if we get to the next line, b
+     * is loaded correctly orgFontFiles[font] = b; } catch (IOException e) {
+     * //IO exception. null will be returned for b e.printStackTrace(); } return
+     * b; }
+     */
+
+    /**
+     * Restores the specified font to the orginal Earthbound version. This does
+     * call <code>writeInfo()</code> on the font.
+     * 
+     * @param font which font to restore
+     * @return true if successful, false on failure
+     */
+    public static void restore(int font)
+    {
+        fonts[font].restoreFont();
+        fonts[font].writeInfo();
+        notifyDataListeners(fonts, fonts[font], font);
+        /*
+         * byte[] b = getOrgFont(font); if (b == null) return false;
+         * importFont(font, b); fonts[font].writeInfo(); return true;
+         */
+    }
+
+    /**
+     * Restores a font of size <code>size</code>. If <code>size</code> is
+     * <code>FONT_SIZE_NORMAL</code> the user is asked which one of the normal
+     * fonts they want to restore. For the other sizes there is only one font of
+     * each, so no user interaction is required. If this fails at any step,
+     * false will be returned. This method exists to be called by
+     * <code>IPSDatabase</code> for "unapplying" files with .ef? extensions.
+     * 
+     * @param b ignored, exists as an implementation detail
+     * @param size Size of the font to restore. <code>FONT_SIZE_NORMAL</code>,
+     *            <code>FONT_SIZE_SMALL</code>, or
+     *            <code>FONT_SIZE_TINY</code>.
+     * @return false if any problems occur
+     */
+    public static boolean restore(byte[] b, Integer size)
+    {
+        int font = getFontOfSize(size, "restore to orginal Earthbound version");
+        if (font == -1)
+            return false;
+        restore(font);
+        return true;
+    }
+
+    /**
+     * Checks if any font of the specified size is the same as the given
+     * exported font. This method exists to be called by
+     * <code>IPSDatabase</code> for "checking" files with .ef? extensions.
+     * 
+     * @param b an exported font in the correct format for a font of size
+     *            <code>size</code>
+     * @param size Size of font to check. <code>size.intValue()</code> should
+     *            be <code>FONT_SIZE_NORMAL</code>,
+     *            <code>FONT_SIZE_SMALL</code>, or
+     *            <code>FONT_SIZE_TINY</code>.
+     * @return <code>true</code> if at least one font of the specified size is
+     *         has had <code>b</code> imported into it
+     * @see #FONT_SIZE_NORMAL
+     * @see #FONT_SIZE_SMALL
+     * @see #FONT_SIZE_TINY
+     */
+    public static boolean check(byte[] b, Integer size)
+    {
+        int s = size.intValue();
+        for (int font = 0; font < fonts.length; font++)
+        {
+            Font f = fonts[font];
+            if (f.size == s)
+                if (f.checkFont(b))
+                    return true;
+        }
+        return false;
     }
 
     public void reset()
