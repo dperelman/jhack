@@ -408,7 +408,7 @@ public abstract class EbHackModule extends HackModule
                     break;
                 }
                 for (pos3 = pos2;
-                    pos3+1 < limit
+                    pos3 < limit
                         && pos3 < pos2 + 2048
                         && udata[pos3] == udata[pos2]
                         && udata[pos3 + 1] == udata[pos2 + 1];
@@ -441,7 +441,6 @@ public abstract class EbHackModule extends HackModule
                     pos3++)
                 {
                     for (tmp = 0;
-                    	pos3 + tmp < limit && pos2 + tmp < limit &&
                         udata[pos3 + tmp] == udata[pos2 + tmp]
                             && tmp < pos2 - pos3
                             && tmp < 1024;
@@ -456,7 +455,6 @@ public abstract class EbHackModule extends HackModule
                         break mainloop;
                     }
                     for (tmp = 0;
-                    pos2 + tmp < limit &&
                         tmp <= pos3
                             && udata[pos3 - tmp] == udata[pos2 + tmp]
                             && tmp < 1024;
@@ -482,8 +480,7 @@ public abstract class EbHackModule extends HackModule
                     pos3++)
                 {
                     for (tmp = 0;
-                        pos3 + tmp < limit && pos2 + tmp < limit &&
-                    	udata[pos3 + tmp] == bitrevs[udata[pos2 + tmp] & 255]
+                        udata[pos3 + tmp] == bitrevs[udata[pos2 + tmp] & 255]
                             && tmp < pos2 - pos3
                             && tmp < 1024;
                         tmp++);
