@@ -982,8 +982,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
         fileMenu.add(HackModule.createJMenuItem("Import Image...", 'm', null,
             "importImg", this));
-//        fileMenu.add(HackModule.createJMenuItem("Export Image...", 'x', null,
-//            "exportImg", this));
+        //        fileMenu.add(HackModule.createJMenuItem("Export Image...", 'x', null,
+        //            "exportImg", this));
 
         mb.add(fileMenu);
 
@@ -1919,7 +1919,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
         public boolean equals(ByteArrHasher o)
         {
-            return this.hint == o.hint;
+            return Arrays.equals(b, o.b);
         }
 
         protected Object clone()
@@ -1962,6 +1962,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             new String[]{"Windows BitMaP", "Compuserv GIF format",
                 "Portable Network Graphics"}));
     }
+
     public void importImg(File f)
     {
         if (f == null)
@@ -2019,6 +2020,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         int[][] arrangement = new int[32][28];
         byte[][] tiles = new byte[632][64];
         Color[] pal = new Color[256];
+        Arrays.fill(pal, new Color(0, 0, 0));
         int tnum = 0, pnum = 0;
         Hashtable tilerefs = new Hashtable(), palrefs = new Hashtable();
         for (int yt = 0; yt < 28; yt++)
@@ -2034,7 +2036,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                     {
                         //sprite[i][j] = pixels[j * w + i];
                         int c = pixels[((j + (yt * 8)) * w) + (i + (xt * 8))];
-                        Color col = new Color(c);
+                        Color col = new Color(c & 0xf8f8f8);
                         int cn;
                         Object tmpc;
                         if ((tmpc = palrefs.get(col)) != null)
@@ -2087,7 +2089,6 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                         new TileRef(tnum, false, true));
                     tilerefs.put(new ByteArrHasher(hvtile).toInteger(),
                         new TileRef(tnum, true, true));
-                    //TODO support flipping
                     try
                     {
                         tiles[tnum++] = tile;
@@ -2115,6 +2116,10 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             for (int x = 0; x < 8; x++)
                 for (int y = 0; y < 8; y++)
                     gasStations[0].tiles[t][x][y] = tiles[t][(y * 8) + x];
+        }
+        for (int t = tnum; t < gasStations[0].tiles.length; t++)
+        {
+            gasStations[0].tiles[t] = new byte[8][8];
         }
         gasStations[0].arrangement = arrangement;
     }

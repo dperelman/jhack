@@ -12,8 +12,11 @@ import java.util.ArrayList;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -24,6 +27,7 @@ import net.starmen.pkhack.XMLPreferences;
 
 /**
  * TODO Write javadoc for this class
+ * 
  * @author AnyoneEB
  */
 public class PointerEditor extends EbHackModule implements ActionListener
@@ -40,7 +44,7 @@ public class PointerEditor extends EbHackModule implements ActionListener
 
     public String getVersion()
     {
-        return "0.1";
+        return "0.2";
     }
 
     public String getDescription()
@@ -85,14 +89,16 @@ public class PointerEditor extends EbHackModule implements ActionListener
             return desc;
         }
 
-        public String readPointer()
+        public String readPointer(boolean reg)
         {
-            return Integer.toHexString(rom.readAsmPointer(address));
+            return Integer.toHexString(reg ? toRegPointer(rom
+                .readAsmPointer(address)) : rom.readAsmPointer(address));
         }
 
-        public void writePointer(String pointer)
+        public void writePointer(String pointer, boolean reg)
         {
-            rom.writeAsmPointer(address, Integer.parseInt(pointer, 16));
+            rom.writeAsmPointer(reg ? toSnesPointer(address) : address, Integer
+                .parseInt(pointer, 16));
         }
     }
 
@@ -133,6 +139,7 @@ public class PointerEditor extends EbHackModule implements ActionListener
     private JLabel asmPreview;
     private JTextField tf;
     private JComboBox pointSel;
+    private JRadioButton reg, snes;
 
     protected void init()
     {
@@ -153,24 +160,43 @@ public class PointerEditor extends EbHackModule implements ActionListener
         asmPreview = new JLabel("A9 YY ZZ 85 A9 WW XX 85");
         edit.add(getLabeledComponent("ASM: ", asmPreview));
 
-        tf = createSizedJTextField(6);
+        ButtonGroup type = new ButtonGroup();
+        reg = new JRadioButton("0x");
+        reg.setSelected(false);
+        reg.setActionCommand("type_reg");
+        reg.addActionListener(this);
+        type.add(reg);
+        snes = new JRadioButton("$");
+        snes.setSelected(true);
+        snes.setActionCommand("type_snes");
+        snes.addActionListener(this);
+        type.add(snes);
+
+        tf = createSizedJTextField(6, true, true);
         tf.getDocument().addDocumentListener(new DocumentListener()
         {
             public void change()
             {
-                if (tf.getText().length() > 0)
-                    asmPreview.setText("A9 "
-                        + addZeros(Integer.toHexString(Integer.parseInt(tf
-                            .getText(), 16) & 0xff), 2)
-                        + " "
-                        + addZeros(Integer.toHexString((Integer.parseInt(tf
-                            .getText(), 16) >> 8) & 0xff), 2)
-                        + " 85 0E A9 "
-                        + addZeros(Integer.toHexString((Integer.parseInt(tf
-                            .getText(), 16) >> 16) & 0xff), 2)
-                        + " "
-                        + addZeros(Integer.toHexString((Integer.parseInt(tf
-                            .getText(), 16) >> 24) & 0xff), 2));
+                try
+                {
+                    int snes_ptr = Integer.parseInt(tf.getText(), 16);
+                    if (reg.isSelected())
+                        snes_ptr = toSnesPointer(snes_ptr);
+                    if (tf.getText().length() > 0)
+                        asmPreview.setText("A9 "
+                            + addZeros(Integer.toHexString(snes_ptr & 0xff), 2)
+                            + " "
+                            + addZeros(Integer
+                                .toHexString((snes_ptr >> 8) & 0xff), 2)
+                            + " 85 0E A9 "
+                            + addZeros(Integer
+                                .toHexString((snes_ptr >> 16) & 0xff), 2)
+                            + " "
+                            + addZeros(Integer
+                                .toHexString((snes_ptr >> 24) & 0xff), 2));
+                }
+                catch (NumberFormatException e)
+                {}
             }
 
             public void changedUpdate(DocumentEvent e)
@@ -188,14 +214,22 @@ public class PointerEditor extends EbHackModule implements ActionListener
                 change();
             }
         });
-        edit.add(getLabeledComponent("Pointer: $", tf));
+        JPanel tfPanel = new JPanel(new BorderLayout());
+        tfPanel.add(tf, BorderLayout.EAST);
+        tfPanel.add(new JLabel("Pointer: "), BorderLayout.WEST);
+        tfPanel.add(createFlowLayout(new JRadioButton[]{reg, snes}),
+            BorderLayout.CENTER);
+        //edit.add(getLabeledComponent("Pointer: $", tf));
+        edit.add(tfPanel);
 
         mainWindow.getContentPane().add(edit, BorderLayout.CENTER);
 
         mainWindow.pack();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see net.starmen.pkhack.HackModule#show()
      */
     public void show()
@@ -213,7 +247,9 @@ public class PointerEditor extends EbHackModule implements ActionListener
         mainWindow.hide();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
      */
     public void actionPerformed(ActionEvent ae)
@@ -225,6 +261,16 @@ public class PointerEditor extends EbHackModule implements ActionListener
         else if (ae.getActionCommand().equals("apply"))
         {
             saveInfo(pointSel.getSelectedIndex());
+        }
+        else if (ae.getActionCommand().equals("type_reg"))
+        {
+            int ptr = Integer.parseInt(tf.getText(), 16);
+            tf.setText(Integer.toHexString(toRegPointer(ptr)));
+        }
+        else if (ae.getActionCommand().equals("type_snes"))
+        {
+            int ptr = Integer.parseInt(tf.getText(), 16);
+            tf.setText(Integer.toHexString(toSnesPointer(ptr)));
         }
         else if (ae.getActionCommand().equals("close"))
         {
@@ -262,7 +308,7 @@ public class PointerEditor extends EbHackModule implements ActionListener
                 return;
             }
         }
-        tf.setText(p.readPointer());
+        tf.setText(p.readPointer(reg.isSelected()));
     }
 
     private void saveInfo(int i)
@@ -288,7 +334,7 @@ public class PointerEditor extends EbHackModule implements ActionListener
         }
         try
         {
-            p.writePointer(tf.getText());
+            p.writePointer(tf.getText(), reg.isSelected());
         }
         catch (NumberFormatException e)
         {

@@ -792,7 +792,7 @@ public abstract class HackModule
      */
     public static JComponent createFlowLayout(Component[] comps)
     {
-        JComponent out = new JPanel(new FlowLayout());
+        JComponent out = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
         for (int i = 0; i < comps.length; i++)
         {
             out.add(comps[i]);
@@ -959,7 +959,16 @@ public abstract class HackModule
                 + "String[] lengths must be equal.");
             return null;
         }
-        JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
+        JFileChooser jfc;
+        try
+        {
+            jfc = new JFileChooser(AbstractRom.getDefaultDir());
+        }
+        catch (RuntimeException e)
+        {
+            e.printStackTrace(System.out);
+            return null;
+        }
         for (int i = 0; i < ext.length; i++)
             jfc.addChoosableFileFilter(new SimpleFileFilter(save, ext[i],
                 desc[i]));
@@ -1340,6 +1349,8 @@ public abstract class HackModule
         int pointerBase, int pointerLen, int oldLen, int newLen, int beginAt,
         boolean mustBeInExpanded)
     {
+        if (rawData == null || pointerLoc == null)
+            return false;
         int pointerDelay = 0;
         byte[] data;
         // 0xff shielding if the new data starts or ends with 0

@@ -1,10 +1,15 @@
-NEXT VERSION (after v0.5.5.2):
+NEXT VERSION (after v0.5.6):
+
+v0.5.6:
 # Enemy Editor v0.6: Added game order view like PK Hack v0.2. ROM-specific enemyGameOrder.txt
 	files may be used.
 # Tile Editor v0.7: Added Multi-Clipboard for minitiles (suggested by NeSs79)
 # Added error messages for missing emptyPrefs.xml and preferences.dtd files.
-# Town Map Editor: Fixed bug in import.
+# Town Map Editor: BUGFIX: Fixed bug in import.
 # Text Editor: BUGFIX: toggling codes only does not change modified status (bug reported by GuyInSummers)
+# Pointer Editor v0.2: pointers may be entered as regular (0x) or SNES ($)
+# Pointer Editor v0.2: BUGFIX: Only hex numbers may be typed
+# Gas Station Editor: BUGFIX: various image import related fixes
 # Hotspot Editor: BUGFIX: All required data is loaded when editor is opened
 # Teleport Destination Editor: BUGFIX: Seeking behaves properly
 # Map Editor: BUGFIX: After saving, doesn't explode

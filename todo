@@ -1,7 +1,3 @@
-NON-RELEASE
-
-# Make (online) JHack TODO list
-
 DONE? (CHANGES TO CONFIRM/DEBUG)
 
 NEXT v0.0.0.x (bugfix) RELEASE
@@ -18,7 +14,7 @@ NEXT v0.0.x (minor) RELEASE
 
 LONG TERM
 
-# Gas Station image import/export
+# Other image import/export
 # IPSDatabase extensions?
 # Starting stat editor ( 1DAF1 = Value for Ness' starting stats )
 # Battle Animation editor ( http://pkhack.fobby.net/misc/txt/psi_animation_doc.txt )
@@ -39,6 +35,3 @@ LONG TERM
   [21:46:31] <BlueAntoid> 1F946 - 1F94C = Pointer to "Strawberry flavor"
   [21:46:33] <BlueAntoid> 1F961 - 1F967 = Pointer to "Banana flavor"
   [21:46:35] <BlueAntoid> 1F97B - 1F982 = Pointer to "Peanut flavor"
-  
-NEVER
-# JHack: Convert settings and module list to XML. Create a format for simplier modules (up to enemy editor complexity) to be XML. Organize by appearence in editor (have <tab> & <column> tags) on <input> tags have offset and length attribs, maybe type, too (item, pointer (multiple types of pointers?), spt, etc)
