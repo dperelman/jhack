@@ -77,8 +77,8 @@ public class ImageDrawingArea extends DrawingArea
     }
 
     /**
-     * Clipboard for an ImageDrawingArea. You can use the get and
-     * setClipboard() methods to make two ImageDrawingArea's share a clipboard.
+     * Clipboard for an ImageDrawingArea. You can use the get and setClipboard()
+     * methods to make two ImageDrawingArea's share a clipboard.
      * 
      * @see ImageDrawingArea#getClipboard()
      * @see ImageDrawingArea#setClipboard(ImageDrawingArea.Clipboard)
@@ -91,12 +91,14 @@ public class ImageDrawingArea extends DrawingArea
         /** Area copied from. */
         protected Rectangle size = new Rectangle();
 
-        public Clipboard() {}
+        public Clipboard()
+        {}
 
         /**
          * Returns true if this <code>Clipboard</code> is empty.
          * 
-         * @return true if nothing has been copied onto this <code>Clipboard</code>
+         * @return true if nothing has been copied onto this
+         *         <code>Clipboard</code>
          */
         public boolean isClipboardEmpty()
         {
@@ -186,7 +188,7 @@ public class ImageDrawingArea extends DrawingArea
         this.drawingWidth = img.getWidth(this);
         this.drawingHeight = img.getHeight(this);
 
-        int w = (int) (drawingWidth * zoom), h = (int) (drawingHeight * zoom);
+        int w = (int) (drawingWidth * zoom) + 1, h = (int) (drawingHeight * zoom) + 1;
 
         this.setPreferredSize(new Dimension(w, h));
 
@@ -204,7 +206,8 @@ public class ImageDrawingArea extends DrawingArea
      * @see DrawingArea.Toolset
      * @see ImageDrawingArea.ColorPalette
      */
-    public ImageDrawingArea(Image img, Toolset tools, ColorPalette pal) {
+    public ImageDrawingArea(Image img, Toolset tools, ColorPalette pal)
+    {
         super();
 
         this.img = (BufferedImage) img;
@@ -227,7 +230,8 @@ public class ImageDrawingArea extends DrawingArea
      * @see ImageDrawingArea.ColorPalette
      */
     public ImageDrawingArea(Image img, Toolset tools, ColorPalette pal,
-        float zoom) {
+        float zoom)
+    {
         super();
 
         this.img = (BufferedImage) img;
@@ -247,7 +251,8 @@ public class ImageDrawingArea extends DrawingArea
      * @see DrawingArea.Toolset
      * @see ImageDrawingArea.ColorPalette
      */
-    public ImageDrawingArea(Toolset tools, ColorPalette pal) {
+    public ImageDrawingArea(Toolset tools, ColorPalette pal)
+    {
         super();
 
         this.tools = tools;
@@ -256,8 +261,8 @@ public class ImageDrawingArea extends DrawingArea
     }
 
     /**
-     * Creates a new ImageDrawingArea with no image. Fires an ActionEvent when
-     * a change is made.
+     * Creates a new ImageDrawingArea with no image. Fires an ActionEvent when a
+     * change is made.
      * 
      * @param tools Toolset
      * @param pal Palette
@@ -265,7 +270,8 @@ public class ImageDrawingArea extends DrawingArea
      * @see DrawingArea.Toolset
      * @see ImageDrawingArea.ColorPalette
      */
-    public ImageDrawingArea(Toolset tools, ColorPalette pal, ActionListener al) {
+    public ImageDrawingArea(Toolset tools, ColorPalette pal, ActionListener al)
+    {
         super();
 
         this.tools = tools;
@@ -323,8 +329,8 @@ public class ImageDrawingArea extends DrawingArea
 
     /**
      * Draws point x, y of the image using the provided <code>Graphics</code>
-     * zoomed. Important note: this draws the point zoomed. Meaning it will
-     * draw a filled rectangle of the size <code>zoom</code> x <code>zoom</code>
+     * zoomed. Important note: this draws the point zoomed. Meaning it will draw
+     * a filled rectangle of the size <code>zoom</code> x <code>zoom</code>
      * with the top-left corner at x*zoom, y*zoom.
      * 
      * @param x Coordinate on the image.
@@ -349,8 +355,8 @@ public class ImageDrawingArea extends DrawingArea
     }
 
     /**
-     * Draws the specified Color at point x, y on the image. Note: this does
-     * not draw anything to the screen. <code>repaint()</code> for that.
+     * Draws the specified Color at point x, y on the image. Note: this does not
+     * draw anything to the screen. <code>repaint()</code> for that.
      * 
      * @param x Coordinate on the image.
      * @param y Coordinate on the image.
@@ -373,8 +379,8 @@ public class ImageDrawingArea extends DrawingArea
     }
 
     /**
-     * Returns the Color of point x, y on the image. Uses <code>PixelGrabber</code>
-     * to get the exact color.
+     * Returns the Color of point x, y on the image. Uses
+     * <code>PixelGrabber</code> to get the exact color.
      * 
      * @param x Coordinate on the image.
      * @param y Coordinate on the image.
@@ -405,12 +411,12 @@ public class ImageDrawingArea extends DrawingArea
 
         return new Color(red, green, blue, alpha);
     }
-    
+
     public void undo()
     {
         undo(true);
     }
-    
+
     public void undo(boolean notify)
     {
         if (!undoArr.isEmpty())
@@ -418,8 +424,8 @@ public class ImageDrawingArea extends DrawingArea
             this.img = (BufferedImage) undoArr.get(undoArr.size() - 1);
             undoArr.remove(undoArr.size() - 1);
         }
-        if(notify)
-            fireChanged();        
+        if (notify)
+            fireChanged();
     }
 
     public void addUndo()
@@ -434,7 +440,10 @@ public class ImageDrawingArea extends DrawingArea
     {
         if (this.isEnabled())
         {
-            if (img == null) { return; }
+            if (img == null)
+            {
+                return;
+            }
             if (this.drawingWidth * this.drawingHeight < 500)
             {
                 for (int x = 0; x < this.drawingWidth; x++)
@@ -448,7 +457,7 @@ public class ImageDrawingArea extends DrawingArea
             else
             {
                 g.drawImage(img, 0, 0, getZoomedXY(drawingWidth),
-                    getZoomedXY(drawingHeight), 
+                    getZoomedXY(drawingHeight),
                     //Color.BLACK,
                     this);
             }
@@ -484,8 +493,8 @@ public class ImageDrawingArea extends DrawingArea
                     g.drawLine(0, getZoomedXY(y),
                         getZoomedXY(this.drawingWidth) - 1, getZoomedXY(y));
                 }
-                g.drawRect(0, 0, getZoomedXY(drawingWidth) - 1,
-                    getZoomedXY(drawingHeight) - 1);
+                g.drawRect(0, 0, getZoomedXY(drawingWidth),
+                    getZoomedXY(drawingHeight));
             }
             //selection border
             if (selection.width > 0 && selection.height > 0)
@@ -518,7 +527,8 @@ public class ImageDrawingArea extends DrawingArea
     public void setZoom(float zoom)
     {
         super.setZoom(zoom);
-        if (img != null) initGraphics();
+        if (img != null)
+            initGraphics();
     }
 
     /**
@@ -699,10 +709,10 @@ public class ImageDrawingArea extends DrawingArea
                     /*
                      * case Toolset.FILL_NONE : drawOval(rx1, ry1, rx2 - rx1,
                      * ry2 - ry1, c, false); break; case Toolset.FILL_OPQUE :
-                     * drawOval(rx1, ry1, rx2 - rx1, ry2 - ry1, c, true);
-                     * break; case Toolset.FILL_BACKGROUND : drawOval(rx1, ry1,
-                     * rx2 - rx1, ry2 - ry1, 0, true); drawOval(rx1, ry1, rx2 -
-                     * rx1, ry2 - ry1, c, false);
+                     * drawOval(rx1, ry1, rx2 - rx1, ry2 - ry1, c, true); break;
+                     * case Toolset.FILL_BACKGROUND : drawOval(rx1, ry1, rx2 -
+                     * rx1, ry2 - ry1, 0, true); drawOval(rx1, ry1, rx2 - rx1,
+                     * ry2 - ry1, c, false);
                      */
                     case Toolset.FILL_NONE:
                         g.drawOval(rx1, ry1, rx2 - rx1, ry2 - ry1);
@@ -753,10 +763,16 @@ public class ImageDrawingArea extends DrawingArea
                 else
                 {
                     //create new selection
-                    selection = new Rectangle(rx1, ry1, rx2 - rx1, ry2 - ry1);
-                    if (selection.width > 0 && selection.height > 0)
+                    //don't do anything if selection out of range
+                    if (rx1 >= 0 && ry1 >= 0 && rx2 < getWidth()
+                        && ry2 < getHeight())
                     {
-                        selectImg = this.getNewImage(img, selection);
+                        selection = new Rectangle(rx1, ry1, rx2 - rx1, ry2
+                            - ry1);
+                        if (selection.width > 0 && selection.height > 0)
+                        {
+                            selectImg = this.getNewImage(img, selection);
+                        }
                     }
                 }
                 break;
@@ -766,8 +782,8 @@ public class ImageDrawingArea extends DrawingArea
     }
 
     /**
-     * Converts the specified zoomed x or y value to a non-zoomed value. Same
-     * as dividing by the zoom.
+     * Converts the specified zoomed x or y value to a non-zoomed value. Same as
+     * dividing by the zoom.
      * 
      * @param xy A zoomed x or y value.
      * @return A non-zoomed x or y value.
@@ -778,8 +794,8 @@ public class ImageDrawingArea extends DrawingArea
     }
 
     /**
-     * Converts the specified non-zoomed x or y value to a zoomed value. Same
-     * as multipling by the zoom.
+     * Converts the specified non-zoomed x or y value to a zoomed value. Same as
+     * multipling by the zoom.
      * 
      * @param xy A non-zoomed x or y value.
      * @return A zoomed x or y value.
@@ -1069,8 +1085,8 @@ public class ImageDrawingArea extends DrawingArea
     }
 
     /**
-     * Pastes a {@link #copy()}'d or {@link #cut()}'d selection. It stays as
-     * a selection until the user flattens it.
+     * Pastes a {@link #copy()}'d or {@link #cut()}'d selection. It stays as a
+     * selection until the user flattens it.
      */
     public void paste()
     {

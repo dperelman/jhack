@@ -43,6 +43,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
 
         public IntArrClipboard()
         {}
+
         /**
          * Returns the Image on the clipboard as an int[].
          * 
@@ -110,10 +111,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
      * @param pal Palette
      * @param zoom float of the zoom factor. 1.0 = 1x zoom
      */
-    public IntArrDrawingArea(
-        int[][] img,
-        Toolset tools,
-        ColorPalette pal,
+    public IntArrDrawingArea(int[][] img, Toolset tools, ColorPalette pal,
         float zoom)
     {
         this(img, tools, pal);
@@ -141,10 +139,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
      * @param pal Palette
      * @param al ActionListener to tell about changes.
      */
-    public IntArrDrawingArea(
-        Toolset tools,
-        ColorPalette pal,
-        ActionListener al)
+    public IntArrDrawingArea(Toolset tools, ColorPalette pal, ActionListener al)
     {
         this(tools, pal);
         this.addActionListener(al);
@@ -174,9 +169,8 @@ public class IntArrDrawingArea extends ImageDrawingArea
             selectImg = getNewImage(img);
             selectionChanged = true;
         }
-        this.cb.copy(
-            getNewImage(this.selectImg),
-            (Rectangle) this.selection.clone());
+        this.cb.copy(getNewImage(this.selectImg), (Rectangle) this.selection
+            .clone());
         if (selectionChanged)
         {
             selection = new Rectangle();
@@ -241,110 +235,79 @@ public class IntArrDrawingArea extends ImageDrawingArea
         int c = pal.getSelectedColorIndex();
 
         int tool = tools.getSelectedDrawingTool(), fill = tools.getFillType();
-        int rx1 = Math.min(x1, x2),
-            ry1 = Math.min(y1, y2),
-            rx2 = Math.max(x1, x2),
-            ry2 = Math.max(y1, y2),
-            w = Math.min(x2 - x1, img.length - rx1),
-            h = Math.min(y2 - y1, img[0].length - ry1),
-            rw = Math.min(rx2 - rx1, img.length - rx1),
-            rh = Math.min(ry2 - ry1, img[0].length - ry1);
+        int rx1 = Math.min(x1, x2), ry1 = Math.min(y1, y2), rx2 = Math.max(x1,
+            x2), ry2 = Math.max(y1, y2), w = Math
+            .min(x2 - x1, img.length - rx1), h = Math.min(y2 - y1,
+            img[0].length - ry1), rw = Math.min(rx2 - rx1, img.length - rx1), rh = Math
+            .min(ry2 - ry1, img[0].length - ry1);
         switch (tool)
         {
-            case Toolset.TOOL_EYEDROPER :
+            case Toolset.TOOL_EYEDROPER:
                 pal.setSelectedColor(getPointColor(x2, y2));
                 //undo();
                 break;
-            case Toolset.TOOL_PENCIL :
+            case Toolset.TOOL_PENCIL:
                 //undo();
                 drawPoint(x2, y2, c);
                 break;
-            case Toolset.TOOL_LINE :
+            case Toolset.TOOL_LINE:
                 drawLine(x1, y1, x2, y2, c);
                 break;
-            case Toolset.TOOL_RECTANGLE :
+            case Toolset.TOOL_RECTANGLE:
                 switch (fill)
                 {
-                    case Toolset.FILL_NONE :
+                    case Toolset.FILL_NONE:
                         drawRect(rx1, ry1, rx2 - rx1, ry2 - ry1, c, false);
                         break;
-                    case Toolset.FILL_OPQUE :
+                    case Toolset.FILL_OPQUE:
                         drawRect(rx1, ry1, rx2 - rx1, ry2 - ry1, c, true);
                         break;
-                    case Toolset.FILL_BACKGROUND :
+                    case Toolset.FILL_BACKGROUND:
                         drawRect(rx1, ry1, rx2 - rx1, ry2 - ry1, 0, true);
                         drawRect(rx1, ry1, rx2 - rx1, ry2 - ry1, c, false);
                         break;
                 }
                 break;
-            case Toolset.TOOL_OVAL :
+            case Toolset.TOOL_OVAL:
                 switch (fill)
                 {
-                    case Toolset.FILL_NONE :
+                    case Toolset.FILL_NONE:
                         drawOval(rx1, ry1, rx2 - rx1, ry2 - ry1, c, false);
                         break;
-                    case Toolset.FILL_OPQUE :
+                    case Toolset.FILL_OPQUE:
                         drawOval(rx1, ry1, rx2 - rx1, ry2 - ry1, c, true);
                         break;
-                    case Toolset.FILL_BACKGROUND :
+                    case Toolset.FILL_BACKGROUND:
                         drawOval(rx1, ry1, rx2 - rx1, ry2 - ry1, 0, true);
                         drawOval(rx1, ry1, rx2 - rx1, ry2 - ry1, c, false);
                         break;
                 }
                 break;
-            case Toolset.TOOL_ROUND_RECTANGLE :
+            case Toolset.TOOL_ROUND_RECTANGLE:
                 int curve = tools.getRoundedRectRadius();
                 switch (fill)
                 {
-                    case Toolset.FILL_NONE :
-                        drawRoundedRect(
-                            rx1,
-                            ry1,
-                            rx2 - rx1,
-                            ry2 - ry1,
-                            curve,
-                            curve,
-                            c,
-                            false);
+                    case Toolset.FILL_NONE:
+                        drawRoundedRect(rx1, ry1, rx2 - rx1, ry2 - ry1, curve,
+                            curve, c, false);
                         break;
-                    case Toolset.FILL_OPQUE :
-                        drawRoundedRect(
-                            rx1,
-                            ry1,
-                            rx2 - rx1,
-                            ry2 - ry1,
-                            curve,
-                            curve,
-                            c,
-                            true);
+                    case Toolset.FILL_OPQUE:
+                        drawRoundedRect(rx1, ry1, rx2 - rx1, ry2 - ry1, curve,
+                            curve, c, true);
                         break;
-                    case Toolset.FILL_BACKGROUND :
-                        drawRoundedRect(
-                            rx1,
-                            ry1,
-                            rx2 - rx1,
-                            ry2 - ry1,
-                            curve,
-                            curve,
-                            0,
-                            true);
-                        drawRoundedRect(
-                            rx1,
-                            ry1,
-                            rx2 - rx1,
-                            ry2 - ry1,
-                            curve,
-                            curve,
-                            c,
-                            false);
+                    case Toolset.FILL_BACKGROUND:
+                        drawRoundedRect(rx1, ry1, rx2 - rx1, ry2 - ry1, curve,
+                            curve, 0, true);
+                        drawRoundedRect(rx1, ry1, rx2 - rx1, ry2 - ry1, curve,
+                            curve, c, false);
                         break;
                 }
                 break;
-            case Toolset.TOOL_PAINT_BUCKET :
+            case Toolset.TOOL_PAINT_BUCKET:
                 //undo();
                 //do on mouse release
                 break;
-            case Toolset.TOOL_SELECTION :
+            case Toolset.TOOL_SELECTION:
                 if (!isMakingSelect)
                 {
                     //move selection
@@ -357,10 +320,15 @@ public class IntArrDrawingArea extends ImageDrawingArea
                     //create new selection
                     //selection = new Rectangle(rx1, ry1, rx2 - rx1, ry2 -
                     // ry1);
-                    selection = new Rectangle(rx1, ry1, rw, rh);
-                    if (selection.width > 0 && selection.height > 0)
+                    //don't do anything if selection out of range
+                    if (rx1 >= 0 && ry1 >= 0 && rx2 < getWidth()
+                        && ry2 < getHeight())
                     {
-                        selectImg = getNewImage(img, selection);
+                        selection = new Rectangle(rx1, ry1, rw, rh);
+                        if (selection.width > 0 && selection.height > 0)
+                        {
+                            selectImg = getNewImage(img, selection);
+                        }
                     }
                 }
                 break;
@@ -385,20 +353,13 @@ public class IntArrDrawingArea extends ImageDrawingArea
      * @param c Color
      * @param fill If true, shape is filled in.
      */
-    private void drawRoundedRect(
-        int rx1,
-        int ry1,
-        int w,
-        int h,
-        int curvex,
-        int curvey,
-        int c,
-        boolean fill)
+    private void drawRoundedRect(int rx1, int ry1, int w, int h, int curvex,
+        int curvey, int c, boolean fill)
     {
         if (fill)
         {
-            RoundRectangle2D rr =
-                new RoundRectangle2D.Double(rx1, ry1, w, h, curvex, curvey);
+            RoundRectangle2D rr = new RoundRectangle2D.Double(rx1, ry1, w, h,
+                curvex, curvey);
             for (int x = rx1; x <= rx1 + w; x++)
                 for (int y = ry1; y <= ry1 + h; y++)
                     if (rr.contains(x, y))
@@ -437,10 +398,8 @@ public class IntArrDrawingArea extends ImageDrawingArea
             double tp = 0.01; //t percison
             for (double t = 0; t < Math.PI * 2; t += tp)
             {
-                drawPoint(
-                    (int) Math.round(rx1 + xr + (xr * Math.cos(t))),
-                    (int) Math.round(ry1 + yr + (yr * Math.sin(t))),
-                    c);
+                drawPoint((int) Math.round(rx1 + xr + (xr * Math.cos(t))),
+                    (int) Math.round(ry1 + yr + (yr * Math.sin(t))), c);
             }
         }
     }
@@ -595,10 +554,8 @@ public class IntArrDrawingArea extends ImageDrawingArea
             {
                 try
                 {
-                    drawPoint(
-                        x,
-                        y,
-                        this.selectImg[x - selection.x][y - selection.y]);
+                    drawPoint(x, y, this.selectImg[x - selection.x][y
+                        - selection.y]);
                 }
                 catch (ArrayIndexOutOfBoundsException e)
                 {}
@@ -625,6 +582,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
     {
         return this.getImage(img);
     }
+
     /**
      * Returns a copy of the int[][] being edited.
      * 
@@ -634,6 +592,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
     {
         return getNewImage(img);
     }
+
     /**
      * Returns a copy of the int[][] being edited as a byte[].
      * 
@@ -643,6 +602,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
     {
         return getNewByteImage(img);
     }
+
     /**
      * Returns an Image based on an int[][] and the current palette. Use
      * {@link #getNewImage(int[][], int, int, int, int)}or
@@ -654,11 +614,8 @@ public class IntArrDrawingArea extends ImageDrawingArea
      */
     public Image getImage(int[][] img)
     {
-        BufferedImage out =
-            new BufferedImage(
-                img.length,
-                img[0].length,
-                BufferedImage.TYPE_4BYTE_ABGR_PRE);
+        BufferedImage out = new BufferedImage(img.length, img[0].length,
+            BufferedImage.TYPE_4BYTE_ABGR_PRE);
         Graphics g = out.getGraphics();
         for (int x = 0; x < out.getWidth(); x++)
         {
@@ -717,18 +674,13 @@ public class IntArrDrawingArea extends ImageDrawingArea
             {
                 for (int y = 0; y < this.drawingHeight; y++)
                 {
-                    if (selection.width > 0
-                        && selection.height > 0
+                    if (selection.width > 0 && selection.height > 0
                         && selection.contains(x, y))
                     {
-                        g.setColor(
-                            pal.getColorOf(
-                                selectImg[x - selection.x][y - selection.y]));
-                        g.fillRect(
-                            (int) (x * zoom),
-                            (int) (y * zoom),
-                            (int) zoom,
-                            (int) zoom);
+                        g.setColor(pal.getColorOf(selectImg[x - selection.x][y
+                            - selection.y]));
+                        g.fillRect((int) (x * zoom), (int) (y * zoom),
+                            (int) zoom, (int) zoom);
                     }
                     else
                     {
@@ -753,25 +705,16 @@ public class IntArrDrawingArea extends ImageDrawingArea
                 g.setColor(Color.BLACK);
                 for (int x = 0; x < this.drawingWidth; x++)
                 {
-                    g.drawLine(
-                        getZoomedXY(x),
-                        0,
-                        getZoomedXY(x),
+                    g.drawLine(getZoomedXY(x), 0, getZoomedXY(x),
                         getZoomedXY(this.drawingHeight) - 1);
                 }
                 for (int y = 0; y < this.drawingHeight; y++)
                 {
-                    g.drawLine(
-                        0,
-                        getZoomedXY(y),
-                        getZoomedXY(this.drawingWidth) - 1,
-                        getZoomedXY(y));
+                    g.drawLine(0, getZoomedXY(y),
+                        getZoomedXY(this.drawingWidth) - 1, getZoomedXY(y));
                 }
-                g.drawRect(
-                    0,
-                    0,
-                    getZoomedXY(drawingWidth) - 1,
-                    getZoomedXY(drawingHeight) - 1);
+                g.drawRect(0, 0, getZoomedXY(drawingWidth),
+                    getZoomedXY(drawingHeight));
             }
             //selection border
             if (selection.width > 0 && selection.height > 0)
@@ -785,11 +728,10 @@ public class IntArrDrawingArea extends ImageDrawingArea
                 //				getZoomedXY(selection.height),
                 //				this);
                 g.setColor(Color.WHITE);
-                g.drawRect(
-                    getZoomedXY(selection.x),
-                    getZoomedXY(selection.y),
-                    getZoomedXY(selection.width),
-                    getZoomedXY(selection.height));
+                g
+                    .drawRect(getZoomedXY(selection.x),
+                        getZoomedXY(selection.y), getZoomedXY(selection.width),
+                        getZoomedXY(selection.height));
             }
         }
         else
@@ -821,7 +763,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
     {
         undo(true);
     }
-    
+
     public void undo(boolean notify)
     {
         if (!undoArr.isEmpty())
@@ -830,8 +772,8 @@ public class IntArrDrawingArea extends ImageDrawingArea
             undoArr.remove(undoArr.size() - 1);
             this.repaint();
         }
-        if(notify)
-            fireChanged();        
+        if (notify)
+            fireChanged();
     }
 
     /*
@@ -849,10 +791,12 @@ public class IntArrDrawingArea extends ImageDrawingArea
 
         this.initGraphics();
     }
+
     public void setImage(int[][] img)
     {
         this.setImage(img, this.zoom);
     }
+
     public void setImage(byte[][] img)
     {
         this.setImage(getNewImage(img));
@@ -881,7 +825,9 @@ public class IntArrDrawingArea extends ImageDrawingArea
 
         return newImg;
     }
-    public static byte[][] getNewByteImage(int[][] img, int x, int y, int w, int h)
+
+    public static byte[][] getNewByteImage(int[][] img, int x, int y, int w,
+        int h)
     {
         //make sure height and width aren't out of range
         w = Math.min(w, img.length - x);
@@ -898,6 +844,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
 
         return newImg;
     }
+
     public static int[][] getNewImage(byte[][] img, int x, int y, int w, int h)
     {
         //make sure height and width aren't out of range
@@ -924,12 +871,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
      */
     public static int[][] getNewImage(int[][] img, Rectangle coords)
     {
-        return getNewImage(
-            img,
-            coords.x,
-            coords.y,
-            coords.width,
-            coords.height);
+        return getNewImage(img, coords.x, coords.y, coords.width, coords.height);
     }
 
     /*
@@ -941,10 +883,12 @@ public class IntArrDrawingArea extends ImageDrawingArea
     {
         return getNewImage(img, 0, 0, img.length, img[0].length);
     }
+
     public static byte[][] getNewByteImage(int[][] img)
     {
         return getNewByteImage(img, 0, 0, img.length, img[0].length);
     }
+
     public static int[][] getNewImage(byte[][] img)
     {
         return getNewImage(img, 0, 0, img.length, img[0].length);
@@ -995,7 +939,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
         this.drawingWidth = img.length;
         this.drawingHeight = img[0].length;
 
-        int w = (int) (drawingWidth * zoom), h = (int) (drawingHeight * zoom);
+        int w = (int) (drawingWidth * zoom) + 1, h = (int) (drawingHeight * zoom) +1;
 
         this.setPreferredSize(new Dimension(w, h));
 
@@ -1019,8 +963,8 @@ public class IntArrDrawingArea extends ImageDrawingArea
      */
     protected void doPaintBucket(int x, int y)
     {
-        int currentCol = this.getPoint(x, y),
-            newCol = pal.getSelectedColorIndex();
+        int currentCol = this.getPoint(x, y), newCol = pal
+            .getSelectedColorIndex();
         if (currentCol == newCol)
         {
             undo();
@@ -1029,8 +973,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
         this.drawPoint(x, y, newCol);
         for (int ax = -1; ax < 2; ax++)
             for (int ay = -1; ay < 2; ay++)
-                if (x + ax > -1
-                    && y + ay > -1
+                if (x + ax > -1 && y + ay > -1
                     && x + ax < this.getDrawingWidth()
                     && y + ay < this.getDrawingHeight())
                     //make sure it's on the image
