@@ -1301,7 +1301,7 @@ public abstract class HackModule
             try
             {
                 //look for space...
-                int newPointer = findFreeRange(beginAt - newLen, newLen);
+                int newPointer = findFreeRange(beginAt, newLen);
                 //write data there
                 rom.write(newPointer, data, newLen);
                 //change pointer
