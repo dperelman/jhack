@@ -1,9 +1,3 @@
-/*
- * Created on Dec 31, 2004
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package net.starmen.pkhack.eb;
 
 import java.awt.BorderLayout;
@@ -13,8 +7,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.AbstractButton;
@@ -35,26 +27,28 @@ import net.starmen.pkhack.XMLPreferences;
 import net.starmen.pkhack.eb.MapEditor.EbMap;
 
 /**
- * @author max
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * TODO Write javadoc for this class
+ * 
+ * @author Mr. Tenda
  */
 public class DoorEditor extends EbHackModule 
-	implements ActionListener, ItemListener, SeekListener
+	implements ActionListener, SeekListener
 {
 	private JTextField areaXField, areaYField, entryNumField, 
 		numField, ptrField, xField, yField, flagField;
-	private JComboBox typeBox, typeDestBox, styleBox, dirBox;
+	private JComboBox typeBox, dirClimbBox, typeDestBox, styleBox, dirBox;
 	private JLabel warnLabel;
 	private JButton setXYButton;
-	private JCheckBox reverseCheck;
+	private JCheckBox ropeCheck, reverseCheck;
 	private final String[] typeNames = {
 			"Switch", "Rope/Ladder", "Door", "Escalator",
 			"Stairway", "Object", "Person"
 	};
 	private final String[] typeDestNames = {
 			"Door", "Switch", "Object"
+	};
+	private final String[] climbDirections = {
+			"Northwest", "Northeast", "Southwest", "Southeast", "Nowhere"
 	};
 	private boolean muteEvents = false;
 
@@ -186,6 +180,12 @@ public class DoorEditor extends EbHackModule
 		entryLoc.add(HackModule.getLabeledComponent("Num: ", entryNumField));
 		entryPanel.add(entryLoc);
 		
+		ropeCheck = new JCheckBox();
+		entryPanel.add(HackModule.getLabeledComponent("Rope: ", ropeCheck));
+		
+		dirClimbBox = new JComboBox(climbDirections);
+		entryPanel.add(HackModule.getLabeledComponent("Escalator/Stair Direction: ", dirClimbBox));
+		
 		numField = HackModule.createSizedJTextField(5, true);
 		numField.getDocument().addDocumentListener(listener);
 		entryPanel.add(
@@ -193,7 +193,7 @@ public class DoorEditor extends EbHackModule
 						"Destination: ", numField));
 		
 		typeBox = new JComboBox(typeNames);
-		typeBox.addItemListener(this);
+		typeBox.addActionListener(this);
 		entryPanel.add(
 				HackModule.getLabeledComponent(
 						"Type: ", typeBox));
@@ -203,7 +203,7 @@ public class DoorEditor extends EbHackModule
 				new BoxLayout(destPanel, BoxLayout.Y_AXIS));
 		
 		typeDestBox = new JComboBox(typeDestNames);
-		typeDestBox.addItemListener(this);
+		typeDestBox.addActionListener(this);
 		destPanel.add(
 				HackModule.getLabeledComponent(
 						"Type: ", typeDestBox));
@@ -310,185 +310,174 @@ public class DoorEditor extends EbHackModule
 				previewPanel, BorderLayout.LINE_START);
 		this.mainWindow.pack();
 	}
+	
+	private void disableDestGUI()
+	{
+		ptrField.setText(null);
+		xField.setText(null);
+		yField.setText(null);
+		dirBox.setSelectedIndex(0);
+		flagField.setText(null);
+		reverseCheck.setSelected(false);
+		styleBox.setSelectedIndex(0);
+		typeDestBox.setEnabled(false);
+		ptrField.setEditable(false);
+		setXYButton.setEnabled(false);
+		xField.setEditable(false);
+		yField.setEditable(false);
+		dirBox.setEnabled(false);
+		flagField.setEditable(false);
+		reverseCheck.setEnabled(false);
+		styleBox.setEnabled(false);
+		destPreview.clearMapArray();
+	}
 
-	private void updateComponents(boolean load, boolean loadEntry, 
+	private void updateComponents(boolean loadDest, boolean loadEntry, 
 			boolean loadDestType)
 	{
 		muteEvents = true;
-		int destNum;
-		if (loadEntry)
+		int x = Integer.parseInt(areaXField.getText()),
+			y = Integer.parseInt(areaYField.getText()),
+			num = Integer.parseInt(entryNumField.getText());
+		if (num >= EbMap.getDoorsNum(x,y))
 		{
-			int x = Integer.parseInt(areaXField.getText()),
-				y = Integer.parseInt(areaYField.getText()),
-				num = Integer.parseInt(entryNumField.getText());
-			if (EbMap.getDoorsNum(x,y) > num)
+			//disable everything if trying to show an invalid entry
+			numField.setEnabled(false);
+			numField.setText("");
+			ropeCheck.setEnabled(false);
+			ropeCheck.setSelected(false);
+			dirClimbBox.setEnabled(false);
+			dirClimbBox.setSelectedIndex(0);
+			disableDestGUI();
+		}
+		else
+		{
+			EbMap.DoorLocation doorLocation = EbMap.getDoorLocation(x,y,num);
+			// update entry stuff?
+			if (loadEntry)
 			{
-				EbMap.DoorLocation doorLocation = EbMap.getDoorLocation(x,y,num);
-				destNum = doorLocation.getDestIndex();
-				numField.setText(Integer.toString(destNum));
+				typeBox.setEnabled(true);
 				typeBox.setSelectedIndex(doorLocation.getType());
-			}
-			else
-			{
-				numField.setEnabled(false);
-				numField.setText("");
-				typeBox.setEnabled(false);
-				typeBox.setSelectedIndex(0);
-				ptrField.setText(null);
-				xField.setText(null);
-				yField.setText(null);
-				dirBox.setSelectedIndex(0);
-				flagField.setText(null);
-				reverseCheck.setSelected(false);
-				styleBox.setSelectedIndex(0);
-				typeDestBox.setEnabled(false);
-				ptrField.setEditable(false);
-				setXYButton.setEnabled(false);
-				xField.setEditable(false);
-				yField.setEditable(false);
-				dirBox.setEnabled(false);
-				flagField.setEditable(false);
-				reverseCheck.setEnabled(false);
-				styleBox.setEnabled(false);
-				
-				destPreview.clearMapArray();
-				destPreview.remoteRepaint();
-				
-				muteEvents = false;
-				return;
-			}
-		}
-		else
-			destNum = Integer.parseInt(numField.getText());
-		
-		numField.setEnabled(true);
-		typeBox.setEnabled(true);
-		if (destNum < 0)
-		{
-			typeDestBox.setEnabled(true);
-			typeDestBox.setSelectedIndex(0);
-			ptrField.setText(null);
-			xField.setText(null);
-			yField.setText(null);
-			dirBox.setSelectedIndex(0);
-			flagField.setText(null);
-			reverseCheck.setSelected(false);
-			styleBox.setSelectedIndex(0);
-			typeDestBox.setEnabled(false);
-			ptrField.setEditable(false);
-			setXYButton.setEnabled(false);
-			xField.setEditable(false);
-			yField.setEditable(false);
-			dirBox.setEnabled(false);
-			flagField.setEditable(false);
-			reverseCheck.setEnabled(false);
-			styleBox.setEnabled(false);
-			
-			destPreview.clearMapArray();
-			destPreview.remoteRepaint();
-		}
-		else
-		{
-			EbMap.Destination dest = 
-				EbMap.getDestination(destNum);
-			int destType;
-			if (loadDestType)
-			{
-				destType = dest.getType();
-				typeDestBox.setSelectedIndex(destType);
-			}
-			else
-				destType = typeDestBox.getSelectedIndex();
-			typeDestBox.setEnabled(true);
-			if (destType == 0)
-			{
-				if (load)
+				int doorDestType = EbMap.getDoorDestType(doorLocation.getType());
+				if (doorDestType == -1)
 				{
-					ptrField.setText(Integer.toHexString(dest.getPointer()));
-	        		xField.setText(Integer.toString(dest.getX()));
-	        		yField.setText(Integer.toString(dest.getY()));
-	        		dirBox.setSelectedIndex(dest.getDirection());
-	        		flagField.setText(Integer.toHexString(dest.getFlag()));
-	        		reverseCheck.setSelected(dest.isFlagReversed());
-	        		styleBox.setSelectedIndex(dest.getStyle());
+					ropeCheck.setEnabled(true);
+					ropeCheck.setSelected(doorLocation.isMiscRope());
+					dirClimbBox.setEnabled(false);
+					dirClimbBox.setSelectedIndex(0);
+					numField.setEnabled(false);
+					numField.setText(Integer.toString(0));
 				}
-				ptrField.setEditable(true);
-				setXYButton.setEnabled(true);
-				xField.setEditable(true);
-				yField.setEditable(true);
-				dirBox.setEnabled(true);
-				flagField.setEditable(true);
-				reverseCheck.setEnabled(true);
-				styleBox.setEnabled(true);
-	    		
-				if (load)
-					destPreview.setXY(dest.getX(), dest.getY());
+				else if (doorDestType == -2)
+				{
+					ropeCheck.setEnabled(false);
+					ropeCheck.setSelected(false);
+					dirClimbBox.setEnabled(true);
+					int test = doorLocation.getMiscDirection();
+					dirClimbBox.setSelectedIndex(doorLocation.getMiscDirection());
+					numField.setEnabled(false);
+					numField.setText(Integer.toString(0));
+				}
+				else if (doorDestType >= 0)
+				{
+					ropeCheck.setEnabled(false);
+					ropeCheck.setSelected(false);
+					dirClimbBox.setEnabled(false);
+					dirClimbBox.setSelectedIndex(0);
+					numField.setEnabled(true);
+					numField.setText(Integer.toString(doorLocation.getDestIndex()));
+				}
+			}
+			
+			//update destination's type?
+			if (loadDestType
+					&& (EbMap.getDoorDestType(typeBox.getSelectedIndex()) >= 0))
+			{
+				EbMap.Destination dest = 
+					EbMap.getDestination(Integer.parseInt(numField.getText()));
+				typeDestBox.setEnabled(true);
+				typeDestBox.setSelectedIndex(dest.getType());
+			}
+			
+			//update destination properties?
+			if (EbMap.getDoorDestType(typeBox.getSelectedIndex()) < 0)
+				disableDestGUI();
+			else
+			{
+				EbMap.Destination dest = 
+					EbMap.getDestination(Integer.parseInt(numField.getText()));
+				if (typeDestBox.getSelectedIndex() == 0)
+				{
+					ptrField.setEditable(true);
+					xField.setEditable(true);
+					yField.setEditable(true);
+					dirBox.setEnabled(true);
+					flagField.setEditable(true);
+					reverseCheck.setEnabled(true);
+					styleBox.setEnabled(true);
+					
+					if (loadDest)
+					{
+						ptrField.setText(Integer.toHexString(dest.getPointer()));
+		        		xField.setText(Integer.toString(dest.getX()));
+		        		yField.setText(Integer.toString(dest.getY()));
+		        		dirBox.setSelectedIndex(dest.getDirection());
+		        		flagField.setText(Integer.toHexString(dest.getFlag()));
+		        		reverseCheck.setSelected(dest.isFlagReversed());
+		        		styleBox.setSelectedIndex(dest.getStyle());
+					}
+				}
+				else if (typeDestBox.getSelectedIndex() == 1)
+				{
+					xField.setText(null);
+					xField.setEditable(false);
+					yField.setText(null);
+					yField.setEditable(false);
+					dirBox.setSelectedIndex(0);
+					dirBox.setEnabled(false);
+					styleBox.setSelectedIndex(0);
+					styleBox.setEnabled(false);
+					ptrField.setEditable(true);
+					setXYButton.setEnabled(false);
+					flagField.setEditable(true);
+					reverseCheck.setEnabled(true);
+					destPreview.clearMapArray();
+					
+					if (loadDest)
+					{
+						ptrField.setText(Integer.toHexString(dest.getPointer()));
+						flagField.setText(Integer.toHexString(dest.getFlag()));
+		    			reverseCheck.setSelected(dest.isFlagReversed());
+					}
+				}
 				else
-					destPreview.setXY(
-							Integer.parseInt(xField.getText()), 
-							Integer.parseInt(yField.getText()));
-				destPreview.remoteRepaint();
-			}
-			else if (destType == 1)
-			{
-				if (load)
 				{
-					ptrField.setText(Integer.toHexString(dest.getPointer()));
-					flagField.setText(Integer.toHexString(dest.getFlag()));
-	    			reverseCheck.setSelected(dest.isFlagReversed());
+					typeBox.setEnabled(false);
+					typeBox.setSelectedIndex(0);
+					xField.setText(null);
+					yField.setText(null);
+					dirBox.setSelectedIndex(0);
+					flagField.setText(null);
+					reverseCheck.setSelected(false);
+					styleBox.setSelectedIndex(0);
+					typeDestBox.setEnabled(false);
+					ptrField.setEditable(true);
+					setXYButton.setEnabled(false);
+					xField.setEditable(false);
+					yField.setEditable(false);
+					dirBox.setEnabled(false);
+					flagField.setEditable(false);
+					reverseCheck.setEnabled(false);
+					styleBox.setEnabled(false);
+					destPreview.clearMapArray();
+					
+					if (loadDest)
+						ptrField.setText(Integer.toHexString(dest.getPointer()));
 				}
-				xField.setText(null);
-				yField.setText(null);
-				dirBox.setSelectedIndex(0);
-				styleBox.setSelectedIndex(0);
-				ptrField.setEditable(true);
-				setXYButton.setEnabled(false);
-				xField.setEditable(false);
-				yField.setEditable(false);
-				dirBox.setEnabled(false);
-				flagField.setEditable(true);
-				reverseCheck.setEnabled(true);
-				styleBox.setEnabled(false);
-				
-				destPreview.clearMapArray();
-				destPreview.remoteRepaint();
-			}
-			else if (destType == 2)
-			{
-				if (load)
-					ptrField.setText(
-							Integer.toHexString(dest.getPointer()));
-				xField.setText(null);
-				yField.setText(null);
-				dirBox.setSelectedIndex(0);
-				flagField.setText(null);
-				reverseCheck.setSelected(false);
-				styleBox.setSelectedIndex(0);
-				ptrField.setEditable(true);
-				setXYButton.setEnabled(false);
-				xField.setEditable(false);
-				yField.setEditable(false);
-				dirBox.setEnabled(false);
-				flagField.setEditable(false);
-				reverseCheck.setEnabled(false);
-				styleBox.setEnabled(false);
-				
-				destPreview.clearMapArray();
-				destPreview.remoteRepaint();
-			}
-			
-			if (EbMap.getDoorDestType(typeBox.getSelectedIndex())
-					!= destType)
-			{
-	    		warnLabel.setForeground(Color.RED);
-	    		warnLabel.setText("Warning!! Type mismatch!");
-			}
-			else
-			{
-				warnLabel.setForeground(Color.BLACK);
-				warnLabel.setText("Type match.");
 			}
 		}
+
+		destPreview.remoteRepaint();
 		muteEvents = false;
 	}
 
@@ -502,13 +491,18 @@ public class DoorEditor extends EbHackModule
 	    	if (EbMap.getDoorsNum(x,y) > num)
 			{
 	    		EbMap.DoorLocation doorLocation = EbMap.getDoorLocation(x,y,num);
-				doorLocation.setDestIndex(
-						Integer.parseInt(numField.getText()));
+	    		if (numField.isEnabled())
+	    			
 				doorLocation.setType(
 						(byte) typeBox.getSelectedIndex());
-				if (doorLocation.getDestIndex()
-						== Integer.parseInt(numField.getText()))
+				if (ropeCheck.isEnabled())
+	    			doorLocation.setMiscRope(ropeCheck.isSelected());
+				else if (dirClimbBox.isEnabled())
+					doorLocation.setMiscDirection(dirClimbBox.getSelectedIndex());
+				if (numField.isEnabled())
 				{
+					doorLocation.setDestIndex(
+							Integer.parseInt(numField.getText()));
 		    		EbMap.Destination dest =
 		    			EbMap.getDestination(
 		    					doorLocation.getDestIndex());
@@ -541,6 +535,12 @@ public class DoorEditor extends EbHackModule
 		        				(byte) dirBox.getSelectedIndex());
 				}
 				updateComponents(true, true, true);
+				boolean doorWrite = EbMap.writeDoors(this, false);
+				if (! doorWrite)
+	        		JOptionPane.showMessageDialog(mainWindow,
+	            			"This is so embarassing!\n"
+	            			+ "For some reason, I could not save "
+	    					+ "the door data?\nThis shouldn't happen...");
 			}
 	    }
 	    else if (e.getActionCommand().equals("close"))
@@ -552,30 +552,20 @@ public class DoorEditor extends EbHackModule
 	    	setXYButton.setEnabled(false);
 	    	net.starmen.pkhack.JHack.main.showModule(MapEditor.class, this);
 	    }
-	}
-
-	public void itemStateChanged(ItemEvent e) {
-		if ((e.getSource() == typeBox)
+		else if ((e.getSource() == typeBox)
 				&& (! muteEvents))
 		{
-			if ((typeBox.getSelectedIndex() == -1)
-					&& (EbMap.getDoorDestType(
-							typeBox.getSelectedIndex()) != -1))
+			if ((! numField.isEnabled())
+					&& (EbMap.getDoorDestType(typeBox.getSelectedIndex()) >= 0))
 			{
-	    		JOptionPane.showMessageDialog(this.mainWindow,
-	        			"You can't change the type to this since"
-	    				+ "\nthis type requires a destination.");
-	    		muteEvents = true;
-				EbMap.DoorLocation doorLocation = 
-					EbMap.getDoorLocation(
-							Integer.parseInt(areaXField.getText()),
-							Integer.parseInt(areaYField.getText()),
-							Integer.parseInt(entryNumField.getText()));
-	    		typeBox.setSelectedIndex(
-	    				doorLocation.getType());
-	    		muteEvents = false;
+				muteEvents = true;
+				numField.setEnabled(true);
+				numField.setText("0");
+				muteEvents = false;
+				updateComponents(true, false, true);
 			}
-			updateComponents(false, false, false);
+			else
+				updateComponents(false, false, false);
 		}
 		else if ((e.getSource() == typeDestBox)
 				&& (! muteEvents))
