@@ -955,6 +955,7 @@ public class TextEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("codesOnly"))
         {
+            boolean mod = isModified;
             CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
 
             String text = useComp.isSelected()
@@ -982,6 +983,8 @@ public class TextEditor extends EbHackModule implements ActionListener
                 ta.setText(cct.parseString(tmp, prefs
                     .getValueAsBoolean("eb_text_editor.codes_caps")));
             }
+            isModified = mod;
+            updateCurrSize();
         }
         else if (ae.getActionCommand().equals("codesCaps"))
         {

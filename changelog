@@ -4,6 +4,7 @@ NEXT VERSION (after v0.5.5.2):
 # Tile Editor v0.7: Added Multi-Clipboard for minitiles (suggested by NeSs79)
 # Added error messages for missing emptyPrefs.xml and preferences.dtd files.
 # Town Map Editor: Fixed bug in import.
+# Text Editor: BUGFIX: toggling codes only does not change modified status (bug reported by GuyInSummers)
 
 v0.5.5.2:
 # Updated codelist.txt (thanks EBPlayer1028)

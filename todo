@@ -7,9 +7,6 @@ DONE? (CHANGES TO CONFIRM/DEBUG)
 NEXT v0.0.0.x (bugfix) RELEASE
 # Look into threading of error console GUI building (ERROR#65895)
 # Look into use of JOptionPane.showOptionDialog() for abort/retry/fail.
-# [01:40:42] <GuyInSummers> aeb: If you choose a text block in the 
-	Text Editor, select Codes Only, and then move to another text block, 
-	it informs you that you have to apply your changes or they'll be lost.
 
 NEXT v0.0.x (minor) RELEASE
 
