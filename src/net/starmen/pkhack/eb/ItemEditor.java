@@ -2,13 +2,10 @@ package net.starmen.pkhack.eb;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +13,6 @@ import java.util.Iterator;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -106,22 +102,22 @@ public class ItemEditor extends EbHackModule implements ActionListener
         labels[3][32] = "Skip Sandwich Effect Time: ";
 
         //type 36 - 0010 0100
-        labels[0][32] = "Recovery Type: ";
-        labels[1][32] = "Poo HP: ";
-        labels[2][32] = "HP Increase: ";
-        labels[3][32] = "Skip Sandwich Effect Time: ";
+        labels[0][36] = "Recovery Type: ";
+        labels[1][36] = "Poo HP: ";
+        labels[2][36] = "HP Increase: ";
+        labels[3][36] = "Skip Sandwich Effect Time: ";
 
         //type 40 - 0010 1000
-        labels[0][32] = "Recovery Type: ";
-        labels[1][32] = "Poo HP: ";
-        labels[2][32] = "HP Increase: ";
-        labels[3][32] = "Skip Sandwich Effect Time: ";
+        labels[0][40] = "Recovery Type: ";
+        labels[1][40] = "Poo HP: ";
+        labels[2][40] = "HP Increase: ";
+        labels[3][40] = "Skip Sandwich Effect Time: ";
 
         //type 44 - 0010 1100
-        labels[0][32] = "Recovery Type: ";
-        labels[1][32] = "Poo HP: ";
-        labels[2][32] = "HP Increase: ";
-        labels[3][32] = "Skip Sandwich Effect Time: ";
+        labels[0][44] = "Recovery Type: ";
+        labels[1][44] = "Poo HP: ";
+        labels[2][44] = "HP Increase: ";
+        labels[3][44] = "Skip Sandwich Effect Time: ";
 
         //armor items
         //type 20 - 0001 0100
@@ -197,7 +193,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
 
         JPanel lowerLeft = new JPanel();
         lowerLeft.setLayout(new BoxLayout(lowerLeft, BoxLayout.Y_AXIS));
-        lowerLeft.add(getLabeledComponent("Cost (0 to make unsellable and undroppable:",
+        lowerLeft.add(getLabeledComponent(
+            "Cost (0 to make unsellable and undroppable):",
             this.cost = createSizedJTextField(5, true)));
         lowerLeft.add(getLabeledComponent("Type:",
             this.type = createSizedJTextField(3, true)));
@@ -1207,10 +1204,10 @@ public class ItemEditor extends EbHackModule implements ActionListener
             if (al != null)
                 comboBox.addActionListener(al);
         }
-        
+
         /**
-         * Creates a new <code>ItemEntry</code> component. It will have the default
-         * search mode of {@link JSearchableComboBox#SEARCH_EDIT}.
+         * Creates a new <code>ItemEntry</code> component. It will have the
+         * default search mode of {@link JSearchableComboBox#SEARCH_EDIT}.
          * 
          * @param label words to identify this component with
          * @param hm <code>HackModule</code> to get rom to read info from
@@ -1225,8 +1222,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Creates a new <code>ItemEntry</code> component. It will have the default
-         * search mode of {@link JSearchableComboBox#SEARCH_EDIT}.
+         * Creates a new <code>ItemEntry</code> component. It will have the
+         * default search mode of {@link JSearchableComboBox#SEARCH_EDIT}.
          * 
          * @param label words to identify this component with
          * @param hm <code>HackModule</code> to get rom to read info from
@@ -1239,8 +1236,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Creates a new <code>ItemEntry</code> component. It will have the default
-         * search mode of {@link JSearchableComboBox#SEARCH_EDIT}.
+         * Creates a new <code>ItemEntry</code> component. It will have the
+         * default search mode of {@link JSearchableComboBox#SEARCH_EDIT}.
          * 
          * @param label words to identify this component with
          * @param hm <code>HackModule</code> to get rom to read info from
@@ -1253,8 +1250,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Creates a new <code>ItemEntry</code> component. It will have the default
-         * search mode of {@link JSearchableComboBox#SEARCH_EDIT}.
+         * Creates a new <code>ItemEntry</code> component. It will have the
+         * default search mode of {@link JSearchableComboBox#SEARCH_EDIT}.
          * 
          * @param label words to identify this component with
          * @param hm <code>HackModule</code> to get rom to read info from
