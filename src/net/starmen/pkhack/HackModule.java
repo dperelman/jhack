@@ -1275,6 +1275,33 @@ public abstract class HackModule
     public boolean writetoFree(byte[] data, int pointerLoc, int pointerBase,
         int pointerLen, int oldLen, int newLen, int beginAt, boolean mustBeInExpanded)
     {
+    	// 0xff shielding if the new data starts or ends with 0
+    	if ((data[0] == 0) && (data[data.length - 1] == 0))
+    	{
+    		byte[] tmp = new byte[data.length + 2];
+    		tmp[0] = (byte) 0xff;
+    		tmp[tmp.length - 1] = (byte) 0xff;
+    		System.arraycopy(data, 0, tmp, 1, data.length);
+    		data = tmp;
+    		newLen += 2;
+    	}
+    	else if (data[0] == 0)
+    	{
+    		byte[] tmp = new byte[data.length + 1];
+    		tmp[0] = (byte) 0xff;
+    		System.arraycopy(data, 0, tmp, 1, data.length);
+    		data = tmp;
+    		newLen++;
+    	}
+    	else if (data[data.length - 1] == 0)
+    	{
+    		byte[] tmp = new byte[data.length + 1];
+    		tmp[tmp.length - 1] = (byte) 0xff;
+    		System.arraycopy(data, 0, tmp, 0, data.length);
+    		data = tmp;
+    		newLen += 2;
+    	}
+    	
         //make sure ROM is expanded if needed
         if ((newLen > oldLen) || mustBeInExpanded)
             askExpandType();
