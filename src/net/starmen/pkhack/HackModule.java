@@ -1472,6 +1472,8 @@ public abstract class HackModule
     public boolean writetoFree(byte[] data, int pointerLoc, int pointerLen,
         int oldLen, int newLen, boolean mustBeInExpanded)
     {
+        if ((newLen > oldLen) || mustBeInExpanded)
+            askExpandType();
     	return writetoFree(data, pointerLoc, pointerLen, oldLen, newLen,
     			rom.length(), mustBeInExpanded);
     }
