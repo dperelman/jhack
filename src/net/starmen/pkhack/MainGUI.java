@@ -564,14 +564,22 @@ public class MainGUI implements ActionListener, WindowListener
         {}
         try
         {
-            UIManager.setLookAndFeel(prefs.getValue("laf"));
-            JHack.out.updateUI();
-            JHack.err.updateUI();
-        }
-        catch (NullPointerException e)
-        {
-            System.out
-                .println("No look and feel preference found, using default.");
+            try
+            {
+                UIManager.setLookAndFeel(prefs.getValue("laf"));
+            }
+            catch (NullPointerException e)
+            {
+                System.out
+                    .println("No look and feel preference found, using default.");
+                UIManager.setLookAndFeel(UIManager
+                    .getSystemLookAndFeelClassName());
+            }
+            finally
+            {
+                JHack.out.updateUI();
+                JHack.err.updateUI();
+            }
         }
         catch (Exception e)
         {
@@ -1182,6 +1190,9 @@ public class MainGUI implements ActionListener, WindowListener
         else if (ae.getActionCommand().equalsIgnoreCase("saveAs"))
         {
             rom.saveRomAs();
+            //ROM file name changed, add to recent list
+            addRecentLoad(rom.getPath());
+            refreshRecentLoads();
             doBackup();
         }
         else if (ae.getActionCommand().equalsIgnoreCase("closeRom"))

@@ -13,7 +13,7 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 /**
- * Wrapper class for an Earthbound ROM. Loads the ROM into memory and provides
+ * Wrapper class for a ROM. Loads the ROM into memory and provides
  * <code>read()</code> and <code>write()</code> methods.
  * 
  * @author AnyoneEB
@@ -22,7 +22,6 @@ import javax.swing.filechooser.FileFilter;
 //Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
 public class Rom
 {
-
     /** Size in bytes of a regular Earthbound ROM. */
     public final static long EB_ROM_SIZE_REGULAR = 3146240;
 
@@ -72,12 +71,6 @@ public class Rom
     public boolean isValid = true;
 
     /**
-     * True = EarthBound ROM, false = Mother 2 ROM. (not implemented yet, I
-     * think I remember seeing how to do this somewhere...)
-     */
-    public boolean isEB = true;
-
-    /**
      * True if a ROM is loaded. Changing this is a very bad idea.
      */
     public boolean isLoaded = false;
@@ -89,39 +82,39 @@ public class Rom
      */
     private int seekOffset;
 
-//    /**
-//     * String indicating an unknown ROM type.
-//     * 
-//     * @see #getRomType()
-//     */
-//    public final static String TYPE_UNKNOWN = "Unknown";
-//
-//    /**
-//     * String indicating an Earthbound ROM.
-//     * 
-//     * @see #getRomType()
-//     */
-//    public final static String TYPE_EARTHBOUND = "Earthbound";
-//
-//    /**
-//     * String indicating a Secret of Mana ROM.
-//     * 
-//     * @see #getRomType()
-//     */
-//    public final static String TYPE_SECRET_OF_MANA = "Secret of Mana";
-//
-//    /**
-//     * String indicating a Chrono Trigger ROM.
-//     * 
-//     * @see #getRomType()
-//     */
-//    public final static String TYPE_CHRONO_TRIGGER = "Chrono Trigger";
+    //    /**
+    //     * String indicating an unknown ROM type.
+    //     *
+    //     * @see #getRomType()
+    //     */
+    //    public final static String TYPE_UNKNOWN = "Unknown";
+    //
+    //    /**
+    //     * String indicating an Earthbound ROM.
+    //     *
+    //     * @see #getRomType()
+    //     */
+    //    public final static String TYPE_EARTHBOUND = "Earthbound";
+    //
+    //    /**
+    //     * String indicating a Secret of Mana ROM.
+    //     *
+    //     * @see #getRomType()
+    //     */
+    //    public final static String TYPE_SECRET_OF_MANA = "Secret of Mana";
+    //
+    //    /**
+    //     * String indicating a Chrono Trigger ROM.
+    //     *
+    //     * @see #getRomType()
+    //     */
+    //    public final static String TYPE_CHRONO_TRIGGER = "Chrono Trigger";
 
-//    /**
-//     * Array of all ROM types for internal use.
-//     */
-//    protected final static String[] TYPES = new String[]{TYPE_UNKNOWN,
-//        TYPE_EARTHBOUND, TYPE_SECRET_OF_MANA, TYPE_CHRONO_TRIGGER};
+    //    /**
+    //     * Array of all ROM types for internal use.
+    //     */
+    //    protected final static String[] TYPES = new String[]{TYPE_UNKNOWN,
+    //        TYPE_EARTHBOUND, TYPE_SECRET_OF_MANA, TYPE_CHRONO_TRIGGER};
 
     /**
      * Stores the type of ROM.
@@ -212,13 +205,13 @@ public class Rom
         }
         catch (FileNotFoundException e)
         {
-            System.out.println("Error: File not loaded: File not found.");
+            System.err.println("Error: File not loaded: File not found.");
             e.printStackTrace();
             return false;
         }
         catch (IOException e)
         {
-            System.out.println("Error: File not loaded: Could read file.");
+            System.err.println("Error: File not loaded: Could read file.");
             e.printStackTrace();
             return false;
         }
@@ -234,37 +227,37 @@ public class Rom
         //first look for .romtype file
         if (!loadRomType())
         {
-//            //then look at certain bytes
-//            //Earthbound
-//            if (length() >= 0x300200
-//                && compare(0x1f005, new int[]{0xa9, 0x5e, 0xc0, 0x85, 0x12,
-//                    0xa9, 0xc4, 0x00}))
-//            {
-//                //1F005 - 1F00C = "Start New Game" text pointer
-//                //should be [a9 5e c0 85 12 a9 c4 00]
-//                setRomType(TYPE_EARTHBOUND);
-//            }
-//            //SOM
-//            else if (length() >= 0x200000
-//                && compare(0x230, new int[]{0x48, 0xab, 0xbd, 0x00, 0x00}))
-//            {
-//                //0x230 unknown
-//                setRomType(TYPE_SECRET_OF_MANA);
-//            }
-//            //CT
-//            else if (length() >= 0x400200
-//                && compare(0x270, new int[]{0x00, 0xc2, 0xe0, 0xff, 0x01, 0x30,
-//                    0x06, 0xa2}))
-//            {
-//                //0x270 unknown
-//                setRomType(TYPE_CHRONO_TRIGGER);
-//            }
-//            //all tests failed, unknown
-//            else
-//            {
-//                //unknown
-//                setRomType(TYPE_UNKNOWN);
-//            }
+            //            //then look at certain bytes
+            //            //Earthbound
+            //            if (length() >= 0x300200
+            //                && compare(0x1f005, new int[]{0xa9, 0x5e, 0xc0, 0x85, 0x12,
+            //                    0xa9, 0xc4, 0x00}))
+            //            {
+            //                //1F005 - 1F00C = "Start New Game" text pointer
+            //                //should be [a9 5e c0 85 12 a9 c4 00]
+            //                setRomType(TYPE_EARTHBOUND);
+            //            }
+            //            //SOM
+            //            else if (length() >= 0x200000
+            //                && compare(0x230, new int[]{0x48, 0xab, 0xbd, 0x00, 0x00}))
+            //            {
+            //                //0x230 unknown
+            //                setRomType(TYPE_SECRET_OF_MANA);
+            //            }
+            //            //CT
+            //            else if (length() >= 0x400200
+            //                && compare(0x270, new int[]{0x00, 0xc2, 0xe0, 0xff, 0x01, 0x30,
+            //                    0x06, 0xa2}))
+            //            {
+            //                //0x270 unknown
+            //                setRomType(TYPE_CHRONO_TRIGGER);
+            //            }
+            //            //all tests failed, unknown
+            //            else
+            //            {
+            //                //unknown
+            //                setRomType(TYPE_UNKNOWN);
+            //            }
             setRomType(RomTypeFinder.getRomType(this));
         }
 
@@ -287,10 +280,10 @@ public class Rom
             in.read(c);
             in.close();
             String type = new String(c);
-//            for (int i = 0; i < TYPES.length; i++)
-//            {
-//                if (type.equals(TYPES[i])) setRomType(TYPES[i]);
-//            }
+            //            for (int i = 0; i < TYPES.length; i++)
+            //            {
+            //                if (type.equals(TYPES[i])) setRomType(TYPES[i]);
+            //            }
             setRomType(type);
             return true;
         }
@@ -356,7 +349,10 @@ public class Rom
                     || f.getAbsolutePath().toLowerCase().endsWith(".sfc")
                     || f.getAbsolutePath().toLowerCase().endsWith(".fig") || f
                     .isDirectory())
-                    && f.exists()) { return true; }
+                    && f.exists())
+                {
+                    return true;
+                }
                 return false;
             }
 
@@ -386,34 +382,32 @@ public class Rom
     public boolean saveRom(File rompath)
     {
         if (!this.isLoaded) //don't try to save if nothing is loaded
-        { return false; }
+        {
+            return false;
+        }
         this.path = rompath;
         setDefaultDir(rompath.getParent());
 
         try
         {
             FileOutputStream out = new FileOutputStream(rompath);
-            byte[] b = new byte[this.rom.length];
-            for (int i = 0; i < this.rom.length; i++)
-            {
-                b[i] = (byte) this.rom[i];
-            }
-            out.write(b);
+            out.write(this.rom);
             out.close();
         }
         catch (FileNotFoundException e)
         {
-            System.out.println("Error: File not saved: File not found.");
+            System.err.println("Error: File not saved: File not found.");
             e.printStackTrace();
             return false;
         }
         catch (IOException e)
         {
-            System.out.println("Error: File not saved: Could write file.");
+            System.err.println("Error: File not saved: Could write file.");
             e.printStackTrace();
             return false;
         }
         System.out.println("Saved ROM: " + this.path.length() + " bytes");
+        saveRomType();
         return true;
     }
 
@@ -440,7 +434,9 @@ public class Rom
     public boolean saveRomAs()
     {
         if (!this.isLoaded) //don't try to save if nothing is loaded
-        { return false; }
+        {
+            return false;
+        }
         JFileChooser jfc = new JFileChooser(Rom.getDefaultDir());
         jfc.setFileFilter(new FileFilter()
         {
@@ -450,7 +446,10 @@ public class Rom
                 if (f.getAbsolutePath().toLowerCase().endsWith(".smc")
                     || f.getAbsolutePath().toLowerCase().endsWith(".sfc")
                     || f.getAbsolutePath().toLowerCase().endsWith(".fig")
-                    || f.isDirectory()) { return true; }
+                    || f.isDirectory())
+                {
+                    return true;
+                }
                 return false;
             }
 
@@ -485,7 +484,9 @@ public class Rom
     public void write(int offset, int arg) //main write method
     {
         if (offset > this.rom.length) //don't write past the end of the ROM
-        { return; }
+        {
+            return;
+        }
 
         this.rom[offset] = (byte) (arg & 255);
     }
@@ -727,11 +728,12 @@ public class Rom
         if ((offset & 0x7fffffff) >= this.length()) //don't write past the end
         // of the ROM
         {
-        //			System.out.println(
-        //				"Attempted read past end of rom, (0x"
-        //					+ Integer.toHexString(offset)
-        //					+ ")");
-        return -1; }
+            //			System.out.println(
+            //				"Attempted read past end of rom, (0x"
+            //					+ Integer.toHexString(offset)
+            //					+ ")");
+            return -1;
+        }
         return this.rom[offset] & 255;
     }
 
@@ -867,12 +869,16 @@ public class Rom
     public int readAsmPointer(int offset)
     {
         int out = 0;
-        if (read(offset++) != 0xA9) return -1;
+        if (read(offset++) != 0xA9)
+            return -1;
         out |= read(offset++);
         out |= read(offset++) << 8;
-        if (read(offset++) != 0x85) return -1;
-        if (read(offset++) != 0x0E) return -1;
-        if (read(offset++) != 0xA9) return -1;
+        if (read(offset++) != 0x85)
+            return -1;
+        if (read(offset++) != 0x0E)
+            return -1;
+        if (read(offset++) != 0xA9)
+            return -1;
         out |= read(offset++) << 16;
         out |= read(offset++) << 24;
 
@@ -1676,7 +1682,8 @@ public class Rom
     public boolean compare(int offset, int[] values, int len)
     {
         for (int i = 0; i < len; i++)
-            if (this.read(offset + i) != values[i]) return false;
+            if (this.read(offset + i) != values[i])
+                return false;
         return true;
     }
 
@@ -1693,7 +1700,8 @@ public class Rom
     {
         for (int i = offset; i < rom.length; i++)
         {
-            if (compare(i, values, len)) return i;
+            if (compare(i, values, len))
+                return i;
         }
         return -1;
     }
@@ -1721,7 +1729,8 @@ public class Rom
     public boolean compare(int offset, byte[] values, int len)
     {
         for (int i = 0; i < len; i++)
-            if (this.readByte(offset + i) != values[i]) return false;
+            if (this.readByte(offset + i) != values[i])
+                return false;
         return true;
     }
 
@@ -1750,7 +1759,8 @@ public class Rom
     {
         for (int i = offset; i < rom.length; i++)
         {
-            if (compare(i, values, len)) return i;
+            if (compare(i, values, len))
+                return i;
         }
         return -1;
     }
@@ -1778,7 +1788,10 @@ public class Rom
      */
     public boolean expand()
     {
-        if ((!getRomType().equals("Earthbound")) || length() == 0x400200) { return false; }
+        if ((!getRomType().equals("Earthbound")) || length() == 0x400200)
+        {
+            return false;
+        }
 
         byte[] out = new byte[this.length() + (4096 * 256)];
         for (int i = 0; i < this.length(); i++)
