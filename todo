@@ -1,13 +1,17 @@
 NON-RELEASE
+
 # Make (online) JHack TODO list
 
 NEXT RELEASE
 
 LONG TERM
 
-# IPSDatabase extensions:
-	# etc...
+# IPSDatabase extensions?
+# Starting stat editor ( 1DAF1 = Value for Ness' starting stats )
 # Coffee/Tea Editor
+# PSI Animation editor
+# Title screen editor
+# Death screen editor
 # Credits Font editor
 	[16:47:11] <Chris_Davis|Away> •21E728 to 21EB13 = Credits font 
 	[16:47:11] <Chris_Davis|Away> •21EB14 to 21EB29 = Credits font palette
@@ -17,10 +21,6 @@ LONG TERM
 	[16:55:03] <Chris_Davis|Away> It's probably an unknown.
 	[16:55:05] <Chris_Davis|Away> 21EB2A to 21EB49 = ***UNKNOWN (000020) - PALETTE***
 	[16:55:45] <AnyoneEB> heh
-# [21:54:20] <EBisumaru> shortcuts for the draw buttons in jhack
-# .IPS to make battle font widths work
-	Offer to apply if widths changed, warn no effect otherwise
-	No extra pixel between chars for battle font -- make StringViewer correct for that
 # DONE?
   [21:46:30] <BlueAntoid> Something for eventual implementation into JHack:
   [21:46:30] <BlueAntoid> 1F8F6 - 1F8FC = Pointer to "Which style of windows do you prefer?"
