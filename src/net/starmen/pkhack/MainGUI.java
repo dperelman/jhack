@@ -267,24 +267,14 @@ public class MainGUI implements ActionListener, WindowListener
         optionsMenu.setMnemonic('o');
         optionsMenu.add(new PrefsCheckBox("Display Console Dialog", prefs,
             "consoleDialog", false, 'c', null, "consoleDialog", this));
-        optionsMenu.add(new PrefsCheckBox("Use Hex Numbers", prefs,
-            "useHexNumbers", true, 'h'));
-        optionsMenu.add(new PrefsCheckBox("Use Direct File IO", prefs,
-            "useDirectFileIO", false, 'd', null, "directio", this));
-        optionsMenu.add(new PrefsCheckBox("Auto Check for Updates", prefs,
-            "checkVersion", true, 'u'));
-        optionsMenu.add(new PrefsCheckBox("Load Last ROM on Startup", prefs,
-            "autoLoad", true, 'l'));
-        optionsMenu.add(HackModule.createJMenuItem("Change Default ROM...",
-            'c', null, "selectDefROM", this));
-
         JMenu toolkitMenu = new JMenu("Look & Feel");
-        toolkitMenu.setMnemonic('t');
-
+        toolkitMenu.setMnemonic('f');
         UIManager.LookAndFeelInfo[] lafi = UIManager.getInstalledLookAndFeels();
         ButtonGroup lafbg = new ButtonGroup();
         for (int i = 0; i < lafi.length; i++)
         {
+            if (lafi[i].getName().equals("CDE/Motif"))
+                continue;
             JRadioButtonMenuItem laf = new JRadioButtonMenuItem(lafi[i]
                 .getName());
             laf.setSelected(UIManager.getLookAndFeel().getName().equals(
@@ -294,8 +284,38 @@ public class MainGUI implements ActionListener, WindowListener
             lafbg.add(laf);
             toolkitMenu.add(laf);
         }
-
         optionsMenu.add(toolkitMenu);
+        optionsMenu.add(new PrefsCheckBox("Use Hex Numbers", prefs,
+            "useHexNumbers", true, 'h'));
+        optionsMenu.addSeparator();
+        optionsMenu.add(new PrefsCheckBox("Use Direct File IO", prefs,
+            "useDirectFileIO", false, 'd', null, "directio", this));
+        optionsMenu.add(new PrefsCheckBox("Load Last ROM on Startup", prefs,
+            "autoLoad", true, 'l'));
+        optionsMenu.add(HackModule.createJMenuItem("Change Default ROM...",
+            'c', null, "selectDefROM", this));
+        optionsMenu.addSeparator();
+        optionsMenu.add(new PrefsCheckBox("Auto Check for Updates", prefs,
+            "checkVersion", true, 'u'));
+        JMenu compType = new JMenu("Prefered Compression Format");
+        compType.setMnemonic('p');
+        String[][] compTypes = new String[][]{{"zip", "ZIP, most common"},
+            {"bz2", "BZip2"}, {"rar", "RAR"}, {"7z", "7-Zip, best"}};
+        ButtonGroup compTypeGroup = new ButtonGroup();
+        for (int i = 0; i < compTypes.length; i++)
+        {
+            JRadioButtonMenuItem type = new JRadioButtonMenuItem("."
+                + compTypes[i][0] + " (" + compTypes[i][1] + ")");
+            type.setMnemonic(compTypes[i][0].charAt(0));
+            type.setActionCommand("comptype_" + compTypes[i][0]);
+            type.addActionListener(this);
+            compType.add(type);
+            compTypeGroup.add(type);
+            if ((!prefs.hasValue("updateFormat") && i == 0)
+                || prefs.getValue("updateFormat").equals(compTypes[i][0]))
+                type.setSelected(true);
+        }
+        optionsMenu.add(compType);
 
         menuBar.add(optionsMenu);
 
@@ -1240,7 +1260,7 @@ public class MainGUI implements ActionListener, WindowListener
                 if (getPrefs().getValueAsBoolean(prefName))
                 {
                     //if user selected always expand, do so
-                    rom.expandEx();
+                    rom.expand();
                 }
                 //if user selected never expand, do nothing
             }
@@ -1261,7 +1281,9 @@ public class MainGUI implements ActionListener, WindowListener
                         + "If you do not expand your ROM now "
                         + "you can do so later by using the "
                         + "ROM Expander located in the \"General\" "
-                        + "group.\n\nDo you wish to expand this ROM?", 10, 30);
+                        + "group. You can also use the ROM Expander "
+                        + "to expand by another 2 MB at any time."
+                        + "\n\nDo you wish to expand this ROM?", 10, 30);
                 //make sure text area looks right and does word wrap
                 text.setEditable(false);
                 text.setEnabled(false);
@@ -1281,7 +1303,7 @@ public class MainGUI implements ActionListener, WindowListener
                 //yes is true if user selected yes, false if they did not
                 boolean yes = opt == JOptionPane.YES_OPTION;
                 if (yes)
-                    rom.expandEx();
+                    rom.expand();
                 //if user selected to remember their selection, put it into
                 //the preferences
                 if (remember.isSelected())
@@ -1374,6 +1396,11 @@ public class MainGUI implements ActionListener, WindowListener
             {
                 e.printStackTrace();
             }
+        }
+        else if (ae.getActionCommand().startsWith("comptype_"))
+        {
+            String type = ae.getActionCommand().substring(9);
+            prefs.setValue("updateFormat", type);
         }
         else
         {
@@ -1709,11 +1736,13 @@ public class MainGUI implements ActionListener, WindowListener
                     String filever = new String();
                     for (int i = 0; i < fileverarr.length; i++)
                         filever += fileverarr[i];
+                    String ext = prefs.hasValue("updateFormat") ? prefs
+                        .getValue("updateFormat") : "zip";
                     URL dl = new URL("http://anyoneeb.ath.cx:83/jhack/JHack."
-                        + filever + ".jar.zip");
+                        + filever + ".jar." + ext);
                     InputStream in = dl.openStream();
                     FileOutputStream out = new FileOutputStream(new File(
-                        "JHack." + filever + ".jar.zip"));
+                        "JHack." + filever + ".jar." + ext));
                     byte[] b = new byte[50000];
                     int tmp;
                     while ((tmp = in.read(b)) != -1)

@@ -7,10 +7,11 @@ DONE? (CHANGES TO CONFIRM/DEBUG)
 NEXT v0.0.0.x (bugfix) RELEASE
 # Look into threading of error console GUI building (ERROR#65895)
 # Look into use of JOptionPane.showOptionDialog() for abort/retry/fail.
+# Warn/disallow editing of default ROM
+# Enemy editor: Unknown J --> mirror success rate; boss flag?
 
 NEXT v0.0.x (minor) RELEASE
 
-# Allow selection of compression for auto-update download (zip, 7z, bz2, rar)
 # AbstractRom: React to loadRom() returning false, at least in MainGUI
 # Sprite Editor palette 4 may mean use of map subpalette. Selection of map subpalette:
 	In each map palette (grouping of six 16-color subpalettes), color 0 in the third 

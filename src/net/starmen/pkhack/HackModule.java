@@ -1199,6 +1199,36 @@ public abstract class HackModule
     }
 
     /**
+     * Asks user which type of expansion they wish to use. If the current ROM is
+     * already expanded, this does nothing. Otherwise, it will ask the user if
+     * they want to expand to 4 or 6 megabytes. If they try to cancel, the ROM
+     * is expanded to 4 megabytes. Note that ROM expansion is currently for
+     * Earthbound ROMs only.
+     * 
+     * @see AbstractRom#expand()
+     * @see AbstractRom#expandEx()
+     */
+    public void askExpandType()
+    {
+        if (rom.length() == 0x300200)
+        {
+            Object[] options = new String[]{"4 megabytes", "6 megabytes"};
+            int ans = JOptionPane.showOptionDialog(null,
+                "An action you have performed requires an expanded ROM.\n"
+                    + "A normal ROM is 3 megabytes and may be expanded to\n"
+                    + "4 or 6 megabytes (32 or 48 megabits). If you\n"
+                    + "choose to expand to 4 megabytes, you may use the\n"
+                    + "ROM expander to expand to 6 megabytes at a later time.",
+                "Expand to...?", JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+            if (ans == 1)
+                rom.expandEx();
+            else
+                rom.expand();
+        }
+    }
+
+    /**
      * Simple spacefinder function. Finds the highest occurrence of a data-free
      * block of size [length]. Checks for normal expanded area data (i.e., 255
      * [00]s, one [02], and so on). If it finds an interrupt in the pattern, it
@@ -1242,15 +1272,15 @@ public abstract class HackModule
      */
 
     public boolean writetoFree(byte[] data, int pointerLoc, int pointerLen,
-    	int oldLen, int newLen, boolean nullifyNow, boolean expand)
+        int oldLen, int newLen, boolean nullifyNow)
     {
-        //make sure ROM is expanded
-    	if (expand)
-    		rom.expandEx();
+        //make sure ROM is expanded if needed
+        if (newLen > oldLen)
+            askExpandType();
+
         //store old pointer for use later
         int oldPointer = toRegPointer(rom.readMulti(pointerLoc, pointerLen));
-        if ((newLen <= oldLen)
-        		&& nullifyNow)
+        if ((newLen <= oldLen) && nullifyNow)
         {
             //if it fits in the same place, then write there
             nullifyArea(oldPointer, oldLen);
@@ -1275,7 +1305,7 @@ public abstract class HackModule
                 //write data there
                 rom.write(newPointer, data, newLen);
                 // nullify if necessary
-                if (! nullifyNow)
+                if (!nullifyNow)
                 {
                     nullifyArea(oldPointer, oldLen);
                 }
@@ -1292,7 +1322,7 @@ public abstract class HackModule
             }
         }
     }
-    
+
     /**
      * Writes the specified data into a free spot in the ROM and nulls the
      * previous copy. If a free spot large enough cannot be found, false will be
@@ -1308,11 +1338,11 @@ public abstract class HackModule
      *         ROM on failure)
      * @see #findFreeRange(int, int)
      */
-    
+
     public boolean writeToFree(byte[] data, int pointerLoc, int oldLen,
-            int newLen)
+        int newLen)
     {
-    	return writetoFree(data, pointerLoc, 4, oldLen, newLen, true, true);
+        return writetoFree(data, pointerLoc, 4, oldLen, newLen, true);
     }
 
     /**
@@ -1334,8 +1364,9 @@ public abstract class HackModule
     public boolean writeToFreeASMLink(byte[] data, int[] pointerLoc,
         int oldLen, int newLen)
     {
-        //make sure ROM is expanded
-        rom.expandEx();
+        //make sure ROM is expanded if needed
+        if (newLen > oldLen)
+            askExpandType();
         //store old pointer for use later
         int oldPointer = rom.readRegAsmPointer(pointerLoc[0]);
         System.out.println("writeToFreeASMLink(): read pointer as being: 0x"
@@ -2292,27 +2323,38 @@ public abstract class HackModule
     }
 
     /**
-     * Converts a regular pointer to a SNES pointer. This is done by adding
-     * 0xC00000 and subtracting 0x200.
+     * Converts a regular pointer to a SNES pointer. This is done by subtracting
+     * 0x200 for the header and then, if before 4 MB, adding 0xC00000.
      * 
      * @param in A regular pointer
      * @return An SNES pointer
      */
     public static int toSnesPointer(int in)
     {
-        return in + 0xC00000 - 0x200;
+        in -= 0x200;
+        if (in >= 0x400000)
+        {
+            return in;
+        }
+        else
+            return in + 0xC00000;
     }
 
     /**
-     * Converts a SNES pointer to a regular pointer. This is done by subtracting
-     * 0xC00000 and adding 0x200.
+     * Converts a SNES pointer to a regular pointer. This is done by adding
+     * 0x200 for the header and then, if at least 0xC00000, subtracting
+     * 0xC00000.
      * 
      * @param in An SNES pointer
      * @return A regular pointer
      */
     public static int toRegPointer(int in)
     {
-        return in - 0xC00000 + 0x200;
+        in += 0x200;
+        if (in >= 0xC00200)
+            return in - 0xC00000;
+        else
+            return in;
     }
 
     /**

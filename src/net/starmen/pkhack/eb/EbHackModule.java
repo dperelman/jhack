@@ -134,51 +134,53 @@ public abstract class EbHackModule extends HackModule
         super(rom, prefs);
         initBigArrays();
     }
-    public int findFreeRange(int startAt,int length) throws EOFException
-{
-    // simple recursive spacefinder function
-    // finds the highest occurrence of a data-free block of size [length]
-    // checks for normal expanded area data (i.e., 255 [00]s, one [02], and
-    // so on)
-    // if it finds an interrupt in the pattern, it will skip that area and
-    // search just beyond it, thus leaving any user-modified data intact
-    // (hopefully)
-
-    int i;
-    for (i = startAt; i > startAt - length; i--)
+    public int findFreeRange(int startAt, int length) throws EOFException
     {
-        if (i < 0x300200)
-            //only look at exp
-            throw new EOFException("No free range " + length
-                + " bytes long found.");
-        int ch = rom.read(i);
-
-        if (((i + 1) % 0x100) == 0)
-        {
-            if (ch != 2)
-            {
-                //return findFreeRange(i - 1, length);
-                startAt = i - 1;
-            }
-        }
-        else
-        {
-            if (ch != 0)
-            {
-                //return findFreeRange(i - 1, length);
-                startAt = i - 1;
-            }
-        }
-    }
-    //        System.out.println(
-    //            "Free range found starting at 0x"
-    //                + addZeros(Integer.toHexString(i), 6)
-    //                + " "
-    //                + length
-    //                + " bytes long.");
-
-    return i;
-}
+	    // simple recursive spacefinder function
+	    // finds the highest occurrence of a data-free block of size [length]
+	    // checks for normal expanded area data (i.e., 255 [00]s, one [02], and
+	    // so on)
+	    // if it finds an interrupt in the pattern, it will skip that area and
+	    // search just beyond it, thus leaving any user-modified data intact
+	    // (hopefully)
+	
+	    int i;
+	    for (i = startAt; i > startAt - (length - 1); i--)
+	    {
+	        if (i < 0x300200)
+	            //only look at exp
+	            throw new EOFException("No free range " + length
+	                + " bytes long found.");
+	        if (i < 0x410200 && i >= 0x408200)
+	            startAt = i = 0x4081ff;
+	        int ch = rom.read(i);
+	
+	        if (((i + 1) % 0x100) == 0 && i < 0x400200)
+	        {
+	            if (ch != 2)
+	            {
+	                //return findFreeRange(i - 1, length);
+	                startAt = i - 1;
+	            }
+	        }
+	        else
+	        {
+	            if (ch != 0)
+	            {
+	                //return findFreeRange(i - 1, length);
+	                startAt = i - 1;
+	            }
+	        }
+	    }
+	    //        System.out.println(
+	    //            "Free range found starting at 0x"
+	    //                + addZeros(Integer.toHexString(i), 6)
+	    //                + " "
+	    //                + length
+	    //                + " bytes long.");
+	
+	    return i;
+	}
     public void nullifyArea(int address, int len)
     {
         for (int i = 0; i < len; i++)
@@ -218,7 +220,7 @@ public abstract class EbHackModule extends HackModule
                 compver + "." + minor + " loaded.");
             
         }
-        catch (Exception e)
+        catch (Throwable e)
         {
             System.out.println("Error loading Earthbound compression library " +
                 System.mapLibraryName("comp") + ".");
@@ -310,13 +312,13 @@ public abstract class EbHackModule extends HackModule
                 len = ((rom.read(cdata) & 3) << 8) + rom.read(cdata + 1) + 1;
                 cdata++;
             }
-            if (bpos + len > maxlen)
+            if (bpos + len > maxlen || bpos + len < 0)
                 return new int[] { -1 };
             cdata++;
             if (cmdtype >= 4)
             {
                 bpos2 = (rom.read(cdata) << 8) + rom.read(cdata + 1);
-                if (bpos2 >= maxlen)
+                if (bpos2 >= maxlen || bpos2 < 0)
                     return new int[] { -2 };
                 cdata += 2;
             }
@@ -342,7 +344,7 @@ public abstract class EbHackModule extends HackModule
                     cdata++;
                     break;
                 case 2 : //??? TODO way to do this with Arrays?
-                    if (bpos + 2 * len > maxlen)
+                    if (bpos + 2 * len > maxlen || bpos < 0)
                         return new int[] { -3 };
                     while (len-- != 0)
                     {
@@ -357,7 +359,7 @@ public abstract class EbHackModule extends HackModule
                         buffer[bpos++] = tmp++;
                     break;
                 case 4 : //use previous data ?
-                    if (bpos2 + len > maxlen)
+                    if (bpos2 + len > maxlen || bpos2 < 0)
                         return new int[] { -4 };
                     System.arraycopy(buffer, bpos2, buffer, bpos, len);
                     bpos += len;
@@ -367,7 +369,7 @@ public abstract class EbHackModule extends HackModule
 //                    }
                     break;
                 case 5 :
-                    if (bpos2 + len > maxlen)
+                    if (bpos2 + len > maxlen || bpos2 < 0)
                         return new int[] { -5 };
                     while (len-- != 0)
                     {
@@ -380,7 +382,7 @@ public abstract class EbHackModule extends HackModule
 //                        tmp =
 //                            (byte) (((tmp >> 4) & 0x0F) | ((tmp << 4) & 0xF0));
 //                        buffer[bpos++] = tmp;
-                        buffer[bpos++] = bitrevs[buffer[bpos2++]];
+                        buffer[bpos++] = bitrevs[buffer[bpos2++] & 0xff];
                     }
                     break;
                 case 6 :

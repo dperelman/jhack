@@ -521,8 +521,6 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         {
             DatabaseEntry de = (DatabaseEntry) entries.get(ipsTable
                 .getSelectedRow());
-            //make sure ROM is expanded
-            rom.expandEx();
             de.apply();
             checkAllApplied(rom);
             ipsTable.repaint();
@@ -531,14 +529,11 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         {
             DatabaseEntry de = (DatabaseEntry) entries.get(ipsTable
                 .getSelectedRow());
-            //make sure ROM is expanded
-            rom.expandEx();
             de.unapply();
             checkAllApplied(rom);
             ipsTable.repaint();
         }
     }
-
     /**
      * Used to cache <code>IPSFile</code> objects. Accessed by and written to
      * by <code>getIPSFileFor()</code>.
@@ -577,17 +572,70 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
 
     public static boolean applyIPS(byte[] file, HackModule hm)
     {
-        return hm.rom.apply(getIPSFileFor(file));
+        IPSFile ips = getIPSFileFor(file);
+        if (!hm.rom.apply(ips))
+        {
+            hm.askExpandType();
+            //if still unable to apply, force 6MB and try again
+            if (!hm.rom.apply(ips))
+            {
+                if (hm.rom.length() == 0x400200)
+                {
+                    hm.rom.expandEx();
+                    return hm.rom.apply(ips);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
+        else
+        {
+            return true;
+        }
     }
 
     public static boolean unapplyIPS(byte[] file, HackModule hm)
     {
         IPSFile ips = getIPSFileFor(file);
+        AbstractRom orgRom = JHack.main.getOrginalRomFile(hm.rom.getRomType());
         if (hm.rom.check(ips))
-            return hm.rom.unapply(ips, JHack.main.getOrginalRomFile(hm.rom
-                .getRomType()));
+        {
+            if (!hm.rom.unapply(ips, orgRom))
+            {
+                hm.askExpandType();
+                //if still unable to apply, force 6MB and try again
+                if (!hm.rom.unapply(ips, orgRom))
+                {
+                    if (hm.rom.length() == 0x400200)
+                    {
+                        hm.rom.expandEx();
+                        return hm.rom.unapply(ips, orgRom);
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
         else
+        {
             return false;
+        }
     }
 
     /**
@@ -757,7 +805,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
      * 
      * @param filename filename to get extension from
      * @param file <code>byte[]</code> with the exported data
-     * @return <code>true</code> if successful
+     * @return <code>true</code> if successful, cancellations are successes
      * @see #registerExtension(String, Method, Object)
      * @see #applyFile(String, byte[], boolean)
      * @see #unapplyFile(String, byte[])
