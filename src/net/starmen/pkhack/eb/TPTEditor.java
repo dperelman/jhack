@@ -14,7 +14,6 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -40,7 +39,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
         super(rom, prefs);
     }
 
-    public static final int NUM_ENTRIES = 1583;
+    public static final int NUM_ENTRIES = 1584;
 
     /**
      * TODO Write javadoc for this class
@@ -72,7 +71,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
             this.hm = hm;
             Rom rom = hm.rom;
 
-            address = 0x0F8B96 + (num * 0x11);
+            address = /*0x0F8B96*/ 0xF8B85 + (num * 0x11);
             rom.seek(address);
 
             type = rom.readSeek();
@@ -318,7 +317,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
     }
     private JComboBox selector, sprite, item, type, direction, showSprite;
     private JSearchableComboBox itemSearch;
-    private JTextField money, eventFlag, movement[] = new JTextField[2];
+    private JTextField money, eventFlag, movement;
     private TextEditor.TextOffsetEntry pointer, secPointer;
     private JLabel spritePreview;
     private JCheckBox moneyCheckBox;
@@ -337,9 +336,8 @@ public class TPTEditor extends EbHackModule implements ActionListener
         Box main = new Box(BoxLayout.Y_AXIS);
 
         main.add(new JSearchableComboBox(selector = HackModule
-            .createJComboBoxFromArray(tptEntries), "Entry: "));
+            .createComboBox(tptEntries, this), "Entry: "));
         selector.setActionCommand("TPTSelector");
-        selector.addActionListener(this);
 
         main.add(new JSearchableComboBox(sprite = createComboBox(sptNames,
             false, this), "Sprite: "));
@@ -383,10 +381,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
         entry.add(secPointer = new TextEditor.TextOffsetEntry(
             "Secondary Pointer", true));
 
-        entry.add(HackModule.getLabeledComponent("Movement: ", HackModule
-            .createFlowLayout(new JComponent[]{
-                movement[0] = HackModule.createSizedJTextField(3),
-                movement[1] = HackModule.createSizedJTextField(3)})));
+        entry.add(HackModule.getLabeledComponent("Movement: ", movement = HackModule.createSizedJTextField(5)));
 
         entry.add(HackModule.getLabeledComponent("Direction: ",
             direction = HackModule.createJComboBoxFromArray(new String[]{"Up",
@@ -449,9 +444,9 @@ public class TPTEditor extends EbHackModule implements ActionListener
      */
     public void show()
     {
-        super.show();
-
         readFromRom();
+        super.show();
+        
         SpriteEditor.readFromRom(rom);
         selector.setSelectedIndex(0);
         selector.updateUI();
@@ -528,9 +523,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
         this.secPointer.setOffset(e.getSecPointer());
         this.item.setSelectedIndex(e.getItem());
         this.money.setText(Integer.toString(e.getMoney()));
-        this.movement[0].setText(Integer.toString(e.getMovement() & 255));
-        this.movement[1]
-            .setText(Integer.toString((e.getMovement() >> 8) & 255));
+        this.movement.setText(Integer.toString(e.getMovement()));
         this.direction.setSelectedIndex(e.getDirection());
 
         String temp = addZeros(Integer.toHexString(e.getEventFlag()), 4);
@@ -566,8 +559,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
                 e.setItem(item.getSelectedIndex());
             }
         }
-        e.setMovement((Integer.parseInt(movement[0].getText()) & 255)
-            + ((Integer.parseInt(movement[1].getText()) & 255) << 8));
+        e.setMovement(Integer.parseInt(movement.getText()));
         e.setDirection(direction.getSelectedIndex());
 
         String temp = killSpaces(eventFlag.getText());
