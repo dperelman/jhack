@@ -153,8 +153,20 @@ public class ActionEditor extends EbHackModule implements ActionListener
     public static void initEffectsList()
     {
         asmEffectsInited = true;
-        asmEffects = new String[200];
+        asmEffects = new String[300];
         readArray(DEFAULT_BASE_DIR, "asmEffects.txt", true, asmEffects);
+       
+        String[] tempArray;
+        for(int i = 0; i < asmEffects.length; i++)
+        {
+        	if (asmEffects[i]==asmEffects[299])
+        	{
+        		tempArray = new String[i];
+        		for(int j = 0; j < i; j++)
+        			tempArray[j] = asmEffects[j];
+        		asmEffects = tempArray;
+        	}
+        }
     }
 
     public void actionPerformed(ActionEvent ae)
@@ -296,7 +308,7 @@ public class ActionEditor extends EbHackModule implements ActionListener
 
     public String getVersion()
     {
-        return "1.1";
+        return "1.2";
     }
 
     public void hide()

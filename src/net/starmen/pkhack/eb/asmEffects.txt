@@ -47,10 +47,10 @@ C295AB Fire 1
 C295B4 Fire 2
 C295BD Fire 3
 C295C6 Fire 4
-C29547 Freeze 1
-C29550 Freeze 2
-C29559 Freeze 3
-C29562 Freeze 4
+C29647 Freeze 1
+C29650 Freeze 2
+C29659 Freeze 3
+C29662 Freeze 4
 C29871 Thunder 1
 C2987D Thunder 2
 C29889 Thunder 3
@@ -124,3 +124,4 @@ C2A5E3 Multi bottle rocket
 C2A5EC Damage and solidify
 C2A818 Bomb
 C2A821 Super Bomb
+C2B0A1 Mirror

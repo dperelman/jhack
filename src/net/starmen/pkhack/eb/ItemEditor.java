@@ -2,10 +2,13 @@ package net.starmen.pkhack.eb;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +16,7 @@ import java.util.Iterator;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -85,7 +89,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
         Arrays.fill(labels[3], "Special (N/A): ");
 
         //exceptions
-        //type 4 - 0000 0100
+        //type 4 - buyable character - 0000 0100
         labels[0][4] = "GSCT entry(?): ";
         labels[1][4] = "Unknown(E.P.): ";
         labels[2][4] = "Unknown(E.P.inc): ";
@@ -96,34 +100,42 @@ public class ItemEditor extends EbHackModule implements ActionListener
 
         //food items
         //type 32 - 0010 0000
+        labels[0][32] = "Recovery Type: ";
         labels[1][32] = "Poo HP: ";
         labels[2][32] = "HP Increase: ";
+        labels[3][32] = "Skip Sandwich Effect Time: ";
 
         //type 36 - 0010 0100
-        labels[1][36] = "Poo HP: ";
-        labels[2][36] = "HP Increase: ";
+        labels[0][32] = "Recovery Type: ";
+        labels[1][32] = "Poo HP: ";
+        labels[2][32] = "HP Increase: ";
+        labels[3][32] = "Skip Sandwich Effect Time: ";
 
         //type 40 - 0010 1000
-        labels[1][40] = "Poo HP: ";
-        labels[2][40] = "HP Increase: ";
+        labels[0][32] = "Recovery Type: ";
+        labels[1][32] = "Poo HP: ";
+        labels[2][32] = "HP Increase: ";
+        labels[3][32] = "Skip Sandwich Effect Time: ";
 
         //type 44 - 0010 1100
-        labels[1][44] = "Poo HP: ";
-        labels[2][44] = "HP Increase: ";
+        labels[0][32] = "Recovery Type: ";
+        labels[1][32] = "Poo HP: ";
+        labels[2][32] = "HP Increase: ";
+        labels[3][32] = "Skip Sandwich Effect Time: ";
 
         //armor items
         //type 20 - 0001 0100
-        labels[0][20] = "Defence: ";
+        labels[0][20] = "Defense: ";
         labels[1][20] = "Speed: ";
         labels[3][20] = "Protection: ";
 
         //type 24 - 0001 1000
-        labels[0][24] = "Defence: ";
+        labels[0][24] = "Defense: ";
         labels[1][24] = "Luck: ";
         labels[3][24] = "Protection: ";
 
         //type 28 - 0001 1100
-        labels[0][28] = "Defence: ";
+        labels[0][28] = "Defense: ";
         labels[1][28] = "Luck: ";
         labels[3][28] = "Protection: ";
 
@@ -185,7 +197,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
 
         JPanel lowerLeft = new JPanel();
         lowerLeft.setLayout(new BoxLayout(lowerLeft, BoxLayout.Y_AXIS));
-        lowerLeft.add(getLabeledComponent("Cost:",
+        lowerLeft.add(getLabeledComponent("Cost (0 to make unsellable and undroppable:",
             this.cost = createSizedJTextField(5, true)));
         lowerLeft.add(getLabeledComponent("Type:",
             this.type = createSizedJTextField(3, true)));

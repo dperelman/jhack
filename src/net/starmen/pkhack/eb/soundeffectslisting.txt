@@ -1,6 +1,6 @@
-               01 - cursor moving
-	       02 - cursor confirm
-               03 - cursor moving
+               01 - cursor confirm
+	       02 - cursor horizontal
+               03 - cursor vertical
                04 - naming cursor
 	       05 - error blip
 	       06 - *** NO SOUND ***
@@ -31,8 +31,8 @@
                1F - SMAAASH hit
                20 - party member dying
                21 - enemy defeated
-	       22 - open present box
-	       23 - take what's inside
+	       22 - miss
+	       23 - dodge
                24 - recovering HP/PP
                25 - status recovery
                26 - power or psychic shield
@@ -43,7 +43,7 @@
                2B - PSI Magnet a
                2C - PSI Paralysis a
                2D - PSI Brainshock a
-	       2E - thump
+	       2E - ally is hit
                2F - critical blow
                30 - PSI Rockin’
                31 - PSI Rockin’ 2
@@ -67,12 +67,12 @@
                43 - another PSI Flash
                44 - eating/drinking an item
 	       45 - quiet beep
-	       46 - launching missile?
+	       46 - launching missile/bottle rocket
 	       47 - hiss
-	       48 - status change?
+	       48 - call for help
                49 - Devil’s Machine reflecting attack/Sky Runner radar
-	       4A - ? thump ?
-	       4B - launching multi-bottle rocket?
+	       4A - Devil's machine switch
+	       4B - flame attack
                4C - PSI Magnet
 	       4D - PSI Magnet
 	       4E - muffled buzzy whirring
@@ -84,23 +84,23 @@
                54 - beat up by zombies
                55 - zombies doing something mysterious
 	       56 - strange warbling noise
-	       57 - *** NO SOUND ***
-	       58 - magical sproingy noise
+	       57 - nothing
+	       58 - disrupty noise
                59 - fuel replenishment
                5A - Giygas weakened by 1st prayer?
 	       5B - PSI Fire
 	       5C - muffled buzzy noise
 	       5D - shield reflection
-               5E - chick?
+               5E - Ok desu ka? (naming screen music)/chirp otherwise
                5F - Magic Butterfly fluttering towards you
                60 - possess by ghost sound
 	       61 - run down stairs
 	       62 - fast drum solo
                63 - Starmaster arriving/leaving
                64 - warping to Sea of Eden by tentacle
-               65 - chick hatching
-               66 - receiving special item?
-               67 - learning PSI?
+               65 - chick chirp
+               66 - receiving special item
+               67 - learning PSI
                68 - chicken
                69 - Sphinx tile 1
 	       6A - Sphinx tile 2
@@ -109,18 +109,18 @@
 	       6D - Sphinx tile 5
 	       6E - Pyramid door unlocked
                6F - rapid knocking on the door
-	       70 - *** NO SOUND ***
+	       70 - open door 2 (soft)
                71 - sound when you check Mani Mani statue
                72 - creepy/eerie sound
-	       73 - open a box
-               74 - take what's inside
+	       73 - equip
+               74 - receive item
 	       75 - open a box
-	       76 - take what's inside
-	       77 - ? unknown ?
-	       78 - chicken
-	       79 - odd noise like using PSI
-	       7A - guitar strum
+	       76 - exchange
+	       77 - unlock
+	       78 - buy item
+	       79 - Tenda throwing rock
+	       7A - guitar strum/enter character in naming screen
 	       7B - cursor beep
-	       7C - trumpet blast
-	       7D - *** NO SOUND ***
-	       7E - funky little tune
+	       7C - trumpet blast/cursor in naming screen
+	       7D - nothing/cursor in naming screen
+	       7E - funky little tune/press start in naming screen
