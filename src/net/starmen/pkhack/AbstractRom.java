@@ -232,30 +232,30 @@ public abstract class AbstractRom
      */
     public boolean loadRom()
     {
-        JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
-        jfc.setFileFilter(new FileFilter()
-        {
-
-            public boolean accept(File f)
-            {
-                if ((f.getAbsolutePath().toLowerCase().endsWith(".smc")
-                    || f.getAbsolutePath().toLowerCase().endsWith(".sfc")
-                    || f.getAbsolutePath().toLowerCase().endsWith(".fig") || f
-                    .isDirectory())
-                    && f.exists())
-                {
-                    return true;
-                }
-                return false;
-            }
-
-            public String getDescription()
-            {
-                return "SNES ROMs (*.smc, *.sfc, *.fig)";
-            }
-        });
         try
         {
+            JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
+            jfc.setFileFilter(new FileFilter()
+            {
+                public boolean accept(File f)
+                {
+                    if ((f.getAbsolutePath().toLowerCase().endsWith(".smc")
+                        || f.getAbsolutePath().toLowerCase().endsWith(".sfc")
+                        || f.getAbsolutePath().toLowerCase().endsWith(".fig") || f
+                        .isDirectory())
+                        && f.exists())
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+
+                public String getDescription()
+                {
+                    return "SNES ROMs (*.smc, *.sfc, *.fig)";
+                }
+            });
+
             if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
             {
                 return loadRom(jfc.getSelectedFile());
@@ -267,7 +267,13 @@ public abstract class AbstractRom
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
+            JOptionPane.showMessageDialog(null,
+                "An error occured in the load ROM dialog.\n"
+                    + "Please try again. Full details on the\n"
+                    + "error are on the console. The error was:\n"
+                    + e.getClass() + ": " + e.getMessage(),
+                "Error in Loading Dialog", JOptionPane.ERROR_MESSAGE);
             return false;
         }
     }

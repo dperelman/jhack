@@ -1,5 +1,7 @@
 NEXT VERSION (after v0.5.6):
 # AbstractRom: Forced ROM types to not be "".
+# AbstractRom: Errors in the load ROM dialog are caught and shown in a dialog box
+	as well as the normal console.
 # Attempted to fix bug where PK Hack would sometimes immediately error and die.
 	As a result, the GUI and error console flash open and closed when PK Hack starts.
 # HexEditor: BUGFIX: Works correctly when another ROM is loaded
