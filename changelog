@@ -12,6 +12,9 @@ NEXT VERSION (after v0.5.0.2):
 	disallows save in non-direct IO mode.
 # SPT Editor: BUGFIXes: Paste without copy does nothing instead of dying,
 	and hex text fields only allow hex digits to be entered.
+# Tile Editor: If tiles are compressed wrong, selecting "fail" will attempt to
+	display whatever could be decompressed.
+# Reset Button: No longer truncates nulls before compressing.
 
 v0.5.0.2:
 # IPSFile: BUGFIX: IPS creation no longer uses recursion, should fix obscure

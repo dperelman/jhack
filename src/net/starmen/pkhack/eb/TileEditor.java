@@ -165,7 +165,6 @@ public class TileEditor extends EbHackModule implements ActionListener
                 readCollision();
                 isInited = true;
             }
-            ;
         }
 
         /**
@@ -200,13 +199,14 @@ public class TileEditor extends EbHackModule implements ActionListener
             {
                 System.out.println("Error bad compressed data on tileset #"
                     + num + " tiles. (" + tmp[0] + ")");
-                return false;
+                if (tmp[0] < 0)
+                    return false;
             }
             tileOldCompLen = tmp[1];
 
             int[] tile = new int[32];
             int i = 0;
-            for (int t = 0; t < 1024; t++)
+            tileloop: for (int t = 0; t < 1024; t++)
             {
                 for (int j = 0; j < 32; j++)
                 {
@@ -216,7 +216,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                     }
                     catch (ArrayIndexOutOfBoundsException e)
                     {
-                        return true;
+                        break tileloop;
                         //if the array has ended, there's nothing left to do
                     }
                 }
@@ -237,7 +237,10 @@ public class TileEditor extends EbHackModule implements ActionListener
                     }
                 }
             }
-            return true;
+            if (tmp[0] == 28673)
+                return true;
+            else
+                return false;
         }
 
         private boolean readArrangements()

@@ -567,10 +567,10 @@ public class ResetButton extends EbHackModule implements ActionListener
                     }
                     catch (NumberFormatException e2)
                     {}
-                    if(st >= 0 && e >= 0)
+                    if (st >= 0 && e >= 0)
                     {
-                        start.setValue(Math.min(st,e));
-                        end.setValue(Math.max(st,e));
+                        start.setValue(Math.min(st, e));
+                        end.setValue(Math.max(st, e));
                     }
                     //                    lenTF.setText(Integer.toString(end.getValue()
                     //                        - start.getValue() + 1, 16));
@@ -837,7 +837,7 @@ public class ResetButton extends EbHackModule implements ActionListener
                 in.read(udata);
                 in.close();
 
-                int tmp = comp(udata, buffer, getArrSize(udata));
+                int tmp = comp(udata, buffer);
                 if (tmp > this.getSelectedRange().getLen())
                 {
                     //longer than selected area
@@ -849,9 +849,9 @@ public class ResetButton extends EbHackModule implements ActionListener
                         return;
                 }
                 rom.write(this.getSelectedRange().getStart(), buffer, tmp);
-                JOptionPane.showMessageDialog(this.mainWindow, "Compressed to "
-                    + tmp + " bytes.", "Comp successful",
-                    JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this.mainWindow, "Compressed "
+                    + f.length() + " bytes to " + tmp + " bytes.",
+                    "Comp successful", JOptionPane.INFORMATION_MESSAGE);
             }
             catch (NullPointerException e)
             {
