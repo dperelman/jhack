@@ -35,6 +35,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 /**
@@ -179,7 +180,10 @@ public class OutputStreamViewer
                                 if (sb.length() > 0)
                                     appendToErrArea();
                                 if (send)
+                                {
                                     sendError();
+                                    send = false;
+                                }
                                 sleep(2000);
                             }
                         }
@@ -268,8 +272,8 @@ public class OutputStreamViewer
                         einfodia.hide();
                     }
                 });
-                JTextField usertf = new JTextField();
-                JTextArea comment = new JTextArea();
+                JTextField usertf = new JTextField(20);
+                JTextArea comment = new JTextArea(5, 70);
 
                 einfodia.getContentPane().setLayout(new BorderLayout());
                 einfodia.getContentPane().add(
@@ -277,8 +281,13 @@ public class OutputStreamViewer
                     BorderLayout.SOUTH);
 
                 Box entry = new Box(BoxLayout.Y_AXIS);
-                entry.add(new JLabel("Please enter your username and any "
-                    + "information related to the error."));
+                //FIXME What's with these JLabels?
+                entry.add(new JLabel("An error has occured in JHack.",
+                    SwingConstants.CENTER));
+                entry
+                    .add(new JLabel("Please enter your username and any "
+                        + "information related to the error.",
+                        SwingConstants.CENTER));
                 entry.add(HackModule.getLabeledComponent("Username: ", usertf));
                 entry.add(HackModule.getLabeledComponent("Comment: ", comment));
 
@@ -330,6 +339,7 @@ public class OutputStreamViewer
                 JOptionPane.showMessageDialog(null, "An error occured while "
                     + "reporting an error:\n" + instr, "Error Reporting Error",
                     JOptionPane.WARNING_MESSAGE);
+                return;
             }
         }
         catch (IOException ioe)
@@ -338,6 +348,7 @@ public class OutputStreamViewer
                 + "reporting an error:\n" + ioe.getClass() + ": "
                 + ioe.getMessage(), "Error Reporting Error",
                 JOptionPane.WARNING_MESSAGE);
+            return;
         }
     }
 

@@ -13,6 +13,7 @@ Next version (after v0.4.7.1):
 # Rom class separated into Rom and RomMem. Rom may be renamed to AbstractRom
 	before release.
 # Added some of JeffMan's graphics work to IPS Database
+# Automated error reporting (doesn't work with -c/--console argument)
 
 v0.4.7.1:
 # IPSDatabase extensions:

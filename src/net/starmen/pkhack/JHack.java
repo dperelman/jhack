@@ -48,6 +48,7 @@ public class JHack
         if (!useConsole)
         {
             System.setOut(out.getPrintStream());
+            err.setError(true);
             System.setErr(err.getPrintStream());
         }
         else
