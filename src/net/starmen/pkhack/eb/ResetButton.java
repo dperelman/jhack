@@ -96,8 +96,7 @@ public class ResetButton extends EbHackModule implements ActionListener
          * 
          * @param start Offset of the first byte.
          * @param len Length of range
-         * @param desc Description of range, may be just a number in a
-         *            subrange.
+         * @param desc Description of range, may be just a number in a subrange.
          */
         public ResetRange(int start, int len, String desc)
         {
@@ -207,7 +206,10 @@ public class ResetButton extends EbHackModule implements ActionListener
                     public boolean accept(File f)
                     {
                         if (f.getAbsolutePath().toLowerCase().endsWith(".ips")
-                            || f.isDirectory()) { return true; }
+                            || f.isDirectory())
+                        {
+                            return true;
+                        }
                         return false;
                     }
 
@@ -715,12 +717,16 @@ public class ResetButton extends EbHackModule implements ActionListener
         if (ae.getActionCommand().equals("load"))
         {
             //don't overwrite orginal ROM file
+            Rom tmpRom = orgRom;
             if (orgRom == JHack.main.getOrginalRomFile(rom.getRomType()))
             {
                 orgRom = new Rom();
             }
-            orgRom.loadRom();
-            path.setText(orgRom.getPath());
+            //if user cancels load, use previously loaded ROM
+            if (orgRom.loadRom())
+                path.setText(orgRom.getPath());
+            else
+                orgRom = tmpRom;
         }
         else if (ae.getActionCommand().equals("reset"))
         {
