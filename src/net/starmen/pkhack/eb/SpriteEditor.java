@@ -80,7 +80,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
     public static Color bgColor = new Color(1, 1, 1);
 
     /** Number of SPT entries in EarthBound. */
-    public final static int NUM_ENTRIES = 463;
+    public final static int NUM_ENTRIES = 464;
 
     protected void init()
     {
@@ -1063,7 +1063,7 @@ palNum.addActionListener(this);
             this.num = num;
             name = SpriteEditor.sptNames[num].toString();
             //int temp;
-            int offset = 3085635 + (4 * num);
+            int offset = 3085635 + (4 * (num-1));
 
             pointer = rom.read(offset++);
             pointer += rom.read(offset++) << 8;
@@ -1265,7 +1265,10 @@ palNum.addActionListener(this);
      */
     public static void initSptNames(String romPath)
     {
-        readArray(DEFAULT_BASE_DIR, "sptNames.txt", romPath, false, sptNames);
+        String[] tmp = new String[sptNames.length - 1];
+        readArray(DEFAULT_BASE_DIR, "sptNames.txt", romPath, false, tmp);
+        System.arraycopy(tmp, 0, sptNames, 1, tmp.length);
+        sptNames[0] = "Null";
     }
 
     private static void initSpriteInfo(Rom rom)
@@ -1360,9 +1363,9 @@ palNum.addActionListener(this);
     {
         //TODO use writeArray()?
         String output = new String();
-        for (int i = 0; i < sptNames.length; i++)
+        for (int i = 1; i < sptNames.length; i++)
         {
-            output += (sptNames[i].toString().length() > 0 ? i + "-"
+            output += (sptNames[i].toString().length() > 0 ? (i - 1) + "-"
                 + sptNames[i] + "\n" : "");
         }
 
@@ -1471,11 +1474,12 @@ palNum.addActionListener(this);
     /**
      * Sets the specified SPT name for the current ROM.
      * 
-     * @param i which SPT name to set (0 based counting)
+     * @param i which SPT name to set (1 based counting, 0 = Null)
      * @param string what to set SPT name to
      */
     public static void setSptName(int i, String string)
     {
-        sptNames[i] = string;
+        if(i != 0)
+            sptNames[i] = string;
     }
 }

@@ -418,6 +418,7 @@ public class ResetButton extends EbHackModule implements ActionListener
     {
         initResetRanges();
         mainWindow = new JFrame(this.getDescription());
+        mainWindow.setLocationRelativeTo(JHack.main.getMainWindow());
         mainWindow.setSize(620, 210);
 
         mainWindow.getContentPane().setLayout(new BorderLayout());

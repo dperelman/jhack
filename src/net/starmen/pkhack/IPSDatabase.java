@@ -267,6 +267,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         readXML(rom);
 
         mainWindow = new JFrame(this.getDescription());
+        mainWindow.setLocationRelativeTo(JHack.main.getMainWindow());
         mainWindow.getContentPane().setLayout(new BorderLayout());
 
         JPanel buttons = new JPanel();

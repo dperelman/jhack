@@ -9,6 +9,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -50,12 +51,16 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.undo.UndoableEdit;
 
 import net.starmen.pkhack.CCInfo;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.PrefsCheckBox;
 import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
 import net.starmen.pkhack.eb.TPTEditor.TPTEntry;
 
@@ -140,6 +145,11 @@ public class TextEditor extends EbHackModule implements ActionListener
             "paste", this));
         editMenu.add(HackModule.createJMenuItem("Delete", 'd', "DELETE",
             "delete", this));
+        editMenu.add(new JSeparator());
+        editMenu.add(HackModule.createJMenuItem("Undo", 'u', "ctrl Z",
+            "undo", this));
+        editMenu.add(HackModule.createJMenuItem("Redo", 'r', "ctrl Y",
+            "redo", this));
         editMenu.add(new JSeparator());
         editMenu.add(HackModule.createJMenuItem("Find", 'f', "ctrl F", "find",
             this));
@@ -319,6 +329,19 @@ public class TextEditor extends EbHackModule implements ActionListener
                     updateCurrSize();
                     updateCurrPos();
                 }
+            }
+        });
+        undo = new ArrayList();
+        undoPos = -1;
+        ta.getDocument().addUndoableEditListener(new UndoableEditListener()
+        {
+            public void undoableEditHappened(UndoableEditEvent e)
+            {
+                if (undoPos + 1 != undo.size())
+                    for (int i = undo.size() - 1; i > undoPos; i--)
+                        undo.remove(i);
+                undo.add(e.getEdit());
+                undoPos++;
             }
         });
         ta.addCaretListener(new CaretListener()
@@ -506,18 +529,21 @@ public class TextEditor extends EbHackModule implements ActionListener
 
             this.add(tf, BorderLayout.EAST);
 
-            t = new JLabel(labelText = "<html><font color = \"blue\"><u>" + label
-                + "</u></font>" + ": " + (snes ? "$" : "0x") + "</html>");
+            t = new JLabel(labelText = "<html><font color = \"blue\"><u>"
+                + label + "</u></font>" + ": " + (snes ? "$" : "0x")
+                + "</html>");
             disabledLabelText = label + ": " + (snes ? "$" : "0x");
             t.addMouseListener(new MouseListener()
             {
                 public void mouseClicked(MouseEvent arg0)
                 {
-                    if(isEnabled())
+                    if (isEnabled())
                     {
                         int off = Integer.parseInt(tf.getText(), 16);
-                        if (snes) off = HackModule.toRegPointer(off);
-                        JHack.main.showModule(TextEditor.class, new Integer(off));
+                        if (snes)
+                            off = HackModule.toRegPointer(off);
+                        JHack.main.showModule(TextEditor.class,
+                            new Integer(off));
                     }
                 }
 
@@ -605,6 +631,8 @@ public class TextEditor extends EbHackModule implements ActionListener
     private boolean gotoDialogInited = false;
     private JDialog gotoDialog, findWindow, codeHelp, previewDialog,
             quickCodeDialog;
+    private List undo;
+    private int undoPos;
 
     /*
      * (non-Javadoc)
@@ -656,7 +684,8 @@ public class TextEditor extends EbHackModule implements ActionListener
      */
     public void show(Object in) throws IllegalArgumentException
     {
-        if (mainWindow == null || !mainWindow.isShowing()) show();
+        if (mainWindow == null || !mainWindow.isShowing())
+            show();
         if (in instanceof int[])
         {
             int[] tmp = (int[]) in;
@@ -676,7 +705,8 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     public void hide()
     {
-        if (findWindow != null) findWindow.setVisible(false);
+        if (findWindow != null)
+            findWindow.setVisible(false);
         mainWindow.setVisible(false);
     }
 
@@ -742,11 +772,14 @@ public class TextEditor extends EbHackModule implements ActionListener
         {
             ta.setText(cc.parseString(si.str));
         }
-        if (codeHelp != null && codeHelp.isShowing()) updateCodeHelp();
+        if (codeHelp != null && codeHelp.isShowing())
+            updateCodeHelp();
         if (currentList == TPT)
             showEntry.setEnabled(true);
         else
             showEntry.setEnabled(false);
+        
+        clearUndo();
     }
 
     public int currentList = TPT;
@@ -788,6 +821,14 @@ public class TextEditor extends EbHackModule implements ActionListener
         {
             ta.replaceSelection("");
         }
+        else if(ae.getActionCommand().equals("undo"))
+        {
+            undo();
+        }
+        else if(ae.getActionCommand().equals("redo"))
+        {
+            redo();
+        }
         else if (ae.getActionCommand().equals("useComp"))
         {
             updateCurrSize();
@@ -827,7 +868,8 @@ public class TextEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("showCodeHelp"))
         {
-            if (codeHelp == null) initCodeHelp();
+            if (codeHelp == null)
+                initCodeHelp();
             codeHelp.setVisible(true);
             updateCodeHelp();
         }
@@ -860,13 +902,30 @@ public class TextEditor extends EbHackModule implements ActionListener
                 ((StrInfo) textLists[currentList].get(currentSelection)).num));
         }
     }
+    
+    private void clearUndo()
+    {
+        undo.clear();
+        undoPos = -1;
+    }
+    private void undo()
+    {
+        if(undoPos > -1)
+        ((UndoableEdit)undo.get(undoPos--)).undo();
+    }
+    private void redo()
+    {
+        if(undo.size() > undoPos + 1)
+        ((UndoableEdit)undo.get(++undoPos)).redo();
+    }
 
     private boolean findWindowInited = false;
     private JTextField findTF;
 
     private void find()
     {
-        if (findTF == null) return;
+        if (findTF == null)
+            return;
         String f = cc.deparseString(findTF.getText().toLowerCase());
         int tmp = 0, s = textLists[currentList].size(), c = currentSelection + 1;
         for (int i = 0; i < textLists[currentList].size(); i++)
@@ -888,6 +947,7 @@ public class TextEditor extends EbHackModule implements ActionListener
         {
             findWindowInited = true;
             findWindow = new JDialog(mainWindow, "Text Editor Find", false);
+            findWindow.setLocation(findWindow.getOwner().getLocation());
             findWindow.getContentPane().setLayout(new BorderLayout());
 
             findWindow.getContentPane().add(findTF = new JTextField(),
@@ -933,7 +993,8 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     private boolean isOffsetInStr(StrInfo si, int offset)
     {
-        if (offset == si.address) return true;
+        if (offset == si.address)
+            return true;
         if (offset > si.address && offset < si.address + si.str.length())
             return true;
         return false;
@@ -980,7 +1041,8 @@ public class TextEditor extends EbHackModule implements ActionListener
             || (offset >= 0x8DC31 && offset <= 0x0A012E) || (offset >= 0x2F5020 && offset <= 0x2FA57A))
             && gotoRaw(RAW, offset))
             return true;
-        else if (gotoTpt(offset)) return true;
+        else if (gotoTpt(offset))
+            return true;
         return false;
     }
 
@@ -1006,6 +1068,7 @@ public class TextEditor extends EbHackModule implements ActionListener
     private void initGotoDialog()
     {
         gotoDialog = new JDialog(mainWindow, "Goto Offset", true);
+        gotoDialog.setLocation(gotoDialog.getOwner().getLocation());
         final JTextField tf = HackModule.createSizedJTextField(6);
         final JLabel prefix = new JLabel("0x");
         prefix.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -1053,8 +1116,8 @@ public class TextEditor extends EbHackModule implements ActionListener
                     if (tf.getText().charAt(0) == '-'
                         || tf.getText().charAt(0) == '+')
                     {
-//                        System.out.println("Going to a relative offset... ("
-//                            + tf.getText() + ")");
+                        //                        System.out.println("Going to a relative offset... ("
+                        //                            + tf.getText() + ")");
                         offset = si.address
                             + cc.getStringLength(ta.getText(), useComp
                                 .isSelected(), 0, ta.getCaretPosition());
@@ -1101,7 +1164,8 @@ public class TextEditor extends EbHackModule implements ActionListener
         String out = new String();
         for (int i = 0; i < ccs.length; i++)
         {
-            if (i != 0) out += "\n";
+            if (i != 0)
+                out += "\n";
             out += ccs[i].toString() + ": " + ccs[i].desc;
         }
         codeHelpTa.setText(out);
@@ -1109,15 +1173,17 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     private void initCodeHelp()
     {
-        if (codeHelp != null) return;
+        if (codeHelp != null)
+            return;
         codeHelp = new JDialog(mainWindow, "CC Help", false);
+        codeHelp.setLocation(codeHelp.getOwner().getLocation());
         codeHelp.getContentPane().setLayout(new BorderLayout());
 
         codeHelp.getContentPane().add(
             new JScrollPane(codeHelpTa = new JTextArea()), BorderLayout.CENTER);
         codeHelpTa.setEditable(false);
-        codeHelpTa.setColumns(30);
-        codeHelpTa.setRows(20);
+        codeHelpTa.setColumns(80);
+        codeHelpTa.setRows(15);
         codeHelpTa.setLineWrap(false);
 
         JButton closeb = new JButton("Close");
@@ -1178,7 +1244,8 @@ public class TextEditor extends EbHackModule implements ActionListener
         }
         catch (StringIndexOutOfBoundsException e)
         {}
-        if (pos < 0) return;
+        if (pos < 0)
+            return;
         int posAdd = si.address + pos;
         currPosLabel.setText("Current Position: " + pos + " | 0x"
             + Integer.toHexString(posAdd) + " | $"

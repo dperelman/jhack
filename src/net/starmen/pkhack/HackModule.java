@@ -470,6 +470,7 @@ public abstract class HackModule
     public static JFrame createBaseWindow(ActionListener al)
     {
         JFrame out = new JFrame();
+        out.setLocationRelativeTo(JHack.main.getMainWindow());
         out.getContentPane().setLayout(new BorderLayout());
 
         JPanel buttons = new JPanel();

@@ -78,6 +78,9 @@
 	<ips src = "eb6c_003.ips" size = "2558" author = "Mr. Accident"
 		name = "Six Character Name" sdesc = "Allows 6-character names. (BETA)"
 		sshot = "eb6c_003.png" sssize = "3068" type = "asm" romtype = "Earthbound" />
+	<ips src = "batfonwidhac.ips" size = "283" author = "Mr. Accident" 
+		name = "Battle Font Width Hack" sdesc = "Makes the battle font width table be used"
+		type = "asm" romtype = "Earthbound" />
 	<!-- Font hacks -->
 	<ips src = "mato_oldenglish.efn" size = "3168" author = "Tomato"
 		name = "Olde English Font" sdesc = "Changes Mr. Saturn font to Olde English"

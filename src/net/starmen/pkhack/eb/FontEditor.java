@@ -27,6 +27,7 @@ import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -112,9 +113,10 @@ public class FontEditor extends EbHackModule implements ActionListener
                 this.widthAddress = widthAddress;
                 this.size = size;
                 this.num = num;
-                
+
                 readInfo();
             }
+
             public void readInfo()
             {
                 this.width = hm.rom.read(widthAddress);
@@ -366,7 +368,7 @@ public class FontEditor extends EbHackModule implements ActionListener
                     .getRomType());
                 rom.write(widthAddress, orgRom.readByte(widthAddress));
                 rom.write(address, orgRom.readByte(address, CHAR_SIZES[size]));
-                
+
                 readInfo();
             }
 
@@ -391,14 +393,15 @@ public class FontEditor extends EbHackModule implements ActionListener
         /** Number of characters in an Earthbound font. */
         public static final int NUM_CHARS = 96;
         public Character[] chars = new Character[NUM_CHARS];
-        private int address, widthAddress, size, charSize;
+        private int num, address, widthAddress, size, charSize;
         private HackModule hm;
 
-        public Font(int address, int widthAddress, int size, HackModule hm)
+        public Font(int num, HackModule hm)
         {
-            this.address = address;
-            this.widthAddress = widthAddress;
-            this.size = size;
+            this.num = num;
+            this.address = ADDRESSES[num];
+            this.widthAddress = WIDTH_ADDRESSES[num];
+            this.size = FONT_SIZES[num];
             charSize = 32;
             if (size == FONT_SIZE_SMALL)
                 charSize = 16;
@@ -407,7 +410,7 @@ public class FontEditor extends EbHackModule implements ActionListener
             this.hm = hm;
             readInfo();
         }
-        
+
         public void readInfo()
         {
             for (int c = 0; c < chars.length; c++)
@@ -467,7 +470,7 @@ public class FontEditor extends EbHackModule implements ActionListener
             {
                 Character ch = chars[text.charAt(i) - 0x20];
                 ch.drawImage(g, x, y, true, zoom);
-                x += (ch.width + 1) * zoom;
+                x += (ch.width + (num == BATTLE ? 0 : 1)) * zoom;
             }
         }
 
@@ -520,8 +523,7 @@ public class FontEditor extends EbHackModule implements ActionListener
     {
         for (int i = 0; i < fonts.length; i++)
         {
-            fonts[i] = new Font(ADDRESSES[i], WIDTH_ADDRESSES[i],
-                FONT_SIZES[i], hm);
+            fonts[i] = new Font(i, hm);
         }
     }
 
@@ -693,7 +695,7 @@ public class FontEditor extends EbHackModule implements ActionListener
                 {
                     g.setColor(Color.GRAY);
                     g.fillRect(0, 0, getWidth(), getHeight());
-                    g.setColor(Color.RED);
+                    g.setColor(isEnabled() ? Color.RED : Color.DARK_GRAY);
                     int pos = (int) (getSelectedChar().getWidth() * drawingArea
                         .getZoom());
                     g.drawLine(pos, 0, pos, getHeight());
@@ -708,7 +710,8 @@ public class FontEditor extends EbHackModule implements ActionListener
 
         public void linePos(int x)
         {
-            tf.setText(Integer.toString(Math.round((float) x / 10)));
+            if (isEnabled())
+                tf.setText(Integer.toString(Math.round((float) x / 10)));
         }
 
         public void mouseClicked(MouseEvent me)
@@ -752,14 +755,15 @@ public class FontEditor extends EbHackModule implements ActionListener
 
         public void setWidthToTF()
         {
-            try
-            {
-                int nw = Integer.parseInt(tf.getText());
-                getSelectedChar().setWidth(nw);
-                line.repaint();
-            }
-            catch (NumberFormatException e)
-            {}
+            if (isEnabled())
+                try
+                {
+                    int nw = Integer.parseInt(tf.getText());
+                    getSelectedChar().setWidth(nw);
+                    line.repaint();
+                }
+                catch (NumberFormatException e)
+                {}
         }
 
         public void changedUpdate(DocumentEvent de)
@@ -780,6 +784,13 @@ public class FontEditor extends EbHackModule implements ActionListener
         public void updateWidth()
         {
             tf.setText(Integer.toString(getSelectedChar().getWidth()));
+        }
+
+        public void setEnabled(boolean en)
+        {
+            super.setEnabled(en);
+            tf.setEnabled(en);
+            line.setEnabled(en);
         }
     }
 
@@ -1108,6 +1119,23 @@ public class FontEditor extends EbHackModule implements ActionListener
     private StringViewer prev;
     private JTextField prevTF;
 
+    private static IPSDatabase.DatabaseEntry batFontWidthHack = null;
+
+    public static boolean isBatFontWidthHacked()
+    {
+        if (batFontWidthHack == null)
+            batFontWidthHack = IPSDatabase.getPatch("Battle Font Width Hack");
+        if (batFontWidthHack == null)
+        {
+            throw new NullPointerException("batFontWidthHack is null. "
+                + "It is probably missing from ipslisting.xml.");
+        }
+        else
+        {
+            return batFontWidthHack.isApplied();
+        }
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -1115,6 +1143,39 @@ public class FontEditor extends EbHackModule implements ActionListener
      */
     protected void init()
     {
+        batFontWidthHack = IPSDatabase.getPatch("Battle Font Width Hack");
+        batFontWidthHack.checkApplied();
+
+        if (JHack.main.getPrefs().getValue("batFontWidthHack") == null
+            && batFontWidthHack != null && !isBatFontWidthHacked())
+        {
+            Box quesBox = new Box(BoxLayout.Y_AXIS);
+            quesBox.add(new JLabel(
+                "Would you like to apply the battle font width hack?"));
+            quesBox.add(new JLabel(
+                "This hack by Mr. Accident allows you to have"));
+            quesBox.add(new JLabel(
+                "choose the character widths for the battle font."));
+            JCheckBox saveBatFontWidthPref = new JCheckBox(
+                "Always use this selection.");
+            quesBox.add(saveBatFontWidthPref);
+            int ques = JOptionPane.showConfirmDialog(null, quesBox,
+                "Battle font width hack?", JOptionPane.YES_NO_OPTION);
+            if (ques == JOptionPane.YES_OPTION)
+            {
+                batFontWidthHack.apply();
+            }
+            if (saveBatFontWidthPref.isSelected())
+                JHack.main.getPrefs().setValueAsBoolean("batFontWidthHack",
+                    ques == JOptionPane.YES_OPTION);
+        }
+        else if (JHack.main.getPrefs().getValueAsBoolean("batFontWidthHack")
+            && !isBatFontWidthHacked())
+        {
+            batFontWidthHack.apply();
+        }
+        batFontWidthHack.checkApplied();
+
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
         mainWindow.setResizable(false);
@@ -1218,13 +1279,14 @@ public class FontEditor extends EbHackModule implements ActionListener
         mainWindow.getContentPane().add(dt, BorderLayout.EAST);
 
         mainWindow.pack();
-        
-        addDataListener(fonts, new ListDataListener() {
+
+        addDataListener(fonts, new ListDataListener()
+        {
 
             public void contentsChanged(ListDataEvent e)
             {
                 int curr = getCurrentFont();
-                if(e.getIndex0() <= curr && e.getIndex1() >= curr)
+                if (e.getIndex0() <= curr && e.getIndex1() >= curr)
                 {
                     mainWindow.getContentPane().repaint();
                 }
@@ -1232,13 +1294,14 @@ public class FontEditor extends EbHackModule implements ActionListener
 
             public void intervalAdded(ListDataEvent e)
             {
-                //won't happen
+            //won't happen
             }
 
             public void intervalRemoved(ListDataEvent e)
             {
-                //won't happen
-            }});
+            //won't happen
+            }
+        });
     }
 
     public String getVersion()
@@ -1276,10 +1339,12 @@ public class FontEditor extends EbHackModule implements ActionListener
     {
         if (ae.getActionCommand().equals("fontSelector"))
         {
+            int i = fontSelector.getSelectedIndex();
             charSelector.repaint();
             updateDrawingArea();
-            prev.setEbFont(fontSelector.getSelectedIndex());
+            prev.setEbFont(i);
             prev.repaint();
+            ws.setEnabled(i != BATTLE || isBatFontWidthHacked());
         }
         else if (ae.getActionCommand().equals("charSelector"))
         {

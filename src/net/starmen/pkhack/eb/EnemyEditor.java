@@ -283,7 +283,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         JPanel appearenceTab = new JPanel();
         appearenceTab.setLayout(new BoxLayout(appearenceTab, BoxLayout.Y_AXIS));
         appearenceTab.add(getLabeledComponent("Outside Pic: ",
-            outsidePic = createComboBox(sptNames, false, this),
+            outsidePic = createComboBox(sptNames, true, this),
             "Appearance out of battle. Subtract one for SPT entry number."));
         appearenceTab.add(Box.createVerticalStrut(5));
         appearenceTab.add(getLabeledComponent("Movement: ",

@@ -194,7 +194,7 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
 
         for (int i = 0; i < 7; i++)
             entry.add(new JSearchableComboBox(sprite[i] = createComboBox(sptNames,
-                false, this), spriteLabels[i] + ": "));
+                true, this), spriteLabels[i] + ": "));
 
         npcEntry = new Box(BoxLayout.Y_AXIS);
 

@@ -105,7 +105,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
             if (sprite == 0)
                 return "Nothing";
             else
-                return sptNames[sprite - 1];
+                return sptNames[sprite];
         }
 
         /**
@@ -340,7 +340,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
         selector.setActionCommand("TPTSelector");
 
         main.add(new JSearchableComboBox(sprite = createComboBox(sptNames,
-            false, this), "Sprite: "));
+            true, this), "Sprite: "));
         sprite.setActionCommand("spriteSelector");
 
         main.add(itemSearch = new JSearchableComboBox(item = ItemEditor
@@ -478,7 +478,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
             this.spritePreview.setIcon(new ImageIcon());
             return;
         }
-        SpriteEditor.SpriteInfoBlock sib = SpriteEditor.sib[spt - 1];
+        SpriteEditor.SpriteInfoBlock sib = SpriteEditor.sib[spt];
         int d = dir;
         if (sib.numSprites > 9) switch (dir)
         {
@@ -508,7 +508,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
                 break;
         }
         this.spritePreview.setIcon(new ImageIcon(zoomImage(
-            new SpriteEditor.Sprite(SpriteEditor.sib[spt - 1].getSpriteInfo(d),
+            new SpriteEditor.Sprite(sib.getSpriteInfo(d),
                 this).getImage(), 2)));
     }
 

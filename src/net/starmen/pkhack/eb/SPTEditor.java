@@ -78,8 +78,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
      * 
      * public TileSelector() { setPreferredSize(new Dimension(TILES_WIDE *
      * TILE_SIZE, TILES_HIGH * TILE_SIZE)); this.addMouseListener(this);
-     * this.addMouseMotionListener(this);
-     *  } }
+     * this.addMouseMotionListener(this); } }
      */
 
     /**
@@ -187,7 +186,8 @@ public class SPTEditor extends EbHackModule implements ActionListener
         {
             unknowns.add(getLabeledComponent("Unknown #" + i + ": ",
                 unknown[i] = createSizedJTextField(2)));
-            if (i == 0) unknowns.add(Box.createVerticalStrut(5));
+            if (i == 0)
+                unknowns.add(Box.createVerticalStrut(5));
         }
         mainWindow.getContentPane().add(
             pairComponents(unknowns, new JLabel(), false), BorderLayout.WEST);
@@ -250,9 +250,19 @@ public class SPTEditor extends EbHackModule implements ActionListener
     {
         for (int i = 0; i < this.pics.length; i++)
         {
-            pics[i].setIcon(new ImageIcon(i < sib.numSprites ? zoomImage(
-                new SpriteEditor.Sprite(sib.getSpriteInfo(i), this).getImage(),
-                2) : new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR)));
+            if (i < sib.numSprites)
+            {
+                pics[i].setIcon(new ImageIcon(zoomImage(
+                    new SpriteEditor.Sprite(sib.getSpriteInfo(i), this)
+                        .getImage(), 2)));
+                pics[i].setEnabled(true);
+            }
+            else
+            {
+                pics[i].setIcon(new ImageIcon(new BufferedImage(1, 1,
+                    BufferedImage.TYPE_4BYTE_ABGR)));
+                pics[i].setEnabled(false);
+            }
         }
     }
 
@@ -266,6 +276,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
     {
         //reads from sib to top text fields
         name.setText(sib.name);
+        name.setEnabled(sib.num != 0);
         width.setText(Integer.toString(sib.width));
         height.setText(Integer.toString(sib.height));
         palette.setSelectedIndex(sib.palette);
@@ -287,7 +298,8 @@ public class SPTEditor extends EbHackModule implements ActionListener
 
     private void showInfo(int i)
     {
-        if (i < 0) return;
+        if (i < 0)
+            return;
         sib = new SpriteEditor.SpriteInfoBlock(i, rom);
         pointer.setText(Integer.toHexString(sib.pointer));
         int dif = (i < SPTEditor.NUM_ENTRIES - 1
@@ -316,7 +328,8 @@ public class SPTEditor extends EbHackModule implements ActionListener
         updateTFs();
         updateImages();
     }
-//TODO test palete combo box
+
+    //TODO test palete combo box
     private void testEntry()
     {
         sib.name = name.getText();
@@ -333,7 +346,8 @@ public class SPTEditor extends EbHackModule implements ActionListener
 
     private void saveEntry()
     {
-        if (selector.getSelectedIndex() < 0) return;
+        if (selector.getSelectedIndex() < 0)
+            return;
         testEntry();
         SpriteEditor.setSptName(sib.num, sib.name);
         notifyDataListeners(sptNames, this, sib.num);
@@ -405,9 +419,9 @@ public class SPTEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().startsWith("pics"))
         {
-//            System.out.println(sib.getSpriteInfo(
-//                Integer.parseInt(ae.getActionCommand().substring(4), 16))
-//                .toString());
+            //            System.out.println(sib.getSpriteInfo(
+            //                Integer.parseInt(ae.getActionCommand().substring(4), 16))
+            //                .toString());
             JHack.main.showModule(SpriteEditor.class, sib.getSpriteInfo(Integer
                 .parseInt(ae.getActionCommand().substring(4), 16)));
         }

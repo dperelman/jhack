@@ -141,7 +141,7 @@ public class CCInfo
 
         CCNode activeNode = ccTable, prevNode = null;
 
-        boolean opcode = false;
+        boolean opcode = false, endcc = false;
         int curcode = 0;
         int arglevel = 0;
         int menulevel = 0;
@@ -159,6 +159,10 @@ public class CCInfo
 
                 arglevel--;
                 continue;
+            }
+            if (endcc)
+            {
+                break;
             }
 
             if (!opcode)
@@ -227,6 +231,10 @@ public class CCInfo
                     else
                         break;
                 }
+                if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx xx]"))
+                {
+                    endcc = true;
+                }
                 //                else if (
                 //                    activeNode.isTerminator
                 //                        && activeNode.toString().equals("[0A XX XX XX XX]"))
@@ -238,7 +246,9 @@ public class CCInfo
                 if (activeNode.isTerminator)
                 {
                     opcode = false;
-                    if (activeNode.toString().equals("[19 02]")) menulevel++;
+                    if (activeNode.toString().equals("[19 02]"))
+                        menulevel++;
+
                     activeNode = ccTable;
                 }
             }
@@ -339,7 +349,8 @@ public class CCInfo
                     CC = true;
                 else if (tmp.equals("]"))
                     CC = false;
-                else if (CC && tmp.equals("02")) menuLevel--;
+                else if (CC && tmp.equals("02"))
+                    menuLevel--;
                 out += tmp;
                 //System.out.println(tmp + " (" + CC +")");
             }
@@ -371,7 +382,7 @@ public class CCInfo
 
         CCNode activeNode = ccTable, prevNode = null;
 
-        boolean opcode = false;
+        boolean opcode = false, endcc = false;
         int arglevel = 0;
         int menulevel = 0;
 
@@ -395,9 +406,12 @@ public class CCInfo
                 }
 
                 arglevel--;
-                if (arglevel == 0) buffer[pos++] = '\u1234';
+                if (arglevel == 0)
+                    buffer[pos++] = '\u1234';
                 continue;
             }
+            if (endcc)
+                break;
 
             // if opcode was not previously set
             if (!opcode)
@@ -543,6 +557,10 @@ public class CCInfo
                     else
                         break;
                 }
+                if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx xx]"))
+                {
+                    endcc = true;
+                }
                 //                else if (
                 //                    activeNode.isTerminator
                 //                        && activeNode.toString().equals("[0A XX XX XX XX]"))
@@ -554,9 +572,11 @@ public class CCInfo
                 if (activeNode.isTerminator)
                 {
                     //                    System.out.println("End of " + activeNode.toString());
-                    if (arglevel == 0) buffer[pos++] = '\u1234';
+                    if (arglevel == 0)
+                        buffer[pos++] = '\u1234';
                     opcode = false;
-                    if (activeNode.toString().equals("[19 02]")) menulevel++;
+                    if (activeNode.toString().equals("[19 02]"))
+                        menulevel++;
 
                     // reset the active node so we start from the
                     // beginning
@@ -627,7 +647,8 @@ public class CCInfo
         String newString = parseString(str, false, false).trim();
         //newString = newString.substring(0, Math.min(70,
         // newString.length()));
-        if (newString.length() == 0) newString = " ";
+        if (newString.length() == 0)
+            newString = " ";
         return newString;
     }
 
@@ -643,7 +664,7 @@ public class CCInfo
         CCNode activeNode = ccTable, prevNode = null;
         SortedSet ccs = new TreeSet();
 
-        boolean opcode = false;
+        boolean opcode = false, endcc = false;
         int arglevel = 0;
         int menulevel = 0;
 
@@ -663,6 +684,8 @@ public class CCInfo
                 arglevel--;
                 continue;
             }
+            if (endcc)
+                break;
 
             // if opcode was not previously set
             if (!opcode)
@@ -742,6 +765,8 @@ public class CCInfo
                     else
                         break;
                 }
+                if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx xx]"))
+                    endcc = true;
                 //                else if (
                 //                    activeNode.isTerminator
                 //                        && activeNode.toString().equals("[0A XX XX XX XX]"))
@@ -756,8 +781,10 @@ public class CCInfo
                     //don't report compression codes
                     if (!(activeNode.toString().startsWith("[15")
                         || activeNode.toString().startsWith("[16") || activeNode
-                        .toString().startsWith("[17"))) ccs.add(activeNode);
-                    if (activeNode.toString().equals("[19 02]")) menulevel++;
+                        .toString().startsWith("[17")))
+                        ccs.add(activeNode);
+                    if (activeNode.toString().equals("[19 02]"))
+                        menulevel++;
 
                     opcode = false;
 
@@ -780,7 +807,8 @@ public class CCInfo
         // (xlen is the length of the code-formatted string)
         // (Returns -1 if a bracket error is encountered)
 
-        if (comp) str = compressString(str);
+        if (comp)
+            str = compressString(str);
 
         int len = 0;
         int bracketlevel = 0;
@@ -810,7 +838,10 @@ public class CCInfo
                 continue;
             }
 
-            if (bracketlevel < 0) { return -1; }
+            if (bracketlevel < 0)
+            {
+                return -1;
+            }
 
             if (bracketlevel > 0)
             {
@@ -848,7 +879,8 @@ public class CCInfo
                     else
                         j++;
 
-                    if (j == 32) break;
+                    if (j == 32)
+                        break;
 
                 }
                 while (ch != ']');
@@ -859,48 +891,61 @@ public class CCInfo
             }
         }
 
-        if (bracketlevel != 0) { return -1; }
+        if (bracketlevel != 0)
+        {
+            return -1;
+        }
         return len;
     }
 
     /**
-     * Gets the length of a substring. Uses <code>String.substring(start,end)</code>.
+     * Gets the length of a substring. Uses
+     * <code>String.substring(start,end)</code>.
      * 
      * @param str String to get length of part of
      * @param comp If true, returns the length of the string compressed
      * @param start start offset as used by <code>String.substring()</code>
      * @param end end offset as used by <code>String.substring()</code>
-     * @return Length of string between <code>start</code> and <code>end</code>
+     * @return Length of string between <code>start</code> and
+     *         <code>end</code>
      * @see #getStringLength(String, boolean)
      */
     public int getStringLength(String str, boolean comp, int start, int end)
         throws StringIndexOutOfBoundsException
     {
         //only try to get length of strings with an equal number of brackets
-        if (str.split("\\[", -1).length - 1 == str.split("\\]", -1).length - 1) //num [ == num ]
+        if (str.split("\\[", -1).length - 1 == str.split("\\]", -1).length - 1) //num
+        // [ ==
+        // num
+        // ]
         {
             //part is the substring we are getting the length of
             String part = str.substring(start, end);
             //make sure brackets match
-            //if the last '[' comes after the last ']' then add a ']' at the end
+            //if the last '[' comes after the last ']' then add a ']' at the
+            // end
             if (part.lastIndexOf('[') > part.lastIndexOf(']'))
                 part = part + ']';
-            //if the first ']' comes before the first '[' then add a '[' at the start
-            if (part.indexOf(']') < part.indexOf('[')) part = '[' + part;
+            //if the first ']' comes before the first '[' then add a '[' at the
+            // start
+            if (part.indexOf(']') < part.indexOf('['))
+                part = '[' + part;
             //get the length of the partial string
             //System.out.println("Finding partial length of \"" + part + "\"");
             return getStringLength(part, comp);
         }
-        //if there's an unequal number of ['s and ]'s then return -1 to indicate failure
+        //if there's an unequal number of ['s and ]'s then return -1 to
+        // indicate failure
         else
             return -1;
     }
-    
+
     public int getStringIndex(String str, boolean comp, int offset)
     {
-        for(int i = 0; i < str.length(); i++)
+        for (int i = 0; i < str.length(); i++)
         {
-            if(getStringLength(str, comp, 0, i) == offset) return i;
+            if (getStringLength(str, comp, 0, i) == offset)
+                return i;
         }
         return -1;
     }
@@ -983,7 +1028,8 @@ public class CCInfo
                     else
                         t[j++] = (char) ch;
 
-                    if (j == 32) break;
+                    if (j == 32)
+                        break;
 
                 }
                 while (ch != ']');
@@ -1020,11 +1066,15 @@ public class CCInfo
         // the specified value.
 
         if (node.nodes.size() == 1
-            && ((CCNode) node.nodes.get(0)).type == TYPE_ARGLIST) { return 0; }
+            && ((CCNode) node.nodes.get(0)).type == TYPE_ARGLIST)
+        {
+            return 0;
+        }
 
         for (int i = 0; i < node.nodes.size(); i++)
         {
-            if (((CCNode) node.nodes.get(i)).value == val) return i;
+            if (((CCNode) node.nodes.get(i)).value == val)
+                return i;
         }
 
         return -1;
@@ -1066,7 +1116,8 @@ public class CCInfo
             {
                 ch = rom.read(adr++);
                 buffer[pos++] = ch;
-                if (ch == 0) break;
+                if (ch == 0)
+                    break;
             }
 
             tbl[i] = new char[pos - 1];

@@ -373,7 +373,7 @@ public class MainGUI implements ActionListener, WindowListener
         }
         mainWindow.setVisible(true);
         mainWindow.invalidate();
-        mainWindow.setSize(300, 400);
+        mainWindow.setBounds(200, 200, 300, 400);
         mainWindow.validate();
         mainWindow.setResizable(false);
     }
@@ -586,7 +586,7 @@ public class MainGUI implements ActionListener, WindowListener
             System.out.println("Error loading look and feel preference.");
             e.printStackTrace();
         }
-        if (this.getPrefs().getValue("checkVersion") == null)
+        if (!this.getPrefs().hasValue("checkVersion"))
         {
             int ques = JOptionPane.showConfirmDialog(null,
                 "Do you want JHack to check for updates\n"
@@ -598,7 +598,7 @@ public class MainGUI implements ActionListener, WindowListener
             this.getPrefs().setValueAsBoolean("checkVersion",
                 ques == JOptionPane.YES_OPTION);
         }
-        if (this.getPrefs().getValue("consoleDialog") != null)
+        if (this.getPrefs().hasValue("consoleDialog"))
         {
             if (!JHack.isUseConsole())
                 JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
@@ -1636,5 +1636,12 @@ public class MainGUI implements ActionListener, WindowListener
             e.printStackTrace();
         }
         return false;
+    }
+    /**
+     * @return Returns the mainWindow.
+     */
+    public JFrame getMainWindow()
+    {
+        return mainWindow;
     }
 }

@@ -2,8 +2,13 @@ Next version (after v0.4.7):
 # IPSDatabase extensions:
 	# Gas station editor
 	# Town map editor
-	# ...
-# ...
+# SPT start changed to entry 0x00 instead of 0x01.
+# Fixed Hex Editor bugs where the last byte of the file would not appear
+	and goto would not always work
+# Text Editor: Added undo/redo to text area
+# Text Editor: [0A XX XX XX XX] correctly reconized as end of text block
+# Font Editor: offers to apply battle font width hack, 
+	and correctly reacts to it being applied
 
 v0.4.7:
 # Text Editor: raw text range start moved from 0x51D12 to 0x50200.
