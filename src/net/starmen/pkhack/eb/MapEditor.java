@@ -2293,7 +2293,7 @@ public class MapEditor extends EbHackModule implements ActionListener
 				{1136,-1},{1073,-2}
         };
     	private static final int[] doorDestTypes = {
-    			1, -1, 0, -1, -1, 2, 2
+    			1, -1, 0, -2, -2, 2, 2
     	};
 
         private static final int tsetpalAddress = 0x17AA00;
@@ -2850,10 +2850,10 @@ public class MapEditor extends EbHackModule implements ActionListener
        			short doorPtr = (short) rom.readMulti(
        					ptr + 5 + (i * 5), 2);
        			try {
-       				if (doorDestTypes[doorType] == -1)
+       				if (doorDestTypes[doorType] < 0)
            				doorData[areaNum].add(new DoorLocation(
            						doorX, doorY, doorType,
-    							(short) doorPtr, -1));
+    							doorPtr));
            			else
            			{
            				int destIndex =
@@ -3001,15 +3001,13 @@ public class MapEditor extends EbHackModule implements ActionListener
             				(byte) doorLocation.getX();
             			toWrite[4 + (j * 5)] =
             				doorLocation.getType();
-            			if ((doorLocation.getType() == 1)
-            					|| (doorLocation.getType() == 3) 
-								|| (doorLocation.getType() == 4))
+            			if (doorDestTypes[doorLocation.getType()] < 0)
             			{
-            				short data = doorLocation.getMisc();
+            				short data = (short) (doorLocation.getMisc() & 0xffff);
             				toWrite[5 + (j * 5)] =
             					(byte) (data & 0xff);
             				toWrite[6 + (j * 5)] =
-            					(byte) ((data & 0xff00) / 0x100);
+            					(byte) (((data & 0xff00) / 0x100) & 0xff);
             			}
             			else
             			{
@@ -3294,22 +3292,39 @@ public class MapEditor extends EbHackModule implements ActionListener
         		return pointer;
         	}
         	
-        	public boolean isEscalatorEnd()
+        	public int getMiscDirection()
         	{
-        		return misc == 0x8000;
+        		if ((misc & 0xffff) == 0x8000)
+        			return 4;
+        		else
+        			return misc / 0x100;
+        	}
+        	
+        	public void setMiscDirection(int dir)
+        	{
+        		if (dir == 4)
+        			misc = (short) 0x8000;
+        		else
+        			misc = (short) (dir * 0x100);
+        	}
+        	
+        	
+        	public boolean isMiscRope()
+        	{
+        		return (misc & 0xffff) == 0x8000;
+        	}
+        	
+        	public void setMiscRope(boolean rope)
+        	{
+        		if (rope)
+        			this.misc = (short) 0x8000;
+        		else
+        			this.misc = 0;
         	}
         	
         	public short getMisc()
         	{
         		return misc;
-        	}
-        	
-        	public void setEscalatorEnd(boolean misc)
-        	{
-        		if (misc)
-        			this.misc = (short) 0x8000;
-        		else
-        			this.misc = 0;
         	}
         	
         	public int getDestIndex()
