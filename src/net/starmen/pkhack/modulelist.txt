@@ -12,6 +12,7 @@ HexEditor			#Directly edits ROM, Be CAREFUL with this!
 #eb.RomCorrupter	#Adds 1 to every byte of the ROM up to 0x10000
 eb.PointerEditor	#Edits ASM links in net/starmen/pkhack/eb/pointerlist.txt
 eb.ResetButton		#Resets areas from an older ROM to correct mistakes easily
+eb.MiscEditor		#Edits misc. stuff
 ----------------------Items----------------------------------------------------
 eb.ItemEditor		#Edits items
 eb.ItemTransformationEditor
