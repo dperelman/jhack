@@ -60,10 +60,10 @@ eb.GasStationEditor		#Edits the gas station screen at the start of the game
 ----------------------Maps-----------------------------------------------------
 eb.TileEditor		#Edits map tiles, tile arrangements, and collision info,
 					#map tile palette editing may be added
-#eb.HotspotEditor	#Edits hotspots (places on the map that trigger text
-					#when you walk over them
 #eb.ItemDumper		#Dumps the item info for walkthru
 eb.MapEditor		#Edits the map
 eb.DoorEditor		#Edits doors
 eb.PhotoEditor		#Edits the photos shown during the credits
 eb.EventMusicEditor	#Map music/event flag correlation editor
+eb.HotspotEditor	#Edits hotspots (places on the map that trigger text
+					#when you walk over them)
