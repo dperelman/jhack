@@ -35,14 +35,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 public class MapEditor extends EbHackModule implements ActionListener,
     PropertyChangeListener, AdjustmentListener, ItemListener
 {
 
-    public MapEditor(Rom rom, XMLPreferences prefs)
+    public MapEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -564,6 +564,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
     {
         mainWindow.setVisible(false);
     }
+    
+    public void reset()
+    {
+    	gfxcontrol.resetTileImages();
+    }
 
     public String getDescription()
     {
@@ -867,6 +872,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 this.tile_images[loadtset][loadtile][loadpalette] = TileEditor.tilesets[loadtset]
                     .getArrangementImage(loadtile, loadpalette);
             }
+        }
+        
+        public void resetTileImages()
+        {
+        	this.tile_images = new Image[TILESET_NAMES.length][1024][59];
         }
 
         public void changeMode(int newmode)
@@ -1306,7 +1316,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         private final static int tsettbl_address = 0x2F121B;
         private final static int localtset_address = 0x175200;
 
-        private Rom rom;
+        private AbstractRom rom;
 
         public EbMap(HackModule hm, int newwidth, int newheight,
             int newsector_width, int newsector_height)
