@@ -31,6 +31,9 @@ Secret of Mana
 
 Chrono Trigger
 	*270: 00 c2 e0 ff 01 30 06 a2 #unknown
+	
+EarthBound 0
+	*3d6: d4 e9 ed e5 cd e1 e3 e8 #unknown
 
 #Different Yoshi's Island versions:
 #(1.1U) is the version that has been hacked
