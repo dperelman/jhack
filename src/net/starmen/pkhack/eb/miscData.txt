@@ -1,0 +1,50 @@
+#Format: "[Type] [Address] [Description]"
+#Types: 1 - Music, 2 - Sound effect,  4 - Integer, 5 - Action, 6 - BG,
+#7 - Color, 
+#3 - Text pointer - MUST be in format ZZ X3 X2 ZZ ZZ ZZ X1 00, where ZZ is anything and
+#$00X1X2X3 is the address pointed to
+1 001B8E Bike music after battle
+1 003E88 Bike music
+1 01f24a File select music
+1 01fafc Char-naming music
+1 04DDCB Music for gas station screen, fading in.
+1 00F4F9 Music for gas station screen, flashing
+1 04DDAA Music for title screen - from company logos
+1 04DE10 Music for title screen - from gas station screen
+1 04DE2E Music for title screen - from opening credits
+1 2f11eb Delivery music
+4 01db0a Starting HP
+4 01db1b Starting PP for chars 1,2,4
+4 01db22 Starting PP for char 3
+6 00b7f1 Setup screen BG
+4 02009E Starting location (X) in pixels
+4 02009B Starting location (Y) in pixels
+3 01F005 "Start New Game" text pointer
+3 0200A4 Flyover text pointer
+3 0200D3 "Register your name, please" text pointer
+3 02B3E6 "It was pretty good" text pointer (condiment effect)
+3 02b449 Pointer to "It didn't taste very good." text
+3 013728 Pointer to "Who are you talking to?" text
+3 013de9 Pointer to "No problem here." text
+3 006D29 Pointer to text that automatically loads on screen refresh
+3 013BDF Pointer to "X rearranged his/her items and the Y moved" text
+4 00786D Dad phone call timer
+4 00B8C3 Dad phone call timer 2
+2 01E9F4 Naming menu sound effects: Cursor up
+2 01EA23 Naming menu: Cursor left
+2 01EA4E Naming menu: Cursor down
+2 01EA7A Naming menu: Cursor right
+2 01EB57 Naming menu: Backspace using "Backspace" command
+2 01EB80 Naming menu: "OK"
+2 01EB8A Naming menu: Enter character (A button)
+2 01EBCE Naming menu: Backspace using B button
+2 01EBFF Naming menu: Start button pressed
+5 023B29 Battle effect number for Bash 
+5 023B32 Battle effect number for Shoot 
+5 023BCA Battle effect number for Spy
+5 023C24 Battle effect number for Defend 
+5 023C4A Battle effect number for Run 
+5 023D0C Battle effect number for Pray 
+5 023D1A Battle effect number for Mirror 
+7 026794 Magic Butterfly flash color
+7 005179 Color for Deep Darkness/bad status flash
