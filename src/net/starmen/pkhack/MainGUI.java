@@ -362,7 +362,8 @@ public class MainGUI implements ActionListener, WindowListener
         {
             currBox.setVisible(false);
             buttons.add(currBox);
-            if (prevLabel != null) prevLabel.setCollapsableArea(currBox);
+            if (prevLabel != null)
+                prevLabel.setCollapsableArea(currBox);
         }
         mainWindow.getContentPane().add(scroll);
 
@@ -396,7 +397,8 @@ public class MainGUI implements ActionListener, WindowListener
 
                 public void mouseClicked(MouseEvent arg0)
                 {
-                    if (ca != null) ca.setVisible(!ca.isShowing());
+                    if (ca != null)
+                        ca.setVisible(!ca.isShowing());
                     if (ca.isVisible())
                         setFont(getFont().deriveFont(Font.BOLD));
                     else
@@ -410,12 +412,14 @@ public class MainGUI implements ActionListener, WindowListener
 
                 public void mouseEntered(MouseEvent arg0)
                 {
-                    if (ca != null) setForeground(hoverCol);
+                    if (ca != null)
+                        setForeground(hoverCol);
                 }
 
                 public void mouseExited(MouseEvent arg0)
                 {
-                    if (ca != null) setForeground(regCol);
+                    if (ca != null)
+                        setForeground(regCol);
                 }
 
                 public void mousePressed(MouseEvent arg0)
@@ -517,7 +521,8 @@ public class MainGUI implements ActionListener, WindowListener
         rom = new Rom();
         File jhackDir = new File(System.getProperty("user.home")
             + File.separator + ".jhack");
-        if (!jhackDir.exists()) jhackDir.mkdir();
+        if (!jhackDir.exists())
+            jhackDir.mkdir();
         File xmlFile = new File(jhackDir.toString() + File.separator
             + "JHackPrefs.xml");
         HashMap iniPrefs = new HashMap();
@@ -705,7 +710,10 @@ public class MainGUI implements ActionListener, WindowListener
                     .getAbsolutePath().toLowerCase().endsWith(".fig")) && (f
                     .length() == size1 || f.length() == size2)) || f
                     .isDirectory())
-                    && f.exists()) { return true; }
+                    && f.exists())
+                {
+                    return true;
+                }
                 return false;
             }
 
@@ -735,7 +743,10 @@ public class MainGUI implements ActionListener, WindowListener
                     || f.getAbsolutePath().toLowerCase().endsWith(".sfc") || f
                     .getAbsolutePath().toLowerCase().endsWith(".fig"))) || f
                     .isDirectory())
-                    && f.exists()) { return true; }
+                    && f.exists())
+                {
+                    return true;
+                }
                 return false;
             }
 
@@ -797,19 +808,36 @@ public class MainGUI implements ActionListener, WindowListener
             || !(tmpf = new File(tmp)).exists())
         {
             //if orgRomPath from old version set, use it
-            if ((tmp = this.getPrefs().getValue(romType + ".orgRomPath")) != null
-                && (tmpf = new File(tmp)).exists()) { return orgRomToExp(romType); }
+            boolean temp = false;
+            if ((tmpf = new File(tmp)).exists()
+                && ((tmp = this.getPrefs().getValue(romType + ".orgRomPath")) != null))
+            {
+                return orgRomToExp(romType);
+            }
             this.getPrefs().setValue(
                 romType + ".expRomPath",
                 (tmpf = getFile("Select a unmodified or expanded " + romType
                     + " ROM.", true)).toString());
-            if (romType == "Earthbound"
+            if (romType.equals("Earthbound")
                 && tmpf.length() == Rom.EB_ROM_SIZE_REGULAR)
             {
                 this.getPrefs().setValue(romType + ".orgRomPath",
                     tmpf.toString());
                 return orgRomToExp(romType);
             }
+        }
+        System.out.println((new File(getPrefs().getValue(
+            romType + ".expRomPath")).length())
+            + " == " + Rom.EB_ROM_SIZE_REGULAR + "; romType = " + romType);
+        if (romType.equals("Earthbound")
+            && new File(getPrefs().getValue(romType + ".expRomPath")).length() == Rom.EB_ROM_SIZE_REGULAR)
+        {
+            System.out
+                .println("Exp rom not actually expanded. Bug in previous versions.");
+            this.getPrefs().setValue(romType + ".orgRomPath",
+                getPrefs().getValue(romType + ".expRomPath"));
+            this.getPrefs().removeValue(romType + ".expRomPath");
+            return orgRomToExp(romType);
         }
         //null means expRomPath is set to something valid
         return null;
@@ -912,7 +940,8 @@ public class MainGUI implements ActionListener, WindowListener
                 File romPath = rom.getFilePath();
                 //load orginal ROM and patch it
                 rom.loadRom(getOrginalRomFile(rom.getRomType()).path);
-                if (rom.isDirectFileIO()) rom.saveRom(romPath);
+                if (rom.isDirectFileIO())
+                    rom.saveRom(romPath);
                 rom.apply(IPSFile.loadIPSFile(backupFile));
                 //change path back so it saves in the right place
                 rom.path = romPath;
@@ -955,7 +984,8 @@ public class MainGUI implements ActionListener, WindowListener
                     public boolean accept(File dir, String name)
                     {
                         if (name.startsWith(rom.getFilePath().getName())
-                            && name.endsWith(".bak.ips")) return true;
+                            && name.endsWith(".bak.ips"))
+                            return true;
                         return false;
                     }
                 });
@@ -1005,7 +1035,8 @@ public class MainGUI implements ActionListener, WindowListener
         {
             recent[i] = tmpRecent[tmpRecent.length - (i + 1)];
             out += recent[i];
-            if (i != recent.length - 1) out += File.pathSeparatorChar;
+            if (i != recent.length - 1)
+                out += File.pathSeparatorChar;
         }
         this.getPrefs().setValue("recentLoads", out);
         loadRecentLoadsPref(); //force down to 5
@@ -1050,7 +1081,8 @@ public class MainGUI implements ActionListener, WindowListener
     private void addRecentLoad(String path)
     {
         for (Iterator i = recentLoads.iterator(); i.hasNext();)
-            if (new File((String) i.next()).equals(new File(path))) i.remove();
+            if (new File((String) i.next()).equals(new File(path)))
+                i.remove();
         recentLoads.add(path);
         saveRecentLoadsPref();
     }
@@ -1113,9 +1145,11 @@ public class MainGUI implements ActionListener, WindowListener
     {
         if (loc == null)
         {
-            if (!rom.loadRom()) return;
+            if (!rom.loadRom())
+                return;
         }
-        else if (!rom.loadRom(loc)) return;
+        else if (!rom.loadRom(loc))
+            return;
         //make sure spt names are read for other resets
         //SpriteEditor.initSptNames(rom.getPath());
         resetModules();
@@ -1200,7 +1234,8 @@ public class MainGUI implements ActionListener, WindowListener
             }
 
             File rompath = null;
-            if (rom.isLoaded) rompath = rom.getFilePath();
+            if (rom.isLoaded)
+                rompath = rom.getFilePath();
 
             if (!rom.isDirectFileIO())
             {
@@ -1212,7 +1247,8 @@ public class MainGUI implements ActionListener, WindowListener
             }
 
             //            HackModule.rom = rom;
-            if (rompath != null) rom.loadRom(rompath);
+            if (rompath != null)
+                rom.loadRom(rompath);
             for (int i = 0; i < getModuleCount(); i++)
             {
                 try
@@ -1471,7 +1507,8 @@ public class MainGUI implements ActionListener, WindowListener
                 String dispver = new String();
                 for (int i = 0; i < dispverarr.length; i++)
                 {
-                    if (i > 0) dispver += ".";
+                    if (i > 0)
+                        dispver += ".";
                     dispver += Integer.toString(Integer.parseInt(dispverarr[i],
                         36));
                 }

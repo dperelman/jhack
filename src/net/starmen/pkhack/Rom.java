@@ -1778,7 +1778,7 @@ public class Rom
      */
     public boolean expand()
     {
-        if (getRomType() != "Earthbound" || length() == 0x400200) { return false; }
+        if ((!getRomType().equals("Earthbound")) || length() == 0x400200) { return false; }
 
         byte[] out = new byte[this.length() + (4096 * 256)];
         for (int i = 0; i < this.length(); i++)
