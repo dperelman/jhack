@@ -1,11 +1,15 @@
-NEXT VERSION (after v0.5.6):
-# AbstractRom: Forced ROM types to not be "".
-# AbstractRom: Errors in the load ROM dialog are caught and shown in a dialog box
+NEXT VERSION (after v0.5.6.1):
+
+v0.5.6.1
+# AbstractRom: BUGFIX: Forced ROM types to not be "".
+# AbstractRom: BUGFIX: Errors in the load ROM dialog are caught and shown in a dialog box
 	as well as the normal console.
 # Attempted to fix bug where PK Hack would sometimes immediately error and die.
 	As a result, the GUI and error console flash open and closed when PK Hack starts.
 # HexEditor: BUGFIX: Works correctly when another ROM is loaded
 # Clarified a few dialogs and fixed some typos
+# Item Editor: BUGFIX: The type combobox only allows the entry of numbers.
+# AutoSearchBox: BUGFIX: Correctly compares to null (this bug caused problems in the item editor)
 
 v0.5.6:
 # Enemy Editor v0.6: Added game order view like PK Hack v0.2. ROM-specific enemyGameOrder.txt
