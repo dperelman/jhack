@@ -1300,15 +1300,8 @@ public abstract class HackModule
             nullifyArea(oldPointer, oldLen);
             try
             {
-            	System.out.println(newLen);
                 //look for space...
                 int newPointer = findFreeRange(beginAt - newLen, newLen);
-                System.out.println("newLen " + newLen
-                		+ " address " + Integer.toHexString(newPointer));
-                String debug = "";
-                for (int i = 0; i < data.length; i++)
-                	debug = debug + " " + Integer.toHexString(data[i]);
-                System.out.println("data" + debug);
                 //write data there
                 rom.write(newPointer, data, newLen);
                 //change pointer
