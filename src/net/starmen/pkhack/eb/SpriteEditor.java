@@ -304,7 +304,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
     {
         Sprite sp = new Sprite(getSpriteInfo(i), this);
         //spriteDrawingArea.setImage(sp.getImage());
-        spriteDrawingArea.setImage(sp.getSprite());
+        spriteDrawingArea.setImage(sp.getSpriteByte());
         palNum.setSelectedIndex(sp.si.getPalette());
         palNum.repaint();
         //        spal.setPalette(sp.getPalette());
@@ -323,7 +323,9 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         Sprite sp = new Sprite(getSpriteInfo(i), this);
         sp.setImage(spriteDrawingArea.getIntArrImage());
         sp.writeInfo();
-        Sprite.writeSpriteRGB(sp.si.getPalette(), rom);
+        int palNum = sp.si.getPalette();
+        if (palNum != 4)
+            Sprite.writeSpriteRGB(palNum, rom);
 
         sib[getSpriteInfo(i).sptNum].writeInfo();
     }
@@ -397,7 +399,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             {
                 sp.setImage(ImageIO.read(f));
                 //this.spriteDrawingArea.setImage(sp.getImage());
-                this.spriteDrawingArea.setImage(sp.getSprite());
+                this.spriteDrawingArea.setImage(sp.getSpriteByte());
                 this.spriteDrawingArea.repaint();
             }
             catch (ArrayIndexOutOfBoundsException e)
@@ -510,7 +512,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
 
     private void setBgCol(Color tc)
     {
-//      TODO this needs to work for map palettes
+        //      TODO this needs to work for map palettes
         if (tc == null)
             return;
         SpriteEditor.bgColor = new Color((tc.getRed() >= 255 ? 254 : tc
@@ -532,6 +534,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         sp.setImage(this.spriteDrawingArea.getIntArrImage());
         if (usingMapPal)
         {
+            Color[] tmp;
             if (num != 0)
             {
                 TileEditor.Tileset ts = TileEditor.tilesets[tileset
@@ -539,10 +542,14 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
                 int pn = tilesetPal.getSelectedIndex();
                 int subpal = (ts.getPaletteColor(0, pn, 2).getRed() >> 3) - 2;
                 ts.setPaletteColor(num, pn, subpal, col);
-                Color[] tmp = ts.getPaletteColors(pn, subpal);
-                tmp[0] = Sprite.pals[0][0]; //use user background col
-                this.spal.setPalette(tmp);
+                tmp = ts.getPaletteColors(pn, subpal);
             }
+            else
+            {
+                tmp = spal.getPalette();
+            }
+            tmp[0] = bgColor; //use user background col
+            this.spal.setPalette(tmp);
         }
         else
         {
@@ -550,7 +557,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             this.spal.setPalette(sp.getPalette());
         }
         spal.repaint();
-        this.spriteDrawingArea.setImage(sp.getSprite());
+        this.spriteDrawingArea.setImage(sp.getSpriteByte());
     }
 
     private void changePalette(int num)
@@ -582,7 +589,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             this.spal.setPalette(sp.getPalette());
         }
         spal.repaint();
-        this.spriteDrawingArea.setImage(sp.getSprite());
+        this.spriteDrawingArea.setImage(sp.getSpriteByte());
     }
 
     public void actionPerformed(ActionEvent ae)
@@ -927,6 +934,21 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         }
 
         /**
+         * Returns the <code>byte[][]</code> of this.
+         * 
+         * @return This Sprite as an <code>byte[][]</code> of color numbers
+         * @see #setSprite(byte[][])
+         */
+        public byte[][] getSpriteByte()
+        {
+            byte[][] out = new byte[sprite.length][sprite[0].length];
+            for (int x = 0; x < sprite.length; x++)
+                System.arraycopy(sprite[x], 0, out[x], 0, sprite[0].length);
+
+            return out;
+        }
+
+        /**
          * Sets the <code>int[][]</code> of this. This doesn't check the size.
          * If the input is a different size this will get messed up.
          * 
@@ -938,6 +960,19 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             for (int x = 0; x < sprite.length; x++)
                 for (int y = 0; y < sprite[0].length; y++)
                     sprite[x][y] = (byte) in[x][y];
+        }
+
+        /**
+         * Sets the <code>byte[][]</code> of this. This doesn't check the
+         * size. If the input is a different size this will get messed up.
+         * 
+         * @param in A Sprite as an <code>byte[][]</code> of color numbers
+         * @see #getSpriteByte()
+         */
+        public void setSprite(byte[][] in)
+        {
+            for (int x = 0; x < sprite.length; x++)
+                System.arraycopy(in[x], 0, sprite[x], 0, sprite[0].length);
         }
 
         /**

@@ -11,10 +11,6 @@ NEXT v0.0.0.x (bugfix) RELEASE
 NEXT v0.0.x (minor) RELEASE
 
 # AbstractRom: React to loadRom() returning false, at least in MainGUI
-# Sprite Editor palette 4 may mean use of map subpalette. Selection of map subpalette:
-	In each map palette (grouping of six 16-color subpalettes), color 0 in the third 
-	subpalette indicates which of the six subpalettes to use. The value contained in 
-	that entry is two greater than the index of the palette actually used. - MrA
 # TextEditor: Routine Map
 # Window positions editor
 	[13:45:08] <GuyInSummers> AA AA BB BB CC CC DD DD. The window's topleft 

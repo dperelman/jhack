@@ -1,4 +1,6 @@
-NEXT VERSION (after v0.5.0.2):
+NEXT VERSION (after v0.5.1):
+
+v0.5.1:
 # Native comp() and decomp() support.
 # 48 megabit/6 megabyte/ExHiRom support. User is given choice as needed.
 	Auto-expand is still to 4 MB if enabled.
@@ -15,6 +17,12 @@ NEXT VERSION (after v0.5.0.2):
 # Tile Editor: If tiles are compressed wrong, selecting "fail" will attempt to
 	display whatever could be decompressed.
 # Reset Button: No longer truncates nulls before compressing.
+# Sprite and SPT Editors: When showing sprites with a palette of 4
+	(which means use current map palette), a list of tilesets and 
+	palettes is offered to show how the sprite will look in different
+	maps (thanks Mr. Accident)
+# Map Editor: Added sprite and door placement (written by MrTenda)
+# Added Credits Photo editor (written by MrTenda)
 
 v0.5.0.2:
 # IPSFile: BUGFIX: IPS creation no longer uses recursion, should fix obscure

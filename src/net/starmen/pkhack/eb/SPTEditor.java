@@ -1,6 +1,7 @@
 package net.starmen.pkhack.eb;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -92,7 +93,8 @@ public class SPTEditor extends EbHackModule implements ActionListener
 
     private SpriteEditor.SpriteInfoBlock sib = null, clipboard = null;
     private final static int NUM_ENTRIES = 463;
-    private JComboBox selector, palette;
+    private JComboBox selector, palette, tileset, tilesetPal;
+    private Box tilesetBox;
     private JTextField name, width, height, bank,
             address[] = new JTextField[16],
             //		wa,
@@ -137,6 +139,25 @@ public class SPTEditor extends EbHackModule implements ActionListener
             height = createSizedJTextField(3, true)));
         entry.add(getLabeledComponent("Palette: ",
             palette = createJComboBoxFromArray(new Object[8])));
+        palette.setActionCommand("sptpal");
+        palette.addActionListener(this);
+        tilesetBox = new Box(BoxLayout.Y_AXIS)
+        {
+            public void setEnabled(boolean b)
+            {
+                super.setEnabled(b);
+                tileset.setEnabled(b);
+                tilesetPal.setEnabled(b);
+            }
+        };
+        tilesetBox.add(getLabeledComponent("Tileset: ",
+            tileset = createComboBox(TileEditor.TILESET_NAMES, this)));
+        tileset.setActionCommand("tilesetSel");
+        tilesetBox.add(getLabeledComponent("Tileset Palette:",
+            tilesetPal = new JComboBox()));
+        tileset.setSelectedIndex(0);
+        entry.add(tilesetBox);
+        tilesetBox.setEnabled(false);
         entry.add(getLabeledComponent("Bank: ", bank = createSizedJTextField(2,
             true, true)));
         // bank and addresses shown in hex
@@ -176,6 +197,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
         mainWindow.getContentPane().add(
             new JSearchableComboBox(selector = createComboBox(sptNames, true,
                 this), "Entry #:"), BorderLayout.NORTH);
+        selector.setActionCommand("sptsel");
         //selector.addActionListener(this);
 
         Box unknowns = new Box(BoxLayout.Y_AXIS);
@@ -252,9 +274,24 @@ public class SPTEditor extends EbHackModule implements ActionListener
         {
             if (i < sib.numSprites)
             {
-                pics[i].setIcon(new ImageIcon(zoomImage(
-                    new SpriteEditor.Sprite(sib.getSpriteInfo(i), this)
-                        .getImage(), 2)));
+                SpriteEditor.Sprite sp = new SpriteEditor.Sprite(sib
+                    .getSpriteInfo(i), this);
+                byte[][] spb = sp.getSpriteByte();
+                Color[] pal;
+                if (sib.palette == 4)
+                {
+                    TileEditor.Tileset ts = TileEditor.tilesets[tileset
+                        .getSelectedIndex()];
+                    int pn = tilesetPal.getSelectedIndex();
+                    int subpal = (ts.getPaletteColor(0, pn, 2).getRed() >> 3) - 2;
+                    pal = ts.getPaletteColors(pn, subpal);
+                }
+                else
+                {
+                    pal = sp.getPalette();
+                }
+                BufferedImage img = drawImage(spb, pal);
+                pics[i].setIcon(new ImageIcon(zoomImage(img, 2)));
                 pics[i].setEnabled(true);
             }
             else
@@ -387,7 +424,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
 
     public void actionPerformed(ActionEvent ae)
     {
-        if (ae.getActionCommand().equals(selector.getActionCommand()))
+        if (ae.getActionCommand().equals("sptsel"))
         {
             showInfo(selector.getSelectedIndex());
         }
@@ -420,6 +457,21 @@ public class SPTEditor extends EbHackModule implements ActionListener
                 updateImages();
             }
         }
+        else if (ae.getActionCommand().equals("sptpal"))
+        {
+            tilesetBox.setEnabled(palette.getSelectedIndex() == 4);
+        }
+        else if (ae.getActionCommand().equals("tilesetSel"))
+        {
+            tilesetPal.removeActionListener(this);
+            tilesetPal.removeAllItems();
+            TileEditor.Tileset ts = TileEditor.tilesets[tileset
+                .getSelectedIndex()];
+            for (int i = 0; i < ts.getPaletteCount(); i++)
+                tilesetPal.addItem(ts.getPaletteName(i));
+            tilesetPal.addActionListener(this);
+            tilesetPal.setSelectedIndex(0);
+        }
         else if (ae.getActionCommand().startsWith("pics"))
         {
             //            System.out.println(sib.getSpriteInfo(
@@ -427,6 +479,11 @@ public class SPTEditor extends EbHackModule implements ActionListener
             //                .toString());
             JHack.main.showModule(SpriteEditor.class, sib.getSpriteInfo(Integer
                 .parseInt(ae.getActionCommand().substring(4), 16)));
+        }
+        else
+        {
+            System.out.println("SPTEditor: actionPerformed(): "
+                + "uncaught action command: " + ae.getActionCommand());
         }
     }
 
