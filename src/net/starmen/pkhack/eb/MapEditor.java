@@ -12,6 +12,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
@@ -36,7 +38,7 @@ import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.XMLPreferences;
 
 public class MapEditor extends EbHackModule implements ActionListener,
-    PropertyChangeListener, AdjustmentListener
+    PropertyChangeListener, AdjustmentListener, ItemListener
 {
 
     public MapEditor(Rom rom, XMLPreferences prefs)
@@ -78,7 +80,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     public static final String[][][] menuNames = {
         {{"File", "f"}, {"Save Changes", "s"}, {"Exit", "q"}},
         {{"Mode", "m"}, {"Map View (Text)", "1"}, {"Map View", "2"},
-            {"Map Edit", "3"}}, {{"Help", "h"}, {"About", "a"}}};
+            {"Map Edit", "3"}}};
 
     public static final String[] TILESET_NAMES = {"Underworld", "Onett",
         "Twoson", "Threed", "Fourside", "Magicant", "Outdoors", "Summers",
@@ -122,8 +124,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 + TILESET_NAMES[mapcontrol.getDrawTileset(i)];
         }
         tilesetList = new JComboBox(tList_names);
-        tilesetList.setActionCommand("TtilesetList");
-        tilesetList.addActionListener(new tsetListener());
+        tilesetList.addItemListener(this);
         panel.add(tilesetList);
 
         panel.add(new JLabel("Palette: "));
@@ -178,8 +179,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
         // mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // mainWindow.setSize(window_width, window_height);
 
-        top_buttons = createTopButtons();
-
         scrollh = new JScrollBar(JScrollBar.HORIZONTAL, 0, 15, 0, width);
         scrollh.addAdjustmentListener(this);
 
@@ -194,6 +193,10 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 + 1, (tileheight * screen_height) + 1));
         editbox.setPreferredSize(new Dimension((editwidth + 1) * tilewidth,
         		(editheight + 1) * tileheight));
+        gfxcontrol.addMouseListener(new gfxListener());
+        editbox.addMouseListener(new editboxListener());
+        
+        top_buttons = createTopButtons();
         
         JPanel subpanel = new JPanel();
         
@@ -217,11 +220,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
         mainWindow.getContentPane().add(editpanel, BorderLayout.PAGE_END);
 
         mainWindow.pack();
-
-        gfxcontrol.addMouseListener(new gfxListener());
-        editbox.addMouseListener(new editboxListener());
     }
-
+    
     protected void init()
     {
         mapcontrol = new EbMap(this, width, height, sector_width, sector_height);
@@ -339,6 +339,14 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 yField.setValue(new Integer(y));
             }
         }
+        else if ((source == paletteField)
+        		&& (gfxcontrol.knowsSector()))
+        {
+        	int newpal = ((Number) yField.getValue()).intValue();
+        	int[] sectorxy = gfxcontrol.getSectorxy();
+        	mapcontrol.setPal(sectorxy[0], sectorxy[1], newpal);
+        	gfxcontrol.remoteRepaint();
+        }
 
     }
     
@@ -350,10 +358,22 @@ public class MapEditor extends EbHackModule implements ActionListener,
         {
             menuAction(name.substring(1, 2), name.substring(2, 3));
         }
-        else if (type.equals("T"))
-        {
-            // System.out.println("A top buttons action: " + name.substring(1));
-        }
+    }
+    
+    public void itemStateChanged(ItemEvent e)
+    {
+    	System.out.println("itemStateChanged: " + e);
+    	if ((e.getSource() == tilesetList)
+    			&& (e.getStateChange() == ItemEvent.SELECTED)
+				&& (gfxcontrol.getModeProps()[2] == 1))
+    	{
+			int[] sectorxy = gfxcontrol.getSectorxy();
+			System.out.println("sectorxy: " +
+					sectorxy[0] + " " + sectorxy[1]);
+			mapcontrol.setTset(sectorxy[0], sectorxy[1],
+					tilesetList.getSelectedIndex());
+			gfxcontrol.remoteRepaint();
+    	}
     }
     
     public void menuAction(String n1, String n2)
@@ -361,23 +381,12 @@ public class MapEditor extends EbHackModule implements ActionListener,
         // System.out.println("A menu action: " + n1 + n2);
         if (Integer.parseInt(n1) == 1)
         {
-            gfxcontrol.changeMode(Integer.parseInt(n2) - 1);
+        	int newmode = Integer.parseInt(n2) - 1;
+            gfxcontrol.changeMode(newmode);
             gfxcontrol.remoteRepaint();
+            editbox.remoteRepaint();
         }
     }
-
-    class tsetListener implements ActionListener
-	{
-    	public void actionPerformed(ActionEvent e)
-        {
-    		if (gfxcontrol.knowsSector())
-    		{
-    			int[] sectorxy = gfxcontrol.getSectorxy();
-    			System.out.println("sectorxy: " +
-    					sectorxy[0] + " " + sectorxy[1]);
-    		}
-        }
-	}
     
     class editboxListener implements MouseListener
 	{
@@ -395,7 +404,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
         public void mouseClicked(MouseEvent e)
         {
-            if (e.getButton() == 1)
+            if ((e.getButton() == 1) &&
+            		(gfxcontrol.getModeProps()[2] == 1))
             {
             	int mousex = e.getX();
                 int mousey = e.getY();
@@ -423,7 +433,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
         {
             // System.out.println("Mouse clicked! Button: " + e.getButton());
         	// System.out.println("Mouse clicked! Data: " + e);
-        	if ((e.getButton() == 1) && (editbox.isSelected()))
+        	if ((e.getButton() == 1) && (editbox.isSelected())
+        			&& (gfxcontrol.getModeProps()[2] == 1))
         	{
         		int mousex = e.getX();
         		int mousey = e.getY();
@@ -904,6 +915,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
         {
             return this.modeprops[this.mode];
         }
+        
+        public int[] getModeProps(int mode2get)
+        {
+        	return this.modeprops[mode2get];
+        }
     }
 
     // Represents the whole EarthBound map and map-related data in the rom.
@@ -1346,6 +1362,24 @@ public class MapEditor extends EbHackModule implements ActionListener,
             int[] tsetpal = new int[]{tileset, palette};
             return tsetpal;
         }
+        
+        public void setTset(int sectorx, int sectory, int newTset)
+        {
+        	int address = EbMap.tsetpal_address
+            + (sectory * ((width + 1) / sector_width)) + sectorx;
+        	int oldTsetPal = rom.read(address);
+        	int newTsetPal = (newTset << 3) + (oldTsetPal & 0x7);
+        	rom.write(address, newTsetPal);
+        }
+        
+        public void setPal(int sectorx, int sectory, int newPal)
+        {
+        	int address = EbMap.tsetpal_address
+            + (sectory * ((width + 1) / sector_width)) + sectorx;
+        	int oldTsetPal = rom.read(address);
+        	int newTsetPal = (oldTsetPal & 0xf8) + newPal;
+        	rom.write(address, newTsetPal);
+        }
 
         public int getDrawTileset(int mapTset)
         {
@@ -1366,10 +1400,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 + ((glty / 8) * (this.width + 1)) + gltx;
             if (((glty / 4) % 2) == 1)
                 address += 0x3000;
-            //            System.out.println("address: " + Integer.toHexString(address)
-            //                + " glty: " + glty + " glty/4*256 " + ((glty / 4) * 256)
-            //                + " gltx: " + gltx);
-            int local_tset = (rom.read(address) >> ((glty % 4) * 2)) & 3;
+            int local_tset = (rom.read(address) >>
+            		((glty % 4) * 2)) & 3;
 
             return local_tset;
         }
@@ -1381,14 +1413,12 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	if (((tiley / 4) % 2) == 1)
         		address += 0x3000;
         	int newLtsetData = 0;
-        	int tileySectorPos = Math.abs(this.sector_height - (tiley - 
-			    ((tiley / 4) * this.sector_height) + 1));
-        	System.out.println("tileySectorPos: " + tileySectorPos);
         	int local_tset = rom.read(address);
         	int newLtset2set;
+        	int tiley2 = Math.abs(this.sector_height - (tiley + 1));
         	for (int i = 0; i <= 3; i++)
         	{
-        		if (i == tileySectorPos)
+        		if (i == tiley)
         		{
         			newLtset2set = newltset;
         		}
@@ -1407,16 +1437,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			+ " New ltset: " + Integer.toBinaryString(newLtsetData));
         	rom.write(address, newLtsetData);
         }
-
-        /*
-         * public Image getTileImage(int tset, int tile, int pallete) { //
-         * TileEditor.Tileset tile_data = new
-         * TileEditor.Tileset(MAP_TILESETS[tset],
-         * TILESET_NAMES[MAP_TILESETS[tset]], this.hm); TileEditor.Tileset
-         * tset_class = TileEditor.tilesets[MAP_TILESETS[tset]]; return
-         * tset_class.getArrangementImage(tile, pallete, false); }
-         */
-
     }
 
     public class EditBox extends AbstractButton
@@ -1438,12 +1458,15 @@ public class MapEditor extends EbHackModule implements ActionListener,
             super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g;
             
-            if ((this.tset > -1) && (this.pal > -1))
+            if (gfxcontrol.getModeProps()[2] == 1)
             {
-                drawTiles(g, g2d);
+                if ((this.tset > -1) && (this.pal > -1))
+                {
+                    drawTiles(g, g2d);
+                }
+                drawBorder(g2d);
+                drawSelected(g2d);
             }
-            drawBorder(g2d);
-            drawSelected(g2d);
         }
     	
     	public void remoteRepaint()
