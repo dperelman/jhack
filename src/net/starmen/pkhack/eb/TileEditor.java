@@ -758,17 +758,18 @@ public class TileEditor extends EbHackModule implements ActionListener
          * Returns an image of the specified tile using the specified palette.
          * 
          * @param tile Number tile (0-1023).
-         * @param palette <code>Color[]</code> of special palette to use
+         * @param palette <code>Color[][]</code> of special palette to use
          * @param subPalette Number of the subpalette to use (0-5).
          * @param hFlip If true, flip output horizontally.
          * @param vFlip If true, flip output vertically.
          * @return Image of the tile (8x8).
          * @see #getTileImage(int, int, int, boolean, boolean, boolean)
          */
-        public Image getTileImage(int tile, Color[] palette, boolean hFlip,
-            boolean vFlip)
+        public Image getTileImage(int tile, Color[][] palette, int subPalette,
+            boolean hFlip, boolean vFlip)
         {
-            return HackModule.drawImage(getTile(tile), palette, hFlip, vFlip);
+            return HackModule.drawImage(getTile(tile), palette[subPalette],
+                hFlip, vFlip);
         }
 
         /**
@@ -1557,10 +1558,10 @@ public class TileEditor extends EbHackModule implements ActionListener
 
         /**
          * Returns an image of the specified arrangement using the specified
-         * palette. Note that sub-palette is ignored.
+         * palette. Note that sub-palette is specfied by the arrangement data.
          * 
          * @param arrangement Which arrangement (0-1023).
-         * @param palette <code>Color[]</code> of specical palette to use.
+         * @param palette <code>Color[][]</code> of specical palette to use.
          * @param selection <code>int[4][4]</code> where -1 means not selected
          *            and other values indicate which tile
          * @param gridLines If true, minitiles are spaced out to put gridlines
@@ -1569,7 +1570,7 @@ public class TileEditor extends EbHackModule implements ActionListener
          *         35x35).
          * @see #getArrangementImage(int, int, int[][], float, boolean)
          */
-        public Image getArrangementImage(int arrangement, Color[] palette,
+        public Image getArrangementImage(int arrangement, Color[][] palette,
             int[][] selection, float zoom, boolean gridLines)
         {
             BufferedImage out = new BufferedImage((gridLines ? 3 : 0)
@@ -1584,11 +1585,16 @@ public class TileEditor extends EbHackModule implements ActionListener
                     int tile = (selection[x][y] == -1
                         ? this.arrangements[arrangement][x][y]
                         : selection[x][y]);
-                    g.drawImage(getTileImage(tile & 0x01ff, palette,
-                        (tile & 0x4000) != 0, (tile & 0x8000) != 0),
-                        (int) (x * 8 * zoom) + (gridLines ? x : 0),
-                        (int) (y * 8 * zoom) + (gridLines ? y : 0),
-                        (int) (8 * zoom), (int) (8 * zoom), null);
+                    g
+                        .drawImage(
+                            getTileImage(
+                                tile & 0x01ff,
+                                palette,
+                                ((this.arrangements[arrangement][x][y] & 0x1C00) >> 10) - 2,
+                                (tile & 0x4000) != 0, (tile & 0x8000) != 0),
+                            (int) (x * 8 * zoom) + (gridLines ? x : 0),
+                            (int) (y * 8 * zoom) + (gridLines ? y : 0),
+                            (int) (8 * zoom), (int) (8 * zoom), null);
                     if (selection[x][y] != -1)
                     {
                         g.setColor(new Color(255, 255, 0, 128));
@@ -1603,16 +1609,16 @@ public class TileEditor extends EbHackModule implements ActionListener
 
         /**
          * Returns an image of the specified arrangement using the specified
-         * palette. Note that sub-palette is ignored.
+         * palette. Note that sub-palette is specfied by the arrangement data.
          * 
          * @param arrangement Which arrangement (0-1023).
-         * @param palette <code>Color[]</code> of specical palette to use.
+         * @param palette <code>Color[][]</code> of specical palette to use.
          * @param gridLines If true, minitiles are spaced out to put gridlines
          *            between them
          * @return Image of the arrangement using the given palette (32x32 or
          *         35x35).
          */
-        public Image getArrangementImage(int arrangement, Color[] palette,
+        public Image getArrangementImage(int arrangement, Color[][] palette,
             float zoom, boolean gridLines)
         {
             init();
@@ -1624,13 +1630,17 @@ public class TileEditor extends EbHackModule implements ActionListener
             {
                 for (int y = 0; y < 4; y++)
                 {
-                    g.drawImage(getTileImage(
-                        this.arrangements[arrangement][x][y] & 0x01ff, palette,
-                        (this.arrangements[arrangement][x][y] & 0x4000) != 0,
-                        (this.arrangements[arrangement][x][y] & 0x8000) != 0),
-                        (int) (x * 8 * zoom) + (gridLines ? x : 0),
-                        (int) (y * 8 * zoom) + (gridLines ? y : 0),
-                        (int) (8 * zoom), (int) (8 * zoom), null);
+                    g
+                        .drawImage(
+                            getTileImage(
+                                this.arrangements[arrangement][x][y] & 0x01ff,
+                                palette,
+                                ((this.arrangements[arrangement][x][y] & 0x1C00) >> 10) - 2,
+                                (this.arrangements[arrangement][x][y] & 0x4000) != 0,
+                                (this.arrangements[arrangement][x][y] & 0x8000) != 0),
+                            (int) (x * 8 * zoom) + (gridLines ? x : 0),
+                            (int) (y * 8 * zoom) + (gridLines ? y : 0),
+                            (int) (8 * zoom), (int) (8 * zoom), null);
                 }
             }
             return out;
@@ -1638,16 +1648,16 @@ public class TileEditor extends EbHackModule implements ActionListener
 
         /**
          * Returns an image of the specified arrangement using the specified
-         * palette. Note that sub-palette is ignored.
+         * palette. Note that sub-palette is specfied by the arrangement data.
          * 
          * @param arrangement Which arrangement (0-1023).
-         * @param palette <code>Color[]</code> of specical palette to use.
+         * @param palette <code>Color[][]</code> of specical palette to use.
          * @param gridLines If true, minitiles are spaced out to put gridlines
          *            between them
          * @return Image of the arrangement using the given palette (32x32 or
          *         35x35).
          */
-        public Image getArrangementImage(int arrangement, Color[] palette,
+        public Image getArrangementImage(int arrangement, Color[][] palette,
             boolean gridLines)
         {
             return getArrangementImage(arrangement, palette, 1, gridLines);
@@ -1655,13 +1665,13 @@ public class TileEditor extends EbHackModule implements ActionListener
 
         /**
          * Returns an image of the specified arrangement using the specified
-         * palette. Note that sub-palette is ignored.
+         * palette. Note that sub-palette is specfied by the arrangement data.
          * 
          * @param arrangement Which arrangement (0-1023).
-         * @param palette <code>Color[]</code> of specical palette to use.
+         * @param palette <code>Color[][]</code> of specical palette to use.
          * @return Image of the arrangement using the given palette (32x32).
          */
-        public Image getArrangementImage(int arrangement, Color[] palette)
+        public Image getArrangementImage(int arrangement, Color[][] palette)
         {
             return getArrangementImage(arrangement, palette, false);
         }
