@@ -2454,7 +2454,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	int spPtrsAddress = 
         		HackModule.toRegPointer(rom.readMulti(spAsmPointer,3));
         	int ptr = rom.readMulti(spPtrsAddress + (areaNum * 2), 2);
-        	System.out.println("loading areaNum " + areaNum);
         	spData[areaNum] = new ArrayList();
        		if (ptr > 0)
        		{
@@ -2545,7 +2544,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
         public static int getSpritesNum(int areaX, int areaY)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
-        	System.out.println("getting areanum " + areaNum);
         	return spData[areaNum].size();
         }
         
