@@ -150,8 +150,8 @@ public class CCInfo
         // or decompression. If the string is greater than 8192 characters
         // long, it will be truncated at that point.
 
-//        char[] buffer = new char[8192];
-//        char[] headBuff = new char[100];
+        //        char[] buffer = new char[8192];
+        //        char[] headBuff = new char[100];
         StringBuffer buffer = new StringBuffer(), headBuff = new StringBuffer();
         int headlen = 100;
 
@@ -413,6 +413,12 @@ public class CCInfo
 
     public String parseString(String str, boolean showCC, boolean codesOnly)
     {
+        return parseString(str, showCC, codesOnly, false);
+    }
+
+    public String parseString(String str, boolean showCC, boolean codesOnly,
+        boolean codesCaps)
+    {
         //char[] buffer = new char[81920];
         //aribitary length guess
         StringBuffer buffer = new StringBuffer(str.length() * 2);
@@ -440,7 +446,7 @@ public class CCInfo
             if (arglevel > 0)
             {
                 if (showCC)
-                    addCode(buffer, ch);
+                    addCode(buffer, ch, codesCaps);
 
                 arglevel--;
                 if (arglevel == 0)
@@ -551,8 +557,8 @@ public class CCInfo
                         {
                             if (showCC)
                             {
-                                addCode(buffer, curcode);
-                                addCode(buffer, ch);
+                                addCode(buffer, curcode, codesCaps);
+                                addCode(buffer, ch, codesCaps);
                             }
                         }
                         else
@@ -564,7 +570,7 @@ public class CCInfo
                     }
                     else if (showCC)
                     {
-                        addCode(buffer, ch);
+                        addCode(buffer, ch, codesCaps);
                     }
                 }
                 if (activeNode.type == TYPE_CODE)
@@ -574,7 +580,7 @@ public class CCInfo
                     if (curcode != 0x15 && curcode != 0x16 && curcode != 0x17
                         && showCC)
                     {
-                        addCode(buffer, ch);
+                        addCode(buffer, ch, codesCaps);
                     }
                 }
 
@@ -627,7 +633,7 @@ public class CCInfo
                 //make sure brackets never get added as characters
                 if (codesOnly && showCC)
                 {
-                    addCode(buffer, ch);
+                    addCode(buffer, ch, codesCaps);
                 }
                 else
                 {
@@ -635,7 +641,7 @@ public class CCInfo
                     {
                         if (showCC)
                         {
-                            addCode(buffer, ch);
+                            addCode(buffer, ch, codesCaps);
                             buffer.append('\u1234');
                         }
                     }
@@ -664,9 +670,14 @@ public class CCInfo
         return parseString(str, true, false);
     }
 
-    public String parseCodesOnly(String str)
+    public String parseString(String str, boolean codesCaps)
     {
-        return parseString(str, true, true);
+        return parseString(str, true, false, codesCaps);
+    }
+
+    public String parseCodesOnly(String str, boolean codesCaps)
+    {
+        return parseString(str, true, true, codesCaps);
         //        String out = new String();
         //        for (int i = 0; i < str.length(); i++)
         //        {
@@ -674,6 +685,11 @@ public class CCInfo
         //            out += HackModule.addZeros(Integer.toHexString(str.charAt(i)), 2);
         //        }
         //        return "[" + out + "]";
+    }
+
+    public String parseCodesOnly(String str)
+    {
+        return parseString(str, true, true);
     }
 
     public String parseHeader(String str)
@@ -1153,11 +1169,13 @@ public class CCInfo
         //return ch >= 0 && ch <= 0x1F;
     }
 
-    public void addCode(char[] str, int val, int pos)
+    public void addCode(char[] str, int val, int pos, boolean codesCaps)
     {
-        char[] tmp = ("["
-            + HackModule.addZeros(Integer.toHexString(val & 0xff), 2) + "]")
-            .toCharArray();
+        String tmpstr = ("["
+            + HackModule.addZeros(Integer.toHexString(val & 0xff), 2) + "]");
+        if (codesCaps)
+            tmpstr = tmpstr.toUpperCase();
+        char[] tmp = tmpstr.toCharArray();
 
         str[pos++] = tmp[0];
         str[pos++] = tmp[1];
@@ -1165,10 +1183,14 @@ public class CCInfo
         str[pos++] = tmp[3];
     }
 
-    public void addCode(StringBuffer str, int val)
+    public void addCode(StringBuffer str, int val, boolean codesCaps)
     {
-        str.append("["
-            + HackModule.addZeros(Integer.toHexString(val & 0xff), 2) + "]");
+        String tmp = "["
+            + HackModule.addZeros(Integer.toHexString(val & 0xff), 2) + "]";
+        if (codesCaps)
+            str.append(tmp.toUpperCase());
+        else
+            str.append(tmp);
     }
 
     protected void createCompressionTable(char tbl[][])

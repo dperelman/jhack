@@ -187,6 +187,9 @@ public class TextEditor extends EbHackModule implements ActionListener
         optionMenu.add(codesOnly = new PrefsCheckBox("Codes Only", JHack.main
             .getPrefs(), "eb_text_editor.codes_only", false, 'c', "alt C",
             "codesOnly", this));
+        optionMenu.add(codesCaps = new PrefsCheckBox("Codes Capital",
+            JHack.main.getPrefs(), "eb_text_editor.codes_caps", false, 'a',
+            "alt shift C", "codesCaps", this));
         optionMenu.add(useComp = new PrefsCheckBox("Use Compression",
             JHack.main.getPrefs(), "eb_text_editor.use_compression", true, 'u',
             "alt U", "useComp", this));
@@ -674,7 +677,7 @@ public class TextEditor extends EbHackModule implements ActionListener
             currPosLabel;
     private JTextArea ta, codeHelpTa;
     private JList[] textJLists;
-    private JCheckBoxMenuItem preventOverwrites, codesOnly, useComp;
+    private JCheckBoxMenuItem preventOverwrites, codesOnly, codesCaps, useComp;
     private JComponent previewDisp;
     private JMenuItem showCodeHelp, showEntry, showPreview;
     private boolean gotoDialogInited = false;
@@ -856,11 +859,13 @@ public class TextEditor extends EbHackModule implements ActionListener
 
         if (isCodesOnly())
         {
-            ta.setText(cct.parseCodesOnly(si.str));
+            ta.setText(cct.parseCodesOnly(si.str, prefs
+                .getValueAsBoolean("eb_text_editor.codes_caps")));
         }
         else
         {
-            ta.setText(cct.parseString(si.str));
+            ta.setText(cct.parseString(si.str, prefs
+                .getValueAsBoolean("eb_text_editor.codes_caps")));
         }
         if (codeHelp != null && codeHelp.isShowing())
             updateCodeHelp();
@@ -969,11 +974,43 @@ public class TextEditor extends EbHackModule implements ActionListener
             }
             if (isCodesOnly())
             {
-                ta.setText(cct.parseCodesOnly(tmp));
+                ta.setText(cct.parseCodesOnly(tmp, prefs
+                    .getValueAsBoolean("eb_text_editor.codes_caps")));
             }
             else
             {
-                ta.setText(cct.parseString(tmp));
+                ta.setText(cct.parseString(tmp, prefs
+                    .getValueAsBoolean("eb_text_editor.codes_caps")));
+            }
+        }
+        else if (ae.getActionCommand().equals("codesCaps"))
+        {
+            CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
+
+            String text = useComp.isSelected()
+                && cct.getStringLength(ta.getText(), true) > 0 ? cct
+                .compressString(ta.getText()) : ta.getText();
+            String tmp = cct.deparseString(text);
+            if (tmp == null)
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Please check that all square brackets [ & ]\n"
+                        + "are paired and that only the characters \n"
+                        + "0123456789ABCDEFabcdef<space>\n"
+                        + "appear between brackets.", "Bracket Error",
+                    JOptionPane.ERROR_MESSAGE);
+                codesCaps.setSelected(!codesOnly.isSelected());
+                return;
+            }
+            if (isCodesOnly())
+            {
+                ta.setText(cct.parseCodesOnly(tmp, prefs
+                    .getValueAsBoolean("eb_text_editor.codes_caps")));
+            }
+            else
+            {
+                ta.setText(cct.parseString(tmp, prefs
+                    .getValueAsBoolean("eb_text_editor.codes_caps")));
             }
         }
         else if (ae.getActionCommand().equals("showCodeHelp"))
