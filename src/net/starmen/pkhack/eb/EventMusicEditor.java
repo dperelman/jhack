@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -23,402 +24,16 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
     }
     
     private EventMusicEntry[] entries = new EventMusicEntry[164];
-    private JComboBox entryChooser, coorChooser, musicChooser;
+    private JComboBox entryChooser, corrChooser, musicChooser;
     private JTextField flagField;
     private JCheckBox reverseCheck;
-    private boolean updatingCoors = false;
+    private JButton add, del, inc, dec;
+    private boolean updatingCoors = false, updatingEntries = false;
     public static final int asmPointer = 0x6b39;
-    public static final String[] musicNames = new String[] {
-    		"00 - None",
-			"01 - Gas station",
-			"02 - Naming screen",
-			"03 - Setup screen",
-			"04 - None",
-			"05 - You win 1",
-			"06 - Level up",
-			"07 - You lose",
-			"08 - Battle swirl 1",
-			"09 - Battle swirl 2",
-			"0A - What the heck? [Ness' house]",
-			"0B - Fanfare [Battle swirl 3]",
-			"0C - You win!",
-			"0D - Teleport out",
-			"0E - Teleport fail",
-			"0F - Falling underground",
-			"10 - Dr. Andonuts' lab",
-			"11 - Monotoli building",
-			"12 - Sloppy house",
-			"13 - Neighbor's house",
-			"14 - Arcade",
-			"15 - Pokey's house",
-			"16 - Hospital",
-			"17 - Ness' house (Pollyanna)",
-			"18 - Paula's theme",
-			"19 - Chaos Theater",
-			"1A - Hotel",
-			"1B - Good morning",
-			"1C - Department Store",
-			"1D - Onett at night 1",
-			"1E - Your Sanctuary 1",
-			"1F - Your Sanctuary 2",
-			"20 - Giant Step",
-			"21 - Lilliput Steps",
-			"22 - Milky Well",
-			"23 - Rainy Circle",
-			"24 - Magnet Hill",
-			"25 - Pink Cloud",
-			"26 - Lumine Hall",
-			"27 - Fire Spring",
-			"28 - near a boss",
-			"29 - Alien Investigation",
-			"2A - Fire Springs hall",
-			"2B - Belch's Base",
-			"2C - Zombie Threed",
-			"2D - Spooky Cave",
-			"2E - Onett",
-			"2F - Fourside",
-			"30 - Saturn Valley",
-			"31 - Monkey Caves",
-			"32 - Moonside",
-			"33 - Dusty Dunes Desert",
-			"34 - Peaceful Rest Valley",
-			"35 - Zombie Threed",
-			"36 - Winters",
-			"37 - Cave near a boss",
-			"38 - Summers",
-			"39 - Jackie's Cafe",
-			"3A - Sailing to Scaraba",
-			"3B - Dalaam",
-			"3C - Mu Training",
-			"3D - Bazaar",
-			"3E - Scaraba desert",
-			"3F - Pyramid",
-			"40 - Deep Darkness",
-			"41 - Tenda Village",
-			"42 - Welcome home",
-			"43 - The Sea of Eden",
-			"44 - Lost Underworld",
-			"45 - First step back",
-			"46 - Second step back",
-			"47 - The Place",
-			"48 - Giygas Awakens",
-			"49 - Giygas phase 2",
-			"4A - Giygas is weakened",
-			"4B - Giygas death",
-			"4C - Runaway 5 concert 1",
-			"4D - Runaway 5 tour bus",
-			"4E - Runaway 5 concert 2",
-			"4F - Power",
-			"50 - Venus' concert",
-			"51 - Yellow submarine",
-			"52 - Bicycle",
-			"53 - Sky Runner",
-			"54 - Sky Runner falling",
-			"55 - Bulldozer",
-			"56 - Tessie",
-			"57 - City bus",
-			"58 - Fuzzy Pickles",
-			"59 - Delivery",
-			"5A - Return to your body",
-			"5B - Phase Distorter going back in time",
-			"5C - Coffee break",
-			"5D - Because I Love You",
-			"5E - Good Friends, Bad Friends",
-			"5F - Smiles and Tears",
-			"60 - vs. Cranky Lady",
-			"61 - vs. Spinning Robo",
-			"62 - vs. S. Evil Mushroom",
-			"63 - vs. Master Belch",
-			"64 - vs. N. A. Retro Hippie",
-			"65 - vs. Runaway Dog",
-			"66 - vs. Cave Boy",
-			"67 - vs. Your Sanctuary Boss",
-			"68 - vs. Kraken",
-			"69 - Giygas heavy metal",
-			"6A - Inside the Dungeon",
-			"6B - Megaton Walk",
-			"6C - Sea of Eden",
-			"6D - Explosion? [Stonehenge destructs]",
-			"6E - Sky Runner crash",
-			"6F - Magic Cake",
-			"70 - Pokey's House (Buzz Buzz)",
-			"71 - Buzz Buzz swatted",
-			"72 - Onett at night (Buzz Buzz)",
-			"73 - Phone call",
-			"74 - Knock knock - right",
-			"75 - Rabbit Cave",
-			"76 - Onett at night 3",
-			"77 - Apple of Enlightenment",
-			"78 - Hotel of the Living Dead",
-			"79 - Onett Intro",
-			"7A - Sunrise, Onett",
-			"7B - Someone joins",
-			"7C - Enter Starman Jr.",
-			"7D - Boarding school",
-			"7E - Phase Distorter",
-			"7F - Phase Distorter II",
-			"80 - Boy Meets Girl (Twoson)",
-			"81 - Happy Threed",
-			"82 - Runaway 5 are freed",
-			"83 - Flying Man",
-			"84 - Onett at night 2",
-			"85 - Hidden Song",
-			"86 - Your Sanctuary boss",
-			"87 - Teleport in",
-			"88 - Saturn Valley cave",
-			"89 - Elevator down",
-			"8A - Elevator up",
-			"8B - Elevator stopping",
-			"8C - Topolla Theater",
-			"8D - vs. Master Barf",
-			"8E - going to Magicant",
-			"8F - leaving Magicant",
-			"90 - defeated the Kraken",
-			"91 - stonehenge destructs",
-			"92 - Tessie sighting",
-			"93 - Meteor fall",
-			"94 - vs. Starman Jr.",
-			"95 - Runaway 5 help out",
-			"96 - Knock knock - left",
-			"97 - Onett after meteor 1",
-			"98 - Onett after meteor 2",
-			"99 - Pokey's theme",
-			"9A - Onett at night 4 (Buzz Buzz)",
-			"9B - Your Sanctuary boss",
-			"9C - Meteor strike",
-			"9D - Attract mode",
-			"9E - Are you sure?  Yep",
-			"9F - Peaceful Rest Valley 2",
-			"A0 - rec. Giant Step",
-			"A1 - rec. Lilliput Steps",
-			"A2 - rec. Milky well",
-			"A3 - rec. Rainy Circle",
-			"A4 - rec. Magnet Hill",
-			"A5 - rec. Pink Cloud",
-			"A6 - rec. Lumine Hall",
-			"A7 - rec. Fire Spring",
-			"A8 - Sound Stone",
-			"A9 - Eight Melodies",
-			"AA - Dalaam Intro",
-			"AB - Winters intro",
-			"AC - Pokey escapes",
-			"AD - Wake up - Moonside",
-			"AE - Gas Station 2",
-			"AF - Title screen",
-			"B0 - Battle swirl (Normal)",
-			"B1 - Pokey Intro",
-			"B2 - Wake up - Scaraba",
-			"B3 - Robotomy part 1",
-			"B4 - Pokey escapes",
-			"B5 - Return to your body",
-			"B6 - Giygas static",
-			"B7 - sudden victory",
-			"B8 - You win vs. boss",
-			"B9 - Giygas phase three",
-			"BA - Giygas phase one",
-			"BB - Give us strength",
-			"BC - Good Morning",
-			"BD - Sound Stone",
-			"BE - Giygas death",
-			"BF - Giygas weakened"
-    };
-    /*public static final String[] musicNames = new String[] {
-    		"None",
-    		"Gas station",
-    		"Naming screen",
-    		"Setup screen",
-    		"None",
-    		"You win 1",
-    		"Level up",
-    		"You lose",
-    		"Battle swirl 1",
-    		"Battle swirl 2",
-    		"What the heck? [Ness' house]",
-    		"Fanfare [Battle swirl 3]",
-    		"You win!",
-    		"Teleport out",
-    		"Teleport fail",
-    		"Falling underground",
-    		"Dr. Andonuts' lab",
-    		"Monotoli building",
-    		"Sloppy house",
-    		"Neighbor's house",
-    		"Arcade",
-    		"Pokey's house",
-    		"Hospital",
-    		"Ness' house (Pollyanna)",
-    		"Paula's theme",
-    		"Chaos Theater",
-    		"Hotel",
-    		"Good morning",
-    		"Department Store",
-    		"Onett at night 1",
-    		"Your Sanctuary 1",
-    		"Your Sanctuary 2",
-    		"Giant Step",
-    		"Lilliput Steps",
-    		"Milky Well",
-    		"Rainy Circle",
-    		"Magnet Hill",
-    		"Pink Cloud",
-    		"Lumine Hall",
-    		"Fire Spring",
-    		"near a boss",
-    		"Alien Investigation",
-    		"Fire Springs hall",
-    		"Belch's Base",
-    		"Zombie Threed",
-    		"Spooky Cave",
-    		"Onett",
-    		"Fourside",
-    		"Saturn Valley",
-    		"Monkey Caves",
-    		"Moonside",
-    		"Dusty Dunes Desert",
-    		"Peaceful Rest Valley",
-    		"Zombie Threed",
-    		"Winters",
-    		"Cave near a boss",
-    		"Summers",
-    		"Jackie's Cafe",
-    		"Sailing to Scaraba",
-    		"Dalaam",
-    		"Mu Training",
-    		"Bazaar",
-    		"Scaraba desert",
-    		"Pyramid",
-    		"Deep Darkness",
-    		"Tenda Village",
-    		"Welcome home",
-    		"The Sea of Eden",
-    		"Lost Underworld",
-    		"First step back",
-    		"Second step back",
-    		"The Place",
-    		"Giygas Awakens",
-    		"Giygas phase 2",
-    		"Giygas is weakened",
-    		"Giygas death",
-    		"Runaway 5 concert 1",
-    		"Runaway 5 tour bus",
-    		"Runaway 5 concert 2",
-    		"Power",
-    		"Venus' concert",
-    		"Yellow submarine",
-    		"Bicycle",
-    		"Sky Runner",
-    		"Sky Runner falling",
-    		"Bulldozer",
-    		"Tessie",
-    		"City bus",
-    		"Fuzzy Pickles",
-    		"Delivery",
-    		"Return to your body",
-    		"Phase Distorter going back in time",
-    		"Coffee break",
-    		"Because I Love You",
-    		"Good Friends, Bad Friends",
-    		"Smiles and Tears",
-    		"vs. Cranky Lady",
-    		"vs. Spinning Robo",
-    		"vs. S. Evil Mushroom",
-    		"vs. Master Belch",
-    		"vs. N. A. Retro Hippie",
-    		"vs. Runaway Dog",
-    		"vs. Cave Boy",
-    		"vs. Your Sanctuary Boss",
-    		"vs. Kraken",
-    		"Giygas heavy metal",
-    		"Inside the Dungeon",
-    		"Megaton Walk",
-    		"Sea of Eden",
-    		"Explosion? [Stonehenge destructs]",
-    		"Sky Runner crash",
-    		"Magic Cake",
-    		"Pokey's House (Buzz Buzz)",
-    		"Buzz Buzz swatted",
-    		"Onett at night (Buzz Buzz)",
-    		"Phone call",
-    		"Knock knock - right",
-    		"Rabbit Cave",
-    		"Onett at night 3",
-    		"Apple of Enlightenment",
-    		"Hotel of the Living Dead",
-    		"Onett Intro",
-    		"Sunrise, Onett",
-    		"Someone joins",
-    		"Enter Starman Jr.",
-    		"Boarding school",
-    		"Phase Distorter",
-    		"Phase Distorter II",
-    		"Boy Meets Girl (Twoson)",
-    		"Happy Threed",
-    		"Runaway 5 are freed",
-    		"Flying Man",
-    		"Onett at night 2",
-    		"Hidden Song",
-    		"Your Sanctuary boss",
-    		"Teleport in",
-    		"Saturn Valley cave",
-    		"Elevator down",
-    		"Elevator up",
-    		"Elevator stopping",
-    		"Topolla Theater",
-    		"vs. Master Barf",
-    		"going to Magicant",
-    		"leaving Magicant",
-    		"defeated the Kraken",
-    		"stonehenge destructs",
-    		"Tessie sighting",
-    		"Meteor fall",
-    		"vs. Starman Jr.",
-    		"Runaway 5 help out",
-    		"Knock knock - left",
-    		"Onett after meteor 1",
-    		"Onett after meteor 2",
-    		"Pokey's theme",
-    		"Onett at night 4 (Buzz Buzz)",
-    		"Your Sanctuary boss",
-    		"Meteor strike",
-    		"Attract mode",
-    		"Are you sure?  Yep",
-    		"Peaceful Rest Valley 2",
-    		"rec. Giant Step",
-    		"rec. Lilliput Steps",
-    		"rec. Milky well",
-    		"rec. Rainy Circle",
-    		"rec. Magnet Hill",
-    		"rec. Pink Cloud",
-    		"rec. Lumine Hall",
-    		"rec. Fire Spring",
-    		"Sound Stone",
-    		"Eight Melodies",
-    		"Dalaam Intro",
-    		"Winters intro",
-    		"Pokey escapes",
-    		"Wake up - Moonside",
-    		"Gas Station 2",
-    		"Title screen",
-    		"Battle swirl (Normal)",
-    		"Pokey Intro",
-    		"Wake up - Scaraba",
-    		"Robotomy part 1",
-    		"Pokey escapes",
-    		"Return to your body",
-    		"Giygas static",
-    		"sudden victory",
-    		"You win vs. boss",
-    		"Giygas phase three",
-    		"Giygas phase one",
-    		"Give us strength",
-    		"Good Morning",
-    		"Sound Stone",
-    		"Giygas death",
-    		"Giygas weakened"
-    	};*/
 
 	protected void init()
 	{
+		initMusicNames(rom.getPath());
 		readFromRom();
 		
 		mainWindow = createBaseWindow(this);
@@ -436,10 +51,26 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 		panel.add(HackModule.getLabeledComponent(
 				"Entry: ", entryChooser));
 		
-		coorChooser = new JComboBox();
-		coorChooser.addActionListener(this);
+		corrChooser = new JComboBox();
+		corrChooser.addActionListener(this);
 		panel.add(HackModule.getLabeledComponent(
-				"Coorelation: ", coorChooser));
+				"Coorelation: ", corrChooser));
+		
+		JPanel tmp = new JPanel();
+		add = new JButton("New");
+		add.addActionListener(this);
+		tmp.add(add);
+		del = new JButton("Delete");
+		del.addActionListener(this);
+		tmp.add(del);
+		inc = new JButton("Raise");
+		inc.addActionListener(this);
+		tmp.add(inc);
+		dec = new JButton("Lower");
+		dec.addActionListener(this);
+		tmp.add(dec);
+		panel.add(tmp);
+		
 		
 		flagField = HackModule.createSizedJTextField(3, true);
 		panel.add(HackModule.getLabeledComponent(
@@ -457,6 +88,11 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 				panel, BorderLayout.CENTER);
 		mainWindow.pack();
 	}
+	
+    public static void initMusicNames(String romPath)
+    {
+        readArray(DEFAULT_BASE_DIR, "musiclisting.txt", romPath, true, musicNames);
+    }
 
 	public String getVersion()
 	{
@@ -470,7 +106,7 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 
 	public String getCredits()
 	{
-		return null;
+		return "Written by Mr. Tenda";
 	}
 	
 	public void show()
@@ -478,10 +114,16 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 		super.show();
 		
 		readFromRom();
-		updateCoorelationChooser();
+		updateCorrelationChooser();
 		updateComponents();
 		
 		mainWindow.setVisible(true);
+	}
+	
+	public void show(Object entry)
+	{
+		show();
+		entryChooser.setSelectedIndex(((Integer) entry).intValue());
 	}
 
 	public void hide()
@@ -528,11 +170,11 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 	{
 		EventMusicEntry entry =
 			entries[entryChooser.getSelectedIndex()];
-		if (coorChooser.getSelectedIndex() < entry.size())
+		if (corrChooser.getSelectedIndex() < entry.size())
 		{
 			EventMusicEntry.Correlation corr = 
 				entry.getCorrelation(
-						coorChooser.getSelectedIndex());
+						corrChooser.getSelectedIndex());
 			corr.setFlag((short) 
 					Integer.parseInt(flagField.getText(), 16));
 			corr.setReversed(reverseCheck.isSelected());
@@ -541,44 +183,49 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 		else
 		{
 			entry.setDefaultMusic((byte) musicChooser.getSelectedIndex());
+			updatingEntries = true;
+			entryChooser.removeAllItems();
+			for (int i = 0; i < entries.length; i++)
+				entryChooser.addItem("#" + i + " (" + entries[i].getDefaultName() + ")");
+			updatingEntries = false;
 		}
+		updateCorrelationChooser();
 	}
 	
 	public void writeToRom()
 	{
 		byte[] pointersData = rom.readByte(
 				toRegPointer(rom.readMulti(asmPointer, 3)),
-				entries.length * 2);
+				(entries.length + 1) * 2);
 		boolean a = writetoFree(pointersData, asmPointer, 3,
 				pointersData.length, pointersData.length, true);
-		/*boolean a = writeToFree(pointersData, asmPointer, 0xf0200, 3,
-				pointersData.length, pointersData.length);*/
-		if (!a)
-			System.out.println("oops writing pointers");
-		int pointersLoc = toRegPointer(rom.readMulti(asmPointer, 3));
+		int pointersLoc = toRegPointer(rom.readMulti(asmPointer, 3)),
+			address = 0x58ef;
 		for (int i = 0; i < entries.length; i++)
 		{
+			int pointerLoc = pointersLoc + ((i + 1) * 2);
+			int oldPointer = 0xf0200 + rom.readMulti(pointerLoc, 2);
+			nullifyArea(oldPointer, entries[i].getOldLength());
+			rom.write(pointerLoc, address, 2);
 			byte[] data = entries[i].toByteArray();
-			String debug = "";
-			for (int j = 0; j < data.length; j++)
-				debug = debug + Integer.toHexString(data[j] & 0xff) + " ";
-			System.out.println(i + ": " + debug);
-			boolean b = writeToFree(data, pointersLoc + (i * 2), 0xf0000, 2,
-					entries[i].getOldLength(), data.length);
-			if (!b)
-				System.out.println("oops writing data #" + i);
+			rom.write(0xf0200 + address, data);
+			address += data.length;
 		}
 	}
 	
-	public void updateCoorelationChooser()
+	public void updateCorrelationChooser()
 	{
+		int selected = corrChooser.getSelectedIndex();
 		updatingCoors = true;
 		EventMusicEntry entry = entries[entryChooser.getSelectedIndex()];
-		coorChooser.removeAllItems();
+		corrChooser.removeAllItems();
 		for (int i = 0; i < entry.size(); i++)
-			coorChooser.addItem("#" + i + " (" + entry.getCorrelation(i).getMusicName() + ")");
-		coorChooser.addItem("Default (" + entry.getDefaultName() + ")");
-		coorChooser.setSelectedIndex(0);
+			corrChooser.addItem("#" + i + " (" + entry.getCorrelation(i).getMusicName() + ")");
+		corrChooser.addItem("Default (" + entry.getDefaultName() + ")");
+		if ((selected >= 0) && (selected <= entry.size()))
+			corrChooser.setSelectedIndex(selected);
+		else
+			corrChooser.setSelectedIndex(0);
 		mainWindow.pack();
 		updatingCoors = false;
 		updateComponents();
@@ -588,15 +235,19 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 	{
 		EventMusicEntry entry =
 			entries[entryChooser.getSelectedIndex()];
-		if (coorChooser.getSelectedIndex() < entry.size())
+		if (corrChooser.getSelectedIndex() < entry.size())
 		{
 			EventMusicEntry.Correlation corr = 
 				entry.getCorrelation(
-						coorChooser.getSelectedIndex());
+						corrChooser.getSelectedIndex());
 			flagField.setEnabled(true);
 			flagField.setText(Integer.toHexString(corr.getFlag()));
 			reverseCheck.setEnabled(true);
 			reverseCheck.setSelected(corr.isReversed());
+			add.setEnabled(true);
+			del.setEnabled(true);
+			inc.setEnabled(corrChooser.getSelectedIndex() > 0);
+			dec.setEnabled(corrChooser.getSelectedIndex() < entry.size() - 1);
 			musicChooser.setSelectedIndex(corr.getMusic() & 0xff);
 		}
 		else
@@ -605,6 +256,10 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 			flagField.setEnabled(false);
 			reverseCheck.setSelected(false);
 			reverseCheck.setEnabled(false);
+			add.setEnabled(false);
+			del.setEnabled(false);
+			inc.setEnabled(false);
+			dec.setEnabled(false);
 			musicChooser.setSelectedIndex(entry.getDefaultMusic() & 0xff);
 		}
 	}
@@ -619,10 +274,38 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 		}
 		else if (ae.getActionCommand().equals("close"))
 			hide();
-		else if (ae.getSource().equals(entryChooser))
-			updateCoorelationChooser();
-		else if (ae.getSource().equals(coorChooser) && !updatingCoors)
+		else if (ae.getSource().equals(entryChooser) && !updatingEntries)
+			updateCorrelationChooser();
+		else if (ae.getSource().equals(corrChooser) && !updatingCoors)
 			updateComponents();
+		else if (ae.getSource().equals(add))
+		{
+			entries[entryChooser.getSelectedIndex()].addCorrelation(
+					new EventMusicEntry.Correlation((short) 1, false, (byte) 0));
+			updateCorrelationChooser();
+		}
+		else if (ae.getSource().equals(del))
+		{
+			entries[entryChooser.getSelectedIndex()].delCorrelation(
+					corrChooser.getSelectedIndex());
+			updateCorrelationChooser();
+		}
+		else if (ae.getSource().equals(inc))
+		{
+			entries[entryChooser.getSelectedIndex()].switchCorrelations(
+					corrChooser.getSelectedIndex(),
+					corrChooser.getSelectedIndex() - 1);
+			corrChooser.setSelectedIndex(corrChooser.getSelectedIndex() - 1);
+			updateCorrelationChooser();
+		}
+		else if (ae.getSource().equals(dec))
+		{
+			entries[entryChooser.getSelectedIndex()].switchCorrelations(
+					corrChooser.getSelectedIndex(),
+					corrChooser.getSelectedIndex() + 1);
+			corrChooser.setSelectedIndex(corrChooser.getSelectedIndex() + 1);
+			updateCorrelationChooser();
+		}
 	}
 	
 	public static class EventMusicEntry
@@ -661,6 +344,23 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 		public Correlation getCorrelation(int num)
 		{
 			return (Correlation) correlations.get(num);
+		}
+		
+		public void addCorrelation(Correlation corr)
+		{
+			correlations.add(corr);
+		}
+		
+		public void delCorrelation(int num)
+		{
+			correlations.remove(num);
+		}
+		
+		public void switchCorrelations(int a, int b)
+		{
+			Correlation c = getCorrelation(a);
+			correlations.set(a, getCorrelation(b));
+			correlations.set(b, c);
 		}
 		
 		public int size()
@@ -707,16 +407,14 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 			public byte getFlagByte(int num)
 			{
 				if (num == 0)
-				{
 					return (byte) (flag & 0xff);
-				}
 				else
 				{
-					byte flagByte = (byte) ((flag & 0xff00) >> 2);
+					int flagByte = (flag & 0xff00) / 0x100;
 					if (reversed)
-						return (byte) (flagByte + 0x80);
+						return (byte) ((flagByte + 0x80) & 0xff);
 					else
-						return flagByte;
+						return (byte) (flagByte & 0xff);
 				}
 			}
 			
