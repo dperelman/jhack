@@ -43,7 +43,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public EnemyEditor(Rom rom, XMLPreferences prefs) {
+    public EnemyEditor(Rom rom, XMLPreferences prefs)
+    {
         super(rom, prefs);
     }
     /**
@@ -58,17 +59,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
     private JTextField search;
 
     //stats tab stuff
-    private JTextField name,
-        hp,
-        pp,
-        exp,
-        money,
-        speed,
-        offense,
-        defense,
-        level,
-        guts,
-        iq;
+    private JTextField name, hp, pp, exp, money, speed, offense, defense,
+            level, guts, iq;
     private JCheckBox theFlag, runFlag;
     private JComboBox gender, itemFreq, status;
     private ItemEditor.ItemEntry item;
@@ -92,18 +84,9 @@ public class EnemyEditor extends EbHackModule implements ActionListener
     private JComboBox weakness[] = new JComboBox[5];
 
     //unknowns tab stuff
-    private JTextField unknowna,
-        unknownb,
-        unknownc,
-        unknownd,
-        unknowne,
-        unknownf,
-        unknowng,
-        unknownh,
-        unknowni,
-        unknownj,
-        unknownk,
-        unknownl;
+    private JTextField unknowna, unknownb, unknownc, unknownd, unknowne,
+            unknownf, unknowng, unknownh, unknowni, unknownj, unknownk,
+            unknownl;
 
     protected void init()
     {
@@ -121,14 +104,13 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         //		JButton searchb = new JButton("Find");
         //		searchb.addActionListener(this);
 
-        mainWindow
-            .getContentPane()
-            .add(new JSearchableComboBox(selector, "Enemy: "),
-        //			pairComponents(
-        //				pairComponents(search = new JTextField(10), searchb, true),
-        //				getLabeledComponent("Enemy:", selector),
-        //				true),
-        BorderLayout.NORTH);
+        mainWindow.getContentPane().add(
+            new JSearchableComboBox(selector, "Enemy: "),
+            //			pairComponents(
+            //				pairComponents(search = new JTextField(10), searchb, true),
+            //				getLabeledComponent("Enemy:", selector),
+            //				true),
+            BorderLayout.NORTH);
 
         JTabbedPane tabs = new JTabbedPane();
 
@@ -136,40 +118,27 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         JPanel statsTab = new JPanel(new BorderLayout());
 
         name = createSizedJTextField(25);
-        statsTab.add(
-            pairComponents(
-                StringViewer.createWithFontSelector(name, this),
-                pairComponents(
-                    getLabeledComponent("Name: ", name),
-                    theFlag = new JCheckBox("'The' Flag"),
-                    true,
-                    false,
-                    null,
-                    "If checked 'The' is put before the enemy's name."),
-                false),
+        statsTab.add(pairComponents(StringViewer.createWithFontSelector(name,
+            this), pairComponents(getLabeledComponent("Name: ", name),
+            theFlag = new JCheckBox("'The' Flag"), true, false, null,
+            "If checked 'The' is put before the enemy's name."), false),
             BorderLayout.NORTH);
 
         Box statsTabLeft = new Box(BoxLayout.Y_AXIS);
-        statsTabLeft.add(
-            getLabeledComponent("HP: ", (hp = createSizedJTextField(5))));
-        statsTabLeft.add(
-            getLabeledComponent("PP: ", (pp = createSizedJTextField(5))));
-        statsTabLeft.add(
-            getLabeledComponent(
-                "Exp:          ",
-                (exp = createSizedJTextField(10))));
-        statsTabLeft.add(
-            getLabeledComponent("Money: ", (money = createSizedJTextField(5))));
-        statsTabLeft.add(
-            getLabeledComponent("Speed: ", (speed = createSizedJTextField(3))));
-        statsTabLeft.add(
-            getLabeledComponent(
-                "Offense: ",
-                (offense = createSizedJTextField(3))));
-        statsTabLeft.add(
-            getLabeledComponent(
-                "Defense: ",
-                (defense = createSizedJTextField(3))));
+        statsTabLeft.add(getLabeledComponent("HP: ",
+            (hp = createSizedJTextField(5))));
+        statsTabLeft.add(getLabeledComponent("PP: ",
+            (pp = createSizedJTextField(5))));
+        statsTabLeft.add(getLabeledComponent("Exp:          ",
+            (exp = createSizedJTextField(10))));
+        statsTabLeft.add(getLabeledComponent("Money: ",
+            (money = createSizedJTextField(5))));
+        statsTabLeft.add(getLabeledComponent("Speed: ",
+            (speed = createSizedJTextField(3))));
+        statsTabLeft.add(getLabeledComponent("Offense: ",
+            (offense = createSizedJTextField(3))));
+        statsTabLeft.add(getLabeledComponent("Defense: ",
+            (defense = createSizedJTextField(3))));
         status = new JComboBox();
         status.addItem("Normal");
         status.addItem("PSI Shield \u03B1 (Blocks PSI)");
@@ -179,25 +148,19 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         status.addItem("Asleep");
         status.addItem("Can't concentrate");
         status.addItem("Feeling strange");
-        statsTabLeft.add(
-            getLabeledComponent(
-                "Status: ",
-                status));
-        statsTabLeft.add(
-            getLabeledComponent("Level: ", (level = createSizedJTextField(3))));
-        statsTabLeft.add(
-            getLabeledComponent("Guts: ", (guts = createSizedJTextField(3))));
-        statsTabLeft.add(
-            getLabeledComponent("IQ: ", (iq = createSizedJTextField(3))));
-        statsTab.add(
-            pairComponents(statsTabLeft, new JLabel(), false),
+        statsTabLeft.add(getLabeledComponent("Status: ", status));
+        statsTabLeft.add(getLabeledComponent("Level: ",
+            (level = createSizedJTextField(3))));
+        statsTabLeft.add(getLabeledComponent("Guts: ",
+            (guts = createSizedJTextField(3))));
+        statsTabLeft.add(getLabeledComponent("IQ: ",
+            (iq = createSizedJTextField(3))));
+        statsTab.add(pairComponents(statsTabLeft, new JLabel(), false),
             BorderLayout.WEST);
 
         Box statsTabRight = new Box(BoxLayout.Y_AXIS);
-        statsTabRight.add(
-            HackModule.getLabeledComponent(
-                "Gender: ",
-                gender = new JComboBox()));
+        statsTabRight.add(HackModule.getLabeledComponent("Gender: ",
+            gender = new JComboBox()));
         gender.addItem(HackModule.getNumberedString("Male", 1));
         gender.addItem(HackModule.getNumberedString("Female", 2));
         gender.addItem(HackModule.getNumberedString("Neutral", 3));
@@ -206,43 +169,35 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                unknowna.setText(
-                    Integer.toString(gender.getSelectedIndex() + 1));
+                unknowna.setText(Integer
+                    .toString(gender.getSelectedIndex() + 1));
             }
         });
         statsTabRight.add(Box.createVerticalStrut(40));
-        statsTabRight.add(
-            pairComponents(
-                runFlag = new JCheckBox("Fear higher leveled PCs?"),
-                new JLabel(),
-                true));
-        runFlag.setToolTipText(
-            "If checked this enemy will run from your party (out of battle).");
+        statsTabRight.add(pairComponents(runFlag = new JCheckBox(
+            "Fear higher leveled PCs?"), new JLabel(), true));
+        runFlag
+            .setToolTipText("If checked this enemy will run from your party (out of battle).");
         statsTabRight.add(Box.createVerticalStrut(10));
-        statsTabRight.add(
-                item = new ItemEditor.ItemEntry("Item", this, this));
-        statsTabRight.add(
-            getLabeledComponent("Item Freq: ", itemFreq = new JComboBox()));
+        statsTabRight.add(item = new ItemEditor.ItemEntry("Item", this, this));
+        statsTabRight.add(getLabeledComponent("Item Freq: ",
+            itemFreq = new JComboBox()));
         //init itemFreq
         for (int i = 0; i < 8; i++)
         {
-            itemFreq.addItem(
-                getNumberedString(
-                    Integer.toString((int) Math.pow(2, i)) + "/128",
-                    i));
+            itemFreq.addItem(getNumberedString(Integer.toString((int) Math.pow(
+                2, i))
+                + "/128", i));
         }
         statsTabRight.add(Box.createVerticalStrut(10));
-        statsTabRight.add(
-            getLabeledComponent(
-                "Miss Rate: ",
-                (missRate = createSizedJTextField(3))));
-        statsTabRight.add(
-            getLabeledComponent("Type: ", type = new JComboBox()));
+        statsTabRight.add(getLabeledComponent("Miss Rate: ",
+            (missRate = createSizedJTextField(3))));
+        statsTabRight
+            .add(getLabeledComponent("Type: ", type = new JComboBox()));
         type.addItem(getNumberedString("Normal", 0));
         type.addItem(getNumberedString("Insect", 1));
         type.addItem(getNumberedString("Metal", 2));
-        statsTab.add(
-            pairComponents(statsTabRight, new JLabel(), false),
+        statsTab.add(pairComponents(statsTabRight, new JLabel(), false),
             BorderLayout.EAST);
 
         tabs.addTab("Stats", pairComponents(statsTab, new JLabel(), true));
@@ -257,29 +212,21 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         String afk;
         for (int i = 0; i < actions.length; i++)
         {
-        	afk = "Action " + (i + 1);
+            afk = "Action " + (i + 1);
             if (i == 4)
             {
                 actionsTabTop.add(Box.createVerticalStrut(10));
                 afk = "End Action";
             }
             actions[i] = new ActionEditor.ActionEntry(afk);
-            actionsTabTop.add(
-                pairComponents(
-                    actions[i],
-                    getLabeledComponent(
-//                        (i < 4 ? "Action " + (i + 1) + ": " : "End Action: "),
-//                        actions[i] =
-//                            createComboBox(effects)),
-//                    getLabeledComponent(
-                        (i < 4
-                            ? "Argument " + (i + 1) + ": "
-                            : "End Argument: "),
-                        arguements[i] = createJComboBoxFromArray(tmp)),
-                    true,
-                    true,
-                    null,
-                    null));
+            actionsTabTop.add(pairComponents(actions[i], getLabeledComponent(
+            //                        (i < 4 ? "Action " + (i + 1) + ": " : "End Action: "),
+                //                        actions[i] =
+                //                            createComboBox(effects)),
+                //                    getLabeledComponent(
+                (i < 4 ? "Argument " + (i + 1) + ": " : "End Argument: "),
+                arguements[i] = createJComboBoxFromArray(tmp)), true, true,
+                null, null));
             actions[i].setSelectedIndex(0);
             arguements[i].setSelectedIndex(0);
             final int z = i;
@@ -290,8 +237,10 @@ public class EnemyEditor extends EbHackModule implements ActionListener
                     if (arguements[z].getSelectedIndex() == -1)
                         arguements[z].setSelectedIndex(lde.getIndex0());
                 }
+
                 public void intervalAdded(ListDataEvent arg0)
                 {}
+
                 public void intervalRemoved(ListDataEvent arg0)
                 {}
             };
@@ -307,10 +256,10 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         actionsTab.add(actionsTabTop, BorderLayout.NORTH);
 
         JPanel actionsTabBottom = new JPanel();
-        actionsTabBottom.setLayout(
-            new BoxLayout(actionsTabBottom, BoxLayout.Y_AXIS));
-        actionsTabBottom.add(
-            getLabeledComponent(
+        actionsTabBottom.setLayout(new BoxLayout(actionsTabBottom,
+            BoxLayout.Y_AXIS));
+        actionsTabBottom
+            .add(getLabeledComponent(
                 "Order: ",
                 actionOrder = new JComboBox(),
                 "Staggered Order goes something like \"Attack 3, 4, 3, 4, 3, 4, 3, 1, 2, 1, 2, etc.\""));
@@ -318,17 +267,14 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         actionOrder.addItem(getNumberedString("Random, Favor Third", 1));
         actionOrder.addItem(getNumberedString("In Order", 2));
         actionOrder.addItem(getNumberedString("Staggered Order", 3));
-        actionsTabBottom.add(
-            startPointer = new TextEditor.TextOffsetEntry("Start Text", true));
-        actionsTabBottom.add(
-            deathPointer = new TextEditor.TextOffsetEntry("Death Text", true));
-        actionsTabBottom.add(
-            getLabeledComponent(
-                "Max Call: ",
-                maxCall = createSizedJTextField(3),
-                "Values over 8 are treated as 8 by EB"));
-        actionsTab.add(
-            pairComponents(actionsTabBottom, new JLabel(), true),
+        actionsTabBottom.add(startPointer = new TextEditor.TextOffsetEntry(
+            "Start Text", true));
+        actionsTabBottom.add(deathPointer = new TextEditor.TextOffsetEntry(
+            "Death Text", true));
+        actionsTabBottom.add(getLabeledComponent("Max Call: ",
+            maxCall = createSizedJTextField(3),
+            "Values over 8 are treated as 8 by EB"));
+        actionsTab.add(pairComponents(actionsTabBottom, new JLabel(), true),
             BorderLayout.SOUTH);
 
         tabs.addTab("Actions", actionsTab);
@@ -336,205 +282,142 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         //gfx/sound tab init
         JPanel appearenceTab = new JPanel();
         appearenceTab.setLayout(new BoxLayout(appearenceTab, BoxLayout.Y_AXIS));
-        appearenceTab.add(
-            getLabeledComponent(
-                "Outside Pic: ",
-                outsidePic = createComboBox(sptNames,false, this),
-                "Appearance out of battle. Subtract one for SPT entry number."));
+        appearenceTab.add(getLabeledComponent("Outside Pic: ",
+            outsidePic = createComboBox(sptNames, false, this),
+            "Appearance out of battle. Subtract one for SPT entry number."));
         appearenceTab.add(Box.createVerticalStrut(5));
-        appearenceTab.add(
-            getLabeledComponent(
-                "Movement: ",
-                movement = createSizedJTextField(5),
-                "Movement pattern, most values unknown"));
+        appearenceTab.add(getLabeledComponent("Movement: ",
+            movement = createSizedJTextField(5),
+            "Movement pattern, most values unknown"));
         appearenceTab.add(Box.createVerticalStrut(10));
-        appearenceTab.add(
-            getLabeledComponent(
-                "Row: ",
-                row =
-                    HackModule.createJComboBoxFromArray(
-                        new String[] { "Front", "Back" },
-                        false)));
+        appearenceTab.add(getLabeledComponent("Row: ", row = HackModule
+            .createJComboBoxFromArray(new String[]{"Front", "Back"}, false)));
         appearenceTab.add(Box.createVerticalStrut(10));
-        appearenceTab.add(
-            getLabeledComponent(
-                "Battle Sprite: ",
-                insidePic = createComboBox(battleSpriteNames, "Invisible"),
-                "Appearence in battle"));
-        insidePic.addActionListener(new ActionListener() {
+        appearenceTab.add(getLabeledComponent("Battle Sprite: ",
+            insidePic = createComboBox(battleSpriteNames, "Invisible"),
+            "Appearence in battle"));
+        insidePic.addActionListener(new ActionListener()
+        {
             public void actionPerformed(ActionEvent e)
             {
                 updateInsidePicPrev();
-            }});
+            }
+        });
         insidePic.setEditable(true);
         insidePic.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
                 if (ae.getActionCommand().equals("comboBoxEdited"))
-                    HackModule.search(
-                        (String) insidePic.getSelectedItem(),
+                    HackModule.search((String) insidePic.getSelectedItem(),
                         insidePic);
             }
         });
-        appearenceTab.add(
-            getLabeledComponent(
-                "Palette: ",
-                palette = createSizedJTextField(3),
-                "Colors used for battle sprite (0-31)"));
-        palette.getDocument().addDocumentListener(new DocumentListener() {
+        appearenceTab.add(getLabeledComponent("Palette: ",
+            palette = createSizedJTextField(3),
+            "Colors used for battle sprite (0-31)"));
+        palette.getDocument().addDocumentListener(new DocumentListener()
+        {
             public void changedUpdate(DocumentEvent e)
             {
                 updateInsidePicPrev();
             }
+
             public void insertUpdate(DocumentEvent e)
             {
                 updateInsidePicPrev();
             }
+
             public void removeUpdate(DocumentEvent e)
             {
                 updateInsidePicPrev();
-            }});
+            }
+        });
         appearenceTab.add(Box.createVerticalStrut(10));
-        appearenceTab.add(
-            getLabeledComponent("Death Sound: ", deathSound = new JComboBox()));
+        appearenceTab.add(getLabeledComponent("Death Sound: ",
+            deathSound = new JComboBox()));
         deathSound.addItem(getNumberedString("Normal", 0));
         deathSound.addItem(getNumberedString("Boss", 1));
-        appearenceTab.add(
-            getLabeledComponent(
-                "Music: ",
-                music = createJComboBoxFromArray(musicNames)));
-        tabs.addTab(
-            "Graphics / Sound",
-            pairComponents(
-                pairComponents(appearenceTab, insidePicPrev = new JLabel(), true),
-                new JLabel(),
-                false));
+        appearenceTab.add(getLabeledComponent("Music: ",
+            music = createJComboBoxFromArray(musicNames)));
+        tabs.addTab("Graphics / Sound", pairComponents(pairComponents(
+            appearenceTab, insidePicPrev = new JLabel(), true), new JLabel(),
+            false));
 
         //weaknesses tab init
         Box weaknessTab = new Box(BoxLayout.Y_AXIS);
-        String[] weaknessNames =
-            new String[] {
-                "PSI Fire",
-                "PSI Freeze",
-                "PSI Flash",
-                "Paralysis",
-                "Hypnosis/Brainshock" },
-            weaknessCat =
-                new String[] {
-                    "100% effective",
-                    "75% effective",
-                    "50% effective",
-                    "25% effective",
-                    "1% effective" },
-            ffWeaknessCat =
-                new String[] {
-                    "200% effective",
-                    "150% effective",
-                    "100% effective",
-                    "50% effective",
-                    "1% effective" };
+        String[] weaknessNames = new String[]{"PSI Fire", "PSI Freeze",
+            "PSI Flash", "Paralysis", "Hypnosis/Brainshock"}, weaknessCat = new String[]{
+            "100% effective", "75% effective", "50% effective",
+            "25% effective", "1% effective"}, ffWeaknessCat = new String[]{
+            "200% effective", "150% effective", "100% effective",
+            "50% effective", "1% effective"};
         for (int i = 0; i < weaknessNames.length; i++)
         {
-            weaknessTab.add(
-                getLabeledComponent(
-                    weaknessNames[i],
-                    weakness[i] =
-                        HackModule.createJComboBoxFromArray(
-                            i < 2 ? ffWeaknessCat : weaknessCat)));
+            weaknessTab.add(getLabeledComponent(weaknessNames[i],
+                weakness[i] = HackModule.createJComboBoxFromArray(i < 2
+                    ? ffWeaknessCat
+                    : weaknessCat)));
         }
-        tabs.addTab(
-            "Weaknesses",
-            pairComponents(
-                pairComponents(weaknessTab, new JLabel(), true),
-                new JLabel(),
-                false));
+        tabs.addTab("Weaknesses", pairComponents(pairComponents(weaknessTab,
+            new JLabel(), true), new JLabel(), false));
 
         //unknowns tab init
         JPanel unknownsTab = new JPanel();
         unknownsTab.setLayout(new BoxLayout(unknownsTab, BoxLayout.Y_AXIS));
 
-        unknownsTab.add(
-            getLabeledComponent(
-                "Unknown A (gender): ",
-                unknowna = createSizedJTextField(3),
-                "Replaced by gender on the first tab."));
+        unknownsTab.add(getLabeledComponent("Unknown A (gender): ",
+            unknowna = createSizedJTextField(3),
+            "Replaced by gender on the first tab."));
         unknowna.setEnabled(false);
-        unknownsTab.add(
-            getLabeledComponent(
-                "Unknown B (PSI Fire): ",
-                unknownb = createSizedJTextField(3),
-                "Replaced by PSI Fire in weaknesses tab."));
+        unknownsTab.add(getLabeledComponent("Unknown B (PSI Fire): ",
+            unknownb = createSizedJTextField(3),
+            "Replaced by PSI Fire in weaknesses tab."));
         unknownb.setEnabled(false);
-        unknownsTab.add(
-            getLabeledComponent(
-                "Unknown C (PSI Freeze): ",
-                unknownc = createSizedJTextField(3),
-                "Replaced by PSI Freese in weaknesses tab."));
+        unknownsTab.add(getLabeledComponent("Unknown C (PSI Freeze): ",
+            unknownc = createSizedJTextField(3),
+            "Replaced by PSI Freese in weaknesses tab."));
         unknownc.setEnabled(false);
-        unknownsTab.add(
-            getLabeledComponent(
-                "Unknown D (PSI Flash): ",
-                unknownd = createSizedJTextField(3),
-                "Replaced by PSI Flash in weaknesses tab."));
+        unknownsTab.add(getLabeledComponent("Unknown D (PSI Flash): ",
+            unknownd = createSizedJTextField(3),
+            "Replaced by PSI Flash in weaknesses tab."));
         unknownd.setEnabled(false);
-        unknownsTab.add(
-            getLabeledComponent(
-                "Unknown E (Paralysis): ",
-                unknowne = createSizedJTextField(3),
-                "Replaced by Paralysis in weaknesses tab."));
+        unknownsTab.add(getLabeledComponent("Unknown E (Paralysis): ",
+            unknowne = createSizedJTextField(3),
+            "Replaced by Paralysis in weaknesses tab."));
         unknowne.setEnabled(false);
-        unknownsTab.add(
-            getLabeledComponent(
-                "Unknown F (Hypnosis/Brainshock): ",
-                unknownf = createSizedJTextField(3),
-                "Replaced by Hypnosis/Brainshock in weaknesses tab."));
+        unknownsTab.add(getLabeledComponent(
+            "Unknown F (Hypnosis/Brainshock): ",
+            unknownf = createSizedJTextField(3),
+            "Replaced by Hypnosis/Brainshock in weaknesses tab."));
         unknownf.setEnabled(false);
-        unknownsTab.add(
-            getLabeledComponent(
-                "Unknown G (final action): ",
-                unknowng = createSizedJTextField(3),
-                "Final action arguement. Edit on the actions tab."));
+        unknownsTab.add(getLabeledComponent("Unknown G (final action): ",
+            unknowng = createSizedJTextField(3),
+            "Final action arguement. Edit on the actions tab."));
         unknowng.setEnabled(false);
-        unknownsTab.add(
-            getLabeledComponent(
-                "Unknown H: ",
-                unknownh = createSizedJTextField(3),
-                "Byte after Unknown G, see: unknown3.txt"));
-        unknownsTab.add(
-            getLabeledComponent(
-                "Unknown I (row): ",
-                unknowni = createSizedJTextField(3),
-                "Replaced by row in Graphics/Sound tab."));
+        unknownsTab.add(getLabeledComponent("Unknown H: ",
+            unknownh = createSizedJTextField(3),
+            "Byte after Unknown G, see: unknown3.txt"));
+        unknownsTab.add(getLabeledComponent("Unknown I (row): ",
+            unknowni = createSizedJTextField(3),
+            "Replaced by row in Graphics/Sound tab."));
         unknowni.setEnabled(false);
-        unknownsTab.add(
-            getLabeledComponent(
-                "Unknown J: ",
+        unknownsTab
+            .add(getLabeledComponent("Unknown J: ",
                 unknownj = createSizedJTextField(3),
                 "Last byte; see: unknown1.txt"));
-        unknownsTab.add(
-            getLabeledComponent(
-                "Unknown K: ",
-                unknownk = createSizedJTextField(3),
-                "Byte after offense, offense is confirmed one byte"));
-        unknownsTab.add(
-            getLabeledComponent(
-                "Unknown L: ",
+        unknownsTab.add(getLabeledComponent("Unknown K: ",
+            unknownk = createSizedJTextField(3),
+            "Byte after offense, offense is confirmed one byte"));
+        unknownsTab
+            .add(getLabeledComponent("Unknown L: ",
                 unknownl = createSizedJTextField(3),
                 "Byte after defense, defense is confirmed one byte; see unknown4.txt"));
 
-        tabs.addTab(
-            "Unknowns",
-            pairComponents(
-                pairComponents(
-                    new JLabel("Unknown*.txt's at http://pkhack.starmen.net/old/misc/"),
-                    pairComponents(unknownsTab, new JLabel(), true),
-                    false,
-                    true,
-                    null,
-                    null),
-                new JLabel(),
-                false));
+        tabs.addTab("Unknowns", pairComponents(pairComponents(new JLabel(
+            "Unknown*.txt's at http://pkhack.starmen.net/old/misc/"),
+            pairComponents(unknownsTab, new JLabel(), true), false, true, null,
+            null), new JLabel(), false));
 
         mainWindow.getContentPane().add(tabs, BorderLayout.CENTER);
 
@@ -577,32 +460,32 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         super.show();
         readFromRom();
         mainWindow.setVisible(true);
-        
-//        //stuff
-//        String[] weaknessNames =
-//            new String[] {
-//                "PSI Fire",
-//                "PSI Freeze",
-//                "PSI Flash",
-//                "Paralysis",
-//                "Hypnosis/Brainshock" };
-//        String[] weakness_list = new String[enemies.length];
-//        for(int i = 0; i < enemies.length;i++)
-//        {
-//            selector.setSelectedIndex(i);
-//            String tmp = enemies[i].getName() + ":\n";
-//            for(int w = 0; w < enemies[i].weakness.length; w++)
-//            tmp += weaknessNames[w] + ":" +
-// weakness[w].getSelectedItem().toString().split("]")[1] + "\n";
-//            tmp += "\n";
-//            
-//            weakness_list[i] = tmp;
-//        }
-//        //Arrays.sort(weakness_list);
-//        for(int i = 0; i < enemies.length;i++)
-//        {
-//            System.out.print(weakness_list[i]);
-//        }
+
+        //        //stuff
+        //        String[] weaknessNames =
+        //            new String[] {
+        //                "PSI Fire",
+        //                "PSI Freeze",
+        //                "PSI Flash",
+        //                "Paralysis",
+        //                "Hypnosis/Brainshock" };
+        //        String[] weakness_list = new String[enemies.length];
+        //        for(int i = 0; i < enemies.length;i++)
+        //        {
+        //            selector.setSelectedIndex(i);
+        //            String tmp = enemies[i].getName() + ":\n";
+        //            for(int w = 0; w < enemies[i].weakness.length; w++)
+        //            tmp += weaknessNames[w] + ":" +
+        // weakness[w].getSelectedItem().toString().split("]")[1] + "\n";
+        //            tmp += "\n";
+        //            
+        //            weakness_list[i] = tmp;
+        //        }
+        //        //Arrays.sort(weakness_list);
+        //        for(int i = 0; i < enemies.length;i++)
+        //        {
+        //            System.out.print(weakness_list[i]);
+        //        }
     }
 
     /**
@@ -612,12 +495,14 @@ public class EnemyEditor extends EbHackModule implements ActionListener
     {
         for (int i = 0; i < enemies.length; i++)
         {
-            enemies[i] = new Enemy(i,hm);
+            enemies[i] = new Enemy(i, hm);
         }
     }
+
     private void readFromRom()
     {
-        readFromRom(this);    }
+        readFromRom(this);
+    }
 
     public void hide()
     {
@@ -630,25 +515,25 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         //make arguements[j] have the right list
         switch (actionType[actions[j].getSelectedIndex()])
         {
-            case TYPE_ITEM :
-                arguements[j] = ItemEditor.createItemSelector(arguements[j], this);
+            case TYPE_ITEM:
+                arguements[j] = ItemEditor.createItemSelector(arguements[j],
+                    this);
                 break;
 
-            case TYPE_CALL :
-                arguements[j].setModel(
-                    EnemyEditor.createEnemyComboBoxModel());
+            case TYPE_CALL:
+                arguements[j].setModel(EnemyEditor.createEnemyComboBoxModel());
                 break;
 
-            case TYPE_PSI :
+            case TYPE_PSI:
                 arguements[j].setModel(createComboBoxModel(psiNames, "Null"));
-//                arguements[j] =
-//                    createComboBoxFromArray(
-//                        psiNames,
-//                        arguements[j]);
+                //                arguements[j] =
+                //                    createComboBoxFromArray(
+                //                        psiNames,
+                //                        arguements[j]);
                 break;
 
-            case TYPE_NORMAL :
-            default :
+            case TYPE_NORMAL:
+            default:
                 String[] tmp = new String[256];
                 Arrays.fill(tmp, "");
                 arguements[j] = createJComboBoxFromArray(tmp, arguements[j]);
@@ -663,12 +548,14 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             //new list doesn't cotain old number
         }
     }
+
     private void updateInsidePicPrev()
     {
         try
         {
             insidePicPrev.setIcon(new ImageIcon(BattleSpriteEditor.getImage(
-                insidePic.getSelectedIndex() - 1, Integer.parseInt(palette.getText()))));
+                insidePic.getSelectedIndex() - 1, Integer.parseInt(palette
+                    .getText()))));
         }
         catch (NumberFormatException e)
         {
@@ -730,14 +617,14 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         {
             deathSound.setSelectedIndex(enemies[i].getDieSound());
         }
-        catch(IllegalArgumentException iae)
+        catch (IllegalArgumentException iae)
         {
             JOptionPane.showConfirmDialog(mainWindow, iae,
-                "Invalid death sound value in ROM", JOptionPane.OK_OPTION, 
+                "Invalid death sound value in ROM", JOptionPane.OK_OPTION,
                 JOptionPane.ERROR_MESSAGE);
         }
         music.setSelectedIndex(enemies[i].getMusic());
-        
+
         updateInsidePicPrev();
 
         //weaknesses tab
@@ -767,8 +654,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             return;
         //stats tab - left side
         enemies[i].setName(name.getText());
-        EnemyEditor.notifyEnemyDataListeners(
-            new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, i, i));
+        EnemyEditor.notifyEnemyDataListeners(new ListDataEvent(this,
+            ListDataEvent.CONTENTS_CHANGED, i, i));
         enemies[i].setHp(Integer.parseInt(hp.getText()));
         enemies[i].setPp(Integer.parseInt(pp.getText()));
         enemies[i].setExp(Integer.parseInt(exp.getText()));
@@ -782,8 +669,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         enemies[i].setIq(Integer.parseInt(iq.getText()));
         //stats tab - right side
         enemies[i].setTheFlag(theFlag.isSelected());
-        enemies[i].setRunFlag(
-            (enemies[i].getRunFlag() & 0xfe) + (runFlag.isSelected() ? 1 : 0));
+        enemies[i].setRunFlag((enemies[i].getRunFlag() & 0xfe)
+            + (runFlag.isSelected() ? 1 : 0));
         enemies[i].setGender(gender.getSelectedIndex() + 1); //0 isn't used
         enemies[i].setItem(item.getSelectedIndex());
         enemies[i].setFreq(itemFreq.getSelectedIndex());
@@ -845,7 +732,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
     {
         if (ae.getActionCommand().startsWith("enemyActionChanged"))
         {
-                updateArguements(Integer.parseInt(ae.getActionCommand().substring(18)));
+            updateArguements(Integer.parseInt(ae.getActionCommand().substring(
+                18)));
         }
         else if (ae.getActionCommand().equals(selector.getActionCommand()))
         {
@@ -853,7 +741,13 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("apply"))
         {
-            saveInfo(selector.getSelectedIndex());
+            int i = selector.getSelectedIndex();
+            if (i == 0)
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Writing to enemy #0 is not allowed.", "Write Failed",
+                    JOptionPane.WARNING_MESSAGE);
+            else
+                saveInfo(i);
         }
         else if (ae.getActionCommand().equals("close"))
         {
@@ -924,14 +818,17 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         return out;
     }
     private static ArrayList enemyListeners = new ArrayList();
+
     protected static void addEnemyDataListener(ListDataListener ldl)
     {
         enemyListeners.add(ldl);
     }
+
     protected static void removeEnemyDataListener(ListDataListener ldl)
     {
         enemyListeners.remove(ldl);
     }
+
     protected static void notifyEnemyDataListeners(ListDataEvent lde)
     {
         for (Iterator i = enemyListeners.iterator(); i.hasNext();)
@@ -939,8 +836,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             ((ListDataListener) i.next()).contentsChanged(lde);
         }
     }
-    public static JComboBox createEnemyComboBox(
-        final ActionListener al)
+
+    public static JComboBox createEnemyComboBox(final ActionListener al)
     {
         SimpleComboBoxModel model = createEnemyComboBoxModel();
         final JComboBox out = new JComboBox(model);
@@ -1034,12 +931,12 @@ public class EnemyEditor extends EbHackModule implements ActionListener
          */
         public Enemy(int num, HackModule hm)
         {
-            this.hm=hm;
+            this.hm = hm;
             this.num = num;
-            this.address = /*0x1597e7*/ 0x159789  + (num * 94);
-            
+            this.address = /* 0x1597e7 */0x159789 + (num * 94);
+
             Rom rom = hm.rom;
-            
+
             rom.seek(this.address);
 
             this.theFlag = rom.readSeek();
@@ -1119,13 +1016,18 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             //				System.out.println(this.getName() + ": " + this.getRunFlag());
             //			}
         }
+
         /**
-         * Writes the information stored in this into the ROM.
+         * Writes the information stored in this into the ROM. Will not write to
+         * enemy #0.
          */
         public void writeInfo()
         {
+            if (num == 0)
+                return;
+
             Rom rom = hm.rom;
-            
+
             rom.seek(this.address);
 
             rom.writeSeek(this.theFlag);
@@ -1222,6 +1124,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         {
             return action[i];
         }
+
         /**
          * Returns arguement #i. Values can be 0-4. #4 is the final action
          * arguement.
@@ -2225,6 +2128,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         {
             return weakness[i];
         }
+
         /**
          * Sets the <code>i</code> th weakness value. Values of i: [0] = PSI
          * Fire, [1] = PSI Freeze, [2] = PSI Flash, [3] = Paralysis, [4] =
@@ -2238,6 +2142,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             this.weakness[i] = weakness;
         }
     }
+
     /**
      * @see net.starmen.pkhack.HackModule#getIcon()
      */
@@ -2248,8 +2153,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
     private static Icon initIcon()
     {
-        BufferedImage out =
-            new BufferedImage(16, 16, BufferedImage.TYPE_4BYTE_ABGR);
+        BufferedImage out = new BufferedImage(16, 16,
+            BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
 
         //Created by ImageFileToCode from net/starmen/pkhack/fobby.gif

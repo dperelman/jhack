@@ -23,6 +23,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -505,10 +506,14 @@ public class ItemEditor extends EbHackModule implements ActionListener
 
         /**
          * Writes the information stored by this <code>Item</code> into the
-         * ROM.
+         * ROM. Will not write to item #0.
          */
         public void writeInfo()
         {
+            //don't overwrite null item
+            if (number == 0)
+                return;
+
             Rom rom = hm.rom;
 
             rom.seek(this.address);
@@ -533,7 +538,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
     private void saveItemInfo(int i) //puts the changed info into the Item
     // object
     {
-        if (i < 0) return;
+        if (i < 0)
+            return;
 
         //        char[] tfName = this.name.getText().toCharArray();
         //        for (int j = 0; j < items[i].name.length; j++)
@@ -568,7 +574,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
 
     private void showItemInfo(int i)
     {
-        if (i < 0) return;
+        if (i < 0)
+            return;
         //assumes that itemSelector was changed to i
         //set text boxes and combo boxes
         this.name.setText(items[i].name.trim());
@@ -615,7 +622,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
     {
         if (ae.getActionCommand().equals(itemSelector.getActionCommand()))
         {
-            if (itemSelector.getSelectedIndex() < 0) return;
+            if (itemSelector.getSelectedIndex() < 0)
+                return;
             showItemInfo(itemSelector.getSelectedIndex());
         }
         else if (ae.getActionCommand().equalsIgnoreCase("close"))
@@ -626,8 +634,15 @@ public class ItemEditor extends EbHackModule implements ActionListener
         {
             //put text field info into the Item object, then call
             // items[i].writeInfo();
-            if (itemSelector.getSelectedIndex() < 0) return;
-            saveItemInfo(itemSelector.getSelectedIndex());
+            int i = itemSelector.getSelectedIndex();
+            if (i < 0)
+                return;
+            if (i == 0)
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Writing to item #0 is not allowed.", "Write Failed",
+                    JOptionPane.WARNING_MESSAGE);
+            else
+                saveItemInfo(i);
         }
         else if (ae.getActionCommand().equals("Find"))
         {
@@ -688,9 +703,11 @@ public class ItemEditor extends EbHackModule implements ActionListener
         HackModule hm)
     {
         SimpleComboBoxModel model = createItemComboBoxModel();
-        if (items[0] == null) readFromRom(hm);
+        if (items[0] == null)
+            readFromRom(hm);
         final JComboBox out = new JComboBox(model);
-        if (al != null) out.addActionListener(al);
+        if (al != null)
+            out.addActionListener(al);
         model.addListDataListener(new ListDataListener()
         {
 
@@ -1188,7 +1205,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
                 createItemSelectorForType(cb, type, hm);
             }
 
-            if (al != null) addActionListener(al);
+            if (al != null)
+                addActionListener(al);
 
             this.add(cb, BorderLayout.EAST);
 
