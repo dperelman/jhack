@@ -2445,6 +2445,19 @@ public class TileEditor extends EbHackModule implements ActionListener
                 ((arr - getArrangementOffset()) % 4) * 33, 32, 32);
         }
 
+        public void setCurrentArrangement(int newArrangement)
+        {
+            //only fire action performed if new arrangment
+            if (currentArrangement != newArrangement)
+            {
+                scroll.setValue(newArrangement / 4);
+                reHightlight(currentArrangement, newArrangement);
+                currentArrangement = newArrangement;
+                this.fireActionPerformed(new ActionEvent(this,
+                    ActionEvent.ACTION_PERFORMED, this.getActionCommand()));
+            }
+        }
+
         private void setCurrentArrangement(int x, int y)
         {
             int newArrangement = getArrangementOffset() + ((y / 33))
@@ -3287,6 +3300,45 @@ public class TileEditor extends EbHackModule implements ActionListener
         mainWindow.setVisible(true);
         guiInited = true;
         tilesetSelector.setSelectedIndex(0);
+    }
+
+    /**
+     * Shows a specific arrangement or tile in a specific palette.
+     * 
+     * @param obj A <code>Integer[]</code> or <code>int[]</code> with 4, 5,
+     *            or 6 elements: graphics tileset, map tileset, map palette,
+     *            arrangement number, (if 5 elements) [mini]tile number, (if 6
+     *            elements) subpalette number.
+     */
+    public void show(Object obj)
+    {
+        show();
+        if (obj instanceof Integer[])
+        {
+            Integer[] iarr = (Integer[]) obj;
+            int[] narr = new int[iarr.length];
+            for (int i = 0; i < iarr.length; i++)
+                narr[i] = iarr[i].intValue();
+            obj = narr;
+        }
+        if (obj instanceof int[])
+        {
+            int[] arr = (int[]) obj;
+            tilesetSelector.setSelectedIndex(arr[0]);
+            String pal = arr[1] + "/" + arr[2];
+            for (int i = 0; i < paletteSelector.getItemCount(); i++)
+                if (paletteSelector.getItemAt(i).equals(pal))
+                    paletteSelector.setSelectedIndex(i);
+            arrangementSelector.setCurrentArrangement(arr[3]);
+            if (arr.length > 4)
+            {
+                tileSelector.setCurrentTile(arr[4]);
+                if (arr.length > 5)
+                {
+                    subPaletteSelector.setSelectedIndex(arr[5]);
+                }
+            }
+        }
     }
 
     private void doTilesetSelectAction()

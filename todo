@@ -8,8 +8,6 @@ NEXT v0.0.0.x (bugfix) RELEASE
 # Look into threading of error console GUI building (ERROR#65895)
 # Look into use of JOptionPane.showOptionDialog() for abort/retry/fail.
 # Warn/disallow editing of default ROM
-# Enemy editor: Unknown J --> mirror success rate; boss flag?
-# Tile Editor: Add show(Object) method for map editor
 
 NEXT v0.0.x (minor) RELEASE
 
