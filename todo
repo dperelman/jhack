@@ -9,9 +9,6 @@ NEXT RELEASE
 # Fixed by comp() bug fixes??? --> [03:09:02] <EBisumaru> Dammit,
 	JHack can't do the compression.
 	(Note to self: Don't worry about it. Can't find EBi, anyway.)
-
-LONG TERM
-
 # Window positions editor
 	[13:45:08] <GuyInSummers> AA AA BB BB CC CC DD DD. The window's topleft 
 		corer is at AAAA x BBBB, and is CCCC wide and DDDD tall. 8 pixels to the unit.
@@ -22,6 +19,9 @@ LONG TERM
 		with a null entry or not... I don't think so
 # [12:38:45] <JeffMan> oh and you should add the mother 2 font 
 	and the debug menu font to jhack's font editor if you can
+
+LONG TERM
+
 # Gas Station image import/export
 # IPSDatabase extensions?
 # Starting stat editor ( 1DAF1 = Value for Ness' starting stats )

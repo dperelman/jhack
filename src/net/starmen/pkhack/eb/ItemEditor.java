@@ -179,8 +179,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
             //				true),
             BorderLayout.NORTH);
         //		upper.add(new JLabel("Name:"));
-        this.name = new JTextField(25);
-        this.name.setDocument(new MaxLengthDocument(25));
+        this.name = createSizedJTextField(25);
         upper.add(FontEditor.StringViewer.createWithFontSelector(name, this));
         upper.add(getLabeledComponent("Name:", this.name));
         //		upper.add(new JLabel("Effect:"));
@@ -193,9 +192,9 @@ public class ItemEditor extends EbHackModule implements ActionListener
         JPanel lowerLeft = new JPanel();
         lowerLeft.setLayout(new BoxLayout(lowerLeft, BoxLayout.Y_AXIS));
         lowerLeft.add(getLabeledComponent("Cost:",
-            this.cost = new JTextField(8)));
+            this.cost = createSizedJTextField(5, true)));
         lowerLeft.add(getLabeledComponent("Type:",
-            this.type = new JTextField(8)));
+            this.type = createSizedJTextField(3, true)));
         this.type.getDocument().addDocumentListener(new DocumentListener()
         {
 
@@ -222,13 +221,13 @@ public class ItemEditor extends EbHackModule implements ActionListener
             }
         });
         lowerLeft.add(pairComponents(strLabel = new JLabel(labels[0][255]),
-            this.strength = new JTextField(8), true));
+            this.strength = createSizedJTextField(3, true), true));
         lowerLeft.add(pairComponents(epLabel = new JLabel(labels[1][255]),
-            this.extraPower = new JTextField(8), true));
+            this.extraPower = createSizedJTextField(3, true), true));
         lowerLeft.add(pairComponents(incLabel = new JLabel(labels[2][255]),
-            this.epIncrease = new JTextField(8), true));
+            this.epIncrease = createSizedJTextField(3, true), true));
         lowerLeft.add(pairComponents(specialLabel = new JLabel(labels[3][255]),
-            this.special = new JTextField(8), true));
+            this.special = createSizedJTextField(3, true), true));
         //		lowerLeft.add(
         //			getLabeledComponent(
         //				"Help Text Address $:",
