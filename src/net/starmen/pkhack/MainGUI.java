@@ -1367,13 +1367,18 @@ public class MainGUI implements ActionListener, WindowListener
             }
         }
         resetModules();
-        mainWindow.setTitle(MainGUI.getDescription() + " "
-            + MainGUI.getVersion() + " - " + rom.getPath());
+        updateTitle();
         addRecentLoad(rom.getPath());
         refreshRecentLoads();
         doBackup();
         loading = false;
         return true;
+    }
+    
+    private void updateTitle()
+    {
+        mainWindow.setTitle(MainGUI.getDescription() + " "
+            + MainGUI.getVersion() + " - " + rom.getPath());
     }
 
     private void loadRom()
@@ -1486,6 +1491,7 @@ public class MainGUI implements ActionListener, WindowListener
                 if (rom.isLoaded)
                 {
                     rom.saveRomAs();
+                    updateTitle();
                     //ROM file name changed, add to recent list
                     addRecentLoad(rom.getPath());
                     refreshRecentLoads();
