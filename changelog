@@ -1,5 +1,8 @@
 NEXT VERSION (after v0.5.2):
 # A few SPT names additions from JeffMan
+# BUGFIX: Special properties of destinationless doors write correctly
+# Map Editor: can jump to destinations
+# Door Editor: can edit special properties of destinationless doors
 
 v0.5.2:
 # BUGFIX: FindFreeRange now only finds ranges that are within a single bank.
