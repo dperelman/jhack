@@ -213,7 +213,7 @@ public class MiscEditor extends EbHackModule implements ActionListener
 	        		{
 	        			listBox.addItem(musicNames[j]);
 	        		}
-	                mainWindow.setSize(298, 100);
+//	                mainWindow.setSize(298, 100);
 	        		break;
 	        	case 2:
 	           		listBox.setVisible(true);
@@ -223,27 +223,26 @@ public class MiscEditor extends EbHackModule implements ActionListener
 	        			listBox.addItem(soundEffects[j]);
 	        		}
 //	        		listBox.removeItemAt(0);
-	                mainWindow.setSize(400, 100);
+//	                mainWindow.setSize(400, 100);
 	        		break;
 	        	case 3:
 	        		textBox.setVisible(true);
-	        		mainWindow.setSize(400,100);
+//	        		mainWindow.setSize(400,100);
 	        		break;
 	        	case 4: case 6:
 	        		tf.setVisible(true); 
-	        		mainWindow.setSize(400, 100);
+//	        		mainWindow.setSize(400, 100);
 	        		break;
 	        	case 5:
 	        		actionBox.setVisible(true);
-	                mainWindow.setSize(400, 100);
+//	                mainWindow.setSize(400, 100);
 	        		break;
 	        	case 7:
 	        		colorBox.setVisible(true);
-	                mainWindow.setSize(430, 520);
+//	                mainWindow.setSize(430, 520);
 	        		break;
 			}
         }
-        mainWindow.repaint();
         if (cType == 7) //color
         	colorBox.setColor(entries[i].getColor());
         else if (cType == 4 || cType == 6) //number
@@ -254,6 +253,8 @@ public class MiscEditor extends EbHackModule implements ActionListener
         	textBox.setOffset(entries[i].getData());
         else
         	listBox.setSelectedIndex(entries[i].getData());
+        mainWindow.pack();
+        mainWindow.repaint();
     }
 
     public void actionPerformed(ActionEvent ae)
