@@ -155,7 +155,7 @@ public class PhotoEditor extends EbHackModule
 			}
 		}
 		
-		palette = HackModule.createSizedJTextField(3, true);
+		palette = HackModule.createSizedJTextField(5, true);
 		landX = HackModule.createSizedJTextField(4, true);
 		landY = HackModule.createSizedJTextField(4, true);
 		
@@ -173,7 +173,7 @@ public class PhotoEditor extends EbHackModule
 				
 				
 		tmpPanel.add(preview);
-		flag = HackModule.createSizedJTextField(5, true);
+		flag = HackModule.createSizedJTextField(5, false);
 		tmpPanel.add(
 				HackModule.getLabeledComponent(
 						"Event Flag: ", flag));
