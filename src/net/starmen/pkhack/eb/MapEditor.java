@@ -23,7 +23,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 	public MapEditor(Rom rom, XMLPreferences prefs) {
 		super(rom, prefs);
 	}
-
+	
 	private JFrame mainWindow;
 
 	// Stuff for the top buttons
@@ -89,7 +89,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 		yField.setColumns(3);
 		yField.addPropertyChangeListener("value", this);
 		panel.add(yField);
-
+		
 		panel.add(new JLabel("Tileset: "));
 		String[] tList_names = new String[map_tsets];
 		for (int i = 0; i < map_tsets; i++) {
@@ -118,7 +118,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 	}
 
 	// A neat little way to create a JMenuBar from an array
-	public JMenuBar createMenuBar() {
+	public JMenuBar createMenuBar() {  
 		JMenuBar menuBar = new JMenuBar();
 
 		// Create the actual menu
@@ -146,14 +146,14 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 		mainWindow.setSize(window_width, window_height);
 
 		top_buttons = createTopButtons();
-
+		
 		// mainWindow.getContentPane().add(gfxcontrol);
 		mainWindow.getContentPane().add(top_buttons, BorderLayout.NORTH);
 		mainWindow.getContentPane().add(gfxcontrol);
 		mainWindow.setJMenuBar(createMenuBar());
 
 		// mainWindow.pack();
-
+		
 		gfxcontrol.addMouseListener(this);
 	}
 
@@ -169,7 +169,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 		for (int i = 0; i < test_row.length; i++) {
 			System.out.println("Test row tile " + i + ": " + Integer.toHexString(test_row[i]));
 		}
-
+		
 		int[][] maparray = new int[screen_height][screen_width];
 		for (int i = 0; i < screen_height; i++) {
 				maparray[i] = mapcontrol.getTiles(i + y, x, screen_width);
@@ -229,7 +229,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 		if (Integer.parseInt(n1) == 1) {
 			gfxcontrol.changeMode(Integer.parseInt(n2) - 1);
 			gfxcontrol.remoteRepaint();
-		}
+		}			
 	}
 
 	public void mousePressed(MouseEvent e) { }
@@ -244,7 +244,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 			if ((mousex >= screen_x) && (mousex <= screen_width * tilewidth) && (mousey >= screen_y) && (mousey <= screen_height * tileheight)) {
 				int sectorx = getSectorXorY(getTileXorY(mousex - screen_x, tilewidth, screen_width) + x, sector_width);
 				int sectory = getSectorXorY(getTileXorY(mousey - screen_y, tileheight, screen_height) + y, sector_height);
-
+				
 				int[] modeprops = gfxcontrol.getModeProps();
 				if (modeprops[0] == 2) {
 					System.out.println("Sector xy: " + sectorx + "," + sectory);
@@ -259,7 +259,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 			}
 		}
 	}
-
+	
 	public int getSectorXorY(int tilexory, int sector_woh) {
 		for (int i = 0; i <= width; i++) {
 			if (tilexory < sector_woh) {
@@ -329,7 +329,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 		private int mode;
 		private int sectorx;
 		private int sectory;
-
+		
 		private boolean knowsmap = false;
 		private boolean knowssector = false;
 		// This variable should define what a mode does.
@@ -338,7 +338,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 			{ 2, 1 },
 			{ 2, 2 }
 		};
-
+			
 		public MapGraphics(EbHackModule newhm, int newx, int newy, int newstartx, int newstarty, int newwidth, int newheight, int newtilewidth, int newtileheight, int newsector_width, int newsector_height, int newmode) {
 			System.out.println("Now evaluating MapGraphics()");
 			// System.out.println("Map array is set?: " + this.knowsmap);
@@ -353,12 +353,12 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 			this.tileheight = newtileheight;
 			this.sector_width = newsector_width;
 			this.sector_height = newsector_height;
-
+			
 			this.mode = newmode;
 
 			// TileEditor.readFromRom(this.hm); // load tileset data into "tilesets" array
 		}
-
+		
 		public void paintComponent(Graphics g) {
 			System.out.println("Now evaluating paintComponent()");
 			// System.out.println("Map array is set?: " + this.maparrayisset);
@@ -388,9 +388,10 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 					int[] row2draw = maparray[i];
 					for (int i2 = 0; i2 < row2draw.length; i2++) {
 						//g2d.drawString(addZeros(Integer.toHexString(row2draw[i2]), 2), this.startx + (i2 * this.tilewidth) + (this.tilewidth / 2), this.starty + (i * this.tileheight) + (this.tileheight / 2));
-						int[] tsetPal = mapcontrol.getTsetPal(getSectorXorY(i2, this.sector_width), getSectorXorY(i, this.sector_height));
-						g.drawImage(TileEditor.tilesets[mapcontrol.getDrawTileset(tsetPal[0])].getArrangementImage(row2draw[i2], TileEditor.tilesets[mapcontrol.getDrawTileset(tsetPal[0])].getPaletteNum(tsetPal[0], tsetPal[1]), false), this.startx + (i2 * this.tilewidth), this.starty + (i * this.tileheight), this.tilewidth, this.tileheight, this);
-						
+						int[] tsetPal = mapcontrol.getTsetPal(getSectorXorY(i2 + x, this.sector_width), getSectorXorY(i + y, this.sector_height));
+						System.out.println("Local tileset: " + mapcontrol.getLocalTileset(i2 + x, i + y));
+						g.drawImage(TileEditor.tilesets[mapcontrol.getDrawTileset(tsetPal[0])].getArrangementImage(row2draw[i2] + (256 * mapcontrol.getLocalTileset(i2 + x, i + y)), TileEditor.tilesets[mapcontrol.getDrawTileset(tsetPal[0])].getPaletteNum(tsetPal[0], tsetPal[1]), false), this.startx + (i2 * this.tilewidth), this.starty + (i * this.tileheight), this.tilewidth, this.tileheight, this);
+
 						g2d.draw(new Rectangle2D.Double(this.startx + (i2 * this.tilewidth), this.starty + (i * this.tileheight), tilewidth, tileheight));
 					}
 				}
@@ -401,7 +402,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 				g2d.setPaint(Color.yellow);
 
 				/*int draw_sector_x, draw_sector_y, draw_sector_w, draw_sector_h;
-
+				
 				if (this.sectorx == 0) {
 					draw_sector_x = this.startx;
 					draw_sector_w = (this.sector_width - this.x) * this.tilewidth;
@@ -417,12 +418,12 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 						draw_sector_w = this.sector_width * this.tilewidth;
 					}
 				}*/
-
+				
 				/*g2d.draw(new Rectangle2D.Double(this.startx + (this.sectorx * this.tilewidth * this.sector_width), this.starty + (this.sectory * this.tileheight * this.sector_height), this.tilewidth * sectorDisplayWoH(this.sectorx, this.sector_width, this.width), this.tileheight * sectorDisplayWoH(this.sectory, this.sector_height, this.height)));*/
 
 				int[] draw_sector_xw = sectorDisplayWoH(this.sectorx, this.sector_width, this.width, this.startx, this.x, this.tilewidth);
 				int[] draw_sector_yh = sectorDisplayWoH(this.sectory, this.sector_height, this.height, this.starty, this.y, this.tileheight);
-
+				
 				g2d.draw(new Rectangle2D.Double(draw_sector_xw[0], draw_sector_yh[0], draw_sector_xw[1], draw_sector_yh[1]));
 			}
 
@@ -438,7 +439,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 			}*/
 
 			int draw_sector_xoy, draw_sector_woh;
-
+			
 			if (sectorxory == 0) {
 				draw_sector_xoy = startxory;
 				draw_sector_woh = (sector_woh - xory) * tilewoh;
@@ -457,13 +458,13 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 
 			return new int[] { draw_sector_xoy, draw_sector_woh };
 		}
-
+	
 		protected void drawBorder(Graphics2D g2d) {
 			g2d.setPaint(Color.black);
 			Rectangle2D.Double border = new Rectangle2D.Double(this.startx - 1, this.starty - 1, (this.width * this.tilewidth) + 1, (this.height * this.tileheight) + 1);
 			g2d.draw(border);
 		}
-
+		
 		public void setSector(int newsectorx, int newsectory) {
 			System.out.println("New Sector: " + newsectorx + "x" + newsectory);
 			if (this.knowssector && (this.sectorx == newsectorx) && (this.sectory == newsectory)) {
@@ -475,8 +476,8 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 				this.sectorx = newsectorx;
 				this.sectory = newsectory;
 			}
-		}
-
+		}		
+		
 		public void changeMode(int newmode) {
 			this.mode = newmode;
 		}
@@ -491,7 +492,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 		public void setx(int newx) {
 			this.x = newx;
 		}
-
+		
 		public void sety(int newy) {
 			this.y = newy;
 		}
@@ -507,7 +508,7 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 		public int getModeMax() {
 			return this.modeprops.length;
 		}
-
+		
 		public int getMode() {
 			return this.mode;
 		}
@@ -527,10 +528,11 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 		private int[] all_addresses;
 		private int tsetpal_address;
 		private int tsettbl_address;
+		private int localtset_address;
 		private int address;
 		private int tile;
 		private Rom rom;
-
+		
 		public EbMap(HackModule hm, int newwidth, int newheight, int newsector_width, int newsector_height) {
 			this.hm = hm;
 			this.rom = hm.rom;
@@ -538,15 +540,378 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 			this.height = newheight;
 			this.sector_width = newsector_width;
 			this.sector_height = newsector_height;
-			this.all_addresses = new int[] { 0x160200, 0x162A00, 0x165200, 0x168200, 0x16AA00, 0x16D200, 0x170200, 0x172A00 };
+			// this.all_addresses = new int[] { 0x160200, 0x162A00, 0x165200, 0x168200, 0x16AA00, 0x16D200, 0x170200, 0x172A00 };
+			this.all_addresses = new int[] {
+				// Taken from MrA's Map Editor code. DESPERATELY NEEDS TO BE FORMATTED!!!!!!
+	0x160200,		// 1
+	0x162A00,		// 2
+	0x165200,		// 3
+	0x168200,		// 4
+	0x16AA00,		// 5
+	0x16D200,		// 6
+	0x170200,		// 7
+	0x172A00,		// 8
+
+	0x160300,		// 9
+	0x162B00,		// 10
+	0x165300,		// 11
+	0x168300,		// 12
+	0x16AB00,		// 13		
+	0x16D300,		// 14
+	0x170300,		// 15
+	0x172B00,		// 16
+
+	0x160400,		// 17
+	0x162C00,		// 18
+	0x165400,		// 19
+	0x168400,		// 20
+	0x16AC00,		// 21
+	0x16D400,		// 22
+	0x170400,		// 23
+	0x172C00,		// 24
+
+	0x160500,		// 25
+	0x162D00,		// 26
+	0x165500,		// 27
+	0x168500,		// 28
+	0x16AD00,		// 29
+	0x16D500,		// 30
+	0x170500,		// 31
+	0x172D00,		// 32
+
+	0x160600,		// 33
+	0x162E00,		// 34
+	0x165600,		// 35
+	0x168600,		// 36
+	0x16AE00,		// 37
+	0x16D600,		// 38
+	0x170600,		// 39
+	0x172E00,		// 40
+
+	0x160700,		// 41
+	0x162F00,		// 42
+	0x165700,		// 43
+	0x168700,		// 44
+	0x16AF00,		// 45
+	0x16D700,		// 46
+	0x170700,		// 47
+	0x172F00,		// 48
+
+	0x160800,		// 49
+	0x163000,		// 50
+	0x165800,		// 51
+	0x168800,		// 52
+	0x16B000,		// 53
+	0x16D800,		// 54
+	0x170800,		// 55
+	0x173000,		// 56
+
+	0x160900,		// 57
+	0x163100,		// 58
+	0x165900,		// 59
+	0x168900,		// 60
+	0x16B100,		// 61
+	0x16D900,		// 62
+	0x170900,		// 63
+	0x173100,		// 64
+
+	0x160A00,		// 65
+	0x163200,		// 66
+	0x165A00,		// 67
+	0x168A00,		// 68
+	0x16B200,		// 69
+	0x16DA00,		// 70
+	0x170A00,		// 71
+	0x173200,		// 72
+
+	0x160B00,		// 73
+	0x163300,		// 74
+	0x165B00,		// 75
+	0x168B00,		// 76
+	0x16B300,		// 77
+	0x16DB00,		// 78
+	0x170B00,		// 79
+	0x173300,		// 80
+
+	0x160C00,		// 81
+	0x163400,		// 82
+	0x165C00,		// 83
+	0x168C00,		// 84
+	0x16B400,		// 85
+	0x16DC00,		// 86
+	0x170C00,		// 87
+	0x173400,		// 88
+
+	0x160D00,		// 89
+	0x163500,		// 90
+	0x165D00,		// 91
+	0x168D00,		// 92
+	0x16B500,		// 93
+	0x16DD00,		// 94
+	0x170D00,		// 95
+	0x173500,		// 96
+
+	0x160E00,		// 97
+	0x163600,		// 98
+	0x165E00,		// 99
+	0x168E00,		// 100
+	0x16B600,		// 101
+	0x16DE00,		// 102
+	0x170E00,		// 103
+	0x173600,		// 104
+
+	0x160F00,		// 105
+	0x163700,		// 106
+	0x165F00,		// 107
+	0x168F00,		// 108
+	0x16B700,		// 109
+	0x16DF00,		// 110
+	0x170F00,		// 111
+	0x173700,		// 112
+
+	0x161000,		// 113
+	0x163800,		// 114
+	0x166000,		// 115
+	0x169000,		// 116
+	0x16B800,		// 117
+	0x16E000,		// 118
+	0x171000,		// 119
+	0x173800,		// 120
+
+	0x161100,		// 121
+	0x163900,		// 122
+	0x166100,		// 123
+	0x169100,		// 124
+	0x16B900,		// 125
+	0x16E100,		// 126
+	0x171100,		// 127
+	0x173900,		// 128
+
+	0x161200,		// 129
+	0x163A00,		// 130
+	0x166200,		// 131
+	0x169200,		// 132
+	0x16BA00,		// 133
+	0x16E200,		// 134
+	0x171200,		// 135
+	0x173A00,		// 136
+
+	0x161300,		// 137
+	0x163B00,		// 138
+	0x166300,		// 139
+	0x169300,		// 140
+	0x16BB00,		// 141
+	0x16E300,		// 142
+	0x171300,		// 143
+	0x173B00,		// 144
+
+	0x161400,		// 145
+	0x163C00,		// 146
+	0x166400,		// 147
+	0x169400,		// 148
+	0x16BC00,		// 149
+	0x16E400,		// 150
+	0x171400,		// 151
+	0x173C00,		// 152
+
+	0x161500,		// 153
+	0x163D00,		// 154
+	0x166500,		// 155
+	0x169500,		// 156
+	0x16BD00,		// 157
+	0x16E500,		// 158
+	0x171500,		// 159
+	0x173D00,		// 160
+
+	0x161600,		// 161
+	0x163E00,		// 162
+	0x166600,		// 163
+	0x169600,		// 164
+	0x16BE00,		// 165
+	0x16E600,		// 166
+	0x171600,		// 167
+	0x173E00,		// 168
+
+	0x161700,		// 169
+	0x163F00,		// 170
+	0x166700,		// 171
+	0x169700,		// 172
+	0x16BF00,		// 173
+	0x16E700,		// 174
+	0x171700,		// 175
+	0x173F00,		// 176
+
+	0x161800,		// 177
+	0x164000,		// 178
+	0x166800,		// 179
+	0x169800,		// 180
+	0x16C000,		// 181
+	0x16E800,		// 182
+	0x171800,		// 183
+	0x174000,		// 184
+
+	0x161900,		// 185
+	0x164100,		// 186
+	0x166900,		// 187
+	0x169900,		// 188
+	0x16C100,		// 189
+	0x16E900,		// 190
+	0x171900,		// 191
+	0x174100,		// 192
+
+	0x161A00,		// 193
+	0x164200,		// 194
+	0x166A00,		// 195
+	0x169A00,		// 196
+	0x16C200,		// 197
+	0x16EA00,		// 198
+	0x171A00,		// 199
+	0x174200,		// 200
+
+	0x161B00,		// 201
+	0x164300,		// 202
+	0x166B00,		// 203
+	0x169B00,		// 204
+	0x16C300,		// 205
+	0x16EB00,		// 206
+	0x171B00,		// 207
+	0x174300,		// 208
+
+	0x161C00,		// 209
+	0x164400,		// 210
+	0x166C00,		// 211
+	0x169C00,		// 212
+	0x16C400,		// 213
+	0x16EC00,		// 214
+	0x171C00,		// 215
+	0x174400,		// 216
+
+	0x161D00,		// 217
+	0x164500,		// 218
+	0x166D00,		// 219
+	0x169D00,		// 220
+	0x16C500,		// 221
+	0x16ED00,		// 222
+	0x171D00,		// 223
+	0x174500,		// 224
+
+	0x161E00,		// 225
+	0x164600,		// 226
+	0x166E00,		// 227
+	0x169E00,		// 228
+	0x16C600,		// 229
+	0x16EE00,		// 230
+	0x171E00,		// 231
+	0x174600,		// 232
+
+	0x161F00,		// 233
+	0x164700,		// 234
+	0x166F00,		// 235
+	0x169F00,		// 236
+	0x16C700,		// 237
+	0x16EF00,		// 238
+	0x171F00,		// 239
+	0x174700,		// 240
+
+	0x162000,		// 241
+	0x164800,		// 242
+	0x167000,		// 243
+	0x16A000,		// 244
+	0x16C800,		// 245
+	0x16F000,		// 246
+	0x172000,		// 247
+	0x174800,		// 248
+
+	0x162100,		// 249
+	0x164900,		// 250
+	0x167100,		// 251
+	0x16A100,		// 252
+	0x16C900,		// 253
+	0x16F100,		// 254
+	0x172100,		// 255
+	0x174900,		// 256
+
+	0x162200,		// 257
+	0x164A00,		// 258
+	0x167200,		// 259
+	0x16A200,		// 260
+	0x16CA00,		// 261
+	0x16F200,		// 262
+	0x172200,		// 263
+	0x174A00,		// 264
+
+	0x162300,		// 265
+	0x164B00,		// 266
+	0x167300,		// 267
+	0x16A300,		// 268
+	0x16CB00,		// 269
+	0x16F300,		// 270
+	0x172300,		// 271
+	0x174B00,		// 272
+
+	0x162400,		// 273
+	0x164C00,		// 274
+	0x167400,		// 275
+	0x16A400,		// 276
+	0x16CC00,		// 277
+	0x16F400,		// 278
+	0x172400,		// 279
+	0x174C00,		// 280
+
+	0x162500,		// 281
+	0x164D00,		// 282
+	0x167500,		// 283
+	0x16A500,		// 284
+	0x16CD00,		// 285
+	0x16F500,		// 286
+	0x172500,		// 287
+	0x174D00,		// 288
+
+	0x162600,		// 289
+	0x164E00,		// 290
+	0x167600,		// 291
+	0x16A600,		// 292
+	0x16CE00,		// 293
+	0x16F600,		// 294
+	0x172600,		// 295
+	0x174E00,		// 296
+
+	0x162700,		// 297
+	0x164F00,		// 298
+	0x167700,		// 299
+	0x16A700,		// 300
+	0x16CF00,		// 301
+	0x16F700,		// 302
+	0x172700,		// 303
+	0x174F00,		// 304
+
+	0x162800,		// 305
+	0x165000,		// 306
+	0x167800,		// 307
+	0x16A800,		// 308
+	0x16D000,		// 309
+	0x16F800,		// 310
+	0x172800,		// 311
+	0x175000,		// 312
+
+	0x162900,		// 313
+	0x165100,		// 314
+	0x167900,		// 315
+	0x16A900,		// 316
+	0x16D100,		// 317
+	0x16F900,		// 318
+	0x172900,		// 319
+	0x175100,		// 320
+			};
 			this.tsetpal_address = 0x17AA00;
 			this.tsettbl_address = 0x2F121B;
+			this.localtset_address = 0x175200;
 		}
 
 		public int[] getTiles(int row, int start, int length) {
-			this.address = this.all_addresses[row % 8] + start;
+			this.address = this.all_addresses[row] + start;
 			// this.rom.seek(this.address);
-
+			
 			int[] output = new int[length];
 			for (int i = 0; i < output.length; i++) {
 				int read_byte = rom.read(address + i);
@@ -561,11 +926,15 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 
 		public int[] getTsetPal(int sectorx, int sectory) {
 			this.address = this.tsetpal_address + (sectory * ((width + 1) / sector_width)) + sectorx;
-			String tsetpal_data = Integer.toBinaryString(rom.read(this.address));
+			/*String tsetpal_data = Integer.toBinaryString(rom.read(this.address));
 			System.out.println("tstpal_data:" + tsetpal_data + " Address: " + Integer.toHexString(this.address));
 			int tileset = Integer.parseInt(tsetpal_data.substring(0, 5), 2);
 			int palette = Integer.parseInt(tsetpal_data.substring(6, 8), 2);
-			System.out.println("tsetpal_data: " + tsetpal_data + " tileset: " + tileset + " palette: " + palette);
+			System.out.println("tsetpal_data: " + tsetpal_data + " tileset: " + tileset + " palette: " + palette);*/
+			int tsetpal_data = rom.read(this.address);
+			int palette = tsetpal_data & 0x7;
+			int tileset = (tsetpal_data & 0xf8) >> 3;
+			//System.out.println("palette: " + Integer.toBinaryString(palette) + " tileset: " + Integer.toBinaryString(tileset) + ";");
 			int[] tsetpal = new int[] { tileset, palette };
 			return tsetpal;
 		}
@@ -573,16 +942,29 @@ public class MapEditor extends EbHackModule implements ActionListener, PropertyC
 		public int getDrawTileset(int mapTset) {
 			if ((mapTset > map_tsets) || (mapTset < 0)) { return -1; }
 			this.address = this.tsettbl_address + (mapTset * 2);
-			System.out.println(Integer.toHexString(this.address));
+			// System.out.println(Integer.toHexString(this.address));
 			int drawTset = rom.read(this.address);
 			return drawTset;
 			//return 0;
 		}
+
+		public int getLocalTileset(int gltx, int glty) {
+			this.address = this.localtset_address + (((glty - (glty % 4)) / 4) * (this.width + 1)) + gltx;
+			int bit_pos = (glty % 4) * 2;
+			// int logical_and = (2 ^ bit_pos) + (2 ^ (bit_pos + 1));
+			int logical_and = (1 << bit_pos) + (1 << (bit_pos + 1));
+			System.out.println("address: " + Integer.toHexString(this.address) + " glty: " + glty + " bit_pos: " + bit_pos + " logical_and: " + Integer.toBinaryString(logical_and));
+			int local_tset = (rom.read(this.address) & logical_and) >> bit_pos;
+			
+			return local_tset;
+			//return 0;
+		}
+			
 		/*public Image getTileImage(int tset, int tile, int pallete) {
 			// TileEditor.Tileset tile_data = new TileEditor.Tileset(MAP_TILESETS[tset], TILESET_NAMES[MAP_TILESETS[tset]], this.hm);
 			TileEditor.Tileset tset_class = TileEditor.tilesets[MAP_TILESETS[tset]];
 			return tset_class.getArrangementImage(tile, pallete, false);
 		}*/
-
+			
 	}
 }
