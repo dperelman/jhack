@@ -235,7 +235,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		}
 		add.setEnabled(flagGroup.getSelectedIndex() != -1);
 		delGroup.setEnabled(flagGroup.getSelectedIndex() != -1);
-		flag.setEnabled(flagGroup.getSelectedIndex() != -1);
+		flag.setEditable(flagGroup.getSelectedIndex() != -1);
 		reverse.setEnabled(flagGroup.getSelectedIndex() != -1);
 		page.setEnabled(flagGroup.getSelectedIndex() != -1);
 		if (flagGroup.getSelectedIndex() == -1)
@@ -262,9 +262,10 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 					flagGroup.addItem("Group #" + i);
 				flagGroup.setSelectedIndex(0);
 				flagGroup.addActionListener(this);
-				flag.setText(Integer.toHexString(entry.getFlag() & 0xffff));
-				reverse.setSelected(entry.isFlagReversed());
 			}
+			
+			flag.setText(Integer.toHexString(entry.getFlag() & 0xffff));
+			reverse.setSelected(entry.isFlagReversed());
 			
 			if (changingTileset || updatePage)
 			{
