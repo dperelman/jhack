@@ -480,10 +480,7 @@ public class MapEditor extends EbHackModule implements ActionListener
     	    			"Changes were not saved.");
     	}
     	else
-    	{
-        	EbMap.loadSpriteData(rom);
-        	EbMap.loadDoorData(rom);
-        	
+    	{       	
         	EbMap.writeMapChanges(rom);
         	EbMap.writeLocalTilesetChanges(rom);
         	EbMap.writeSectorData(rom);
@@ -503,8 +500,6 @@ public class MapEditor extends EbHackModule implements ActionListener
         	if (doorWrite && spWrite)
         		JOptionPane.showMessageDialog(mainWindow,
         			"Saved successfully!");
-        	EbMap.reset();
-        	readFromRom();
     	}
     }    
     
@@ -3248,8 +3243,6 @@ public class MapEditor extends EbHackModule implements ActionListener
         		System.out.println(errorsNum + " sprite entry error"
         				+ (errorsNum > 1 ? "s" : "" ) + " found, see Errors menu "
 						+ "in Map Editor for details.");
-        				
-        		
         }
         
         public static SpriteLocation getSpriteLocation(int areaNum, int num)
@@ -4381,8 +4374,9 @@ public class MapEditor extends EbHackModule implements ActionListener
     		int tilex = newselectedx / MapEditor.tileWidth;
     		int tiley = newselectedy / MapEditor.tileHeight;
     		
-    		this.selected = ((scroll.getValue() + tilex)
-    				* (height + 1)) + tiley;
+    		if ((tilex <= width) && (tiley <= height))
+    			this.selected = ((scroll.getValue() + tilex)
+        				* (height + 1)) + tiley;
     	}
     	
     	public void setSelected(int selected)
