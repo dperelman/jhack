@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -609,6 +610,25 @@ public abstract class AbstractRom
         for (int i = 0; i < length; i++)
         {
             returnValue[i] = this.read(offset + i);
+        }
+        return returnValue;
+    }
+    
+    /**
+     * Reads a <code>List</code> from <code>offset</code> in the rom.
+     * 
+     * @param offset Where to read from.
+     * @param length Number of bytes to read.
+     * @return <code>ArrayList</code> at <code>offset</code> with a length of
+     *         <code>length</code>. If
+     *         <code>offset &gt; the rom.length</code> then it is -1.
+     */
+    public ArrayList readList(int offset, int length)
+    {
+        ArrayList returnValue = new ArrayList();
+        for (int i = 0; i < length; i++)
+        {
+            returnValue.add(new Integer(this.read(offset + i)));
         }
         return returnValue;
     }
