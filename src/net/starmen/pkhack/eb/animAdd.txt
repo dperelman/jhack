@@ -1,0 +1,49 @@
+     START     |       END      |         EFFECT
+-----------------------------------------------------------------------
+CC2E19 - C3019 | CC4056 - C4256 | PSI Special (Gamma level)
+CC4057 - C4257 | CC4D52 - C4F52 | PSI Starstorm (Omega level)
+CC4D53 - C4F53 | CC597A - C5B7A | PSI Special (Beta level)
+CC597B - C5B7B | CC638F - C658F | PSI Special (Omega level)
+CC6390 - C6590 | CC6D76 - C6F76 | PSI Flash (Omega level)
+CC6D77 - C6F77 | CC760A - C780A | Paralysis (Omega level)
+CC760B - C780B | CC7E9D - C809D | PSI Special (Alpha level)
+CC7E9E - C809E | CC8628 - C8828 | PSI Fire (Gamma level)
+CC8629 - C8829 | CC8D85 - C8F85 | PSI Starstorm (Alpha level)
+CC8D86 - C8F86 | CC94DE - C96DE | ITEM - Hungry HP-Sucker
+CC94DF - C96DF | CC9B44 - C9D44 | Hypnosis (Omega level)
+CC9B45 - C9D45 | CCA12B - CA32B | PSI Magnet (Omega level)
+CCA12C - CA32C | CCA6B8 - CA8B8 | ITEM - Shield Killer
+CCA6B9 - CA8B9 | CCAC24 - CAE24 | PSI Fire (Omega level)
+        *** GAP 1 ***
+CCB12F - CB32F | CCB612 - CB812 | Defense Down (Omega level)
+        *** GAP 2 ***
+CCBAC7 - CBCC7 | CCBF2C - CC12C | ITEM - HP-Sucker
+CCBF2D - CC12D | CCC32E - CC52E | PSI Fire (Beta level)
+CCC32F - CC52F | CCC700 - CC900 | ITEM - Counter-PSI Unit
+CCC701 - CC901 | CCCAAC - CCCAC | PSI Fire (Alpha level)
+CCCAAD - CCCAD | CCCE56 - CD056 | PSI Freeze (Omega level)
+CCCE57 - CD057 | CCD1C6 - CD3C6 | PSI Thunder (Gamma level, Omega level)
+CCD1C7 - CD3C7 | CCD4FA - CD6FA | Paralysis (Alpha level)
+CCD4FB - CD6FB | CCD81F - CDA1F | PSI Flash (Gamma level)
+CCD820 - CDA20 | CCDB26 - CDD26 | Brainshock (Omega level)
+        *** GAP 3 ***
+CCDDF9 - CDFF9 | CCE0A0 - CE2A0 | Brainshock (Alpha level)
+CCE0A1 - CE2A1 | CCE31C - CE51C | PSI Magnet (Alpha level)
+        *** GAP 4 ***
+CCE56D - CE76D | CCE78A - CE98A | PSI Freeze (Gamma level)
+CCE78B - CE98B | CCE96B - CEB6B | PSI Freeze (Beta level)
+CCE96C - CEB6C | CCEB3E - CED3E | PSI Flash (Beta level)
+CCEB3F - CED3F | CCED0D - CEF0D | PSI Freeze (Alpha level)
+CCED0E - CEF0E | CCEEB3 - CF0B3 | PSI Thunder (Alpha level, Beta level)
+CCEEB4 - CF0B4 | CCF04C - CF24C | Hypnosis (Alpha level)
+        *** GAP 5 ***
+CCF1E5 - CF3E5 | CCF357 - CF557 | Defense Down (Alpha level)
+CCF358 - CF558 | CCF47E - CF67E | PSI Flash (Alpha level)
+
+GAPS
+----
+1. CAE25 to CB12E = Graphics
+2. CB813 to CBCC7 = Graphics
+3. CDD27 to CDFF8 = Graphics
+4. CE51D to CE76C = Graphics
+5. CF24D to CF3E4 = Descriptive info (12-byte entries); see CF24D.txt

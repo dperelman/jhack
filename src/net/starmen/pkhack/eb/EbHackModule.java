@@ -50,12 +50,23 @@ public abstract class EbHackModule extends HackModule
     public final static String[] sptNames =
         new String[SpriteEditor.NUM_ENTRIES];
     /**
-     * Number of effects.
+     * Number of PSI.
      * 
      * @see #effects
      * @see #actionType
      */
     public final static int NUM_PSI = 52;
+    /**
+     * Number of battle animations.
+     * 
+     * @see #effects
+     * @see #actionType
+     */
+    public final static int NUM_BA = 34;
+    /**
+     * List of battle animation names
+     */
+    public final static String[] baNames = new String[NUM_BA];
     /**
      * List of PSI names. It is used by enemies editor for action arguements of
      * type TYPE_PSI.
