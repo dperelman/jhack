@@ -118,6 +118,15 @@ public class XMLPreferences
             }
         }
     }
+    
+    private String correctName(String name)
+    {
+        name = name.replace(' ', '_');
+        name = name.replace('\'', '_');
+        name = name.replace('(', '-');
+        name = name.replace(')', '-');
+        return name;
+    }
 
     /**
      * Returns the specified preference or null if the preference is not set.
@@ -127,7 +136,7 @@ public class XMLPreferences
      */
     public String getValue(String name)
     {
-        name = name.replace(' ', '_');
+        name = correctName(name);
         Element e = this.getElementById(name);
         if (e != null)
             return e.getAttribute("value");
@@ -171,7 +180,7 @@ public class XMLPreferences
     {
         if (name == null) name = "null";
         if (value == null) value = "null";
-        name = name.replace(' ', '_');
+        name = correctName(name);
         Element e;
         if ((e = getElementById(name)) == null)
         {
@@ -238,7 +247,7 @@ public class XMLPreferences
      */
     public boolean removeValue(String name)
     {
-        name = name.replace(' ', '_');
+        name = correctName(name);
         Element e;
         if ((e = getElementById(name)) != null)
         {
