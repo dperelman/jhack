@@ -412,7 +412,7 @@ public class OutputStreamViewer
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
-        errDia.setVisible(enabled);
+        errDia.setVisible(enabled && !error);
     }
 
     public boolean isEnabled()
