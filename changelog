@@ -8,6 +8,7 @@ NEXT VERSION (after v0.5.3):
 # Map Editor: added links to other editors at the top
 # Map Editor: added event-based map changes viewing option
 # Music/Flags Correlations Editor: BUGFIX: you can add correlations even if there are none
+# Map Editor: BUGFIX: can recover from and fix bad sprite entries
 
 v0.5.3:
 # A few SPT names additions from JeffMan
