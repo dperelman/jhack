@@ -320,6 +320,17 @@ public class TileEditor extends EbHackModule implements ActionListener
         }
 
         /**
+         * Returns the requested palette.
+         * 
+         * @param number used to identify the palette internally
+         * @return the palette
+         */
+        public Palette getPalette(int palette)
+        {
+        	return palettes[palette];
+        }
+        
+        /**
          * Finds the internal palette number used for the specified map palette.
          * 
          * @param mtileset map tileset number
