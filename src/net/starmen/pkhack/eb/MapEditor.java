@@ -344,7 +344,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
             {
             	int newpal = ((Number) paletteField.getValue()).intValue();
             	if (((newpal >= 0) && (newpal <= maxpals)) &&
-            			(gfxcontrol.getModeProps()[2] != 1))
+            			(gfxcontrol.getModeProps()[2] == 1))
             	{
             		palette = newpal;
                 	int[] sectorxy = gfxcontrol.getSectorxy();
