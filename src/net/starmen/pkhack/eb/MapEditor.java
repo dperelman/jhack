@@ -71,14 +71,14 @@ public class MapEditor extends EbHackModule implements ActionListener,
     private JFrame mainWindow;
     private int palette = 0;
     private int music = 0;
-    private static int sectorWidth = 8;
-    private static int sectorHeight = 4;
-    private static int widthInSectors = 32;
-    private static int heightInSectors = 80;
-    private static int width = (widthInSectors * sectorWidth) - 1;
-    private static int height = (heightInSectors * sectorHeight) - 1;
-    private static int tileWidth = 32;
-    private static int tileHeight = 32;
+    public static int sectorWidth = 8;
+    public static int sectorHeight = 4;
+    public static int widthInSectors = 32;
+    public static int heightInSectors = 80;
+    public static int width = (widthInSectors * sectorWidth) - 1;
+    public static int height = (heightInSectors * sectorHeight) - 1;
+    public static int tileWidth = 32;
+    public static int tileHeight = 32;
     private int screenWidth = 24;
     private int screenHeight = 12;
     private int editHeight = 3;
@@ -105,7 +105,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     // 10, 10, 11, 17, 10, 10, 10, 10, 18, 16, 12, 11, 11, 11, 15, 14, 19, 13,
     // 13, 13, 13, 0 };
 
-    private EbMap mapcontrol;
+    // private EbMap EbMap;
     private MapGraphics gfxcontrol;
     private EditBox editbox;
     private DoorEditor doorEditor;
@@ -133,7 +133,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         for (int i = 0; i < map_tsets; i++)
         {
             tList_names[i] = i + " - "
-                + TILESET_NAMES[mapcontrol.getDrawTileset(i)];
+                + TILESET_NAMES[EbMap.getDrawTileset(rom, i)];
         }
         tilesetList = new JComboBox(tList_names);
         tilesetList.addItemListener(this);
@@ -292,7 +292,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			        int[][] maparray = new int[screenHeight][screenWidth];
                             for (int i = 0; i < screenHeight; i++)
                             	maparray[i] = 
-                                	mapcontrol.getTiles(i + gfxcontrol.getMapY(),
+                                	EbMap.getTiles(rom, i + gfxcontrol.getMapY(),
                                 			gfxcontrol.getMapX(), screenWidth);
                             gfxcontrol.setMapArray(maparray);        			        
         			        gfxcontrol.remoteRepaint();
@@ -312,8 +312,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
         gfxcontrol
             .setPreferredSize(new Dimension((MapEditor.tileWidth * screenWidth)
                 + 1, (MapEditor.tileHeight * screenHeight) + 1));
-        editbox.setPreferredSize(new Dimension((editWidth + 1) * MapEditor.tileWidth,
-        		(editHeight + 1) * MapEditor.tileHeight));
+        editbox.setPreferredSize(new Dimension(
+        		(editWidth + 1) * MapEditor.tileWidth + 1,
+        		(editHeight + 1) * MapEditor.tileHeight + 1));
         gfxListener gfxEars = new gfxListener();
         gfxcontrol.addMouseListener(gfxEars);
         gfxcontrol.addMouseMotionListener(gfxEars);
@@ -360,8 +361,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
         		screenWidth, 0, 1024 / (editHeight + 1));
         modeMenu = new JMenu("Mode");
     	
-        mapcontrol = new EbMap(this);
-        gfxcontrol = new MapGraphics(0, true, true, 
+        // EbMap = new EbMap(this);
+        gfxcontrol = new MapGraphics(this, 0, true, true, 
         		xField, yField, scrollh, scrollv,
 				modeMenu);
         editbox = new EditBox(scrollh2);
@@ -374,9 +375,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
     	JOptionPane.showMessageDialog(mainWindow,
     			"Everything but map changes will be saved.\n"
     			+ "Map changes are saved immediately");
-    	mapcontrol.writeSectorData();
-    	boolean doorWrite = mapcontrol.writeDoors();
-    	boolean spWrite = mapcontrol.writeSprites();
+    	EbMap.writeSectorData(rom);
+    	boolean doorWrite = EbMap.writeDoors(this);
+    	boolean spWrite = EbMap.writeSprites(this);
     	if (! doorWrite)
     		JOptionPane.showMessageDialog(mainWindow,
         			"This is so embarassing!\n"
@@ -406,7 +407,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
                     int[][] maparray = new int[screenHeight][screenWidth];
                     for (int i = 0; i < screenHeight; i++)
                     {
-                        maparray[i] = mapcontrol.getTiles(
+                        maparray[i] = EbMap.getTiles(rom, 
                         		i + gfxcontrol.getMapY(),
 								gfxcontrol.getMapX(), screenWidth);
                     }
@@ -429,7 +430,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
                     int[][] maparray = new int[screenHeight][screenWidth];
                     for (int i = 0; i < screenHeight; i++)
                     {
-                        maparray[i] = mapcontrol.getTiles(
+                        maparray[i] = EbMap.getTiles(rom, 
                         		i + gfxcontrol.getMapY(),
 								gfxcontrol.getMapX(), screenWidth);
                     }
@@ -452,7 +453,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
             	{
             		palette = newpal;
                 	int[] sectorxy = gfxcontrol.getSectorxy();
-                	mapcontrol.setPal(sectorxy[0], sectorxy[1], newpal);
+                	EbMap.setPal(sectorxy[0], sectorxy[1], newpal);
                 	gfxcontrol.remoteRepaint();
             	}
             	else
@@ -469,7 +470,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
             	{
             		music = newMusic & 0xff;
                 	int[] sectorxy = gfxcontrol.getSectorxy();
-                	mapcontrol.setMusic(
+                	EbMap.setMusic(
                 			sectorxy[0], sectorxy[1], music);
                 	gfxcontrol.remoteRepaint();
             	}
@@ -502,17 +503,17 @@ public class MapEditor extends EbHackModule implements ActionListener,
 				&& (gfxcontrol.knowsSector()))
     	{
 			int[] sectorxy = gfxcontrol.getSectorxy();
-			mapcontrol.setTset(sectorxy[0], sectorxy[1],
+			EbMap.setTset(sectorxy[0], sectorxy[1],
 					tilesetList.getSelectedIndex());		
 			gfxcontrol.remoteRepaint();
 			
-			int tset = mapcontrol.getTset(sectorxy[0], sectorxy[1]);
-			int pal = mapcontrol.getPal(sectorxy[0], sectorxy[1]);
+			int tset = EbMap.getTset(sectorxy[0], sectorxy[1]);
+			int pal = EbMap.getPal(sectorxy[0], sectorxy[1]);
             if (gfxcontrol.getModeProps()[2] == 1)
             {
             	boolean isSame = editbox.setTsetPal(
-            			mapcontrol.getDrawTileset(tset),
-                        TileEditor.tilesets[mapcontrol.getDrawTileset(
+            			EbMap.getDrawTileset(rom, tset),
+                        TileEditor.tilesets[EbMap.getDrawTileset(rom, 
                         		tset)].getPaletteNum(tset,
                         				pal));
             	if (! isSame)
@@ -605,13 +606,13 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			    JOptionPane.YES_NO_OPTION);
         		if (sure == JOptionPane.YES_OPTION)
         		{
-        			mapcontrol.nullSpriteData();
+        			EbMap.nullSpriteData();
         			gfxcontrol.remoteRepaint();
         		}
 			}
 			else if (ac.equals(RESET_TILE_IMAGES))
 			{
-				mapcontrol.resetTileImages();
+				EbMap.resetTileImages();
 				if (gfxcontrol.getModeProps()[1] >= 2)
 				{
 					gfxcontrol.remoteRepaint();
@@ -620,7 +621,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 			}
 			else if (ac.equals(RESET_SPRITE_IMAGES))
 			{
-				mapcontrol.resetSpriteImages();
+				EbMap.resetSpriteImages();
 				if (gfxcontrol.getModeProps()[3] >= 1)
 					gfxcontrol.remoteRepaint();
 			}
@@ -731,7 +732,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 	int[] areaXY =
                 		gfxcontrol.getAreaXY(mousex, mousey);
                 	TPTEditor.TPTEntry tpt = 
-                		TPTEditor.tptEntries[mapcontrol.getSpriteTpt(
+                		TPTEditor.tptEntries[EbMap.getSpriteTpt(
 							areaXY[0], areaXY[1], spNum)];
             		movingSpriteInfo = 
             			new int[] {
@@ -769,7 +770,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         		}
         		
         		short tpt =
-        			mapcontrol.getSpriteTpt(movingSpriteInfo[0],
+        			EbMap.getSpriteTpt(movingSpriteInfo[0],
         					movingSpriteInfo[1],
 							movingSpriteInfo[2]);
         		int[] spLocXY =
@@ -782,11 +783,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			spLocXY[1] = MapEditor.heightInSectors - 1;
         		else if (spLocXY[1] < 0)
         			spLocXY[1] = 0;
-        		mapcontrol.removeSprite(
+        		EbMap.removeSprite(
         				movingSpriteInfo[0],
 						movingSpriteInfo[1],
         				movingSpriteInfo[2]);
-        		mapcontrol.addSprite(spLocXY[0], spLocXY[1],
+        		EbMap.addSprite(spLocXY[0], spLocXY[1],
         				(short) spLocXY[2], (short) spLocXY[3],
 						tpt);
         		movingSprite = false;
@@ -813,7 +814,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
             		int mapy = e.getY() / MapEditor.tileHeight;
             		if (e.getModifiers() == 17)
             		{
-            			int selected = mapcontrol.getTile(
+            			int selected = EbMap.getTile(rom,
             					mapx + gfxcontrol.getMapX(),
 								mapy + gfxcontrol.getMapY());
             			int selectedPos;
@@ -835,11 +836,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 			localtset++;
                 		}
                 		
-                		mapcontrol.changeTile(
+                		EbMap.changeTile(rom,
                 				gfxcontrol.getMapX() + mapx,
     							gfxcontrol.getMapY() + mapy, tile);
                 		gfxcontrol.changeMapArray(mapx, mapy, tile);
-                		mapcontrol.setLocalTileset(
+                		EbMap.setLocalTileset(rom,
                 				gfxcontrol.getMapX() + mapx,
     							gfxcontrol.getMapY() + mapy,
                 				localtset);
@@ -894,7 +895,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     								PopupListener.PASTE_SPRITE, 
     								popupListener));
                 		String tpt = addZeros(Integer.toHexString(
-                				mapcontrol.getSpriteTpt(
+                				EbMap.getSpriteTpt(
                 				spLoc[0], spLoc[1], spNum)),4);
                 		popup.add(EbHackModule.createJMenuItem(
                 				"Switch TPT entry (" + tpt + ")",
@@ -963,7 +964,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     								PopupListener.PASTE_SPRITE, 
     								popupListener));*/
                 		String dest = Integer.toString(
-                				mapcontrol.getDoorLocation(
+                				EbMap.getDoorLocation(
                 						doorCoords[0], doorCoords[1], num)
 										.getDestIndex());
                 		popup.add(EbHackModule.createJMenuItem(
@@ -1001,9 +1002,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
                     int sectory = getSectorXorY(getTileXorY(mousey,
                         MapEditor.tileHeight) + gfxcontrol.getMapY(), MapEditor.sectorHeight);
                     
-                    int tset = mapcontrol.getTset(sectorx, sectory);
-                    int pal = mapcontrol.getPal(sectorx, sectory);
-                    int music = mapcontrol.getMusic(sectorx, sectory);
+                    int tset = EbMap.getTset(sectorx, sectory);
+                    int pal = EbMap.getPal(sectorx, sectory);
+                    int music = EbMap.getMusic(sectorx, sectory);
                     int[] modeprops = gfxcontrol.getModeProps();
                     tilesetList.setSelectedIndex(tset);
                     paletteField.setValue(new Integer(pal));
@@ -1014,8 +1015,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
                     if (modeprops[2] == 1)
                     {
                     	boolean isSame = editbox.setTsetPal(
-                    			mapcontrol.getDrawTileset(tset),
-                                TileEditor.tilesets[mapcontrol.getDrawTileset(
+                    			EbMap.getDrawTileset(rom, tset),
+                                TileEditor.tilesets[EbMap.getDrawTileset(rom, 
                                 		tset)].getPaletteNum(tset,
                                 				pal));
                     	if (! isSame)
@@ -1074,7 +1075,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         		String ac = e.getActionCommand();
         		if (ac.equals(ADD_SPRITE))
         		{
-        			mapcontrol.addSprite(areaX, areaY,
+        			EbMap.addSprite(areaX, areaY,
         					(short) coordX, (short) coordY,
 							(short) 0);
         			gfxcontrol.remoteRepaint();
@@ -1090,14 +1091,14 @@ public class MapEditor extends EbHackModule implements ActionListener,
             			    JOptionPane.YES_NO_OPTION);
             		if (sure == JOptionPane.YES_OPTION)
             		{
-            			mapcontrol.removeSprite(areaX,
+            			EbMap.removeSprite(areaX,
             					areaY, num);
             			gfxcontrol.remoteRepaint();
             		}
         		}
         		else if (ac.equals(CHANGE_TPT))
         		{
-            		short tpt = mapcontrol.getSpriteTpt(
+            		short tpt = EbMap.getSpriteTpt(
             				areaX, areaY, num);
             		String input = JOptionPane.showInputDialog(
                             mainWindow,
@@ -1107,11 +1108,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
             		if (input != null)
             		{
             			short newTpt = (new Short(input)).shortValue();
-            			short[] spriteXY = mapcontrol.getSpriteXY(
+            			short[] spriteXY = EbMap.getSpriteXY(
             					areaX, areaY, num);
-            			mapcontrol.removeSprite(
+            			EbMap.removeSprite(
             					areaX, areaY, num);
-            			mapcontrol.addSprite(
+            			EbMap.addSprite(
             					areaX, areaY,
     							spriteXY[0], spriteXY[1],
     							newTpt);
@@ -1120,7 +1121,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         		}
         		else if (ac.equals(EDIT_TPT))
         		{
-            		short tpt = mapcontrol.getSpriteTpt(
+            		short tpt = EbMap.getSpriteTpt(
             				areaX, areaY, num);
         			net.starmen.pkhack.JHack.main.showModule(
                 			TPTEditor.class, new Integer (tpt));
@@ -1128,40 +1129,40 @@ public class MapEditor extends EbHackModule implements ActionListener,
         		}
         		else if (ac.equals(COPY_SPRITE))
         		{
-        			copyTpt = mapcontrol.getSpriteTpt(
+        			copyTpt = EbMap.getSpriteTpt(
         					areaX, areaY, num);
         		}
         		else if (ac.equals(CUT_SPRITE))
         		{
-        			copyTpt = mapcontrol.getSpriteTpt(
+        			copyTpt = EbMap.getSpriteTpt(
         					areaX, areaY, num);
-        			mapcontrol.removeSprite(areaX,
+        			EbMap.removeSprite(areaX,
         					areaY, num);
         			gfxcontrol.remoteRepaint();
         		}
         		else if (ac.equals(PASTE_SPRITE))
         		{
-        			mapcontrol.addSprite(areaX, areaY,
+        			EbMap.addSprite(areaX, areaY,
         					(short) coordX, (short) coordY,
 							copyTpt);
         			gfxcontrol.remoteRepaint();
         		}
         		else if (ac.equals(ADD_DOOR))
         		{
-        			mapcontrol.addDoor(areaX, areaY,
+        			EbMap.addDoor(areaX, areaY,
         					(short) (coordX / 8), (short) (coordY / 8),
 							(byte) 0, (byte) 0);
         			gfxcontrol.remoteRepaint();
         		}
         		else if (ac.equals(DEL_DOOR))
         		{
-        			mapcontrol.removeDoor(areaX, areaY, num);
+        			EbMap.removeDoor(areaX, areaY, num);
         			gfxcontrol.remoteRepaint();
         		}
         		else if (ac.equals(EDIT_DEST))
         		{
         			EbMap.DoorLocation doorLocation =
-        				mapcontrol.getDoorLocation(areaX, areaY, num);
+        				EbMap.getDoorLocation(areaX, areaY, num);
         			doorEditor.show(doorLocation);
         		}
         	}
@@ -1181,14 +1182,14 @@ public class MapEditor extends EbHackModule implements ActionListener,
     public void show()
     {
         super.show();
-        this.reset();
+        // this.reset();
         mainWindow.setVisible(true);
         mainWindow.repaint();
 
         int[][] maparray = new int[screenHeight][screenWidth];
         for (int i = 0; i < screenHeight; i++)
         {
-            maparray[i] = mapcontrol.getTiles(
+            maparray[i] = EbMap.getTiles(rom, 
             		i + gfxcontrol.getMapY(),
 					gfxcontrol.getMapX(), screenWidth);
         }
@@ -1197,14 +1198,14 @@ public class MapEditor extends EbHackModule implements ActionListener,
         
         TPTEditor.readFromRom(this);
         SpriteEditor.readFromRom(rom);
-        mapcontrol.loadDoorData();
+        EbMap.loadDoorData(rom);
         
-        /*if (mapcontrol.isDefaultSprites())
+        /*if (EbMap.isDefaultSprites())
         {
         	JOptionPane.showMessageDialog(mainWindow,
         			"This ROM still has its map data in the default place." +
         			"\nIt will be moved and the rom will be expanded if necessary.");
-        	mapcontrol.moveSpriteData();
+        	EbMap.moveSpriteData();
         }*/
     }
 
@@ -1215,7 +1216,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     
     public void reset()
     {
-    	mapcontrol = new EbMap(this);
+    	EbMap.reset();
     }
 
     public String getDescription()
@@ -1239,6 +1240,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     // Controls the graphics stuff.
     public class MapGraphics extends AbstractButton
     {
+    	private HackModule hm;
         private int[][] maparray;
         private boolean maparrayisset = false;
         // modes: 0 = map editing (text), 1 = map editing (graphics)
@@ -1268,10 +1270,12 @@ public class MapEditor extends EbHackModule implements ActionListener,
 			};
         private int[] spriteProps;
 
-        public MapGraphics(int mode, boolean grid, boolean spriteBoxes,
-        		JFormattedTextField xField, JFormattedTextField yField,
-				JScrollBar xScroll, JScrollBar yScroll, JMenu modeMenu)
+        public MapGraphics(HackModule hm, int mode, boolean grid,
+        		boolean spriteBoxes, JFormattedTextField xField,
+        		 JFormattedTextField yField,JScrollBar xScroll,
+				 JScrollBar yScroll, JMenu modeMenu)
         {
+        	this.hm = hm;
             this.mode = mode;
             this.grid = grid;
             this.spriteBoxes = spriteBoxes;
@@ -1294,7 +1298,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     				&& (getModeProps()[3] == 1))
     		{
     			Image spImage =
-    				mapcontrol.getSpriteImage(spriteProps[2], spriteProps[3]);
+    				EbMap.getSpriteImage(spriteProps[2], spriteProps[3]);
     			g.drawImage(
     					spImage, spriteProps[0], spriteProps[1],
 						this);
@@ -1341,24 +1345,24 @@ public class MapEditor extends EbHackModule implements ActionListener,
                     {
                     	int sectorX = (i2 + x) / sectorWidth;
                     	int sectorY = (i + y) / MapEditor.sectorHeight;
-                    	if (! mapcontrol.isSectorDataLoaded(
+                    	if (! EbMap.isSectorDataLoaded(
                     			sectorX, sectorY))
                     	{
-                    		mapcontrol.loadSectorData(
+                    		EbMap.loadSectorData(rom,
                     				sectorX, sectorY);
                     	}
-                        tile_set = mapcontrol.getDrawTileset(
-                        		mapcontrol.getTset(sectorX, sectorY));
+                        tile_set = EbMap.getDrawTileset(rom, 
+                        		EbMap.getTset(sectorX, sectorY));
                         tile_tile = row2draw[i2]
-                            | (mapcontrol.getLocalTileset(i2 + x, i + y) << 8);
+                            | (EbMap.getLocalTileset(rom, i2 + x, i + y) << 8);
                         tile_pal = 
                         	TileEditor.tilesets[tile_set].getPaletteNum(
-                        			mapcontrol.getTset(sectorX, sectorY),
-									mapcontrol.getPal(sectorX, sectorY));
-                        mapcontrol.loadTileImage(tile_set, tile_tile, tile_pal);
+                        			EbMap.getTset(sectorX, sectorY),
+									EbMap.getPal(sectorX, sectorY));
+                        EbMap.loadTileImage(tile_set, tile_tile, tile_pal);
 
                         g.drawImage(
-                            mapcontrol.getTileImage(tile_set,tile_tile,tile_pal),
+                            EbMap.getTileImage(tile_set,tile_tile,tile_pal),
                             i2 * MapEditor.tileWidth, i * MapEditor.tileHeight,
 							MapEditor.tileWidth, MapEditor.tileHeight, this);
                         if (grid)
@@ -1401,19 +1405,19 @@ public class MapEditor extends EbHackModule implements ActionListener,
                     		if ((((x + i) % MapEditor.sectorWidth) == 0)
                     				|| (i == 0))
                     		{
-                    			if (! mapcontrol.isSpriteDataLoaded(
+                    			if (! EbMap.isSpriteDataLoaded(
                     					(x + i) / MapEditor.sectorWidth,
 										(y + k) / (MapEditor.sectorHeight * 2)))
                     			{
-                    				mapcontrol.loadSpriteData(
+                    				EbMap.loadSpriteData(rom,
                     						(x + i) / MapEditor.sectorWidth,
 											(y + k) / (MapEditor.sectorHeight * 2));
                     			}
-                    			int spritesNum = mapcontrol.getSpritesNum(
+                    			int spritesNum = EbMap.getSpritesNum(
                     					(x + i) / MapEditor.sectorWidth, (y + k) / (MapEditor.sectorHeight * 2));
-                            	short[][] spriteLocs = mapcontrol.getSpriteLocs(
+                            	short[][] spriteLocs = EbMap.getSpriteLocs(
                             			(x + i) / MapEditor.sectorWidth, (y + k) / (MapEditor.sectorHeight * 2));
-                            	short[] spriteTpts = mapcontrol.getSpriteTpts(
+                            	short[] spriteTpts = EbMap.getSpriteTpts(
                             			(x + i) / MapEditor.sectorWidth, (y + k) / (MapEditor.sectorHeight * 2));
                             	// this.spriteLocs = new int[spriteData[0]][5];
                                 for (int j = 0; j < spritesNum; j++)
@@ -1423,7 +1427,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
                                 	int spriteNum = tptEntry.getSprite();
                                 	int spriteDrawY = spriteLocs[j][1];
                                 	int spriteDrawX = spriteLocs[j][0];
-                                	mapcontrol.loadSpriteImage(
+                                	EbMap.loadSpriteImage(hm,
                                 			spriteNum, tptEntry.getDirection());
                                 	SpriteEditor.SpriteInfoBlock sib =
                                 		SpriteEditor.sib[spriteNum];
@@ -1441,7 +1445,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
                                 	}
                                 	
                                 	g.drawImage(
-                                			mapcontrol.getSpriteImage(
+                                			EbMap.getSpriteImage(
                                 					spriteNum,tptEntry.getDirection()),
                 							spriteDrawX + (i * MapEditor.tileWidth),
         									spriteDrawY + (k * MapEditor.tileHeight),
@@ -1452,10 +1456,10 @@ public class MapEditor extends EbHackModule implements ActionListener,
                                 		g2d.draw(new Rectangle2D.Double(
                                     			spriteDrawX + (i * MapEditor.tileWidth) - 1,
     											spriteDrawY + (k * MapEditor.tileHeight) - 1,
-    											mapcontrol.getSpriteImage(
+    											EbMap.getSpriteImage(
     													spriteNum,tptEntry.getDirection())
     																	.getWidth(this) + 1,
-    											mapcontrol.getSpriteImage(
+    											EbMap.getSpriteImage(
     													spriteNum,tptEntry.getDirection())
     																	.getHeight(this) + 1));
                                 	}
@@ -1478,21 +1482,21 @@ public class MapEditor extends EbHackModule implements ActionListener,
                     		if ((((x + i) % MapEditor.sectorWidth) == 0)
                     				|| (i == 0))
                     		{
-                    			if (! mapcontrol.isDoorDataLoaded(
+                    			if (! EbMap.isDoorDataLoaded(
                     					(x + i) / MapEditor.sectorWidth,
 										(y + k) / (MapEditor.sectorHeight * 2)))
                     			{
-                    				mapcontrol.loadDoorData(
+                    				EbMap.loadDoorData(rom,
                     						(x + i) / MapEditor.sectorWidth,
 											(y + k) / (MapEditor.sectorHeight * 2));
                     			}
-                    			int doorsNum = mapcontrol.getDoorsNum(
+                    			int doorsNum = EbMap.getDoorsNum(
                     					(x + i) / MapEditor.sectorWidth,
 										(y + k) / (MapEditor.sectorHeight * 2));
 
                                 for (int j = 0; j < doorsNum; j++)
                                 {
-                                	short[] doorXY = mapcontrol.getDoorXY(
+                                	short[] doorXY = EbMap.getDoorXY(
                                 			(x + i) / MapEditor.sectorWidth,
 											(y + k) / (MapEditor.sectorHeight * 2),
 											j);
@@ -1545,7 +1549,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         {
         	int[] spLocXY = getCoords(spriteX, spriteY);
         	
-        	return mapcontrol.findSprite(
+        	return EbMap.findSprite(hm,
         			spLocXY[0], spLocXY[1],
 					(short) spLocXY[2], (short) spLocXY[3]);
         }
@@ -1554,7 +1558,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         {
         	int[] spLocXY = getCoords(spriteX, spriteY);
         	
-        	int spriteNum = mapcontrol.findSprite(
+        	int spriteNum = EbMap.findSprite(hm,
         			spLocXY[0], spLocXY[1],
 					(short) spLocXY[2], (short) spLocXY[3]);
         	if (spriteNum == -1)
@@ -1563,7 +1567,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	}
         	else
         	{
-        		return mapcontrol.getSpriteTpt(
+        		return EbMap.getSpriteTpt(
         				spLocXY[0], spLocXY[1], spriteNum);
         	}
         }
@@ -1572,7 +1576,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         {
         	int[] doorXY = getCoords(doorX, doorY);
         	
-        	return mapcontrol.findDoor(
+        	return EbMap.findDoor(
         			doorXY[0], doorXY[1],
 					(short) doorXY[2], (short) doorXY[3]);
         }
@@ -1725,7 +1729,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
             int[][] maparray = new int[screenHeight][screenWidth];
             for (int i = 0; i < screenHeight; i++)
             {
-                maparray[i] = mapcontrol.getTiles(
+                maparray[i] = EbMap.getTiles(rom, 
                 		i + y, this.x, screenWidth);
             }
             setMapArray(maparray);
@@ -1748,7 +1752,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
             int[][] maparray = new int[screenHeight][screenWidth];
             for (int i = 0; i < screenHeight; i++)
             {
-                maparray[i] = mapcontrol.getTiles(
+                maparray[i] = EbMap.getTiles(rom, 
                 		i + this.y, x, screenWidth);
             }
             setMapArray(maparray);
@@ -1761,10 +1765,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
     }
 
     // Represents the whole EarthBound map and map-related data in the rom.
-    public class EbMap
+    public static class EbMap
     {
-        private EbHackModule hm;
-        private final int[] all_addresses = new int[]{
+        private static final int[] mapAddresses = new int[]{
         // Taken from MrA's Map Editor code. DESPERATELY NEEDS TO BE
             // FORMATTED!!!!!!
             0x160200, // 1
@@ -2127,52 +2130,61 @@ public class MapEditor extends EbHackModule implements ActionListener,
             0x172900, // 319
             0x175100, // 320
         };
-        private final int[][] doorCorrections = {
+        private static final int[][] doorCorrections = {
         		{49,-1},{81,-1},{97,-1},{98,-1},{140,-1},
         		{300,-1},{333,-1},{395,-1},{562,-1},
 				{604,-1},{613,-1},{681,-1},{688,-1},
 				{752,-1},{815,-1},{816,-1},{911,-1},
 				{1136,-1},{1073,-2}
         };
-    	private final int[] doorDestTypes = {
+    	private static final int[] doorDestTypes = {
     			1, -1, 0, -1, -1, 2, 2
     	};
 
-        private int tsetpalAddress = 0x17AA00;
-        private int musicAddress = 0x1cd837;
-        private int dPointersAddress = 0x100200;
-        private int tsettbl_address = 0x2F121B;
-        private int localtset_address = 0x175200;
-        private final int spDataEnd = 0xf8b91;
-        private final int spAsmPointer = 0x2461;
-        private final int spDataBase = 0xf0200; // 2 byte ptr + 0xf0200 
-        private ArrayList[] spData =
+        private static final int tsetpalAddress = 0x17AA00;
+        private static final int musicAddress = 0x1cd837;
+        private static final int dPointersAddress = 0x100200;
+        private static final int tsetTblAddress = 0x2F121B;
+        private static final int localTsetAddress = 0x175200;
+        private static final int spDataEnd = 0xf8b91;
+        private static final int spAsmPointer = 0x2461;
+        private static final int spDataBase = 0xf0200; // 2 byte ptr + 0xf0200 
+        private static ArrayList[] spData =
         	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-        private Sector[] sectorData =
+        private static Sector[] sectorData =
         	new Sector[MapEditor.heightInSectors * MapEditor.widthInSectors];
-        private ArrayList[] doorData =
+        private static ArrayList[] doorData =
         	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-        private int[] oldDoorEntryLengths =
+        private static int[] oldDoorEntryLengths =
         	new int[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-        private ArrayList destData = new ArrayList();
-        private ArrayList destsLoaded = new ArrayList();
-        private ArrayList destsIndexes = new ArrayList();
-        private Image[][][] tileImages =
+        private static ArrayList destData = new ArrayList();
+        private static ArrayList destsLoaded = new ArrayList();
+        private static ArrayList destsIndexes = new ArrayList();
+        private static Image[][][] tileImages =
         	new Image[TILESET_NAMES.length][1024][maxpals];
-        private Image[][] spriteImages =
+        private static Image[][] spriteImages =
         	new Image[SpriteEditor.NUM_ENTRIES][8];
-
-        private AbstractRom rom;
         
-        public EbMap(EbHackModule hm)
+        public static void reset()
         {
-            this.hm = hm;
-            this.rom = hm.rom;
-            
-            correctDoors();
+            spData =
+            	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
+           sectorData =
+            	new Sector[MapEditor.heightInSectors * MapEditor.widthInSectors];
+            doorData =
+            	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
+            oldDoorEntryLengths =
+            	new int[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
+            destData = new ArrayList();
+            destsLoaded = new ArrayList();
+            destsIndexes = new ArrayList();
+            tileImages =
+            	new Image[TILESET_NAMES.length][1024][maxpals];
+            spriteImages =
+            	new Image[SpriteEditor.NUM_ENTRIES][8];
         }
         
-        public void loadTileImage(int loadtset, int loadtile, int loadpalette)
+        public static void loadTileImage(int loadtset, int loadtile, int loadpalette)
         {
             if (tileImages[loadtset][loadtile][loadpalette] == null)
             {
@@ -2181,25 +2193,25 @@ public class MapEditor extends EbHackModule implements ActionListener,
             }
         }
         
-        public Image getTileImage(int loadtset, int loadtile, int loadpalette)
+        public static Image getTileImage(int loadtset, int loadtile, int loadpalette)
         {
         	return tileImages[loadtset][loadtile][loadpalette];
         }
         
-        public void resetTileImages()
+        public static void resetTileImages()
         {
         	tileImages =
             	new Image[TILESET_NAMES.length][1024][maxpals];
         }
         
-        public Image getSpriteImage(int spt, int direction)
+        public static Image getSpriteImage(int spt, int direction)
         {
         	return spriteImages[spt][direction];
         }
         
-        public void loadSpriteImage(int spt, int direction)
+        public static void loadSpriteImage(HackModule hm, int spt, int direction)
         {
-           	if (this.spriteImages[spt][direction] == null)
+           	if (spriteImages[spt][direction] == null)
            	{
            		SpriteEditor.SpriteInfoBlock sib = SpriteEditor.sib[spt];
            		spriteImages[spt][direction] = new SpriteEditor.Sprite(sib
@@ -2207,27 +2219,27 @@ public class MapEditor extends EbHackModule implements ActionListener,
            	}
         }
         
-        public void resetSpriteImages()
+        public static void resetSpriteImages()
         {
         	spriteImages =
             	new Image[SpriteEditor.NUM_ENTRIES][8];
         }
         
-        public void changeTile(int tilex, int tiley, int tile)
+        public static void changeTile(AbstractRom rom, int tilex, int tiley, int tile)
         {
-        	int address = all_addresses[tiley] + tilex;
-        	this.rom.write(address, tile);
+        	int address = mapAddresses[tiley] + tilex;
+        	rom.write(address, tile);
         }
         
-        public int getTile(int x, int y)
+        public static int getTile(AbstractRom rom, int x, int y)
         {
-        	return rom.read(all_addresses[y] + x)
-				| (mapcontrol.getLocalTileset(x, y) << 8);
+        	return rom.read(mapAddresses[y] + x)
+				| (getLocalTileset(rom, x, y) << 8);
         }
 
-        public int[] getTiles(int row, int start, int length)
+        public static int[] getTiles(AbstractRom rom, int row, int start, int length)
         {
-            int address = all_addresses[row] + start;
+            int address = mapAddresses[row] + start;
 
             int[] output = new int[length];
             for (int i = 0; i < output.length; i++)
@@ -2252,14 +2264,14 @@ public class MapEditor extends EbHackModule implements ActionListener,
             return tsetpal;
         }*/
         
-        public boolean isSectorDataLoaded(int sectorX, int sectorY)
+        public static boolean isSectorDataLoaded(int sectorX, int sectorY)
         {
         	return (sectorData[sectorX + 
 						   (sectorY * MapEditor.widthInSectors)]
 						   != null);
         }
         
-        public void loadSectorData(int sectorX, int sectorY)
+        public static void loadSectorData(AbstractRom rom, int sectorX, int sectorY)
         {
         	
             int address = tsetpalAddress 
@@ -2275,49 +2287,49 @@ public class MapEditor extends EbHackModule implements ActionListener,
 							music);
         }
         
-        public int getTset(int sectorX, int sectorY)
+        public static int getTset(int sectorX, int sectorY)
         {
         	return (int) sectorData[sectorX + 
 									(sectorY * MapEditor.widthInSectors)]
 							  .getTileset();
         }
         
-        public int getPal(int sectorX, int sectorY)
+        public static int getPal(int sectorX, int sectorY)
         {
         	return (int) sectorData[sectorX + 
 									(sectorY * MapEditor.widthInSectors)]
 							  .getPalette();
         }
         
-        public int getMusic(int sectorX, int sectorY)
+        public static int getMusic(int sectorX, int sectorY)
         {
         	return (int) sectorData[sectorX + 
 									(sectorY * MapEditor.widthInSectors)]
 							  .getMusic();
         }
         
-        public void setTset(int sectorX, int sectorY, int newTset)
+        public static void setTset(int sectorX, int sectorY, int newTset)
         {
         	sectorData[sectorX + 
 						(sectorY * MapEditor.widthInSectors)]
 				  .setTileset((byte) newTset);
         }
         
-        public void setPal(int sectorX, int sectorY, int newPal)
+        public static void setPal(int sectorX, int sectorY, int newPal)
         {
         	sectorData[sectorX + 
 						(sectorY * MapEditor.widthInSectors)]
 				  .setPalette((byte) newPal);
         }
         
-        public void setMusic(int sectorX, int sectorY, int newMusic)
+        public static void setMusic(int sectorX, int sectorY, int newMusic)
         {
         	sectorData[sectorX + 
 						(sectorY * MapEditor.widthInSectors)]
 				  .setMusic((byte) newMusic);
         }
         
-        public void writeSectorData()
+        public static void writeSectorData(AbstractRom rom)
         {
         	for (int i = 0; i < sectorData.length; i++)
         	{
@@ -2332,20 +2344,18 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	}
         }
 
-        public int getDrawTileset(int mapTset)
+        public static int getDrawTileset(AbstractRom rom, int mapTset)
         {
             if ((mapTset > map_tsets) || (mapTset < 0))
-            {
-                return -1;
-            }
-            int address = tsettbl_address + (mapTset * 2);
+            	return -1;
+            int address = EbMap.tsetTblAddress + (mapTset * 2);
             int drawTset = rom.read(address);
             return drawTset;
         }
 
-        public int getLocalTileset(int gltx, int glty)
+        public static int getLocalTileset(AbstractRom rom, int gltx, int glty)
         {
-            int address = localtset_address
+            int address = localTsetAddress
                 + ((glty / 8) * (MapEditor.width + 1)) + gltx;
             if (((glty / 4) % 2) == 1)
                 address += 0x3000;
@@ -2355,9 +2365,10 @@ public class MapEditor extends EbHackModule implements ActionListener,
             return local_tset;
         }
         
-        public void setLocalTileset(int tilex, int tiley, int newltset)
+        public static void setLocalTileset(
+        		AbstractRom rom, int tilex, int tiley, int newltset)
         {
-        	int address = localtset_address
+        	int address = localTsetAddress
 			    + ((tiley / 8) * (MapEditor.width + 1)) + tilex;
         	if (((tiley / 4) % 2) == 1)
         		address += 0x3000;
@@ -2381,17 +2392,17 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	rom.write(address, newLtsetData);
         }
         
-        public boolean isSpriteDataLoaded(int areaNum)
+        public static boolean isSpriteDataLoaded(int areaNum)
         {
         	return (spData[areaNum] != null);
         }
         
-        public boolean isSpriteDataLoaded(int areaX, int areaY)
+        public static boolean isSpriteDataLoaded(int areaX, int areaY)
         {
         	return isSpriteDataLoaded(areaX + (areaY * MapEditor.widthInSectors));
         }
         
-        public void loadSpriteData(int areaNum)
+        public static void loadSpriteData(AbstractRom rom, int areaNum)
         {
         	int spPtrsAddress = 
         		HackModule.toRegPointer(rom.readMulti(spAsmPointer,3));
@@ -2425,102 +2436,102 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 		(short) (data[5 + (j * 4)] - (sib.width * 4));
                 	short spriteY =
                 		(short) (data[4 + (j * 4)] - (sib.height * 6));
-           			this.spData[areaNum].add(new SpriteLocation(
+           			spData[areaNum].add(new SpriteLocation(
            					tpt, spriteX, spriteY));
            		}
        		}
        	}
         
-        public void loadSpriteData(int areaX, int areaY)
+        public static void loadSpriteData(AbstractRom rom, int areaX, int areaY)
         {
-        	loadSpriteData(areaX + (areaY * MapEditor.widthInSectors));
+        	loadSpriteData(rom, areaX + (areaY * MapEditor.widthInSectors));
         }
 		
-        public short[][] getSpriteLocs(int areaX, int areaY)
+        public static short[][] getSpriteLocs(int areaX, int areaY)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
         	
         	short[][] returnValue = 
-        		new short[this.spData[areaNum].size()][2];
+        		new short[spData[areaNum].size()][2];
         	
-        	for (int i = 0; i < this.spData[areaNum].size(); i++)
+        	for (int i = 0; i < spData[areaNum].size(); i++)
         	{
         		returnValue[i] = new short[] {
-        				((SpriteLocation) this.spData[areaNum].get(i)).getX(),
-						((SpriteLocation) this.spData[areaNum].get(i)).getY()
+        				((SpriteLocation) spData[areaNum].get(i)).getX(),
+						((SpriteLocation) spData[areaNum].get(i)).getY()
         		};
         	}
         	return returnValue;
         }
         
-        public short[] getSpriteTpts(int areaX, int areaY)
+        public static short[] getSpriteTpts(int areaX, int areaY)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
         	
         	short[] returnValue = 
-        		new short[this.spData[areaNum].size()];
+        		new short[spData[areaNum].size()];
         	
-        	for (int i = 0; i < this.spData[areaNum].size(); i++)
+        	for (int i = 0; i < spData[areaNum].size(); i++)
         	{
         		returnValue[i] = 
-        			((SpriteLocation) this.spData[areaNum].get(i)).getTpt();
+        			((SpriteLocation) spData[areaNum].get(i)).getTpt();
         	}
         	return returnValue;
         }
         
-        public short[] getSpriteXY(int areaX, int areaY, int spNum)
+        public static short[] getSpriteXY(int areaX, int areaY, int spNum)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
         	SpriteLocation spLoc = (SpriteLocation) 
-        			this.spData[areaNum].get(spNum);
+        			spData[areaNum].get(spNum);
         	return new short[] { spLoc.getX(), spLoc.getY() };
         }
         
-        public short getSpriteTpt(int areaX, int areaY, int spNum)
+        public static short getSpriteTpt(int areaX, int areaY, int spNum)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
         	return ((SpriteLocation) 
-        			this.spData[areaNum].get(spNum)).getTpt();
+        			spData[areaNum].get(spNum)).getTpt();
         }
         
-        public int getSpritesNum(int areaX, int areaY)
+        public static int getSpritesNum(int areaX, int areaY)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
         	
-        	return this.spData[areaNum].size();
+        	return spData[areaNum].size();
         }
         
-        public void removeSprite(int areaX, int areaY, int spNum)
+        public static void removeSprite(int areaX, int areaY, int spNum)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
-        	this.spData[areaNum].remove(spNum);
+        	spData[areaNum].remove(spNum);
         }
         
-        public void removeSprite(int areaX, int areaY, short spTpt,
+        public static void removeSprite(int areaX, int areaY, short spTpt,
         		byte spX, byte spY)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
-        	this.spData[areaNum].remove(
-        			this.spData[areaNum].indexOf(
+        	spData[areaNum].remove(
+        			spData[areaNum].indexOf(
         					new SpriteLocation(spTpt, spX, spY)));
         }
         
-        public void addSprite(int areaX, int areaY, short newX,
+        public static void addSprite(int areaX, int areaY, short newX,
         		short newY, short newTpt)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
-        	this.spData[areaNum].add(
+        	spData[areaNum].add(
         			new SpriteLocation(newTpt, newX, newY));
         }
         
-        public int findSprite(int areaX, int areaY,
+        public static int findSprite(HackModule hm, int areaX, int areaY,
         		short spriteX, short spriteY)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
-        	for (int i = 0; i < this.spData[areaNum].size(); i++)
+        	for (int i = 0; i < spData[areaNum].size(); i++)
         	{
         		SpriteLocation spLoc = 
-        			(SpriteLocation) this.spData[areaNum].get(i);
+        			(SpriteLocation) spData[areaNum].get(i);
             	TPTEditor.TPTEntry tptEntry = 
             		TPTEditor.tptEntries[spLoc.getTpt()];
             	SpriteEditor.SpriteInfoBlock sib =
@@ -2540,49 +2551,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	return -1;
         }
         
-        /*public void moveSpriteData()
+        public static boolean writeSprites(HackModule hm)
         {
-        	int oldSpDataBase = spDataBase;
-        	spDataBase = spPtrsAddress - spDataAddress;
-        	int oldSpPtrsAddress = spPtrsAddress;
-        	
-        	byte[] newPointerData = new byte[spData.length * 2];
-        	for (int i = 0; i < spData.length; i++)
-        	{
-                int oldPointer = 
-                	rom.readMulti(oldSpPtrsAddress + (i * 2), 2);
-        		if (oldPointer == 0)
-        		{
-        			newPointerData[i * 2] = 0;
-        			newPointerData[1 + (i * 2)] = 0;
-        		}
-        		else
-        		{
-        			int newPointer = oldPointer - oldSpDataBase + spDataBase;
-
-        			newPointerData[i * 2] =
-        				(byte) (newPointer & 0xFF);
-        			newPointerData[1 + (i * 2)] =
-        				(byte) (newPointer / 0x100);
-        		}
-        	}
-
-        	boolean write = hm.writetoFree(newPointerData,
-        			spAsmPointer, 3,
-        			spData.length * 2,
-        			spData.length * 2,
-					true);
-        	System.out.println("moving went ok? " + write);
-        	
-        	rom.write(spDataAddress + spDataBase,
-        			rom.read(spDataAddress + oldSpDataBase,
-        					0x1daa));
-        	spPtrsAddress = HackModule.toRegPointer(
-        			rom.readMulti(spAsmPointer, 3));
-        }*/
-        
-        public boolean writeSprites()
-        {
+        	AbstractRom rom = hm.rom;
         	int spPtrsAddress = 
         		HackModule.toRegPointer(rom.readMulti(spAsmPointer,3));
         	ArrayList spriteData = new ArrayList();
@@ -2592,7 +2563,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	for (int i = 0; i < spData.length; i++)
         	{ 			
         		if (! isSpriteDataLoaded(i))
-        			loadSpriteData(i);
+        			loadSpriteData(rom,i);
         		
     			if (spData[i].size() == 0)
     			{
@@ -2638,7 +2609,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	return true;
         }
         
-        private byte[] toByteArray(ArrayList list)
+        private static byte[] toByteArray(ArrayList list)
         {
             ListIterator iter = list.listIterator();
             // get the total size of all elements (flattened size)
@@ -2664,19 +2635,19 @@ public class MapEditor extends EbHackModule implements ActionListener,
             return retVal;
           }
         
-        public void nullSpriteData()
+        public static void nullSpriteData()
         {
         	for (int i = 0; i < spData.length; i++)
         		spData[i] = new ArrayList();
         }
         
-        public void loadDoorData()
+        public static void loadDoorData(AbstractRom rom)
         {
         	for (int i = 0; i < (MapEditor.heightInSectors / 2) * MapEditor.widthInSectors; i++)
-        		loadDoorData(i);
+        		loadDoorData(rom, i);
         }
         
-        public void loadDoorData(int areaNum)
+        public static void loadDoorData(AbstractRom rom, int areaNum)
         {
         	int ptr = HackModule.toRegPointer(rom.readMulti(
         			dPointersAddress + (areaNum * 4), 4));
@@ -2696,7 +2667,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
        			else
        			{
        				int destIndex =
-       					loadDestData(0xf0200 + doorPtr, doorType);
+       					loadDestData(rom, 0xf0200 + doorPtr, doorType);
        				doorData[areaNum].add(new DoorLocation(
            					doorX, doorY, doorType, 
 							doorPtr, destIndex));
@@ -2704,31 +2675,31 @@ public class MapEditor extends EbHackModule implements ActionListener,
        		}
         }
         
-        public void loadDoorData(int areaX, int areaY)
+        public static void loadDoorData(AbstractRom rom, int areaX, int areaY)
         {
-        	loadDoorData(areaX + (areaY * MapEditor.widthInSectors));
+        	loadDoorData(rom, areaX + (areaY * MapEditor.widthInSectors));
        	}
         
-        public boolean isDoorDataLoaded(int areaNum)
+        public static boolean isDoorDataLoaded(int areaNum)
         {
         	return (doorData[areaNum] != null);
         }
-        public boolean isDoorDataLoaded(int areaX, int areaY)
+        public static boolean isDoorDataLoaded(int areaX, int areaY)
         {
         	return isDoorDataLoaded(areaX + (areaY * MapEditor.widthInSectors));
         }
         
-        public int getDoorsNum(int areaNum)
+        public static int getDoorsNum(int areaNum)
         {
         	return doorData[areaNum].size();
         }
         
-        public int getDoorsNum(int areaX, int areaY)
+        public static int getDoorsNum(int areaX, int areaY)
         {
         	return getDoorsNum(areaX + (areaY * MapEditor.widthInSectors));
         }
         
-        public short[] getDoorXY(int areaX, int areaY, int doorNum)
+        public static short[] getDoorXY(int areaX, int areaY, int doorNum)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
         	DoorLocation dLoc = 
@@ -2736,7 +2707,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	return new short[] { dLoc.getX(), dLoc.getY() };
         }
         
-        public void addDoor(
+        public static void addDoor(
         		int areaX, int areaY, short doorX,
         		short doorY, byte doorType, short doorPtr)
         {
@@ -2746,23 +2717,23 @@ public class MapEditor extends EbHackModule implements ActionListener,
         					doorX, doorY, doorType, doorPtr, 0));
         }
         
-        public void removeDoor(int areaX, int areaY, int num)
+        public static void removeDoor(int areaX, int areaY, int num)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
         	doorData[areaNum].remove(num);
         }
         
-        public DoorLocation getDoorLocation(int areaNum, int num)
+        public static DoorLocation getDoorLocation(int areaNum, int num)
         {
         	return (DoorLocation) doorData[areaNum].get(num);
         }
         
-        public DoorLocation getDoorLocation(int areaX, int areaY, int num)
+        public static DoorLocation getDoorLocation(int areaX, int areaY, int num)
         {
         	return getDoorLocation(areaX + (areaY * MapEditor.widthInSectors), num);
         }
         
-        public int findDoor(int areaX, int areaY,
+        public static int findDoor(int areaX, int areaY,
         		short doorX, short doorY)
         {
         	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
@@ -2781,7 +2752,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	return -1;
         }
         
-        private void correctDoors()
+        private static void correctDoors(AbstractRom rom)
         {
         	for (int i = 0; i < doorCorrections.length; i++)
         	{
@@ -2794,8 +2765,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	rom.write(0x2e9430,new int[] {0xff,0xff,0xff});
         }
         
-        public boolean writeDoors()
+        public static boolean writeDoors(HackModule hm)
         {
+        	AbstractRom rom = hm.rom;
         	ArrayList destPointers = new ArrayList();
         	int address = 0;
         	for (int i = 0; i < destData.size(); i++)
@@ -2869,7 +2841,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	return true;
         }
         
-        private int loadDestData(int address, int type)
+        private static int loadDestData(
+        		AbstractRom rom, int address, int type)
         {
         	if (! destsLoaded.contains(new Integer(address)))
         	{
@@ -2934,17 +2907,17 @@ public class MapEditor extends EbHackModule implements ActionListener,
 										.intValue();
         }
         
-        public Destination getDestination(int index)
+        public static Destination getDestination(int index)
         {
         	return (Destination) destData.get(index);
         }
         
-        public int getDoorDestType(int doorType)
+        public static int getDoorDestType(int doorType)
         {
         	return doorDestTypes[doorType];
         }
         
-        public class SpriteLocation
+        public static class SpriteLocation
 		{
         	private short x, y, tpt;
         	
@@ -3007,7 +2980,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	}
 		}
         
-        public class DoorLocation
+        public static class DoorLocation
 		{
         	private int destIndex;
         	private byte type, misc;
@@ -3094,7 +3067,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	}
 		}
 
-        public class Sector
+        public static class Sector
 		{
         	private byte tileset, palette, music;
         	
@@ -3136,7 +3109,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	}
 		}
        
-        public class Destination
+        public static class Destination
 		{
         	private int pointer;
         	private short flag, yCoord, xCoord;
@@ -3449,9 +3422,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
     				}
     				else if (gfxcontrol.getModeProps()[1] == 2)
     				{
-        				mapcontrol.loadTileImage(tset, tile, pal);
+        				EbMap.loadTileImage(tset, tile, pal);
         				g.drawImage(
-        						mapcontrol.getTileImage(tset,tile,pal),
+        						EbMap.getTileImage(tset,tile,pal),
     							(i * MapEditor.tileWidth), (j * MapEditor.tileHeight),
     							MapEditor.tileWidth, MapEditor.tileHeight, this);
     				}
@@ -3711,7 +3684,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     		this.mainWindow.pack();
     	}
     	
-    	public void updateComponents(boolean load, boolean loadEntry, 
+    	private void updateComponents(boolean load, boolean loadEntry, 
     			boolean loadDestType)
     	{
 			muteEvents = true;
@@ -3752,7 +3725,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     		else
     		{
         		EbMap.Destination dest = 
-        			mapcontrol.getDestination(destNum);
+        			EbMap.getDestination(destNum);
         		int destType;
         		if (loadDestType)
         		{
@@ -3842,7 +3815,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			destPreview.remoteRepaint();
         		}
         		
-        		if (mapcontrol.getDoorDestType(typeBox.getSelectedIndex())
+        		if (EbMap.getDoorDestType(typeBox.getSelectedIndex())
         				!= destType)
         		{
             		warnLabel.setForeground(Color.RED);
@@ -3869,7 +3842,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         				== Integer.parseInt(numField.getText()))
         		{
             		EbMap.Destination dest =
-            			mapcontrol.getDestination(
+            			EbMap.getDestination(
             					doorLocation.getDestIndex());
             		if (typeDestBox.isEnabled())
             			dest.setType((byte) 
@@ -3928,7 +3901,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 					&& (! muteEvents))
 			{
 				if ((typeBox.getSelectedIndex() == -1)
-						&& (mapcontrol.getDoorDestType(
+						&& (EbMap.getDoorDestType(
 								typeBox.getSelectedIndex()) != -1))
 				{
 		    		JOptionPane.showMessageDialog(this.mainWindow,
@@ -3979,7 +3952,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 	        {
 	        	g2d.draw(new Rectangle2D.Double(
 	        			0,0,
-						heightTiles * MapEditor.tileWidth + 1,
+						widthTiles * MapEditor.tileWidth + 1,
 						heightTiles * MapEditor.tileHeight + 1)); 
 	        }
 
@@ -3992,25 +3965,25 @@ public class MapEditor extends EbHackModule implements ActionListener,
                     for (int j = 0; j < mapArray[i].length; j++)
                     {
                     	int sectorX = (tileX + j) / MapEditor.sectorWidth;
-                    	if (! mapcontrol.isSectorDataLoaded(
+                    	if (! EbMap.isSectorDataLoaded(
                     			sectorX, sectorY))
-                    		mapcontrol.loadSectorData(
+                    		EbMap.loadSectorData(rom,
                     				sectorX, sectorY);
                     	
-                        tile_set = mapcontrol.getDrawTileset(
-                        		mapcontrol.getTset(sectorX, sectorY));
+                        tile_set = EbMap.getDrawTileset(rom, 
+                        		EbMap.getTset(sectorX, sectorY));
                         tile_tile = mapArray[i][j]
-                            | (mapcontrol.getLocalTileset(
+                            | (EbMap.getLocalTileset(rom, 
                             		tileX + j,
 									tileY + i) << 8);
                         tile_pal = 
                         	TileEditor.tilesets[tile_set].getPaletteNum(
-                        			mapcontrol.getTset(sectorX, sectorY),
-									mapcontrol.getPal(sectorX, sectorY));
-                        mapcontrol.loadTileImage(tile_set, tile_tile, tile_pal);
+                        			EbMap.getTset(sectorX, sectorY),
+									EbMap.getPal(sectorX, sectorY));
+                        EbMap.loadTileImage(tile_set, tile_tile, tile_pal);
 
                         g.drawImage(
-                            mapcontrol.getTileImage(tile_set,tile_tile,tile_pal),
+                            EbMap.getTileImage(tile_set,tile_tile,tile_pal),
                             j * MapEditor.tileWidth + 1, i * MapEditor.tileHeight + 1,
 							MapEditor.tileWidth, MapEditor.tileHeight, this);
                     }
@@ -4042,7 +4015,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 	int y2 = i + ((y * 8) / MapEditor.tileHeight) - 2;
                     if (y2 < 0)
                     	y2 = 0;
-                    maparray[i] = mapcontrol.getTiles(
+                    maparray[i] = EbMap.getTiles(rom, 
                     		y2, tileX, widthTiles);
                 }
                 tileY = (y * 8) / MapEditor.tileHeight - 2;
