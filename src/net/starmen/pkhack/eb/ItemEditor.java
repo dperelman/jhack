@@ -20,8 +20,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.WindowConstants;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -42,7 +40,7 @@ import net.starmen.pkhack.XMLPreferences;
 /**
  * Class providing GUI and API for editing the items in Earthbound.
  * 
- * @author AnyoneEB
+ * @author AnyoneEB, EBisumaru
  */
 public class ItemEditor extends EbHackModule implements ActionListener
 {
@@ -63,7 +61,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
     private static Icon closedPresentIcon = initIcon();
 
     //GUI components
-    private JComboBox itemSelector/* , effectSelector */, typeSel;
+    private JComboBox itemSelector, typeSel;
     private ActionEditor.ActionEntry effectSelector;
     private JTextField name, cost, strength, extraPower, epIncrease,
             special,
@@ -76,12 +74,13 @@ public class ItemEditor extends EbHackModule implements ActionListener
     //labels for relabelable components
     private JLabel strLabel, epLabel, incLabel, specialLabel;
     
-    //auxillary windows
-    private JFrame foodAux, armorAux;
-    private AutoSearchBox statType;
+    //auxillary panels
+    private JPanel foodAux, armorAux, brokenAux;
+    private AutoSearchBox recoverType, fixedItem;
     private JRadioButton[] protect;
     private JPanel[] protectSections;
     private ButtonGroup[] bg;
+//    private JButton selectItem; //this isn't working and I'm tired of it.
 
     private final DocumentListener protectSetter = new DocumentListener()
     {
@@ -124,7 +123,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
 
         //exceptions
         //type 4 - buyable character - 0000 0100
-        labels[0][4] = "GSCT entry(?): ";
+        labels[0][4] = "PST entry + 1: ";
         labels[1][4] = "Unknown(E.P.): ";
         labels[2][4] = "Unknown(E.P.inc): ";
 
@@ -135,26 +134,26 @@ public class ItemEditor extends EbHackModule implements ActionListener
         //food items
         //type 32 - 0010 0000
         labels[0][32] = "Recovery Type: ";
-        labels[1][32] = "Poo HP: ";
-        labels[2][32] = "HP Increase: ";
+        labels[1][32] = "Poo Increase: ";
+        labels[2][32] = "Increase: ";
         labels[3][32] = "Skip Sandwich Effect Time: ";
 
         //type 36 - 0010 0100
         labels[0][36] = "Recovery Type: ";
-        labels[1][36] = "Poo HP: ";
-        labels[2][36] = "HP Increase: ";
+        labels[1][36] = "Poo Increase: ";
+        labels[2][36] = "Increase: ";
         labels[3][36] = "Skip Sandwich Effect Time: ";
 
         //type 40 - 0010 1000
         labels[0][40] = "Recovery Type: ";
-        labels[1][40] = "Poo HP: ";
-        labels[2][40] = "HP Increase: ";
+        labels[1][40] = "Poo Increase: ";
+        labels[2][40] = "Increase: ";
         labels[3][40] = "Skip Sandwich Effect Time: ";
 
         //type 44 - 0010 1100
         labels[0][44] = "Recovery Type: ";
-        labels[1][44] = "Poo HP: ";
-        labels[2][44] = "HP Increase: ";
+        labels[1][44] = "Poo Increase: ";
+        labels[2][44] = "Increase: ";
         labels[3][44] = "Skip Sandwich Effect Time: ";
 
         //armor items
@@ -317,20 +316,25 @@ public class ItemEditor extends EbHackModule implements ActionListener
         lower.add(specialFlags);
 
         itemStats.add(lower);
-
-        mainWindow.getContentPane().add(itemStats, BorderLayout.CENTER);
-
-        mainWindow.pack();
         
-        foodAux = new JFrame("Recovery Type");
-        foodAux.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        foodAux = new JPanel();
         
-        statType = new AutoSearchBox(new JComboBox(new String[] {
+        recoverType = new AutoSearchBox(new JComboBox(new String[] {
         		"0 HP", "1 PP", "2 HP & PP", "3 Random IQ-Luck", "4 IQ", "5 Guts",
 				"6 Speed", "7 Vitality", "8 Luck", "9 Cold cure", "10 Poison cure"
-        }), strength, "Recovery type", true, false);
-        foodAux.getContentPane().add(statType);
-        foodAux.pack();
+        }), strength, "Recovery Type", true, false);
+        foodAux.add(recoverType);
+        
+        brokenAux = new JPanel();
+        
+        fixedItem = new AutoSearchBox(createDecItemComboBox(this,this), extraPower, 
+        		"Fixed Item", true, false);
+        brokenAux.add(fixedItem);
+        
+/*        selectItem = new JButton("Edit this item");
+        selectItem.setActionCommand("editCurr");
+        selectItem.addActionListener(this);
+        brokenAux.add(selectItem);*/
         
         protect = new JRadioButton[16];        
         protectSections = new JPanel[4];
@@ -345,23 +349,45 @@ public class ItemEditor extends EbHackModule implements ActionListener
         for(int i = 0; i < 16; i++)
         {
         	protect[i] = new JRadioButton(i%4 + "");
-        	if(i==14)
-        		protect[i] = new JRadioButton("Sleep");
         	protectSections[i/4].add(protect[i]);
         	bg[i/4].add(protect[i]);
         	protect[i].addActionListener(this);
         	protect[i].setActionCommand("protect");
         }
         
-        armorAux = new JFrame("Protection");
-        armorAux.getContentPane().setLayout(new FlowLayout());
-        armorAux.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        JPanel mid = new JPanel(), low = new JPanel(), high = new JPanel();
+        mid.setLayout(new FlowLayout());
+        high.setLayout(new FlowLayout());
+        low.setLayout(new FlowLayout());
         
-        armorAux.getContentPane().add(getLabeledComponent("Paralysis", protectSections[0]));
-        armorAux.getContentPane().add(getLabeledComponent("Flash", protectSections[1]));
-        armorAux.getContentPane().add(getLabeledComponent("Freeze", protectSections[2]));
-        armorAux.getContentPane().add(getLabeledComponent("Fire", protectSections[3]));
-        armorAux.pack();
+        armorAux = new JPanel();
+        armorAux.setLayout(new BoxLayout(armorAux, BoxLayout.Y_AXIS));
+        
+        high.add(getLabeledComponent("Paralysis", protectSections[0]));
+        high.add(getLabeledComponent("Flash", protectSections[1]));
+        mid.add(getLabeledComponent("Freeze", protectSections[2]));
+        mid.add(getLabeledComponent("Fire", protectSections[3]));
+        low.add(new JLabel("Set Fire to 1 or 2 and the rest to 0 for " +
+        		"Sleep protection."));
+        
+        armorAux.add(high);
+        armorAux.add(mid);
+        armorAux.add(low);
+        
+        JPanel aux = new JPanel();
+        aux.setLayout(new BoxLayout(aux, BoxLayout.Y_AXIS));
+        aux.add(armorAux); 
+        aux.add(foodAux); 
+        aux.add(brokenAux);
+        itemStats.add(aux);
+        
+        armorAux.setVisible(false);
+        foodAux.setVisible(false);
+        brokenAux.setVisible(false);
+
+        mainWindow.getContentPane().add(itemStats, BorderLayout.CENTER);
+
+        mainWindow.pack();
     }
 
     /**
@@ -470,8 +496,6 @@ public class ItemEditor extends EbHackModule implements ActionListener
     public void hide()
     {
         mainWindow.setVisible(false);
-        foodAux.setVisible(false);
-        armorAux.setVisible(false);
     }
 
     /**
@@ -712,11 +736,24 @@ public class ItemEditor extends EbHackModule implements ActionListener
         //aux windows
         armorAux.setVisible(false);
         foodAux.setVisible(false);
+        brokenAux.setVisible(false);
+        recoverType.setCorr(false);
+        fixedItem.setCorr(false);
         if((type == 32) || (type == 36) || (type == 40) || (type == 44))
+        {
         	foodAux.setVisible(true);
+            recoverType.setCorr(true);
+        }
         else if((type == 20) || (type == 24) || (type == 28))
+        {
         	armorAux.setVisible(true);
-        mainWindow.setVisible(true);
+        }
+        else if((type == 8))
+        {
+        	brokenAux.setVisible(true);
+            fixedItem.setCorr(true);
+        }
+        mainWindow.pack();
     }
 
     /**
@@ -754,6 +791,14 @@ public class ItemEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("protect"))
 			setSpecial();
+/*        else if (ae.getActionCommand().equals("editCurr"));
+        {
+        	if(!(extraPower.getText().equals(null)))
+        	{
+        		itemSelector.setSelectedIndex(numberize(extraPower.getText()));
+        		showItemInfo(numberize(extraPower.getText()));
+        	}
+        }*/
     }
 
     public static SimpleComboBoxModel createItemComboBoxModel()
@@ -774,6 +819,35 @@ public class ItemEditor extends EbHackModule implements ActionListener
                 catch (NullPointerException e)
                 {
                     return HackModule.getNumberedString("Null", 0);
+                }
+                catch (ArrayIndexOutOfBoundsException e)
+                {
+                    return getElementAt(0);
+                }
+            }
+        };
+        addItemDataListener(out);
+
+        return out;
+    }
+    public static SimpleComboBoxModel createDecItemComboBoxModel()
+    {
+        SimpleComboBoxModel out = new SimpleComboBoxModel()
+        {
+            public int getSize()
+            {
+                return items.length;
+            }
+
+            public Object getElementAt(int i)
+            {
+                try
+                {
+                    return HackModule.getNumberedString(items[i].toString(), i, false);
+                }
+                catch (NullPointerException e)
+                {
+                    return HackModule.getNumberedString("Null", 0, false);
                 }
                 catch (ArrayIndexOutOfBoundsException e)
                 {
@@ -806,36 +880,68 @@ public class ItemEditor extends EbHackModule implements ActionListener
     }
 
     public static JComboBox createItemComboBox(final ActionListener al,
-        HackModule hm)
-    {
-        SimpleComboBoxModel model = createItemComboBoxModel();
-        if (items[0] == null)
-            readFromRom(hm);
-        final JComboBox out = new JComboBox(model);
-        if (al != null)
-            out.addActionListener(al);
-        model.addListDataListener(new ListDataListener()
+            HackModule hm)
         {
-
-            public void contentsChanged(ListDataEvent lde)
+            SimpleComboBoxModel model = createItemComboBoxModel();
+            if (items[0] == null)
+                readFromRom(hm);
+            final JComboBox out = new JComboBox(model);
+            if (al != null)
+                out.addActionListener(al);
+            model.addListDataListener(new ListDataListener()
             {
-                if (out.getSelectedIndex() == -1)
+
+                public void contentsChanged(ListDataEvent lde)
                 {
-                    out.removeActionListener(al);
-                    out.setSelectedIndex(lde.getIndex0());
-                    out.addActionListener(al);
+                    if (out.getSelectedIndex() == -1)
+                    {
+                        out.removeActionListener(al);
+                        out.setSelectedIndex(lde.getIndex0());
+                        out.addActionListener(al);
+                    }
                 }
-            }
 
-            public void intervalAdded(ListDataEvent arg0)
-            {}
+                public void intervalAdded(ListDataEvent arg0)
+                {}
 
-            public void intervalRemoved(ListDataEvent arg0)
-            {}
-        });
+                public void intervalRemoved(ListDataEvent arg0)
+                {}
+            });
 
-        return out;
-    }
+            return out;
+        }
+
+    public static JComboBox createDecItemComboBox(final ActionListener al,
+            HackModule hm)
+        {
+            SimpleComboBoxModel model = createDecItemComboBoxModel();
+            if (items[0] == null)
+                readFromRom(hm);
+            final JComboBox out = new JComboBox(model);
+            if (al != null)
+                out.addActionListener(al);
+            model.addListDataListener(new ListDataListener()
+            {
+
+                public void contentsChanged(ListDataEvent lde)
+                {
+                    if (out.getSelectedIndex() == -1)
+                    {
+                        out.removeActionListener(al);
+                        out.setSelectedIndex(lde.getIndex0());
+                        out.addActionListener(al);
+                    }
+                }
+
+                public void intervalAdded(ListDataEvent arg0)
+                {}
+
+                public void intervalRemoved(ListDataEvent arg0)
+                {}
+            });
+
+            return out;
+        }
 
     /**
      * @see net.starmen.pkhack.HackModule#getIcon()

@@ -3421,7 +3421,6 @@ public abstract class HackModule
     
     public static int numberize(String ib)
     {
-    	System.out.println(ib);
     	String in = ib;
     	//remove preceding spaces
     	for (int i = 0; i < in.length(); i++)
@@ -3444,6 +3443,9 @@ public abstract class HackModule
     			return Integer.parseInt(in.substring(0,i));
     		}
     	}
-    	return Integer.parseInt(in);
+    	if(in.equals(new String("")))
+    		return 0;
+    	else
+    		return Integer.parseInt(in);
     }
 }

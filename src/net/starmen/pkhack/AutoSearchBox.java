@@ -29,7 +29,8 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	private JComboBox comboBox;
 	private JTextField tf;
 	private JLabel label;
-	private boolean incTf; //include the text field
+	private boolean incTf,//include the text field
+		corr = true; //correlate the text box and combo box
 	private int size;
 	/**
 	 * Creates a new AutoSearchBox wrapper for the specified JComboBox.
@@ -201,13 +202,16 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	
 	public void tfChanged()
 	{
-		comboBox.removeActionListener(this);
-		if (!search(tf.getText(), comboBox, true, false))
-		{	
-			comboBox.addItem(tf.getText() + " ???");
-			comboBox.setSelectedItem(tf.getText() + " ???");
+		if(corr)
+		{
+			comboBox.removeActionListener(this);
+			if (!search(tf.getText(), comboBox, true, false))
+			{	
+				comboBox.addItem(tf.getText() + " ???");
+				comboBox.setSelectedItem(tf.getText() + " ???");
+			}
+			comboBox.addActionListener(this);
 		}
-		comboBox.addActionListener(this);
 	}
 	
 	public String getText()
@@ -323,6 +327,9 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 		return search(text, selector, false);
 	}
 	
+	public void setCorr(boolean _) {corr = _;}
+	
+	public boolean getCorr() {return corr;}
 }
 
 
