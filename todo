@@ -7,6 +7,9 @@ DONE? (CHANGES TO CONFIRM/DEBUG)
 NEXT v0.0.0.x (bugfix) RELEASE
 # Look into threading of error console GUI building (ERROR#65895)
 # Look into use of JOptionPane.showOptionDialog() for abort/retry/fail.
+# [01:40:42] <GuyInSummers> aeb: If you choose a text block in the 
+	Text Editor, select Codes Only, and then move to another text block, 
+	it informs you that you have to apply your changes or they'll be lost.
 
 NEXT v0.0.x (minor) RELEASE
 
@@ -21,6 +24,9 @@ NEXT v0.0.x (minor) RELEASE
 	so you can paste them into a different tile set. Or the ability 
 	to copy multiple mini tiles, but then it would be hard to paste them... 
 	I think it would be very handy. Razz
+# Option to hide error console
+# "game order" enemies list like in PK Hack v0.2 and v0.3
+	Use enemyGameOrder.txt, readArray() so ROM-specific versions could be made
 
 LONG TERM
 
