@@ -6,6 +6,7 @@ NEXT VERSION (after v0.5.2):
 # Door Editor: can edit special properties of destinationless doors
 # Logo Screen Editor: BUGFIX: now only writes at/before 0x4001ff
 # Photo Editor: BUGFIX: now displays flags/palettes in their fields correctly
+# Gas Station Editor: BUGFIX: now only writes at/before 0x4001ff
 
 v0.5.2:
 # BUGFIX: FindFreeRange now only finds ranges that are within a single bank.
