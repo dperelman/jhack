@@ -1,5 +1,9 @@
 NEXT VERSION (after v0.5.1.1):
 
+v0.5.1.2:
+# BUGFIX: Map Editor handles event flags in door destinations correctly
+# Map Editor: draggable door entries
+
 v0.5.1.1:
 # BUGFIX: Upon loading a 4 MB ROM the ask to expand window would appear. It would
 	not expand past 4 MB.
