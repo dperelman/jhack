@@ -1636,7 +1636,7 @@ public class MainGUI implements ActionListener, WindowListener
             final String ver = checkVersion();
             if (ver != null)
             {
-                if (ver == getPrefs().getValue("ignoreUpdateVer"))
+                if (ver.equals(getPrefs().getValue("ignoreUpdateVer")))
                     return false;
                 JEditorPane clogDisplay = new JEditorPane(new URL(
                     "http://anyoneeb.ath.cx:83/jhack/changelog?ver=" + ver));
