@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 import javax.imageio.ImageIO;
@@ -77,9 +78,6 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
      *      5     |  128 wide x  64 high
      *      6     |  128 wide x 128 high
      */
-    //        public final static Dimension[] BATTLE_SPRITE_SIZES = new Dimension[]{null,
-    //            new Dimension(32, 32), new Dimension(32, 64), new Dimension(64, 32),
-    //            new Dimension(64, 64), new Dimension(128, 64), new Dimension(128, 128)};
     public final static Dimension[] BATTLE_SPRITE_SIZES = new Dimension[]{null,
         new Dimension(32, 32), new Dimension(64, 32), new Dimension(32, 64),
         new Dimension(64, 64), new Dimension(128, 64), new Dimension(128, 128)};
@@ -118,7 +116,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
             int[] tmp = hm.decomp(orgPointer, buffer);
             if (tmp[0] < 0)
             {
-                System.out.println("Error #" + tmp[0]
+                System.err.println("Error #" + tmp[0]
                     + " decompressing battle sprite " + num + " ("
                     + EbHackModule.battleSpriteNames[num] + ")");
                 return false;
@@ -148,6 +146,16 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
                 //                System.out.println("Finished reading battle sprite #" + num);
                 return true;
             }
+        }
+
+        public void initToNull()
+        {
+            Dimension d = BATTLE_SPRITE_SIZES[size];
+
+            sprite = new byte[d.width][d.height];
+            for (int x = 0; x < d.width; x++)
+                Arrays.fill(sprite[x], (byte) 0);
+            isInited = true;
         }
 
         public boolean writeInfo()
@@ -322,14 +330,14 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
     /**
      * Returns an image of specificed battle sprite in the specifed palette.
-     * Note that this will fail if {@link #readFromRom(EbHackModule)} is not
-     * run first.
+     * Note that this will fail if {@link #readFromRom(EbHackModule)}is not run
+     * first.
      * 
      * @param num Which battle sprite to get the image of (0-109). Out of range
-     * 			values will return a 0x0 image. 
-     * @param pal Which palette to use (0-31). 
-     * @return a <code>Image</code> of the specified battle sprite or and empty
-     * 			image if either argument is invalid
+     *            values will return a 0x0 image.
+     * @param pal Which palette to use (0-31).
+     * @return a <code>Image</code> of the specified battle sprite or and
+     *         empty image if either argument is invalid
      */
     public static Image getImage(int num, int pal)
     {
@@ -487,31 +495,66 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         mainWindow.hide();
     }
 
-    /* (non-Javadoc)
+    private void doSpriteSelectAction()
+    {
+        if (!getSelectedSprite().readInfo())
+        {
+            Object opt = JOptionPane.showInputDialog(mainWindow,
+                "Error decompressing the "
+                    + battleSpriteNames[getCurrentSprite()] + " sprite (#"
+                    + getCurrentSprite() + ").", "Decompression Error",
+                JOptionPane.ERROR_MESSAGE, null, new String[]{"Abort", "Retry",
+                    "Fail"}, "Retry");
+            if (opt == null || opt.equals("Abort"))
+            {
+                spriteSelector.setSelectedIndex((spriteSelector
+                    .getSelectedIndex() + 1)
+                    % spriteSelector.getItemCount());
+                doSpriteSelectAction();
+                return;
+            }
+            else if (opt.equals("Retry"))
+            {
+                spriteSelector.setSelectedIndex(spriteSelector
+                    .getSelectedIndex());
+                doSpriteSelectAction();
+                return;
+            }
+            else if (opt.equals("Fail"))
+            {
+                getSelectedSprite().initToNull();
+            }
+        }
+        da.setImage(getSelectedSprite().getSprite());
+        sizeSelector.setSelectedIndex(getSelectedSprite().getSize() - 1);
+        sizeSelector.repaint();
+        name.setText(battleSpriteNames[spriteSelector.getSelectedIndex()]);
+
+        for (int i = 0; i < EnemyEditor.enemies.length; i++)
+        {
+            if (EnemyEditor.enemies[i].getInsidePic() - 1 == spriteSelector
+                .getSelectedIndex())
+            {
+                palSelector.setSelectedIndex(EnemyEditor.enemies[i]
+                    .getPalette());
+                palSelector.repaint();
+                break;
+            }
+        }
+
+        jsp.updateUI();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
      */
     public void actionPerformed(ActionEvent ae)
     {
         if (ae.getActionCommand().equals(spriteSelector.getActionCommand()))
         {
-            da.setImage(getCurrentSprite().getSprite());
-            sizeSelector.setSelectedIndex(getCurrentSprite().getSize() - 1);
-            sizeSelector.repaint();
-            name.setText(battleSpriteNames[spriteSelector.getSelectedIndex()]);
-
-            for (int i = 0; i < EnemyEditor.enemies.length; i++)
-            {
-                if (EnemyEditor.enemies[i].getInsidePic() - 1 == spriteSelector
-                    .getSelectedIndex())
-                {
-                    palSelector.setSelectedIndex(EnemyEditor.enemies[i]
-                        .getPalette());
-                    palSelector.repaint();
-                    break;
-                }
-            }
-
-            jsp.updateUI();
+            doSpriteSelectAction();
         }
         else if (ae.getActionCommand().equals(palSelector.getActionCommand()))
         {
@@ -520,18 +563,32 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         }
         else if (ae.getActionCommand().equals(sizeSelector.getActionCommand()))
         {
-            if ((sizeSelector.getSelectedIndex() + 1) != getCurrentSprite()
+            if ((sizeSelector.getSelectedIndex() + 1) != getSelectedSprite()
                 .getSize())
             {
-                getCurrentSprite().setSize(sizeSelector.getSelectedIndex() + 1);
-                da.setImage(getCurrentSprite().getSprite());
+                if (JOptionPane.showConfirmDialog(mainWindow,
+                    "Are you sure you wish to change the size of this "
+                        + "sprite to "
+                        + (sizeSelector.getSelectedItem().toString().split(
+                            "\\]")[1].trim()) + "? "
+                        + "Sprite data outside that area "
+                        + "will be permanently lost.", "Are you sure?",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.CANCEL_OPTION)
+                {
+                    sizeSelector
+                        .setSelectedIndex(getSelectedSprite().getSize() - 1);
+                    return;
+                }
+                getSelectedSprite()
+                    .setSize(sizeSelector.getSelectedIndex() + 1);
+                da.setImage(getSelectedSprite().getSprite());
                 jsp.updateUI();
             }
         }
         else if (ae.getActionCommand().equals("apply"))
         {
-            getCurrentSprite().setSprite(da.getByteArrImage());
-            getCurrentSprite().writeInfo();
+            getSelectedSprite().setSprite(da.getByteArrImage());
+            getSelectedSprite().writeInfo();
 
             writePalettes(rom);
 
@@ -615,9 +672,14 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         }
     }
 
-    private BattleSprite getCurrentSprite()
+    private BattleSprite getSelectedSprite()
     {
-        return battleSprites[spriteSelector.getSelectedIndex()];
+        return battleSprites[getCurrentSprite()];
+    }
+
+    private int getCurrentSprite()
+    {
+        return spriteSelector.getSelectedIndex();
     }
 
     private void updatePalette()
@@ -663,7 +725,9 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         updateZoom();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see net.starmen.pkhack.HackModule#reset()
      */
     public void reset()
@@ -705,7 +769,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         {
             if (f == null) return;
             if (!f.exists()) throw new FileNotFoundException();
-            BattleSprite sp = getCurrentSprite();
+            BattleSprite sp = getSelectedSprite();
             BufferedImage img = ImageIO.read(f);
 
             if (img == null)
@@ -767,10 +831,9 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         {
             if (f == null) return;
             if (!f.exists()) throw new FileNotFoundException();
-            BattleSprite sp = getCurrentSprite();
+            BattleSprite sp = getSelectedSprite();
             FileInputStream in = new FileInputStream(f);
-            Image img = mainWindow.createImage(BMPReader
-                .getBMPImage(in));
+            Image img = mainWindow.createImage(BMPReader.getBMPImage(in));
             in.close();
             int w = img.getWidth(mainWindow), h = img.getHeight(mainWindow);
 
@@ -842,9 +905,10 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         }
         try
         {
-            byte[][] img = getCurrentSprite().getSprite();
+            byte[][] img = getSelectedSprite().getSprite();
             ImageIO.write(drawImage(img, BITMAP_PAL), "png", f);
-            //new Bitmap(drawImage(img, BITMAP_PAL)).writeTo(f.getAbsolutePath());
+            //new Bitmap(drawImage(img,
+            // BITMAP_PAL)).writeTo(f.getAbsolutePath());
         }
         catch (IOException e)
         {
