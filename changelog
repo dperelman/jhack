@@ -8,7 +8,8 @@ NEXT VERSION (after v0.5.1.2):
 # SPT Editor v0.5: Added all sprites flip and swap x/y buttons.
 # Map Editor: BUGFIX: Map Editor writes doors correctly
 # Map Editor: Map changes not saved directly
-# Teleport Table Editor: Previews the destination
+# Teleport Table Editor: Previews/seeks the destination
+# Teleport Editor: Previews/seeks the destination
 
 v0.5.1.2:
 # Map Editor: BUGFIX: Map Editor handles event flags in door destinations correctly
