@@ -2,7 +2,8 @@ NEXT VERSION (after v0.5.5.2):
 # Enemy Editor v0.6: Added game order view like PK Hack v0.2. ROM-specific enemyGameOrder.txt
 	files may be used.
 # Tile Editor v0.7: Added Multi-Clipboard for minitiles (suggested by NeSs79)
-
+# Added error messages for missing emptyPrefs.xml and preferences.dtd files.
+# Town Map Editor: Fixed bug in import.
 
 v0.5.5.2:
 # Updated codelist.txt (thanks EBPlayer1028)

@@ -84,13 +84,43 @@ public class XMLPreferences
                 File g = new File(f.toString());
                 if (g.exists())
                     g.renameTo(new File(g.toString() + ".old"));
-                copy(ClassLoader.getSystemResourceAsStream("emptyPrefs.xml"),
-                    new FileOutputStream(f), EMPTY_PREFS_XML_FILESIZE);
-                copy(ClassLoader.getSystemResourceAsStream("preferences.dtd"),
-                    new FileOutputStream(new File(f.getAbsoluteFile()
-                        .getParent()
-                        + File.separatorChar + "preferences.dtd")),
-                    PREFERENCES_DTD_FILESIZE);
+                try
+                {
+                    copy(ClassLoader
+                        .getSystemResourceAsStream("emptyPrefs.xml"),
+                        new FileOutputStream(f), EMPTY_PREFS_XML_FILESIZE);
+                }
+                catch (NullPointerException e)
+                {
+                    JOptionPane.showMessageDialog(null,
+                        "The file emptyPrefs.xml was not found.\n"
+                            + "It should be in the root of the .jar\n"
+                            + "file or in the same directory as it.\n"
+                            + "Please try redownloading PK Hack.\n"
+                            + "If you have already done so, report the\n"
+                            + "error to AnyoneEB.", "ERROR: File not found",
+                        JOptionPane.ERROR_MESSAGE);
+                }
+                try
+                {
+                    copy(ClassLoader
+                        .getSystemResourceAsStream("preferences.dtd"),
+                        new FileOutputStream(new File(f.getAbsoluteFile()
+                            .getParent()
+                            + File.separatorChar + "preferences.dtd")),
+                        PREFERENCES_DTD_FILESIZE);
+                }
+                catch (NullPointerException e)
+                {
+                    JOptionPane.showMessageDialog(null,
+                        "The file preferences.dtd was not found.\n"
+                            + "It should be in the root of the .jar\n"
+                            + "file or in the same directory as it.\n"
+                            + "Please try redownloading PK Hack.\n"
+                            + "If you have already done so, report the\n"
+                            + "error to AnyoneEB.", "ERROR: File not found",
+                        JOptionPane.ERROR_MESSAGE);
+                }
             }
             catch (FileNotFoundException e)
             {

@@ -1468,7 +1468,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         {
             if (in == null || in[i][NODE_BASE])
             {
-                mapNodes[i][NODE_BASE] = new CheckNode(logoScreenNames[i],
+                mapNodes[i][NODE_BASE] = new CheckNode(townMapNames[i],
                     true, true);
                 mapNodes[i][NODE_BASE]
                     .setSelectionMode(CheckNode.DIG_IN_SELECTION);
