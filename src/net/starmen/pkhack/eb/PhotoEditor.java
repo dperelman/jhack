@@ -17,6 +17,7 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -36,8 +37,8 @@ import net.starmen.pkhack.eb.MapEditor.EbMap;
  *
  * TODO Write javadoc for this class
  */
-public class PhotoEditor extends EbHackModule implements ActionListener, 
-	DocumentListener
+public class PhotoEditor extends EbHackModule 
+	implements ActionListener, DocumentListener, SeekListener
 {
 
 	/**
@@ -48,6 +49,7 @@ public class PhotoEditor extends EbHackModule implements ActionListener,
 		super(rom, prefs);
 	}
 	
+	private JButton centerSeek, refresh;
 	private JComboBox entryChooser, direction;
 	private JTextField flag, centerX, centerY, palette,
 		distance, landX, landY;
@@ -122,7 +124,6 @@ public class PhotoEditor extends EbHackModule implements ActionListener,
 			for (int j = 0; j < extra[i].length; j++)
 			{
 				String description;
-				System.out.println("j " + j);
 				if (j == 0)
 				{
 					JCheckBox cbox = new JCheckBox();
@@ -201,6 +202,14 @@ public class PhotoEditor extends EbHackModule implements ActionListener,
 					changedUpdate(e);
 				}
 			};
+		refresh = new JButton("Refresh");
+		refresh.addActionListener(this);
+		tmpPanel.add(refresh);
+		centerSeek = new JButton("Find on Map");
+		centerSeek.addActionListener(this);
+		tmpPanel.add(
+				HackModule.getLabeledComponent(
+						"Center of Picture: ", centerSeek));
 		centerX = HackModule.createSizedJTextField(4, true);
 		centerX.getDocument().addDocumentListener(centerListener);
 		tmpPanel.add(
@@ -272,6 +281,7 @@ public class PhotoEditor extends EbHackModule implements ActionListener,
 		super.show();
 		
 		readFromRom();
+		TPTEditor.readFromRom(this);
 		SpriteEditor.readFromRom(rom);
 		entryChooser.setSelectedIndex(0);
 		
@@ -367,12 +377,10 @@ public class PhotoEditor extends EbHackModule implements ActionListener,
 	public void updateComponents()
 	{
 		PhotoEntry photo = entries[entryChooser.getSelectedIndex()];
-		System.out.println(photo.getDirection());
 		direction.setSelectedIndex(photo.getDirection());
 		flag.setText(Integer.toString(photo.getFlag(),16));
 		centerX.setText(Integer.toString(photo.getCenterX()));
 		centerY.setText(Integer.toString(photo.getCenterY()));
-		System.out.println("palette " + photo.getPalette());
 		palette.setText(Integer.toString(photo.getPalette()));
 		distance.setText(Integer.toString(photo.getDistance()));
 		landX.setText(Integer.toString(photo.getLandX()));
@@ -426,6 +434,17 @@ public class PhotoEditor extends EbHackModule implements ActionListener,
 		
 		preview.remoteRepaint();
 	}
+	
+	public void returnSeek(int x, int y, int tileX, int tileY) {
+		int centerXnum = 
+			((tileX * MapEditor.tileWidth) / 8) + (x / 8);
+		int centerYnum = 
+			((tileY * MapEditor.tileWidth) / 8) + (y / 8);
+		centerX.setText(Integer.toString(centerXnum));
+		centerY.setText(Integer.toString(centerYnum));
+		centerSeek.setEnabled(true);
+		preview.remoteRepaint();
+	}
 
 	public void actionPerformed(ActionEvent ae)
 	{
@@ -435,6 +454,11 @@ public class PhotoEditor extends EbHackModule implements ActionListener,
 			hide();
 		else if (ae.getSource().equals(entryChooser))
 			updateComponents();
+		else if (ae.getSource().equals(centerSeek))
+			net.starmen.pkhack.JHack.main.showModule(
+        			MapEditor.class, this);
+		else if (ae.getSource().equals(refresh))
+			preview.remoteRepaint();
 		else if (ae.getSource() instanceof JCheckBox)
 		{
 			for (int i = 0; i < party.length; i++)
@@ -766,6 +790,83 @@ public class PhotoEditor extends EbHackModule implements ActionListener,
 						MapEditor.tileWidth, MapEditor.tileHeight, this);
                 }
             }
+            
+            for (int k = 0; k < preview.getPreviewHeight(); k++)
+        	{
+        		if ((((tileY + k) % (MapEditor.sectorHeight * 2)) == 0)
+        				|| (k == 0))
+        		{
+        			for (int i = 0; i < preview.getPreviewWidth(); i++)
+                	{
+                		if ((((tileX + i) % MapEditor.sectorWidth) == 0)
+                				|| (i == 0))
+                		{
+                			if (! EbMap.isSpriteDataLoaded(
+                					(tileX + i) / MapEditor.sectorWidth,
+									(tileY + k) / (MapEditor.sectorHeight * 2)))
+                			{
+                				EbMap.loadSpriteData(rom,
+                						(tileX + i) / MapEditor.sectorWidth,
+										(tileY + k) / (MapEditor.sectorHeight * 2));
+                			}
+                			int spritesNum = EbMap.getSpritesNum(
+                					(tileX + i) / MapEditor.sectorWidth,
+									(tileY + k) / (MapEditor.sectorHeight * 2));
+                        	short[][] spriteLocs = EbMap.getSpriteLocs(
+                        			(tileX + i) / MapEditor.sectorWidth,
+									(tileY + k) / (MapEditor.sectorHeight * 2));
+                        	short[] spriteTpts = EbMap.getSpriteTpts(
+                        			(tileX + i) / MapEditor.sectorWidth, (tileY + k) / (MapEditor.sectorHeight * 2));
+                        	// this.spriteLocs = new int[spriteData[0]][5];
+                            for (int j = 0; j < spritesNum; j++)
+                            {
+                            	TPTEditor.TPTEntry tptEntry = 
+                            		TPTEditor.tptEntries[spriteTpts[j]];
+                            	int spriteNum = tptEntry.getSprite();
+                            	int spriteDrawY = spriteLocs[j][1];
+                            	int spriteDrawX = spriteLocs[j][0];
+                            	EbMap.loadSpriteImage(hm,
+                            			spriteNum, tptEntry.getDirection());
+                            	SpriteEditor.SpriteInfoBlock sib =
+                            		SpriteEditor.sib[spriteNum];
+                            	
+                            	if (((tileY + k) % (MapEditor.sectorHeight * 2)) > 0)
+                            	{
+                            		spriteDrawY -= ((tileY + k) % (MapEditor.sectorHeight * 2)) *
+											MapEditor.tileHeight;
+                            	}
+                            	
+                            	if (((tileX + i) % MapEditor.sectorWidth) > 0)
+                            	{
+                            		spriteDrawX -= ((tileX + i) % MapEditor.sectorWidth)
+											* MapEditor.tileWidth;
+                            	}
+                            	
+                            	g.drawImage(
+                            			EbMap.getSpriteImage(
+                            					spriteNum,tptEntry.getDirection()),
+            							spriteDrawX + (i * MapEditor.tileWidth),
+    									spriteDrawY + (k * MapEditor.tileHeight),
+										this);
+                            	/*if (spriteBoxes)
+                            	{
+                            		g2d.setPaint(Color.red);
+                            		g2d.draw(new Rectangle2D.Double(
+                                			spriteDrawX + (i * MapEditor.tileWidth) - 1,
+											spriteDrawY + (k * MapEditor.tileHeight) - 1,
+											EbMap.getSpriteImage(
+													spriteNum,tptEntry.getDirection())
+																	.getWidth(this) + 1,
+											EbMap.getSpriteImage(
+													spriteNum,tptEntry.getDirection())
+																	.getHeight(this) + 1));
+                            	}*/
+                            }
+                		}
+                	}
+        		}
+        	}
+            
             g2d.setPaint(Color.yellow);
             g2d.draw(new Line2D.Double(
             		(centerX * 8) - (tileX * MapEditor.tileWidth) - 10,
