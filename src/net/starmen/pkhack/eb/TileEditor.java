@@ -768,6 +768,8 @@ public class TileEditor extends EbHackModule implements ActionListener
         public Image getTileImage(int tile, Color[][] palette, int subPalette,
             boolean hFlip, boolean vFlip)
         {
+            if (subPalette < 0)
+                subPalette += 2;
             return HackModule.drawImage(getTile(tile), palette[subPalette],
                 hFlip, vFlip);
         }
