@@ -351,7 +351,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             byte[] compTile;
             int tileCompLen = comp(udataTiles, compTile = new byte[5000]);
             if (!hm.writeToFreeASMLink(compTile, tilePointerArray[num],
-                tileLen, tileCompLen, 0x4001ff, false))
+                tileLen, tileCompLen))
                 return false;
             System.out.println("Wrote "
                 + (tileLen = tileCompLen)
@@ -381,7 +381,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             byte[] compPal;
             int palCompLen = comp(udataPal, compPal = new byte[600]);
             if (!hm.writeToFreeASMLink(compPal, palPointerArray[num], palLen,
-                palCompLen, 0x4001ff, false))
+                palCompLen))
                 return false;
             System.out.println("Wrote "
                 + (palLen = palCompLen)
@@ -414,7 +414,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             byte[] compArng;
             int arngCompLen = comp(udataArng, compArng = new byte[3000]);
             if (!hm.writeToFreeASMLink(compArng, arngPointerArray[num],
-                arngLen, arngCompLen, 0x4001ff, false))
+                arngLen, arngCompLen))
                 return false;
             System.out.println("Wrote "
                 + (arngLen = arngCompLen)
