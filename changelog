@@ -1,10 +1,13 @@
 NEXT VERSION (after v0.5.3):
-EBisumaru:
-# Misc. Crap Editor added, edits miscellaneous crap from the asmrange
-# Item Editor labels updated
-# Action Editor null asm effect bug fixed
-# Mirror effect added to asmeffects.txt
+# Added Misc. Crap Editor
+# Item Editor: labels updated
+# Action Editor: BUGFIX: null asm effect bug fixed
 # Sound effect listing fixed up
+# Added Event-Based Map Changes Editor
+# Map Editor: BUGFIX: fixed dragging between sectors issue with sprites and doors
+# Map Editor: added links to other editors at the top
+# Map Editor: added event-based map changes viewing option
+# Music/Flags Correlations Editor: BUGFIX: you can add correlations even if there are none
 
 v0.5.3:
 # A few SPT names additions from JeffMan
