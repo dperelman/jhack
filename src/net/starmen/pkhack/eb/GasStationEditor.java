@@ -23,8 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Hashtable;
 
@@ -45,6 +43,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.BMPReader;
+import net.starmen.pkhack.ByteArrHasher;
 import net.starmen.pkhack.CheckNode;
 import net.starmen.pkhack.CheckRenderer;
 import net.starmen.pkhack.CopyAndPaster;
@@ -1841,121 +1840,6 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         return true;
     }
 
-    private static class TileRef
-    {
-        private int tile;
-        private boolean vFlip, hFlip;
-
-        public boolean isHFlip()
-        {
-            return hFlip;
-        }
-
-        public int getTile()
-        {
-            return tile;
-        }
-
-        public boolean isVFlip()
-        {
-            return vFlip;
-        }
-
-        public int getArrangementData()
-        {
-            return (tile & 0x03ff) | (hFlip ? 0x4000 : 0)
-                | (vFlip ? 0x8000 : 0);
-        }
-
-        public TileRef(int tile, boolean hFlip, boolean vFlip)
-        {
-            this.tile = tile;
-            this.vFlip = vFlip;
-            this.hFlip = hFlip;
-        }
-    }
-
-    private static class ColorRef
-    {
-        private int col;
-
-        public ColorRef(int col)
-        {
-            this.col = col;
-        }
-
-        public int getCol()
-        {
-            return col;
-        }
-    }
-
-    private static class ByteArrHasher
-    {
-        private int hint;
-        private byte[] b;
-
-        public ByteArrHasher(byte[] b)
-        {
-            this.b = b;
-            byte[] hash;
-            try
-            {
-                hash = MessageDigest.getInstance("MD5").digest(b);
-            }
-            catch (NoSuchAlgorithmException e)
-            {
-                hash = new byte[]{0, 0, 0, 0};
-                e.printStackTrace();
-            }
-            hint = (hash[0] & 0xff) + ((hash[1] & 0xff) << 8)
-                + ((hash[2] & 0xff) << 16) + ((hash[3] & 0xff) << 24);
-        }
-
-        public int hashCode()
-        {
-            return hint;
-        }
-
-        public boolean equals(ByteArrHasher o)
-        {
-            return Arrays.equals(b, o.b);
-        }
-
-        protected Object clone()
-        {
-            return new ByteArrHasher(b);
-        }
-
-        public String toString()
-        {
-            return Integer.toString(hint);
-        }
-
-        public Integer toInteger()
-        {
-            return new Integer(hint);
-        }
-    }
-
-    private byte[] hFlip(byte[] b)
-    {
-        byte[] o = new byte[64]; //out
-        for (int x = 0; x < 8; x++)
-            for (int y = 0; y < 8; y++)
-                o[(y * 8) + (7 - x)] = b[(y * 8) + x];
-        return o;
-    }
-
-    private byte[] vFlip(byte[] b)
-    {
-        byte[] o = new byte[64]; //out
-        for (int x = 0; x < 8; x++)
-            for (int y = 0; y < 8; y++)
-                o[((7 - y) * 8) + x] = b[(y * 8) + x];
-        return o;
-    }
-
     public void importImg()
     {
         importImg(getFile(false, new String[]{"bmp", "gif", "png"},
@@ -2041,12 +1925,12 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                         Object tmpc;
                         if ((tmpc = palrefs.get(col)) != null)
                         {
-                            cn = ((ColorRef) tmpc).getCol();
+                            cn = ((Integer) tmpc).intValue();
                         }
                         else
                         {
                             cn = pnum;
-                            palrefs.put(col, new ColorRef(pnum));
+                            palrefs.put(col, new Integer(pnum));
                             try
                             {
                                 pal[pnum++] = col;

@@ -1271,6 +1271,50 @@ public abstract class HackModule
     }
 
     /**
+     * Horizontally flips an 8x8 tile stored as <code>byte[]</code>. The
+     * color value for the coordinate (x, y) in this format can be found at
+     * <code>b[(y * 8) + x]</code>. The return value is in the same format.
+     * 
+     * @param b a <code>byte[]</code> holding a 8x8 tile
+     * @return <code>b</code> flipped horizontally
+     * @see #vFlip(byte[])
+     */
+    public static byte[] hFlip(byte[] b)
+    {
+        if (b.length != 64)
+            throw new IllegalArgumentException(
+                "net.starmen.pkhack.HackModule.hFlip(byte[]) "
+                    + "only accepts byte[64]s");
+        byte[] o = new byte[64]; //out
+        for (int x = 0; x < 8; x++)
+            for (int y = 0; y < 8; y++)
+                o[(y * 8) + (7 - x)] = b[(y * 8) + x];
+        return o;
+    }
+
+    /**
+     * Vertically flips an 8x8 tile stored as <code>byte[]</code>. The color
+     * value for the coordinate (x, y) in this format can be found at
+     * <code>b[(y * 8) + x]</code>. The return value is in the same format.
+     * 
+     * @param b a <code>byte[]</code> holding a 8x8 tile
+     * @return <code>b</code> flipped vertically
+     * @see #hFlip(byte[])
+     */
+    public static byte[] vFlip(byte[] b)
+    {
+        if (b.length != 64)
+            throw new IllegalArgumentException(
+                "net.starmen.pkhack.HackModule.vFlip(byte[]) "
+                    + "only accepts byte[64]s");
+        byte[] o = new byte[64]; //out
+        for (int x = 0; x < 8; x++)
+            for (int y = 0; y < 8; y++)
+                o[((7 - y) * 8) + x] = b[(y * 8) + x];
+        return o;
+    }
+
+    /**
      * Asks user which type of expansion they wish to use. If the current ROM is
      * already expanded, this does nothing. Otherwise, it will ask the user if
      * they want to expand to 4 or 6 megabytes. If they try to cancel, the ROM
