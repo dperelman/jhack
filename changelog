@@ -17,7 +17,9 @@ Next version (after v0.4.7.1):
 # Automated error reporting (doesn't work with -c/--console argument)
 # New version notification only shown once. (suggested by JamesPicard_007)
 # BUGFIX: A few comp() bugs fixed (thanks to Faolan for the bug report
-	and Goplat for helping fix them)
+	and Goplat for helping fix them). Attempt made to ensure that any other
+	comp() bugs will not be fatal, unsure if it works.
+# BUGFIX: Selecting "Close ROM" now hides module windows.
 
 v0.4.7.1:
 # IPSDatabase extensions:

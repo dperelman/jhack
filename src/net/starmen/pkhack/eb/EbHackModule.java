@@ -452,7 +452,7 @@ public abstract class EbHackModule extends HackModule
         //unsigned char *limit = &udata[length]; //udata start = 0, so limit =
         // length
         //int limit = length; //probably unneeded, could just use length
-        int pos2, pos3;
+        int pos2 = 0, pos3 = 0;
 //        byte bitrevs[] = new byte[256];
         int tmp;
         int bpos = 0; //position in buffer
@@ -468,119 +468,126 @@ public abstract class EbHackModule extends HackModule
             initBitrevs();
         while (pos < limit)
         {
-            /* Look for patterns */
-            mainloop : for (
-                pos2 = pos; pos2 < limit && pos2 < pos + 1024; pos2++)
+            try
             {
-//                try
-//                {
-//                    swf.stop();
-//                    System.out.println("comp() mainloop: " + swf);
-//                }
-//                catch(IllegalStateException e){}
-//                swf.start();
-                for (pos3 = pos2;
-                    pos3 < limit
-                        && pos3 < pos2 + 1024
-                        && udata[pos2] == udata[pos3];
-                    pos3++);
-                if (pos3 - pos2 >= 3)
-                {
-                    bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
-                    bpos = encode(pos3 - pos2, 1, buffer, bpos);
-                    buffer[bpos++] = udata[pos2];
-                    pos = pos3;
-                    break;
-                }
-                for (pos3 = pos2;
-                    pos3 + 1 < limit
-                        && pos3 < pos2 + 2048
-                        && udata[pos3] == udata[pos2]
-                        && udata[pos3 + 1] == udata[pos2 + 1];
-                    pos3 += 2);
-                if (pos3 - pos2 >= 6)
-                {
-                    bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
-                    bpos = encode((pos3 - pos2) / 2, 2, buffer, bpos);
-                    buffer[bpos++] = udata[pos2];
-                    buffer[bpos++] = udata[pos2 + 1];
-                    pos = pos3;
-                    break;
-                }
-                for (tmp = 0, pos3 = pos2;
-                    pos3 < limit
-                        && pos3 < pos2 + 1024
-                        && udata[pos3] == udata[pos2] + tmp;
-                    pos3++, tmp++);
-                if (pos3 - pos2 >= 4)
-                {
-                    bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
-                    bpos = encode(pos3 - pos2, 3, buffer, bpos);
-                    buffer[bpos++] = udata[pos2];
-                    pos = pos3;
-                    break;
-                }
-                for (pos3 = 0;
-                    (pos3 = memchr(pos3, udata[pos2], pos2 - pos3, udata))
-                        != -1;
-                    pos3++)
-                {
-                    for (tmp = 0;
-                    	pos2 + tmp < limit &&
-                        udata[pos3 + tmp] == udata[pos2 + tmp]
-                            && tmp < pos2 - pos3
-                            && tmp < 1024;
-                        tmp++);
-                    if (tmp >= 5)
-                    {
-                        bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
-                        bpos = encode(tmp, 4, buffer, bpos);
-                        buffer[bpos++] = (byte) ((pos3) >> 8);
-                        buffer[bpos++] = (byte) ((pos3) & 0xFF);
-                        pos = pos2 + tmp;
-                        break mainloop;
-                    }
-                    for (tmp = 0;
-                        tmp <= pos3 && pos2 + tmp < limit
-                            && udata[pos3 - tmp] == udata[pos2 + tmp]
-                            && tmp < 1024;
-                        tmp++);
-                    if (tmp >= 5)
-                    {
-                        bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
-                        bpos = encode(tmp, 6, buffer, bpos);
-                        buffer[bpos++] = (byte) ((pos3) >> 8);
-                        buffer[bpos++] = (byte) ((pos3) & 0xFF);
-                        pos = pos2 + tmp;
-                        break mainloop;
-                    }
-                }
-                for (pos3 = 0;
-                    (pos3 =
-                        memchr(
-                            pos3,
-                            EbHackModule.bitrevs[udata[pos2] & 255],
-                            pos2 - pos3,
-                            udata))
-                        != -1;
-                    pos3++)
-                {
-                    for (tmp = 0;
-                    	pos2 + tmp < limit &&
-                        udata[pos3 + tmp] == EbHackModule.bitrevs[udata[pos2 + tmp] & 255]
-                            && tmp < pos2 - pos3
-                            && tmp < 1024;
-                        tmp++);
-                    if (tmp >= 5)
-                    {
-                        bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
-                        bpos = encode(tmp, 5, buffer, bpos);
-                        buffer[bpos++] = (byte) ((pos3) >> 8);
-                        buffer[bpos++] = (byte) ((pos3) & 0xFF);
-                        pos = pos2 + tmp;
-                        break mainloop;
-                    }
-                }
+	            /* Look for patterns */
+	            mainloop : for (
+	                pos2 = pos; pos2 < limit && pos2 < pos + 1024; pos2++)
+	            {
+	//                try
+	//                {
+	//                    swf.stop();
+	//                    System.out.println("comp() mainloop: " + swf);
+	//                }
+	//                catch(IllegalStateException e){}
+	//                swf.start();
+	                for (pos3 = pos2;
+	                    pos3 < limit
+	                        && pos3 < pos2 + 1024
+	                        && udata[pos2] == udata[pos3];
+	                    pos3++);
+	                if (pos3 - pos2 >= 3)
+	                {
+	                    bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
+	                    bpos = encode(pos3 - pos2, 1, buffer, bpos);
+	                    buffer[bpos++] = udata[pos2];
+	                    pos = pos3;
+	                    break;
+	                }
+	                for (pos3 = pos2;
+	                    pos3 + 1 < limit
+	                        && pos3 < pos2 + 2048
+	                        && udata[pos3] == udata[pos2]
+	                        && udata[pos3 + 1] == udata[pos2 + 1];
+	                    pos3 += 2);
+	                if (pos3 - pos2 >= 6)
+	                {
+	                    bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
+	                    bpos = encode((pos3 - pos2) / 2, 2, buffer, bpos);
+	                    buffer[bpos++] = udata[pos2];
+	                    buffer[bpos++] = udata[pos2 + 1];
+	                    pos = pos3;
+	                    break;
+	                }
+	                for (tmp = 0, pos3 = pos2;
+	                    pos3 < limit
+	                        && pos3 < pos2 + 1024
+	                        && udata[pos3] == udata[pos2] + tmp;
+	                    pos3++, tmp++);
+	                if (pos3 - pos2 >= 4)
+	                {
+	                    bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
+	                    bpos = encode(pos3 - pos2, 3, buffer, bpos);
+	                    buffer[bpos++] = udata[pos2];
+	                    pos = pos3;
+	                    break;
+	                }
+	                for (pos3 = 0;
+	                    (pos3 = memchr(pos3, udata[pos2], pos2 - pos3, udata))
+	                        != -1;
+	                    pos3++)
+	                {
+	                    for (tmp = 0;
+	                    	pos2 + tmp < limit &&
+	                        udata[pos3 + tmp] == udata[pos2 + tmp]
+	                            && tmp < pos2 - pos3
+	                            && tmp < 1024;
+	                        tmp++);
+	                    if (tmp >= 5)
+	                    {
+	                        bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
+	                        bpos = encode(tmp, 4, buffer, bpos);
+	                        buffer[bpos++] = (byte) ((pos3) >> 8);
+	                        buffer[bpos++] = (byte) ((pos3) & 0xFF);
+	                        pos = pos2 + tmp;
+	                        break mainloop;
+	                    }
+	                    for (tmp = 0;
+	                        tmp <= pos3 && pos2 + tmp < limit
+	                            && udata[pos3 - tmp] == udata[pos2 + tmp]
+	                            && tmp < 1024;
+	                        tmp++);
+	                    if (tmp >= 5)
+	                    {
+	                        bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
+	                        bpos = encode(tmp, 6, buffer, bpos);
+	                        buffer[bpos++] = (byte) ((pos3) >> 8);
+	                        buffer[bpos++] = (byte) ((pos3) & 0xFF);
+	                        pos = pos2 + tmp;
+	                        break mainloop;
+	                    }
+	                }
+	                for (pos3 = 0;
+	                    (pos3 =
+	                        memchr(
+	                            pos3,
+	                            EbHackModule.bitrevs[udata[pos2] & 255],
+	                            pos2 - pos3,
+	                            udata))
+	                        != -1;
+	                    pos3++)
+	                {
+	                    for (tmp = 0;
+	                    	pos2 + tmp < limit &&
+	                        udata[pos3 + tmp] == EbHackModule.bitrevs[udata[pos2 + tmp] & 255]
+	                            && tmp < pos2 - pos3
+	                            && tmp < 1024;
+	                        tmp++);
+	                    if (tmp >= 5)
+	                    {
+	                        bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
+	                        bpos = encode(tmp, 5, buffer, bpos);
+	                        buffer[bpos++] = (byte) ((pos3) >> 8);
+	                        buffer[bpos++] = (byte) ((pos3) & 0xFF);
+	                        pos = pos2 + tmp;
+	                        break mainloop;
+	                    }
+	                }
+	            }
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
             }
             DONE:
             /* Can't compress, so just use 0 (raw) */

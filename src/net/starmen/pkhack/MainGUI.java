@@ -1107,6 +1107,7 @@ public class MainGUI implements ActionListener, WindowListener
                 rom.saveRom();
             }
         }
+        hideModules();
         doBackup();
 
         rom.isLoaded = false;
@@ -1114,7 +1115,22 @@ public class MainGUI implements ActionListener, WindowListener
             + MainGUI.getVersion());
         this.refreshRevertMenu();
     }
-
+    
+    private void hideModules()
+    {
+        for (int i = 0; i < getModuleCount(); i++)
+        {
+            try
+            {
+                getModuleAt(i).hide();
+            }
+            catch (NullPointerException npe)
+            {
+                //If not module inited yet
+            }
+        }
+    }
+    
     private void resetModules()
     {
         //offset in module list where IPSDatabase is
