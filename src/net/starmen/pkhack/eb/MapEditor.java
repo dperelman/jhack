@@ -34,6 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -72,6 +73,7 @@ public class MapEditor extends EbHackModule implements ActionListener
     public static final int mapTsetNum = 32;
     public static final int palsNum = 59;
     private JMenu modeMenu;
+    private JMenuItem sectorProps;
     private boolean oldCompatability = false;
 
     public static final String[] TILESET_NAMES = {"Underworld", "Onett",
@@ -79,11 +81,6 @@ public class MapEditor extends EbHackModule implements ActionListener
         "Desert", "Dalaam", "Indoors 1", "Indoors 2", "Stores 1", "Caves 1",
         "Indoors 3", "Stores 2", "Indoors 4", "Winters", "Scaraba", "Caves 2"};
 
-    // public static final int[] MAP_TILESETS = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-    // 10, 10, 11, 17, 10, 10, 10, 10, 18, 16, 12, 11, 11, 11, 15, 14, 19, 13,
-    // 13, 13, 13, 0 };
-
-    // private EbMap EbMap;
     private MapGraphics gfxcontrol;
 
     public JPanel createTopButtons()
@@ -259,6 +256,9 @@ public class MapEditor extends EbHackModule implements ActionListener
         		"Reload Music Names", 'm', null, 
 				MenuListener.MUSIC_NAMES, 
 				menuListener));
+        sectorProps.addActionListener(menuListener);
+        sectorProps.setEnabled(false);
+        menu.add(sectorProps);
         menuBar.add(menu);
         
         menu = new JMenu("Options");
@@ -390,9 +390,12 @@ public class MapEditor extends EbHackModule implements ActionListener
     protected void init()
     {
         modeMenu = new JMenu("Mode");
+        sectorProps = EbHackModule.createJMenuItem(
+        		"Edit Sector's Properties", 'p', null, 
+				MenuListener.SECTOR_PROPS, null);
     	
         gfxcontrol = new MapGraphics(this, 24, 12, 0, 
-        		true, true, modeMenu);
+        		true, true, modeMenu, sectorProps);
 
         createGUI();
     }
@@ -485,6 +488,7 @@ public class MapEditor extends EbHackModule implements ActionListener
     	public static final String COMPATABILITY = "4xCompatability";
     	public static final String MAPCHANGES = "mapChanges";
     	public static final String MUSIC_NAMES = "musicNames";
+    	public static final String SECTOR_PROPS = "sectorProps";
     	
 		public void actionPerformed(ActionEvent e)
 		{
@@ -570,6 +574,9 @@ public class MapEditor extends EbHackModule implements ActionListener
 			}
 			else if (ac.equals(MUSIC_NAMES))
 				gfxcontrol.reloadMusicNames();
+			else if (ac.equals(SECTOR_PROPS))
+				net.starmen.pkhack.JHack.main.showModule(
+						MapSectorPropertiesEditor.class, gfxcontrol.getSectorxy());
 		}
 	}
 
@@ -585,6 +592,7 @@ public class MapEditor extends EbHackModule implements ActionListener
         mainWindow.setVisible(true);
         mainWindow.repaint();
         
+        gfxcontrol.reloadMap();
         gfxcontrol.remoteRepaint();
         
         readFromRom();
@@ -626,7 +634,6 @@ public class MapEditor extends EbHackModule implements ActionListener
     {
     	EbMap.reset();
     	readFromRom();
-    	gfxcontrol.reloadMap();
     }
 
     public String getDescription()
@@ -636,7 +643,7 @@ public class MapEditor extends EbHackModule implements ActionListener
 
     public String getVersion()
     {
-        return "0.4.1";
+        return "0.4.2";
     }
 
     public String getCredits()
@@ -663,6 +670,7 @@ public class MapEditor extends EbHackModule implements ActionListener
         private JComboBox tilesetList, paletteBox, musicBox;
         private JScrollBar xScroll, yScroll;
         private JMenu modeMenu;
+        private JMenuItem sectorProps;
         private boolean grid, spriteBoxes, centered, mapChanges = false, enabled = true;
         private SeekListener seekSource;
         private TileChooser editBox;
@@ -757,7 +765,7 @@ public class MapEditor extends EbHackModule implements ActionListener
         }
 
         public MapGraphics(HackModule hm, int screenWidth, int screenHeight,
-        		int mode, boolean grid, boolean spriteBoxes, JMenu modeMenu)
+        		int mode, boolean grid, boolean spriteBoxes, JMenu modeMenu, JMenuItem sectorProps)
         {
         	this.hm = hm;
         	this.screenWidth = screenWidth;
@@ -802,6 +810,7 @@ public class MapEditor extends EbHackModule implements ActionListener
             editBox = new MapEditor.TileChooser(23, 3, getModeProps()[1] < 2);
             
             this.modeMenu = modeMenu;
+            this.sectorProps = sectorProps;
             setMapXY(0,0);
             updateComponents();
             reloadMap();
@@ -908,8 +917,7 @@ public class MapEditor extends EbHackModule implements ActionListener
                     for (int i2 = 0; i2 < row2draw.length; i2++)
                     {
                     	sectorX = (i2 + tileX) / MapEditor.sectorWidth;
-                    	if (! EbMap.isSectorDataLoaded(
-                    			sectorX, sectorY))
+                    	if (! EbMap.isSectorDataLoaded(sectorX, sectorY))
                     		EbMap.loadSectorData(hm.rom, sectorX, sectorY);
                     	EbMap.Sector sector = EbMap.getSectorData(sectorX, sectorY);
                     	tile_set = EbMap.getDrawTileset(sector.getTileset());
@@ -1233,15 +1241,14 @@ public class MapEditor extends EbHackModule implements ActionListener
         {
             if (knowssector && (this.sectorx == sectorx)
                 && (this.sectory == sectory))
-            {
-                knowssector = false;
-            }
+            	knowssector = false;
             else
             {
             	this.knowssector = true;
                 this.sectorx = sectorx;
                 this.sectory = sectory;
             }
+            sectorProps.setEnabled(knowssector);
         }
         
         public boolean knowsSector()
@@ -2690,57 +2697,58 @@ public class MapEditor extends EbHackModule implements ActionListener
     	};
     	
     	private static final int mapAddressesPtr = 0xa3db;
-        private static final int tsetpalAddress = 0x17AA00;
-        private static final int musicAddress = 0x1cd837;
-        private static final int dPointersAddress = 0x100200;
-        private static final int tsetTblAddress = 0x2F121B;
-        private static final int localTsetAddress = 0x175200;
-        private static final int spDataEnd = 0xf8b91;
-        private static final int spAsmPointer = 0x2461;
-        private static final int spDataBase = 0xf0200; // 2 byte ptr + 0xf0200
-        // private static int[] mapAddresses = new int[8];
-        private static ArrayList mapChanges = new ArrayList();
-        private static ArrayList[] spData =
-        	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-        private static Sector[] sectorData =
-        	new Sector[MapEditor.heightInSectors * MapEditor.widthInSectors];
-        private static int[] drawingTilesets =
-        	new int[MapEditor.mapTsetNum];
-        private static ArrayList localTilesetChanges = new ArrayList();
-        private static ArrayList[] doorData =
-        	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-        private static int[] oldDoorEntryLengths =
-        	new int[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-        private static ArrayList destData = new ArrayList();
-        private static ArrayList destsLoaded = new ArrayList();
-        private static ArrayList destsIndexes = new ArrayList();
-        private static Image[][][] tileImages =
-        	new Image[TILESET_NAMES.length][1024][MapEditor.mapTsetNum];
-        private static Image[][] spriteImages =
-        	new Image[SpriteEditor.NUM_ENTRIES][8];
-        
-        public static void reset()
-        {
-        	// mapAddresses = new int[8];
-        	mapChanges = new ArrayList();
-            spData =
+    	private static final int tsetpalAddress = 0x17AA00;
+       private static final int musicAddress = 0x1cd837;
+       private static final int dPointersAddress = 0x100200;
+       private static final int tsetTblAddress = 0x2F121B;
+       private static final int localTsetAddress = 0x175200;
+       private static final int spDataEnd = 0xf8b91;
+       private static final int spAsmPointer = 0x2461;
+       private static final int spDataBase = 0xf0200; // 2 byte ptr + 0xf0200
+       private static final int sectorPropsAddress = 0x17b400;
+       // private static int[] mapAddresses = new int[8];
+       private static ArrayList mapChanges = new ArrayList();
+       private static ArrayList[] spData =
+       	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
+       private static Sector[] sectorData =
+       	new Sector[MapEditor.heightInSectors * MapEditor.widthInSectors];
+       private static int[] drawingTilesets =
+       	new int[MapEditor.mapTsetNum];
+       private static ArrayList localTilesetChanges = new ArrayList();
+       private static ArrayList[] doorData =
+       	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
+       private static int[] oldDoorEntryLengths =
+       	new int[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
+       private static ArrayList destData = new ArrayList();
+       private static ArrayList destsLoaded = new ArrayList();
+       private static ArrayList destsIndexes = new ArrayList();
+       private static Image[][][] tileImages =
+       	new Image[TILESET_NAMES.length][1024][MapEditor.mapTsetNum];
+       private static Image[][] spriteImages =
+       	new Image[SpriteEditor.NUM_ENTRIES][8];
+       
+       public static void reset()
+       {
+       // mapAddresses = new int[8];
+       	mapChanges = new ArrayList();
+           spData =
+           	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
+           sectorData =
+           	new Sector[MapEditor.heightInSectors * MapEditor.widthInSectors];
+           drawingTilesets = new int[MapEditor.mapTsetNum];
+           localTilesetChanges = new ArrayList();
+           doorData =
             	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-            sectorData =
-            	new Sector[MapEditor.heightInSectors * MapEditor.widthInSectors];
-            drawingTilesets = new int[MapEditor.mapTsetNum];
-            localTilesetChanges = new ArrayList();
-            doorData =
-            	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-            oldDoorEntryLengths =
+           oldDoorEntryLengths =
             	new int[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-            destData = new ArrayList();
-            destsLoaded = new ArrayList();
-            destsIndexes = new ArrayList();
-            tileImages =
-            	new Image[MapEditor.drawTsetNum][1024][MapEditor.palsNum];
-            spriteImages =
-            	new Image[SpriteEditor.NUM_ENTRIES][8];
-        }
+           destData = new ArrayList();
+           destsLoaded = new ArrayList();
+           destsIndexes = new ArrayList();
+           tileImages =
+           	new Image[MapEditor.drawTsetNum][1024][MapEditor.palsNum];
+           spriteImages =
+           	new Image[SpriteEditor.NUM_ENTRIES][8];
+       }
         
         /*public static void loadMapAddresses(AbstractRom rom)
         {
@@ -2850,17 +2858,26 @@ public class MapEditor extends EbHackModule implements ActionListener
         
         public static void loadSectorData(AbstractRom rom, int sectorX, int sectorY)
         {
+        	int sectorNum = (sectorY * ((MapEditor.width + 1) / MapEditor.sectorWidth)) + sectorX;
             int address = tsetpalAddress 
 				+ (sectorY * ((MapEditor.width + 1) / MapEditor.sectorWidth)) + sectorX;
             byte tsetpal_data = rom.readByte(address);
             short music = (short) ((rom.read(musicAddress + 
             		(sectorY * ((MapEditor.width + 1) / MapEditor.sectorWidth))
 					+ sectorX) - 1) & 0xff);
-        	sectorData[sectorX + (sectorY * MapEditor.widthInSectors)]
+            
+            byte byte1 = rom.readByte(sectorPropsAddress + 2 * sectorNum);
+            boolean canTeleport = (byte1 & 0x80) > 0;
+            boolean unknown = (byte1 & 0x40) > 0;
+            byte townmap = (byte) ((byte1 & 0x38) >> 3);
+            byte misc = (byte) (byte1 & 0x7);
+            byte item = rom.readByte(sectorPropsAddress + 2 * sectorNum + 1);
+            
+            sectorData[sectorX + (sectorY * MapEditor.widthInSectors)]
 					   = new Sector(
 					   		(byte) ((tsetpal_data & 0xf8) >> 3),
 							(byte) (tsetpal_data & 0x7),
-							music);
+							music, canTeleport, unknown, townmap, misc, item);
         };
         
         public static Sector getSectorData(int sectorX, int sectorY)
@@ -2880,6 +2897,8 @@ public class MapEditor extends EbHackModule implements ActionListener
 							+ sectorData[i].getPalette());
         			rom.write(musicAddress + i,
         					sectorData[i].getMusic() + 1);
+        			rom.write(sectorPropsAddress + i, sectorData[i].getPropsByte1());
+        			rom.write(sectorPropsAddress + i + 1, sectorData[i].getItem());
         		}
         	}
         }
@@ -3739,14 +3758,21 @@ public class MapEditor extends EbHackModule implements ActionListener
 
         public static class Sector
 		{
-        	private byte tileset, palette;
+        	private byte tileset, palette, townmap, misc, item;
         	private short music;
+        	private boolean cantTeleport, unknown;
         	
-        	public Sector(byte tileset, byte palette, short music)
+        	public Sector(byte tileset, byte palette, short music, boolean cantTeleport,
+        			boolean unknown, byte townmap, byte misc, byte item)
         	{
         		this.tileset = tileset;
         		this.palette = palette;
         		this.music = music;
+        		this.cantTeleport = cantTeleport;
+        		this.unknown = unknown;
+        		this.townmap = townmap;
+        		this.misc = misc;
+        		this.item = item;
         	}
         	
         	public void setTileset(byte tileset)
@@ -3777,6 +3803,66 @@ public class MapEditor extends EbHackModule implements ActionListener
         	public short getMusic()
         	{
         		return music;
+        	}
+        	
+        	public boolean cantTeleport()
+        	{
+        		return cantTeleport;
+        	}
+        	
+        	public void setCantTeleport(boolean cantTeleport)
+        	{
+        		this.cantTeleport = cantTeleport;
+        	}
+        	
+        	public boolean isUnknownEnabled()
+        	{
+        		return unknown;
+        	}
+        	
+        	public void setUnknown(boolean unknown)
+        	{
+        		this.unknown = unknown;
+        	}
+        	
+        	public byte getTownMap()
+        	{
+        		return townmap;
+        	}
+        	
+        	public void setTownMap(byte townmap)
+        	{
+        		this.townmap = townmap;
+        	}
+        	
+        	public byte getMisc()
+        	{
+        		return misc;
+        	}
+        	
+        	public void setMisc(byte misc)
+        	{
+        		this.misc = misc;
+        	}
+        	
+        	public byte getItem()
+        	{
+        		return item;
+        	}
+        	
+        	public void setItem(byte item)
+        	{
+        		this.item = item;
+        	}
+        	
+        	public byte getPropsByte1()
+        	{
+        		byte out = 0;
+        		out += (cantTeleport ? 1 : 0) << 7;
+        		out += (unknown ? 1 : 0) << 6;
+        		out += townmap << 3;
+        		out += misc;
+        		return out;
         	}
 		}
        
