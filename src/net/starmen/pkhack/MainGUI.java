@@ -824,7 +824,8 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public Rom getOrginalRomFile(String romType)
     {
-        if (orgRom != null && orgRom.isLoaded) return orgRom;
+        if (orgRom != null && orgRom.isLoaded && orgRom.romType.equals(romType))
+            return orgRom;
         Rom out = requestOrgRomFile(romType);
         if (out != null)
             return orgRom = out;
