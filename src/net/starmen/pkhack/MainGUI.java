@@ -1121,6 +1121,7 @@ public class MainGUI implements ActionListener, WindowListener
 
     private void resetModules()
     {
+        int tmp = -1;
         for (int i = 0; i < getModuleCount(); i++)
         {
             try
@@ -1131,7 +1132,11 @@ public class MainGUI implements ActionListener, WindowListener
                     //                        + rom.getRomType() + " ROM and is usable by "
                     //                        + modButtons[i].getText() + ".");
                     modButtons[i].setVisible(true);
-                    getModuleAt(i).reset();
+                    //make sure IPSDatabase is reset last
+                    if (getModuleAt(i) instanceof IPSDatabase)
+                        tmp = i;
+                    else
+                        getModuleAt(i).reset();
                 }
                 else
                 {
@@ -1146,6 +1151,15 @@ public class MainGUI implements ActionListener, WindowListener
             {
                 //If not module inited yet
             }
+        }
+        try
+        {
+            if (tmp != -1)
+                getModuleAt(tmp).reset();
+        }
+        catch (NullPointerException npe)
+        {
+            //If not module inited yet
         }
     }
 
