@@ -1115,11 +1115,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
             		String input = JOptionPane.showInputDialog(
                             mainWindow,
                             "Change which TPT entry this"
-							+ " sprite entry will display.",
-                            Integer.toString((int) tpt));
+							+ " sprite entry will display. (Hexidecimal input)",
+                            Integer.toHexString((int) tpt));
             		if (input != null)
             		{
-            			short newTpt = (new Short(input)).shortValue();
+            			short newTpt = (short) Integer.parseInt(input,16);
             			short[] spriteXY = EbMap.getSpriteXY(
             					areaX, areaY, num);
             			EbMap.removeSprite(
