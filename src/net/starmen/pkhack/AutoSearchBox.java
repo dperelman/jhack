@@ -160,7 +160,7 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	public void actionPerformed(ActionEvent ae)
 	{
 		Object a = comboBox.getSelectedItem();
-		if (!(a.equals(null)))
+		if (a != null)
 		{
 			String _ = a.toString();
 			tf.setText(_.substring(0,_.indexOf(" ")));	
