@@ -789,6 +789,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     public void reset()
     {
     	gfxcontrol.resetTileImages();
+    	mapcontrol = new EbMap(this);
     }
 
     public String getDescription()
