@@ -1225,9 +1225,9 @@ public class PhotoEditor extends EbHackModule
                 			sectorX, sectorY))
                 		MapEditor.EbMap.loadSectorData(
                 				rom, sectorX, sectorY);
+                	EbMap.Sector sector = EbMap.getSectorData(sectorX, sectorY);
                 	
-                    tile_set = MapEditor.EbMap.getDrawTileset(
-                    		MapEditor.EbMap.getTset(sectorX, sectorY));
+                    tile_set = MapEditor.EbMap.getDrawTileset(sector.getTileset());
                     tile_tile = mapArray[i][j]
                         | (MapEditor.EbMap.getLocalTileset(rom,
                         		tileX + j,
