@@ -6,16 +6,15 @@ NEXT RELEASE
 
 # Latest version of Jeffman's logos for ipslisting.xml when he finishes
 # BA's PSIEditor edit
-#??? --> [03:09:02] <EBisumaru> Dammit, JHack can't do the compression.
-#[12:38:45] <JeffMan> oh and you should add the mother 2 font 
+# ??? --> [03:09:02] <EBisumaru> Dammit, JHack can't do the compression.
+# [12:38:45] <JeffMan> oh and you should add the mother 2 font 
 	and the debug menu font to jhack's font editor if you can
 
 LONG TERM
 
 # IPSDatabase extensions?
 # Starting stat editor ( 1DAF1 = Value for Ness' starting stats )
-# Coffee/Tea Editor
-# PSI Animation editor ( http://pkhack.fobby.net/misc/txt/psi_animation_doc.txt )
+# Battle Animation editor ( http://pkhack.fobby.net/misc/txt/psi_animation_doc.txt )
 # Title screen editor
 # Death screen editor
 # Credits Font editor

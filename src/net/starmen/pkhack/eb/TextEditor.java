@@ -80,10 +80,12 @@ public class TextEditor extends EbHackModule implements ActionListener
         super(rom, prefs);
     }
 
-    public static final int TPT = 0;
-    public static final int RAW = 1;
-    public static final int EXP = 2;
-    public static final int NUM_TEXT_TYPES = 3;
+    public static final int TPT = 0; //tpt pointers
+    public static final int RAW = 1; //raw text, various areas
+    public static final int EXP = 2; //expanded meg
+    public static final int TEA = 3; //coffee, tea sequence, flyovers
+    public static final int ECD = 4; //end credits
+    public static final int NUM_TEXT_TYPES = 5;
 
     //	String class
     public static class StrInfo
@@ -101,7 +103,18 @@ public class TextEditor extends EbHackModule implements ActionListener
             textLists[i] = new ArrayList();
     }
 
-    public static CCInfo cc;
+    public static final int CC_MAIN = 0, CC_TEA = 1, CC_CRD = 2;
+    public static final int NUM_CC_TYPES = 3;
+    public static final boolean[] ALLOW_COMP = new boolean[]{true, false, false};
+    public static final boolean[] IS_CREDITS = new boolean[]{false, false, true};
+    public static final String[] CODELIST_LOCS = new String[]{
+        DEFAULT_BASE_DIR + "codelist.txt",
+        DEFAULT_BASE_DIR + "teacodelist.txt",
+        DEFAULT_BASE_DIR + "creditcodelist.txt"};
+    public static final int[] TEXT_CC_TYPE = new int[]{CC_MAIN, CC_MAIN,
+        CC_MAIN, CC_TEA, CC_CRD};
+
+    public static CCInfo[] cc = new CCInfo[NUM_CC_TYPES];
 
     private class ActionCreator extends AbstractButton implements
         ListSelectionListener
@@ -124,7 +137,10 @@ public class TextEditor extends EbHackModule implements ActionListener
         }
     }
 
-    private static String[] tabShortNames = new String[]{"tpt", "raw", "exp"};
+    private static String[] tabShortNames = new String[]{"tpt", "raw", "exp",
+        "tea", "crd"};
+    private static String[] tabNames = new String[]{"Text Pointer Table",
+        "Raw Text", "Expanded Area", "Coffee/Tea/Flyover", "End Credits"};
 
     protected void init()
     {
@@ -146,10 +162,10 @@ public class TextEditor extends EbHackModule implements ActionListener
         editMenu.add(HackModule.createJMenuItem("Delete", 'd', "DELETE",
             "delete", this));
         editMenu.add(new JSeparator());
-        editMenu.add(HackModule.createJMenuItem("Undo", 'u', "ctrl Z",
-            "undo", this));
-        editMenu.add(HackModule.createJMenuItem("Redo", 'r', "ctrl Y",
-            "redo", this));
+        editMenu.add(HackModule.createJMenuItem("Undo", 'u', "ctrl Z", "undo",
+            this));
+        editMenu.add(HackModule.createJMenuItem("Redo", 'r', "ctrl Y", "redo",
+            this));
         editMenu.add(new JSeparator());
         editMenu.add(HackModule.createJMenuItem("Find", 'f', "ctrl F", "find",
             this));
@@ -199,8 +215,6 @@ public class TextEditor extends EbHackModule implements ActionListener
 
         Box entry = new Box(BoxLayout.Y_AXIS);
 
-        String[] tabNames = new String[]{"Text Pointer Table", "Raw Text",
-            "Expanded Area"};
         final List[] tabContents = textLists;
         textJLists = new JList[tabNames.length];
         selectorArea = new JTabbedPane();
@@ -373,7 +387,7 @@ public class TextEditor extends EbHackModule implements ActionListener
             {
                 if (address < 0x08BE2D || address >= 0x8DC31)
                 {
-                    StrInfo s = cc.readString(address);
+                    StrInfo s = cc[CC_MAIN].readString(address);
 
                     textLists[RAW].add(s);
 
@@ -405,7 +419,7 @@ public class TextEditor extends EbHackModule implements ActionListener
         {
             do
             {
-                StrInfo s = cc.readString(address);
+                StrInfo s = cc[CC_MAIN].readString(address);
 
                 textLists[EXP].add(s);
 
@@ -436,7 +450,7 @@ public class TextEditor extends EbHackModule implements ActionListener
             int address = TPTEditor.tptEntries[i].getPointer();
             if (address > 0 && (address = toRegPointer(address)) > 0)
             {
-                StrInfo s = cc.readString(address);
+                StrInfo s = cc[CC_MAIN].readString(address);
                 s.num = i;
                 textLists[TPT].add(s);
             }
@@ -447,7 +461,7 @@ public class TextEditor extends EbHackModule implements ActionListener
                 address = TPTEditor.tptEntries[i].getSecPointer();
                 if (address > 0 && (address = toRegPointer(address)) > 0)
                 {
-                    StrInfo s = cc.readString(address);
+                    StrInfo s = cc[CC_MAIN].readString(address);
                     s.num = i;
                     textLists[TPT].add(s);
                 }
@@ -455,6 +469,27 @@ public class TextEditor extends EbHackModule implements ActionListener
         }
 
         return textLists[TPT].size();
+    }
+
+    public static int loadSimpText(int ln, int parser, int address, int end)
+    {
+        int istr;
+        istr = 0;
+
+        textLists[ln].clear();
+
+        do
+        {
+            StrInfo s = cc[parser].readString(address);
+
+            textLists[ln].add(s);
+
+            address += s.str.length();
+            istr++;
+        }
+        while (address <= end);
+
+        return istr;
     }
 
     public static int loadText(int type, HackModule hm)
@@ -467,6 +502,10 @@ public class TextEditor extends EbHackModule implements ActionListener
                 return loadRawText();
             case EXP:
                 return loadEXPText(hm.rom);
+            case TEA:
+                return loadSimpText(TEA, CC_TEA, 0x210200, 0x210E79);
+            case ECD:
+                return loadSimpText(ECD, CC_CRD, 0x214352, 0x214FE2);
             default:
                 return -1;
         }
@@ -478,8 +517,10 @@ public class TextEditor extends EbHackModule implements ActionListener
         //            "("
         //                + new Date().toGMTString()
         //                + ") Going to init cc and comp list.");
-        if (cc == null)
-            cc = new CCInfo(DEFAULT_BASE_DIR + "codelist.txt", hm.rom);
+        for (int i = 0; i < NUM_CC_TYPES; i++)
+            if (cc[i] == null)
+                cc[i] = new CCInfo(CODELIST_LOCS[i], hm.rom, ALLOW_COMP[i],
+                    IS_CREDITS[i]);
         //        System.out.println(
         //            "("
         //                + new Date().toGMTString()
@@ -608,7 +649,7 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     public String getVersion()
     {
-        return "0.5";
+        return "0.6";
     }
 
     public String getDescription()
@@ -727,14 +768,16 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     private void saveInfo()
     {
+        CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
+
         boolean comp = useComp.isSelected();
-        if (comp && cc.getStringLength(ta.getText(), true) == 0)
+        if (comp && cct.getStringLength(ta.getText(), true) == 0)
         {
             comp = false;
         }
-        String text = comp ? cc.compressString(ta.getText()) : ta.getText();
+        String text = comp ? cct.compressString(ta.getText()) : ta.getText();
         StrInfo si = (StrInfo) textLists[currentList].get(currentSelection);
-        if (cc.getStringLength(text, false) > si.str.length()
+        if (cct.getStringLength(text, false) > si.str.length()
             && isPreventOverwrites())
         {
             JOptionPane.showMessageDialog(mainWindow,
@@ -745,7 +788,7 @@ public class TextEditor extends EbHackModule implements ActionListener
                 "Pre-Write Error: Text too long", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        cc.writeString(cc.deparseString(text), si.address);
+        cct.writeString(cct.deparseString(text), si.address);
         loadText(currentList, this);
         resetList();
         showInfo();
@@ -755,6 +798,8 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     private void showInfo()
     {
+        CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
+
         si = (StrInfo) textLists[currentList].get(currentSelection);
 
         positionLabel.setText("Line: " + (currentSelection + 1) + "/"
@@ -766,11 +811,11 @@ public class TextEditor extends EbHackModule implements ActionListener
 
         if (isCodesOnly())
         {
-            ta.setText(cc.parseCodesOnly(si.str));
+            ta.setText(cct.parseCodesOnly(si.str));
         }
         else
         {
-            ta.setText(cc.parseString(si.str));
+            ta.setText(cct.parseString(si.str));
         }
         if (codeHelp != null && codeHelp.isShowing())
             updateCodeHelp();
@@ -778,7 +823,7 @@ public class TextEditor extends EbHackModule implements ActionListener
             showEntry.setEnabled(true);
         else
             showEntry.setEnabled(false);
-        
+
         clearUndo();
     }
 
@@ -790,20 +835,18 @@ public class TextEditor extends EbHackModule implements ActionListener
         if (ae.getActionCommand().startsWith("textList"))
         {
             String tmp = ae.getActionCommand().substring(8, 11);
-            if (tmp.equals("tpt"))
-                currentList = TPT;
-            else if (tmp.equals("raw"))
-                currentList = RAW;
-            else if (tmp.equals("exp"))
-                currentList = EXP;
-            else
+            for (int i = 0; i < tabShortNames.length; i++)
             {
-                System.out.println("textList action code failed");
-                return;
+                if (tmp.equals(tabShortNames[i]))
+                {
+                    currentList = i;
+                    currentSelection = Integer.parseInt(ae.getActionCommand()
+                        .substring(11));
+                    showInfo();
+                    return;
+                }
             }
-            currentSelection = Integer.parseInt(ae.getActionCommand()
-                .substring(11));
-            showInfo();
+            System.out.println("textList action code failed");
         }
         else if (ae.getActionCommand().equals("copy"))
         {
@@ -821,11 +864,11 @@ public class TextEditor extends EbHackModule implements ActionListener
         {
             ta.replaceSelection("");
         }
-        else if(ae.getActionCommand().equals("undo"))
+        else if (ae.getActionCommand().equals("undo"))
         {
             undo();
         }
-        else if(ae.getActionCommand().equals("redo"))
+        else if (ae.getActionCommand().equals("redo"))
         {
             redo();
         }
@@ -853,17 +896,19 @@ public class TextEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("codesOnly"))
         {
+            CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
+
             String text = useComp.isSelected()
-                && cc.getStringLength(ta.getText(), true) > 0 ? cc
+                && cct.getStringLength(ta.getText(), true) > 0 ? cct
                 .compressString(ta.getText()) : ta.getText();
-            String tmp = cc.deparseString(text);
+            String tmp = cct.deparseString(text);
             if (isCodesOnly())
             {
-                ta.setText(cc.parseCodesOnly(tmp));
+                ta.setText(cct.parseCodesOnly(tmp));
             }
             else
             {
-                ta.setText(cc.parseString(tmp));
+                ta.setText(cct.parseString(tmp));
             }
         }
         else if (ae.getActionCommand().equals("showCodeHelp"))
@@ -902,21 +947,23 @@ public class TextEditor extends EbHackModule implements ActionListener
                 ((StrInfo) textLists[currentList].get(currentSelection)).num));
         }
     }
-    
+
     private void clearUndo()
     {
         undo.clear();
         undoPos = -1;
     }
+
     private void undo()
     {
-        if(undoPos > -1)
-        ((UndoableEdit)undo.get(undoPos--)).undo();
+        if (undoPos > -1)
+            ((UndoableEdit) undo.get(undoPos--)).undo();
     }
+
     private void redo()
     {
-        if(undo.size() > undoPos + 1)
-        ((UndoableEdit)undo.get(++undoPos)).redo();
+        if (undo.size() > undoPos + 1)
+            ((UndoableEdit) undo.get(++undoPos)).redo();
     }
 
     private boolean findWindowInited = false;
@@ -924,15 +971,19 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     private void find()
     {
+        CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
+
         if (findTF == null)
             return;
-        String f = cc.deparseString(findTF.getText().toLowerCase());
+        String f = cct.deparseString(findTF.getText().toLowerCase());
         int tmp = 0, s = textLists[currentList].size(), c = currentSelection + 1;
         for (int i = 0; i < textLists[currentList].size(); i++)
         {
             int j = i + c < s ? i + c : i + c - s;
-            if (cc.deparseString(
-                cc.parseString((((StrInfo) textLists[currentList].get(j)).str))
+            if (cct.deparseString(
+                cct
+                    .parseString(
+                        (((StrInfo) textLists[currentList].get(j)).str))
                     .toLowerCase()).indexOf(f) != -1)
             {
                 showInfo(currentList, j);
@@ -1052,8 +1103,9 @@ public class TextEditor extends EbHackModule implements ActionListener
         {
             try
             {
-                ta.setCaretPosition(cc.getStringIndex(ta.getText(), useComp
-                    .isSelected(), offset - si.address));
+                ta.setCaretPosition(cc[TEXT_CC_TYPE[currentList]]
+                    .getStringIndex(ta.getText(), useComp.isSelected(), offset
+                        - si.address));
             }
             catch (IllegalArgumentException e)
             {
@@ -1119,8 +1171,9 @@ public class TextEditor extends EbHackModule implements ActionListener
                         //                        System.out.println("Going to a relative offset... ("
                         //                            + tf.getText() + ")");
                         offset = si.address
-                            + cc.getStringLength(ta.getText(), useComp
-                                .isSelected(), 0, ta.getCaretPosition());
+                            + cc[TEXT_CC_TYPE[currentList]].getStringLength(ta
+                                .getText(), useComp.isSelected(), 0, ta
+                                .getCaretPosition());
                         String tmp = tf.getText().substring(1);
                         try
                         {
@@ -1159,16 +1212,19 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     private void updateCodeHelp()
     {
-        CCInfo.CCNode[] ccs = cc.getCCsUsed(((StrInfo) textLists[currentList]
-            .get(currentSelection)).str);
-        String out = new String();
+        CCInfo.CCNode[] ccs = cc[TEXT_CC_TYPE[currentList]]
+            .getCCsUsed(((StrInfo) textLists[currentList].get(currentSelection)).str);
+        StringBuffer out = new StringBuffer();
         for (int i = 0; i < ccs.length; i++)
         {
-            if (i != 0)
-                out += "\n";
-            out += ccs[i].toString() + ": " + ccs[i].desc;
+            if (ccs[i].cc != null)
+            {
+                if (i != 0)
+                    out.append("\n");
+                out.append(ccs[i].toString()).append(": ").append(ccs[i].desc);
+            }
         }
-        codeHelpTa.setText(out);
+        codeHelpTa.setText(out.toString());
     }
 
     private void initCodeHelp()
@@ -1203,12 +1259,14 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     private void updateCurrSize()
     {
-        boolean comp = useComp.isSelected();
-        int a = cc.getStringLength(ta.getText(), comp);
+        CCInfo cct = cc[TEXT_CC_TYPE[currentList]];
+
+        boolean comp = cct.isAllowComp() && useComp.isSelected();
+        int a = cct.getStringLength(ta.getText(), comp);
         if (comp && a <= 0)
         {
             comp = false;
-            a = cc.getStringLength(ta.getText(), false);
+            a = cct.getStringLength(ta.getText(), false);
             //            System.out.println(
             //                "Compression failed, uncompressed size is "
             //                    + cc.getStringLength(ta.getText())
@@ -1221,7 +1279,8 @@ public class TextEditor extends EbHackModule implements ActionListener
         {
             currSizeLabel.setText("Current Size: "
                 + a
-                + (comp ? "" : (comp == useComp.isSelected()
+                + (comp ? "" : (comp == (cct.isAllowComp() && useComp
+                    .isSelected())
                     ? " (uncompressed)"
                     : " (uncompressed, compression failed)")));
             currSizeLabel
@@ -1239,8 +1298,8 @@ public class TextEditor extends EbHackModule implements ActionListener
         int pos = -1;
         try
         {
-            pos = cc.getStringLength(ta.getText(), useComp.isSelected(), 0, ta
-                .getCaretPosition());
+            pos = cc[TEXT_CC_TYPE[currentList]].getStringLength(ta.getText(),
+                useComp.isSelected(), 0, ta.getCaretPosition());
         }
         catch (StringIndexOutOfBoundsException e)
         {}

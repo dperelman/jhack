@@ -94,3 +94,7 @@
 2fa63f:9	#"Vitality:"
 2fa64c:3	#"IQ:"
 2fa653:5	#"Luck:"
+
+#048237 to 04830B = Lumine Hall text
+000000:Lumine Hall text
+048237:213

@@ -1,0 +1,5 @@
+00,"UNKNOWN";
+01,"UNKNOWN -- heading section?";
+/02,"Signal end of block or string";
+03,"UNKNOWN";
+/06,"UNKNOWN -- new grouping?";

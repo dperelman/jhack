@@ -1,4 +1,9 @@
 Next version (after v0.4.7.1):
+# eb.TextEditor v0.6: Added support for multiple CC parsers. Used for
+	coffee/tea/flyover and ending credits to be parsed according to 
+	teacodelist.txt and creditcodelist.txt. Also added option for a 
+	CC parser to not use compression, which is used for those two.
+# eb.MiscTextEditor v0.5: Added Lumine hall text, max window width (250px)
 
 v0.4.7.1:
 # IPSDatabase extensions:

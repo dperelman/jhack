@@ -70,7 +70,7 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
      */
     public String getVersion()
     {
-        return "0.4";
+        return "0.5";
     }
 
     /**
@@ -100,6 +100,8 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
         readFromRom();
         initSelector();
         mainWindow.pack();
+        if(mainWindow.getWidth() > 250)
+            mainWindow.setSize(250, mainWindow.getHeight());
         mainWindow.setVisible(true);
     }
 

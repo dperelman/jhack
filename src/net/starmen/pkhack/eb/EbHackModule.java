@@ -102,6 +102,11 @@ public abstract class EbHackModule extends HackModule
         TYPE_CALL = 2,
         TYPE_ITEM = 3;
     /**
+     * Defines the ASCII values corresponding to the values for the credits
+     * text. Use the credits text byte as the index to get the ASCII char.
+     */
+    public final static char[] creditsChars = new char[256];
+    /**
      * List of town map names. Used by TownMapEditor.
      * 
      * @see TownMapEditor
@@ -616,7 +621,7 @@ public abstract class EbHackModule extends HackModule
      * @see #simpToGameString(char[])
      * @see #simpToRegString(char[])
      */
-    public  char simpToRegChar(char gameChr)
+    public char simpToRegChar(char gameChr)
     {
         if (gameChr < 80) return '\0';
         return (char) (gameChr - 0x30);
@@ -643,6 +648,38 @@ public abstract class EbHackModule extends HackModule
         }
 
         return string;
+    }
+    
+    /**
+     * Simple conversion from an EarthBound credits <code>char</code> to a
+     * regular <code>char</code>. Look at the <code>creditsChars</code>
+     * array. Simple because it doesn't handle control codes or compression. Use
+     * for opening and ending credits text.
+     * 
+     * @param credChr An EarthBound credits <code>char</code>
+     * @return A regular <code>char</code>
+     * @see #creditsChars
+     */
+    public static char simpCreditsToRegChar(char credChr)
+    {
+        return creditsChars[credChr];
+    }
+    /**
+     * Simple conversion from a regular <code>char</code> to an EarthBound
+     * credits <code>char</code>. Look at the <code>creditsChars</code>
+     * array. Simple because it doesn't handle control codes or compression. Use
+     * for opening and ending credits text.
+     * 
+     * @param regChr An regular <code>char</code>
+     * @return An EarthBound credits <code>char</code>
+     * @see #creditsChars
+     */
+    public static char simpRegToCreditsChar(char regChr)
+    {
+        for(char c = 0; c < 256; c++)
+            if(creditsChars[c] == regChr)
+                return c;
+        return 0;
     }
 
 //    public static SimpleComboBoxModel createSptComboBoxModel(final boolean
@@ -730,6 +767,7 @@ public abstract class EbHackModule extends HackModule
             // battleSpriteNames);
             readArray(DEFAULT_BASE_DIR,"musiclisting.txt", true, musicNames);
             //readEffects(null);
+            initCreditsChars();
 
             bigArraysInited = true;
         }
@@ -762,5 +800,66 @@ public abstract class EbHackModule extends HackModule
     public void reset()
     {
         super.reset();
+    }
+    
+    private static void initCreditsChars()
+    {
+        creditsChars[129] = 'A';
+        creditsChars[130] = 'B';
+        creditsChars[131] = 'C';
+        creditsChars[132] = 'D';
+        creditsChars[133] = 'E';
+        creditsChars[134] = 'F';
+        creditsChars[135] = 'G';
+        creditsChars[136] = 'H';
+        creditsChars[137] = 'I';
+        creditsChars[138] = 'J';
+        creditsChars[139] = 'K';
+        creditsChars[140] = 'L';
+        creditsChars[141] = 'M';
+        creditsChars[142] = 'N';
+        creditsChars[143] = 'O';
+        creditsChars[160] = 'P';
+        creditsChars[161] = 'Q';
+        creditsChars[162] = 'R';
+        creditsChars[163] = 'S';
+        creditsChars[164] = 'T';
+        creditsChars[165] = 'U';
+        creditsChars[166] = 'V';
+        creditsChars[167] = 'W';
+        creditsChars[168] = 'X';
+        creditsChars[169] = 'Y';
+        creditsChars[170] = 'Z';
+        creditsChars[66] = 'a';
+        creditsChars[82] = 'b';
+        creditsChars[68] = 'c';
+        creditsChars[84] = 'd';
+        creditsChars[69] = 'e';
+        creditsChars[85] = 'f';
+        creditsChars[70] = 'g';
+        creditsChars[86] = 'h';
+        creditsChars[72] = 'i';
+        creditsChars[88] = 'j';
+        creditsChars[73] = 'k';
+        creditsChars[89] = 'l';
+        creditsChars[74] = 'm';
+        creditsChars[90] = 'n';
+        creditsChars[75] = 'o';
+        creditsChars[91] = 'p';
+        creditsChars[76] = ',';
+        creditsChars[122] = 'r';
+        creditsChars[107] = 's';
+        creditsChars[123] = 't';
+        creditsChars[108] = 'u';
+        creditsChars[124] = 'v';
+        creditsChars[109] = 'w';
+        creditsChars[125] = 'x';
+        creditsChars[110] = 'y';
+        creditsChars[126] = 'z';
+        creditsChars[76] = '<';
+        creditsChars[78] = '.';
+        creditsChars[80] = '_';
+        creditsChars[64] = ' ';
+        creditsChars[173] = '.';
     }
 }

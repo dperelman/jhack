@@ -1,0 +1,5 @@
+/00,"End of text block.";
+01 XX,"Move the text over a distance noted by XX.";
+02 XX,"Move the text down a distance noted by XX.";
+08 XX,"Print the name of character XX (01 = Ness, XX[1,4]).";
+09,"Drop down one line.";

@@ -14,6 +14,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import net.starmen.pkhack.eb.EbHackModule;
 import net.starmen.pkhack.eb.TextEditor.StrInfo;
 
 /**
@@ -39,7 +40,13 @@ public class CCInfo
         public int[] args = new int[32]; // argument list
         public boolean arg_multiplier;
         // if true, number of arguments remaining is multiplied by the
-        // value of the first
+        // value of the first ('!')
+
+        public boolean endcc; //if true this CC ends a text block ('/')
+
+        public boolean menu_raise; //if true, increases menu level ('{')
+        public boolean menu_lower; //if true, decreases menu level ('}')
+        //a negitive menu level results in the end of a text block
 
         public boolean isTerminator;
 
@@ -112,16 +119,26 @@ public class CCInfo
     public CCNode ccTable = new CCNode(); // initial node
     private static final int MAX_ARG_MULT = 0xff;
     private Rom rom;
+    private boolean allowComp = false, crdChr = false;
+    private static final int asciiOff = 0x30;
 
-    public CCInfo(String codefile, Rom rom)
+    public CCInfo(String codefile, Rom rom, boolean allowComp, boolean crdChr)
     {
+        this.rom = rom;
+        this.allowComp = allowComp;
+        this.crdChr = crdChr;
+
         createCCTable(ccTable, codefile);
         //        System.out.println(
         //            "("
         //                + new Date().toGMTString()
         //                + ") Done with CC table, starting on compression table.");
-        this.rom = rom;
         createCompressionTable(comprTable);
+    }
+
+    public CCInfo(String codefile, Rom rom)
+    {
+        this(codefile, rom, true, false);
     }
 
     public StrInfo readString(int address)
@@ -224,15 +241,22 @@ public class CCInfo
                     buffer[pos++] = (char) ch;
                 }
 
-                if (activeNode.level == 0 && activeNode.value == 0x02)
+                //if (activeNode.level == 0 && activeNode.value == 0x02)
+                if (activeNode.menu_lower)
                 {
                     if (menulevel > 0)
                         menulevel--;
                     else
                         break;
                 }
-                if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx xx]"))
+                //                if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx
+                // xx]"))
+                if (activeNode.endcc && activeNode.cc != null)
                 {
+                    if (ch == 10)
+                    {
+                        System.out.println();
+                    }
                     endcc = true;
                 }
                 //                else if (
@@ -246,7 +270,8 @@ public class CCInfo
                 if (activeNode.isTerminator)
                 {
                     opcode = false;
-                    if (activeNode.toString().equals("[19 02]"))
+                    //if (activeNode.toString().equals("[19 02]"))
+                    if (activeNode.menu_raise)
                         menulevel++;
 
                     activeNode = ccTable;
@@ -254,10 +279,12 @@ public class CCInfo
             }
             else
             {
-                //buffer[pos++] = (char) ((((int) ch) & 0xFF) - 0x30);
+                //buffer[pos++] = (char) ((((int) ch) & 0xFF) - asciiOff);
                 buffer[pos++] = (char) ch;
                 if (hpos < headBuff.length - 1)
-                    headBuff[hpos++] = (char) ((ch & 0xFF) - 0x30);
+                    headBuff[hpos++] = (crdChr
+                        ? EbHackModule.simpCreditsToRegChar((char) (ch & 0xFF))
+                        : (char) ((ch & 0xFF) - asciiOff));
             }
         }
 
@@ -283,6 +310,8 @@ public class CCInfo
      */
     public String compressStringNoCC(String str, int c)
     {
+        if (!allowComp)
+            return str;
         //System.out.println("Compressing \""+str+"\"!");
 
         //        for (int i = 0; i < comprTable.length; i++)
@@ -333,6 +362,9 @@ public class CCInfo
 
     public String compressString(String str, int c)
     {
+        if (!allowComp)
+            return str;
+
         String out = new String();
         boolean CC = str.startsWith("[");
         int menuLevel = 0;
@@ -370,7 +402,10 @@ public class CCInfo
 
     public String compressString(String str)
     {
-        return compressString(str, 0);
+        if (allowComp)
+            return compressString(str, 0);
+        else
+            return str;
     }
 
     public String parseString(String str, boolean showCC, boolean codesOnly)
@@ -480,11 +515,11 @@ public class CCInfo
                         while (!t.isTerminator)
                             t = (CCNode) t.nodes.get(0);
                         arglevel = ((t.num_arg - 1) * ch);
-                        if (!showCC)
-                            System.out.println("arg_mult debug: " + "ch = "
-                                + ch + ", t = " + t.toString()
-                                + ", t.num_arg = " + t.num_arg
-                                + ", arglevel = " + arglevel);
+                        //                        if (!showCC)
+                        //                            System.out.println("arg_mult debug: " + "ch = "
+                        //                                + ch + ", t = " + t.toString()
+                        //                                + ", t.num_arg = " + t.num_arg
+                        //                                + ", arglevel = " + arglevel);
                         //                        arglevel = t.num_arg;
                         //                        System.out.println(
                         //                            "parseString(): arglevel = "
@@ -505,8 +540,8 @@ public class CCInfo
                         //                        arglevel--;
 
                     }
-                    if (!showCC && curcode == 9)
-                        System.out.println("[09] has " + arglevel + " args.");
+                    //                    if (!showCC && curcode == 9)
+                    //                        System.out.println("[09] has " + arglevel + " args.");
 
                     if (curcode == 0x15 || curcode == 0x16 || curcode == 0x17)
                     {
@@ -550,14 +585,17 @@ public class CCInfo
 
                 // if the current node is a first-byte code with value 2,
                 // terminate text block
-                if (activeNode.level == 0 && activeNode.value == 0x02)
+                //if (activeNode.level == 0 && activeNode.value == 0x02)
+                if (activeNode.menu_lower)
                 {
                     if (menulevel > 0)
                         menulevel--;
                     else
                         break;
                 }
-                if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx xx]"))
+                //                if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx
+                // xx]"))
+                if (activeNode.endcc && activeNode.cc != null)
                 {
                     endcc = true;
                 }
@@ -575,7 +613,8 @@ public class CCInfo
                     if (arglevel == 0)
                         buffer[pos++] = '\u1234';
                     opcode = false;
-                    if (activeNode.toString().equals("[19 02]"))
+                    //if (activeNode.toString().equals("[19 02]"))
+                    if (activeNode.menu_raise)
                         menulevel++;
 
                     // reset the active node so we start from the
@@ -588,7 +627,8 @@ public class CCInfo
                 // if the current byte is not a control code,
                 // add it to the string as-is
                 //buffer[pos++] = (char) ch;
-                char cht = (char) (ch - 0x30);
+                char cht = (crdChr ? EbHackModule
+                    .simpCreditsToRegChar((char) ch) : (char) (ch - asciiOff));
                 //make sure brackets never get added as characters
                 if (codesOnly && showCC)
                 {
@@ -685,7 +725,12 @@ public class CCInfo
                 continue;
             }
             if (endcc)
+            {
+//                ccs.add(activeNode);
+//                System.out.println("getCCsUsed(): ending, added "
+//                    + activeNode.toString());
                 break;
+            }
 
             // if opcode was not previously set
             if (!opcode)
@@ -758,15 +803,25 @@ public class CCInfo
 
                 // if the current node is a first-byte code with value 2,
                 // terminate text block
-                if (activeNode.level == 0 && activeNode.value == 0x02)
+                //if (activeNode.level == 0 && activeNode.value == 0x02)
+                if (activeNode.menu_lower)
                 {
                     if (menulevel > 0)
                         menulevel--;
                     else
-                        break;
+                    {
+                        endcc = true;
+                        ccs.add(activeNode);
+                    }
                 }
-                if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx xx]"))
+                //                if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx
+                // xx]"))
+                if (activeNode.endcc)
+                {
                     endcc = true;
+                    if(activeNode.cc == null && activeNode.nodes.size() > 0)
+                        ccs.add(activeNode.nodes.get(0));
+                }
                 //                else if (
                 //                    activeNode.isTerminator
                 //                        && activeNode.toString().equals("[0A XX XX XX XX]"))
@@ -783,7 +838,8 @@ public class CCInfo
                         || activeNode.toString().startsWith("[16") || activeNode
                         .toString().startsWith("[17")))
                         ccs.add(activeNode);
-                    if (activeNode.toString().equals("[19 02]"))
+                    //if (activeNode.toString().equals("[19 02]"))
+                    if (activeNode.menu_raise)
                         menulevel++;
 
                     opcode = false;
@@ -807,7 +863,7 @@ public class CCInfo
         // (xlen is the length of the code-formatted string)
         // (Returns -1 if a bracket error is encountered)
 
-        if (comp)
+        if (allowComp && comp)
             str = compressString(str);
 
         int len = 0;
@@ -1036,7 +1092,8 @@ public class CCInfo
             }
 
             else
-                buffer[pos++] = (char) (str.charAt(i) + 0x30);
+                buffer[pos++] = (crdChr ? EbHackModule.simpRegToCreditsChar(str
+                    .charAt(i)) : (char) (str.charAt(i) + asciiOff));
 
         }
 
@@ -1149,6 +1206,12 @@ public class CCInfo
             for (int f = 0; f < file.length; f++)
             {
                 boolean argMulti = false; //is CC arg multipler
+                boolean endcc = false; //if true this CC ends a text block
+                // ('/')
+                boolean menu_raise = false; //if true, increases menu level
+                // ('{')
+                boolean menu_lower = false; //if true, decreases menu level
+                // ('}')
 
                 String[] tmp = file[f].split(",", 2);
                 descstr = new StringTokenizer(tmp[1], "\"", false).nextToken();
@@ -1156,6 +1219,21 @@ public class CCInfo
                 if (tmp[0].startsWith("!")) //a ! means arg multipler
                 {
                     argMulti = true;
+                    tmp[0] = tmp[0].substring(1);
+                }
+                if (tmp[0].startsWith("/")) //a / means endcc
+                {
+                    endcc = true;
+                    tmp[0] = tmp[0].substring(1);
+                }
+                if (tmp[0].startsWith("{")) //a { means menu raiser
+                {
+                    menu_raise = true;
+                    tmp[0] = tmp[0].substring(1);
+                }
+                if (tmp[0].startsWith("}")) //a } means menu lowerer
+                {
+                    menu_lower = true;
                     tmp[0] = tmp[0].substring(1);
                 }
                 // now convert the string into a series of single bytes
@@ -1203,7 +1281,7 @@ public class CCInfo
                             // now add latent node
                             activeNode = addNode(activeNode, nodeLevel,
                                 nodestr[i - 1], TYPE_ARGLIST, arg_count,
-                                argMulti, false);
+                                argMulti, endcc, menu_lower, menu_raise, false);
                             nodeLevel++;
                             arg_count = 0;
                             arg_counting = false;
@@ -1230,8 +1308,10 @@ public class CCInfo
                         // add default code node here
                         boolean term = (i + 1 == nodestr.length);
                         activeNode = addNode(activeNode, nodeLevel, nodestr[i],
-                            TYPE_CODE, 0, argMulti, term,
-                            (term ? tmp[0] : null), (term ? descstr : null));
+                            TYPE_CODE, 0, argMulti, endcc, menu_lower,
+                            menu_raise, term, (term ? tmp[0] : null), (term
+                                ? descstr
+                                : null));
                         nodeLevel++;
                         //printf("\n");
                     }
@@ -1245,8 +1325,8 @@ public class CCInfo
                     //printf("STOP! %d arguments!\n", arg_count);
 
                     addNode(activeNode, nodeLevel, nodestr[i - 1],
-                        TYPE_ARGLIST, arg_count, argMulti, true, tmp[0],
-                        descstr);
+                        TYPE_ARGLIST, arg_count, argMulti, endcc, menu_lower,
+                        menu_raise, true, tmp[0], descstr);
 
                     arg_counting = false;
                     arg_count = 0;
@@ -1267,7 +1347,8 @@ public class CCInfo
     }
 
     public CCNode addNode(CCNode node, int level, int value, int type,
-        int num_arg, boolean multi, boolean terminate, String cc, String desc)
+        int num_arg, boolean multi, boolean ecc, boolean ml, boolean mr,
+        boolean terminate, String cc, String desc)
     {
         // Adds a subnode with specified properties to the provided node
 
@@ -1287,6 +1368,9 @@ public class CCInfo
         newnode.type = type;
         newnode.num_arg = num_arg;
         newnode.arg_multiplier = multi;
+        newnode.endcc = ecc;
+        newnode.menu_lower = ml;
+        newnode.menu_raise = mr;
         newnode.isTerminator = terminate;
         newnode.parent = node;
 
@@ -1298,9 +1382,18 @@ public class CCInfo
     }
 
     public CCNode addNode(CCNode node, int level, int value, int type,
-        int num_arg, boolean multi, boolean terminate)
+        int num_arg, boolean multi, boolean endcc, boolean menu_lower,
+        boolean menu_raise, boolean terminate)
     {
-        return addNode(node, level, value, type, num_arg, multi, terminate,
-            null, null);
+        return addNode(node, level, value, type, num_arg, multi, endcc,
+            menu_lower, menu_raise, terminate, null, null);
+    }
+
+    /**
+     * @return Returns the allowComp.
+     */
+    public boolean isAllowComp()
+    {
+        return allowComp;
     }
 }
