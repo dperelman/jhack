@@ -1,4 +1,10 @@
 NEXT VERSION (after v0.5.3):
+EBisumaru:
+# Misc. Crap Editor added, edits miscellaneous crap from the asmrange
+# Item Editor labels updated
+# Action Editor null asm effect bug fixed
+# Mirror effect added to asmeffects.txt
+# Sound effect listing fixed up
 
 v0.5.3:
 # A few SPT names additions from JeffMan
