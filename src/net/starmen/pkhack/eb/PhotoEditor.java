@@ -944,6 +944,8 @@ public class PhotoEditor extends EbHackModule
                             	int spriteNum = tptEntry.getSprite();
                             	int spriteDrawY = spriteLocs[j][1];
                             	int spriteDrawX = spriteLocs[j][0];
+                            	EbMap.loadSpriteImage(hm,
+                            			spriteNum, tptEntry.getDirection());
                             	SpriteEditor.SpriteInfoBlock sib =
                             		SpriteEditor.sib[spriteNum];
                             	
@@ -960,7 +962,8 @@ public class PhotoEditor extends EbHackModule
                             	}
                             	
                             	g.drawImage(
-                            		new SpriteEditor.Sprite(sib.getSpriteInfo(tptEntry.getDirection()), hm).getImage(true),
+                            			EbMap.getSpriteImage(
+                            					spriteNum,tptEntry.getDirection()),
             							spriteDrawX + (i * MapEditor.tileWidth),
     									spriteDrawY + (k * MapEditor.tileHeight),
 										this);
@@ -1020,9 +1023,9 @@ public class PhotoEditor extends EbHackModule
             				firstX = x;
             				firstY = y;
             			}
+            			EbMap.loadSpriteImage(hm, SpriteCharacterTableEditor.getPlayableSPT(i,0),4);
             			g.drawImage(
-            					new SpriteEditor.Sprite(sib.getSpriteInfo(4), hm).getImage(true),
-								x, y, this);
+                    			EbMap.getSpriteImage(SpriteCharacterTableEditor.getPlayableSPT(i,0),4),x,y,this);
             			g2d.setPaint(Color.red);
                 		g2d.draw(new Rectangle2D.Double(
                     			x - 1, y - 1,
@@ -1065,9 +1068,9 @@ public class PhotoEditor extends EbHackModule
         					direction = 4; //face down
         				else
         					direction = 2; //face right
+        			EbMap.loadSpriteImage(hm, 0x8f,direction);
         			g.drawImage(
-        					new SpriteEditor.Sprite(sib.getSpriteInfo(direction), hm).getImage(true),
-							manX, manY, this);
+        					EbMap.getSpriteImage(0x8f,direction),manX,manY,this);
         			g2d.setPaint(Color.blue);
         			g2d.draw(new Rectangle2D.Double(
                 			manX - 1,
@@ -1091,8 +1094,9 @@ public class PhotoEditor extends EbHackModule
             		if ((x >= 0) && (x <= previewWidth * MapEditor.tileWidth)
     						&& (y >= 0) && (y <= previewHeight * MapEditor.tileHeight))
             		{
+            			EbMap.loadSpriteImage(hm, spriteNum,4);
             			g.drawImage(
-            					new SpriteEditor.Sprite(sib.getSpriteInfo(4), hm).getImage(true),x,y,this);
+                    			EbMap.getSpriteImage(spriteNum,4),x,y,this);
             			g2d.setPaint(Color.green);
             			g2d.draw(new Rectangle2D.Double(
                     			x - 1, y - 1,
