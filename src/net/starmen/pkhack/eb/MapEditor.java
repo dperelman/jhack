@@ -339,9 +339,10 @@ public class MapEditor extends EbHackModule implements ActionListener
     	// EbMap.loadMapAddresses(rom);
         EbMap.loadDoorData(rom);
         EbMap.loadDrawTilesets(rom);
-        HotspotEditor.readFromRom(this);
-        TPTEditor.readFromRom(this);
         SpriteEditor.readFromRom(rom);
+        TPTEditor.readFromRom(this);
+        EbMap.loadSpriteData(rom);
+        HotspotEditor.readFromRom(this);
     }
     
     public void writeToRom()
@@ -598,10 +599,21 @@ public class MapEditor extends EbHackModule implements ActionListener
         private JComboBox tilesetList;
         private JScrollBar xScroll, yScroll;
         private JMenu modeMenu;
-        private boolean grid, spriteBoxes, centered, movingSprite = false, movingDoor = false,
-			muteEvents = false, resizingSomething = false;
+        private boolean grid, spriteBoxes, centered, muteEvents = false;
         private SeekListener seekSource;
         private EditBox editBox;
+        private ArrayList visibleHotspots;
+        
+        /*
+         * Moving data organization:
+         * 0 - moving types: -1 = no, 0 = sprite, 1 = door, 2 = hotspot, 3 = resize hotspot
+         * 1 - original mouse x
+         * 2 - original mouse y
+         * 3 - areaX OR hotspot num
+         * 4 - areaY OR hotspot resize direction
+         * 5 - sprite num OR door num 
+         */
+        private int[] movingData = new int[] { -1 };
         
         private boolean knowsmap = false;
         private boolean knowssector = false;
@@ -628,7 +640,6 @@ public class MapEditor extends EbHackModule implements ActionListener
 			{0, 2, 0, 1, 0, 0, 0, 1, 0}, // for previewing
 			{0, 2, 0, 1, 1, 0, 0, 0, 2}
 			};
-        private int[] spriteProps, doorProps;
         
         public MapGraphics(HackModule hm, int screenWidth, int screenHeight, int mode, boolean grid,
         		boolean spriteBoxes, boolean centered, int ppu, boolean makeFields)
@@ -729,59 +740,11 @@ public class MapEditor extends EbHackModule implements ActionListener
             			MapEditor.tileWidth * screenWidth - 1, 
 						MapEditor.tileHeight * screenHeight - 1));
             }
-    		if (movingSprite && (getModeProps()[3] >= 2))
-    		{
-    			Image spImage =
-    				EbMap.getSpriteImage(spriteProps[2], spriteProps[3]);
-    			g.drawImage(
-    					spImage, spriteProps[0], spriteProps[1],
-						this);
-    			if (spriteBoxes)
-    			{
-    				g2d.setPaint(Color.red);
-    				g2d.draw(new Rectangle2D.Double(
-                			spriteProps[0] - 1,
-    						spriteProps[1] - 1,
-    						spImage.getWidth(this) + 1,
-    						spImage.getHeight(this) + 1));
-    			}
-    		}
-    		if (movingDoor
-    				&& (getModeProps()[4] >= 2))
-    		{
-            	g2d.setPaint(Color.blue);
-            	g2d.draw(new Rectangle2D.Double(
-            			doorProps[0], doorProps[1],
-						8,8));
-    		}
-    		if ((movingHotspot >= 0) && (getModeProps()[8] >= 2))
-    		{
-    			HotspotEditor.Hotspot spot = HotspotEditor.getHotspot(movingHotspot); 
-    			g2d.setPaint(Color.orange);
-    			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5F));
-    			Rectangle2D.Double rect;
-    			if (resizingSomething)
-    			{
-    				int spotX = spot.getX1() * 8 - getMapTileX() * MapEditor.tileWidth,
-						spotY = spot.getY1() * 8 - getMapTileY() * MapEditor.tileHeight;
-    				rect = new Rectangle2D.Double(
-    						spotX, spotY,
-    						movingProps[0] - spotX,
-    						movingProps[1] - spotY);
-    			}
-    			else
-    				rect = new Rectangle2D.Double(
-        					movingProps[0],
-    						movingProps[1],
-    						(spot.getX2() - spot.getX1()) * 8,
-    						(spot.getY2() - spot.getY1()) * 8);
-    			g2d.fill(rect);
-    			g2d.draw(rect);
-    		}	
         }
 
         private void drawMap(Graphics g, Graphics2D g2d)
         {
+        	visibleHotspots = new ArrayList();
         	int tileX = getMapTileX(),
 				tileY = getMapTileY();
         	
@@ -997,6 +960,7 @@ public class MapEditor extends EbHackModule implements ActionListener
             		if ((i != movingHotspot) && (x1Tile <= tileX + screenWidth) && (x2Tile >= tileX)
             				&& (y1Tile <= tileY + screenHeight) && (y2Tile >= tileY))
             		{
+            			visibleHotspots.add(new Integer(i));
             			g2d.setPaint(Color.orange);
             			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5F));
             			Rectangle2D.Double rect = new Rectangle2D.Double(
@@ -1024,17 +988,6 @@ public class MapEditor extends EbHackModule implements ActionListener
             	g2d.setPaint(Color.magenta);
             	g2d.draw(new Rectangle2D.Double(previewBoxX, previewBoxY, 8, 8));
             }
-        }
-        
-        public void setSprite(int spriteX, int spriteY,
-        		int spt, int direction)
-        {
-        	spriteProps = new int[] { spriteX, spriteY, spt, direction };
-        }
-        
-        public void setMovingXY(int doorX, int doorY)
-        {
-        	movingProps = new int[] { doorX, doorY };
         }
         
         public int getSpriteNum(int spriteX, int spriteY)
@@ -1076,40 +1029,41 @@ public class MapEditor extends EbHackModule implements ActionListener
         public int[] getAreaXY(int spriteX, int spriteY)
         {
         	int areaX = 
-        		((spriteX / MapEditor.tileWidth) + x) / MapEditor.sectorWidth;
+        		((spriteX / MapEditor.tileWidth) + getMapTileX()) / MapEditor.sectorWidth;
         	int areaY = 
-        		((spriteY / MapEditor.tileHeight) + y) / (MapEditor.sectorHeight * 2);
+        		((spriteY / MapEditor.tileHeight) + getMapTileY()) / (MapEditor.sectorHeight * 2);
         	return new int[] { areaX, areaY };
         }
         
         public int[] getCoords(int coordX, int coordY)
         {
-        	int areaX = ((coordX / MapEditor.tileWidth) + x) / MapEditor.sectorWidth;
-        	int areaY = ((coordY / MapEditor.tileHeight) +y) / (MapEditor.sectorHeight * 2);
+        	int tileX = getMapTileX(), tileY = getMapTileY();
+        	int areaX = ((coordX / MapEditor.tileWidth) + tileX) / MapEditor.sectorWidth;
+        	int areaY = ((coordY / MapEditor.tileHeight) + tileY) / (MapEditor.sectorHeight * 2);
         	if ((x % MapEditor.sectorWidth) > 0)
         	{
         		if (((coordX / MapEditor.tileWidth) / MapEditor.sectorWidth) == 0)
         		{
-        			coordX += (x % MapEditor.sectorWidth) * MapEditor.tileWidth;
+        			coordX += (tileX % MapEditor.sectorWidth) * MapEditor.tileWidth;
         		}
         		else
         		{
             		coordX -= (MapEditor.sectorWidth - 
-            				(x % MapEditor.sectorWidth)) * MapEditor.tileWidth;
+            				(tileX % MapEditor.sectorWidth)) * MapEditor.tileWidth;
         		}
         	}
     		coordX -= (((coordX / MapEditor.tileWidth) / MapEditor.sectorWidth)
     				* MapEditor.sectorWidth * MapEditor.tileWidth);
-        	if ((y % (MapEditor.sectorHeight * 2)) > 0)
+        	if ((tileY % (MapEditor.sectorHeight * 2)) > 0)
         	{
         		if (((coordY / MapEditor.tileHeight) / (MapEditor.sectorHeight * 2)) == 0)
         		{
-        			coordY += (y % (MapEditor.sectorHeight * 2)) * MapEditor.tileHeight;
+        			coordY += (tileY % (MapEditor.sectorHeight * 2)) * MapEditor.tileHeight;
         		}
         		else
         		{
         			coordY -= ((MapEditor.sectorHeight * 2) - 
-            				(y % (MapEditor.sectorHeight * 2))) * MapEditor.tileHeight;
+            				(tileY % (MapEditor.sectorHeight * 2))) * MapEditor.tileHeight;
         		}
         	}
         	coordY -= (((coordY / MapEditor.tileHeight) / (MapEditor.sectorHeight * 2))
@@ -1304,26 +1258,6 @@ public class MapEditor extends EbHackModule implements ActionListener
         	return seekSource;
         }
         
-        public void setMovingDoor(boolean movingDoor)
-        {
-        	this.movingDoor = movingDoor;
-        }
-        
-        public boolean isMovingDoor()
-        {
-        	return movingDoor;
-        }
-        
-        public void setMovingSprite(boolean movingSprite)
-        {
-        	this.movingSprite = movingSprite;
-        }
-        
-        public boolean isMovingSprite()
-        {
-        	return movingSprite;
-        }
-        
         public void setScreenWidth(int screenWidth)
         {
         	this.screenWidth = screenWidth;
@@ -1497,98 +1431,292 @@ public class MapEditor extends EbHackModule implements ActionListener
     	
     	public void mouseMoved(MouseEvent e)
     	{
-    		if (getModeProps()[5] == 1)
+    		int mx = e.getX(), my = e.getY();
+    		if ((getModeProps()[3] >= 2) && (getSpriteNum(mx, my) != -1))
+    			setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+    		else if ((getModeProps()[4] >= 2) && (getDoorNum(mx, my) != -1))
+    			setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+    		else if ((getModeProps()[8] >= 2) && (visibleHotspots.size() > 0))
+    		{
+    			int tileX = getMapTileX(), tileY = getMapTileY();
+            	for (int i = 0; i < visibleHotspots.size(); i++)
+            	{
+            		HotspotEditor.Hotspot spot = HotspotEditor.getHotspot(
+            				((Integer) visibleHotspots.get(i)).intValue());
+            		int xDiff = e.getX() - (spot.getX1() * 8 - (MapEditor.tileWidth * tileX)),
+						yDiff = e.getY() - (spot.getY1() * 8 - (MapEditor.tileHeight * tileY));
+            		if (xDiff <= ((spot.getX2() - spot.getX1()) * 8) && xDiff >= 0
+            				&& yDiff <= ((spot.getY2() - spot.getY1()) * 8) && yDiff >= 0)
+            		{
+            			if ((xDiff >= ((spot.getX2() - spot.getX1() - 1) * 8))
+            					&& (yDiff >= ((spot.getY2() - spot.getY1() - 1) * 8)))
+            				setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+            			else
+            				setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+            			return;
+            		}
+            	}
+            	setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    		}
+    		else if (getModeProps()[5] == 1)
     		{
     			setCrosshairs(e.getX(), e.getY());
     			repaint();
     		}
+    		else
+    			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     	}
     	
     	public void mouseDragged(MouseEvent e)
     	{
-    		if (isMovingSprite()
-    				&& (getModeProps()[3] >= 2))
-    		{
-    			setSprite(
-    					e.getX(), e.getY(),
-						movingSpriteInfo[3], movingSpriteInfo[4]);
-    			repaint();
-    		}
-    		else if (isMovingDoor()
-    				&& (getModeProps()[4] >= 2))
-    		{
-    			setMovingXY(e.getX(), e.getY());
-    			repaint();
-    		}
-    		else if ((movingHotspot >= 0) && (getModeProps()[8] >= 2))
-    		{
-    			setMovingXY(e.getX(), e.getY());
-    			repaint();
-    		}
+    		int mx = e.getX(), my = e.getY();
+            if (mx < 0 || my < 0 || mx > getWidth() || my > getHeight())
+                return;
+            
+            if ((movingData[0] > -1) 
+            		&& ((mx - movingData[1] != 0) || (my - movingData[1] != 0)))
+            {
+            	boolean repaint = false;
+            	if (movingData[0] == 0)
+            	{
+            		EbMap.SpriteLocation spLoc = EbMap.getSpriteLocation(
+            				movingData[3], movingData[4], movingData[5]);
+            		int alterX = 0, alterY = 0;
+            		short newSpX = spLoc.getX(), newSpY = spLoc.getY();
+        			
+        			if (spLoc.getX() + (mx - movingData[1]) > 
+        					MapEditor.sectorWidth * MapEditor.tileWidth)
+        			{
+        				alterX = (spLoc.getX() + (mx - movingData[1]))
+							/ (MapEditor.sectorWidth * MapEditor.tileWidth);
+        				newSpX = (short) (MapEditor.sectorWidth * MapEditor.tileWidth - 
+        						(spLoc.getX() + (mx - movingData[1])));
+        			}
+        			else if (spLoc.getX() + (mx - movingData[1]) < 0)
+        			{
+        				alterX = (spLoc.getX() + (mx - movingData[1]))
+							/ (MapEditor.sectorWidth * MapEditor.tileWidth) - 1;
+        				newSpX = (short) (MapEditor.sectorWidth * MapEditor.tileWidth -
+        						(spLoc.getX() + (mx - movingData[1])));
+        			}
+        			else
+        			{
+        				newSpX = (short) (spLoc.getX() + (mx - movingData[1]));
+        			}
+        			movingData[1] = mx;
+        			
+        			if (spLoc.getY() + my - movingData[2] > 
+        					MapEditor.sectorHeight * 2 * MapEditor.tileHeight)
+        			{
+        				alterY = (spLoc.getY() + (my - movingData[2]))
+							/ (MapEditor.sectorHeight * 2 * MapEditor.tileHeight);
+        				newSpY = (short) (MapEditor.sectorHeight * 2 * MapEditor.tileHeight - 
+        						(spLoc.getY() + my - movingData[2]));
+        			}
+        			else if (spLoc.getY() + my - movingData[2] < 0)
+        			{
+        				alterY = (spLoc.getY() + (my - movingData[2]))
+							/ (MapEditor.sectorHeight * 2 * MapEditor.tileHeight) - 1;
+        				newSpY = (short) (MapEditor.sectorHeight * 2 * MapEditor.tileHeight -
+        						(spLoc.getY() + my - movingData[2]));
+        			}
+        			else
+        			{
+        				newSpY = (short) (spLoc.getY() + (my - movingData[2]));
+        			}
+        			movingData[2] = my;
+        			
+        			
+    				int areaX = movingData[3], areaY = movingData[4];
+    				areaX += alterX;
+    				areaY += alterY;
+    				if ((areaX >= 0) && (areaY >= 0))
+    				{
+    					spLoc.setX(newSpX);
+    					spLoc.setY(newSpY);
+    					EbMap.removeSprite(movingData[3], movingData[4], movingData[5]);
+        				movingData[5] = EbMap.addSprite(areaX, areaY, spLoc);
+        				movingData[3] = areaX;
+        				movingData[4] = areaY;
+    				}
+        			
+        			repaint = true;
+            	}
+            	else if ((movingData[0] == 1) 
+            			&& (((mx - movingData[1]) % 8 == 0) || (my - movingData[2]) % 8 == 0))
+            	{
+            		EbMap.DoorLocation dLoc = 
+            			EbMap.getDoorLocation(movingData[3],movingData[4],movingData[5]);
+            		int alterX = 0, alterY = 0;
+            		short newDoorX = dLoc.getX(), newDoorY = dLoc.getY();
+            		if ((mx - movingData[1] != 0) && ((mx - movingData[1]) % 8 == 0))
+            		{
+            			if (dLoc.getX() + (mx - movingData[1]) / 8 >
+            					MapEditor.sectorWidth * (MapEditor.tileWidth / 8))
+            			{
+            				alterX = (dLoc.getX() + (mx - movingData[1]) / 8)
+								/ (MapEditor.sectorWidth * (MapEditor.tileWidth / 8));
+            				newDoorX = (short) (MapEditor.sectorWidth * (MapEditor.tileWidth / 8)
+            						- dLoc.getX());
+            			}
+            			else if (dLoc.getX() + (mx - movingData[1]) / 8 < 0)
+            			{
+            				alterX = (dLoc.getX() + (mx - movingData[1]) / 8)
+								/ (MapEditor.sectorWidth * (MapEditor.tileWidth / 8)) - 1;
+            				newDoorX = (short) (MapEditor.sectorWidth * (MapEditor.tileWidth / 8)
+            						- dLoc.getX());
+            			}
+            			else
+            				newDoorX = (short) (dLoc.getX() + (mx - movingData[1]) / 8);
+            			repaint = true;
+            			movingData[1] = mx;
+            		}
+            		
+            		if ((my - movingData[2] != 0) && ((my - movingData[2]) % 8 == 0))
+            		{
+            			if (dLoc.getY() + (my - movingData[2]) / 8 >
+            					MapEditor.sectorHeight * 2 * (MapEditor.tileHeight / 8))
+            			{
+            				alterY = (dLoc.getY() + (my - movingData[2]) / 8)
+								/ (MapEditor.sectorHeight * 2 * (MapEditor.tileHeight / 8));
+            				newDoorY = (short) (MapEditor.sectorHeight * 2 * (MapEditor.tileHeight / 8)
+            						- dLoc.getY());
+            			}
+            			else if (dLoc.getX() + (mx - movingData[1]) / 8 < 0)
+            			{
+            				alterY = (dLoc.getY() + (my - movingData[2]) / 8)
+								/ (MapEditor.sectorHeight * 2 * (MapEditor.tileHeight / 8)) - 1;
+            				newDoorY = (short) (MapEditor.sectorHeight * 2 * (MapEditor.tileHeight / 8)
+            						- dLoc.getY());
+            			}
+            			else
+            				newDoorY = (short) (dLoc.getY() + (my - movingData[2]) / 8);
+            			repaint = true;
+            			movingData[2] = my;
+            		}
+            		
+    				int areaX = movingData[3], areaY = movingData[4];
+    				areaX += alterX;
+    				areaY += alterY;
+    				if ((areaX >= 0) && (areaY >= 0))
+    				{
+    					dLoc.setX(newDoorX);
+    					dLoc.setY(newDoorY);
+        				EbMap.removeDoor(movingData[3], movingData[4], movingData[5]);
+        				movingData[5] = EbMap.addDoor(areaX, areaY, dLoc);
+        				movingData[3] = areaX;
+        				movingData[4] = areaY;
+    				}
+            	}
+            	else if ((movingData[0] == 2) 
+            			&& (((mx - movingData[1]) % 8 == 0) || (my - movingData[2]) % 8 == 0))
+            	{
+					HotspotEditor.Hotspot spot = HotspotEditor.getHotspot(movingData[3]);
+					if ((mx - movingData[1]) % 8 == 0)
+					{
+						spot.setX1((short) (spot.getX1() + (mx - movingData[1]) / 8));
+						spot.setX2((short) (spot.getX2() + (mx - movingData[1]) / 8));
+						movingData[1] = mx;
+					}
+					
+					if ((my - movingData[2]) % 8 == 0)
+					{
+						spot.setY1((short) (spot.getY1() + (my - movingData[2]) / 8));
+						spot.setY2((short) (spot.getY2() + (my - movingData[2]) / 8));
+						movingData[2] = my;
+					}
+					repaint = true;
+            	}
+            	else if ((movingData[0] == 3)
+            			&& (((mx - movingData[1]) % 8 == 0) || (my - movingData[2]) % 8 == 0))
+            	{
+            		HotspotEditor.Hotspot spot = HotspotEditor.getHotspot(movingData[3]);
+					if ((mx - movingData[1]) % 8 == 0)
+					{
+						spot.setX2((short) (spot.getX2() + (mx - movingData[1]) / 8));
+						movingData[1] = mx;
+					}
+					
+					if ((my - movingData[2]) % 8 == 0)
+					{
+						spot.setY2((short) (spot.getY2() + (my - movingData[2]) / 8));
+						movingData[2] = my;
+					}
+					repaint = true;
+            	}
+            	
+            	if (repaint)
+    				repaint();
+            }
     	}
     	
         public void mousePressed(MouseEvent e)
         {
+        	int mx = e.getX(), my = e.getY();
             if (e.getButton() == 1)
             {
             	if ((getModeProps()[3] >= 2)
-    					&& (! isMovingSprite()))
+    					&& (movingData[0] == -1))
             	{
-            		int mousex = e.getX();
-            		int mousey = e.getY();
-                	int spNum = getSpriteNum(mousex, mousey);
+                	int spNum = getSpriteNum(mx, my);
                 	if (spNum != -1)
                 	{
                     	int[] areaXY =
-                    		getAreaXY(mousex, mousey);
-                    	TPTEditor.TPTEntry tpt = 
-                    		TPTEditor.tptEntries[EbMap.getSpriteTpt(
-    							areaXY[0], areaXY[1], spNum)];
-                		movingSpriteInfo = 
-                			new int[] {
-                				areaXY[0], areaXY[1], spNum,
-    							tpt.getSprite(), tpt.getDirection()
+                    		getAreaXY(mx, my);
+                		movingData = new int[] {
+                				0, mx, my, areaXY[0], areaXY[1], spNum
                 		};
-                		setMovingSprite(true);
+                		setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
                 	}
             	}
             	else if ((getModeProps()[4] >= 2)
-            				&& (! isMovingDoor()))
+            				&& (movingData[0] == -1))
             	{
-            		int doorNum = getDoorNum(
-                			e.getX(), e.getY());
+            		int doorNum = getDoorNum(mx, my);
             		if (doorNum != -1)
             		{
-            			int[] doorCoords =
-                			getCoords(e.getX(), e.getY());
-            			movingProps = new int[] {
-            					doorCoords[0], doorCoords[1], doorNum
+            			int[] areaXY =
+                    		getAreaXY(mx, my);
+            			movingData = new int[] {
+            					1, mx, my, areaXY[0], areaXY[1], doorNum
             			};
-            			setMovingDoor(true);
+            			setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
             		}
             	}
             }
             if (getModeProps()[8] >= 2 && movingHotspot == -1
             		&& ((e.getButton() == 1) || (e.getButton() == 3)))
         	{
-            	for (int i = 0; i < HotspotEditor.NUM_HOTSPOTS; i++)
+            	int tileX = getMapTileX(), tileY = getMapTileY();
+            	for (int i = 0; i < visibleHotspots.size(); i++)
             	{
-            		int tileX = getMapTileX(),
-						tileY = getMapTileY();
-            		HotspotEditor.Hotspot spot = HotspotEditor.getHotspot(i);
+            		int num = ((Integer) visibleHotspots.get(i)).intValue();
+            		HotspotEditor.Hotspot spot = HotspotEditor.getHotspot(num);
             		int xDiff = e.getX() - (spot.getX1() * 8 - (MapEditor.tileWidth * tileX)),
 						yDiff = e.getY() - (spot.getY1() * 8 - (MapEditor.tileHeight * tileY));
             		if (xDiff <= ((spot.getX2() - spot.getX1()) * 8) && xDiff >= 0
             				&& yDiff <= ((spot.getY2() - spot.getY1()) * 8) && yDiff >= 0)
             		{
-            			if ((e.getModifiers() == 17) && (e.getButton() == 1))
+            			if (e.getButton() == 3)
             				net.starmen.pkhack.JHack.main.showModule(
-            						HotspotEditor.class, new Integer(i));
+            						HotspotEditor.class, new Integer(num));
             			else
             			{
-            				movingHotspot = i;
-                			if (e.getButton() == 3)
-                				resizingSomething = true;
+            				if ((xDiff >= ((spot.getX2() - spot.getX1() - 1) * 8))
+                					&& (yDiff >= ((spot.getY2() - spot.getY1() - 1) * 8)))
+            				{
+            					setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+            					movingData = new int[] {
+                    					3, e.getX(), e.getY(), num, 0
+                    			};
+            				}
+                			else
+                			{
+                				setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                				movingData = new int[] {
+                						2, e.getX(), e.getY(), num
+                				};
+                			}
             			}
             			return;
             		}
@@ -1598,102 +1726,8 @@ public class MapEditor extends EbHackModule implements ActionListener
 
         public void mouseReleased(MouseEvent e)
         {
-        	if ((e.getButton() == 1)
-        			&& (((getModeProps()[3] >= 2) && isMovingSprite())
-						|| ((getModeProps()[4] >= 2) && isMovingDoor())))
-        	{
-        		int mousex = e.getX();
-        		int mousey = e.getY();
-        		if (mousex < 0)
-        		{
-        			mousex = 0;
-        		}
-        		if (mousey < 0)
-        		{
-        			mousey = 0;
-        		}
-        		if (mousex > MapEditor.tileWidth * getScreenWidth())
-        		{
-        			mousex = MapEditor.tileWidth * getScreenWidth();
-        		}
-        		if (mousey > MapEditor.tileHeight * getScreenHeight())
-        		{
-        			mousey = MapEditor.tileHeight * getScreenHeight();
-        		}
-        		
-        		if ((getModeProps()[3] >= 2) && isMovingSprite())
-        		{
-        			short tpt =
-            			EbMap.getSpriteTpt(movingSpriteInfo[0],
-            					movingSpriteInfo[1],
-    							movingSpriteInfo[2]);
-            		int[] spLocXY = getCoords(mousex, mousey);
-            		if (spLocXY[0] >= MapEditor.widthInSectors)
-            			spLocXY[0] = MapEditor.widthInSectors - 1;
-            		else if (spLocXY[0] < 0)
-            			spLocXY[0] = 0;
-            		if (spLocXY[1] >= MapEditor.heightInSectors)
-            			spLocXY[1] = MapEditor.heightInSectors - 1;
-            		else if (spLocXY[1] < 0)
-            			spLocXY[1] = 0;
-            		EbMap.removeSprite(
-            				movingSpriteInfo[0],
-    						movingSpriteInfo[1],
-            				movingSpriteInfo[2]);
-            		EbMap.addSprite(spLocXY[0], spLocXY[1],
-            				(short) spLocXY[2], (short) spLocXY[3],
-    						tpt);
-            		setMovingSprite(false);
-            		repaint();
-        		}
-        		else if ((getModeProps()[4] >= 2) && isMovingDoor())
-        		{
-        			int[] coords = getCoords(mousex, mousey);
-        			EbMap.DoorLocation oldDoor =
-        				EbMap.getDoorLocation(
-        						movingProps[0],
-								movingProps[1],
-								movingProps[2]);
-        			EbMap.removeDoor(
-        					movingProps[0],
-							movingProps[1],
-							movingProps[2]);
-        			EbMap.addDoor(
-        					coords[0], coords[1],
-							(short) (coords[2] / 8), (short) (coords[3] / 8),
-							(byte) oldDoor.getType(),
-							(short) oldDoor.getPointer(),
-							oldDoor.getDestIndex());
-        			setMovingDoor(false);
-        			repaint();
-        		}
-        	}
-    		else if (((e.getButton() == 1) || (e.getButton() == 3))
-    				&& (getModeProps()[8] >= 2) && (movingHotspot >= 0))
-    		{
-    			HotspotEditor.Hotspot spot = HotspotEditor.getHotspot(movingHotspot);
-    			if (resizingSomething)
-    			{
-    				spot.setX2((short) (e.getX() / 8 + getMapTileX() * MapEditor.tileWidth / 8));
-    				if (spot.getX2() < spot.getX1())
-    					spot.setX2(spot.getX1());
-    				spot.setY2((short) (e.getY() / 8 + getMapTileY() * MapEditor.tileHeight / 8));
-    				if (spot.getY2() < spot.getY1())
-    					spot.setY2(spot.getY1());
-    				resizingSomething = false;
-    			}
-    			else
-    			{
-    				int spotWidth = spot.getX2() - spot.getX1(),
-					spotHeight = spot.getY2() - spot.getY1();
-    				spot.setX1((short) (e.getX() / 8 + getMapTileX() * MapEditor.tileWidth / 8));
-    				spot.setX2((short) (spot.getX1() + spotWidth));
-    				spot.setY1((short) (e.getY() / 8 + getMapTileY() * MapEditor.tileHeight / 8));
-    				spot.setY2((short) (spot.getY1() + spotHeight));
-    			}
-    			movingHotspot = -1;
-    			repaint();
-    		}
+        	movingData = new int[] { -1 };
+        	setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
 
         public void mouseEntered(MouseEvent e)
@@ -1755,7 +1789,7 @@ public class MapEditor extends EbHackModule implements ActionListener
             else if (e.getButton() == 3)
             {
             	if ((getModeProps()[3] >= 2)
-            			&& (! isMovingSprite()))
+            			&& (movingData[0] == -1))
             	{
             		JPopupMenu popup = new JPopupMenu();
 
@@ -1820,7 +1854,7 @@ public class MapEditor extends EbHackModule implements ActionListener
                     popup.show(this, e.getX(), e.getY());
             	}
             	else if ((getModeProps()[4] == 2)
-            				&& (! isMovingDoor()))
+            				&& (movingData[0] == -1))
             	{
                		JPopupMenu popup = new JPopupMenu();
 
@@ -2809,6 +2843,16 @@ public class MapEditor extends EbHackModule implements ActionListener
         			loadSpriteData(rom,i);
         	}
         }
+        
+        public static SpriteLocation getSpriteLocation(int areaNum, int num)
+        {
+        	return (SpriteLocation) spData[areaNum].get(num);
+        }
+        
+        public static SpriteLocation getSpriteLocation(int areaX, int areaY, int num)
+        {
+        	return getSpriteLocation(areaX + (areaY * MapEditor.widthInSectors), num);
+        }
 		
         public static short[][] getSpriteLocs(int areaX, int areaY)
         {
@@ -2863,10 +2907,14 @@ public class MapEditor extends EbHackModule implements ActionListener
         	return spData[areaNum].size();
         }
         
+        public static void removeSprite(int areaNum, int spNum)
+        {
+        	spData[areaNum].remove(spNum);
+        }
+        
         public static void removeSprite(int areaX, int areaY, int spNum)
         {
-        	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
-        	spData[areaNum].remove(spNum);
+        	removeSprite(areaX + (areaY * MapEditor.widthInSectors), spNum);
         }
         
         public static void removeSprite(int areaX, int areaY, short spTpt,
@@ -2878,12 +2926,16 @@ public class MapEditor extends EbHackModule implements ActionListener
         					new SpriteLocation(spTpt, spX, spY)));
         }
         
-        public static void addSprite(int areaX, int areaY, short newX,
+        public static int addSprite(int areaX, int areaY, SpriteLocation spLoc)
+        {
+        	spData[areaX + (areaY * MapEditor.widthInSectors)].add(spLoc);
+        	return spData[areaX + (areaY * MapEditor.widthInSectors)].indexOf(spLoc); 
+        }
+        
+        public static int addSprite(int areaX, int areaY, short newX,
         		short newY, short newTpt)
         {
-        	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
-        	spData[areaNum].add(
-        			new SpriteLocation(newTpt, newX, newY));
+        	return addSprite(areaX, areaY, new SpriteLocation(newTpt, newX, newY));
         }
         
         public static int findSprite(HackModule hm, int areaX, int areaY,
@@ -3076,24 +3128,27 @@ public class MapEditor extends EbHackModule implements ActionListener
         	return new short[] { dLoc.getX(), dLoc.getY() };
         }
         
-        public static void addDoor(
+        public static int addDoor(int areaX, int areaY, DoorLocation dLoc)
+        {
+        	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
+        	doorData[areaNum].add(dLoc);
+        	return doorData[areaNum].indexOf(dLoc);
+        }
+        
+        public static int addDoor(
         		int areaX, int areaY, short doorX,
         		short doorY, byte doorType, short doorPtr)
         {
-        	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
-        	doorData[areaNum].add(
-        			new DoorLocation(
-        					doorX, doorY, doorType, doorPtr, 0));
+        	return addDoor(areaX, areaY,
+        			new DoorLocation(doorX, doorY, doorType, doorPtr, 0));
         }
         
-        public static void addDoor(
+        public static int addDoor(
         		int areaX, int areaY, short doorX,
         		short doorY, byte doorType, short doorPtr, int destNum)
         {
-        	int areaNum = areaX + (areaY * MapEditor.widthInSectors);
-        	doorData[areaNum].add(
-        			new DoorLocation(
-        					doorX, doorY, doorType, doorPtr, destNum));
+        	return addDoor(areaX, areaY,
+        			new DoorLocation(doorX, doorY, doorType, doorPtr, destNum));
         }
         
         public static void removeDoor(int areaX, int areaY, int num)
