@@ -2507,7 +2507,7 @@ public class MapEditor extends EbHackModule implements ActionListener
         					(sectorData[i].getTileset() << 3)
 							+ sectorData[i].getPalette());
         			rom.write(musicAddress + i,
-        					sectorData[i].getMusic());
+        					sectorData[i].getMusic() + 1);
         		}
         	}
         }
