@@ -112,7 +112,7 @@ public abstract class AbstractRom
      */
     public void setRomType(String romType)
     {
-        this.romType = romType;
+        this.romType = (romType.length() == 0 ? "Unknown" : romType);
         saveRomType();
     }
 
