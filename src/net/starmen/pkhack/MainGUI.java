@@ -204,6 +204,8 @@ public class MainGUI implements ActionListener, WindowListener
         return spacingList;
     }
 
+    private JMenuItem save, saveAs, useFileIO;
+
     private void initGraphics()
     {
         //show loading dialog first
@@ -236,9 +238,9 @@ public class MainGUI implements ActionListener, WindowListener
             "load", this));
         fileMenu.add(HackModule.createJMenuItem("Close ROM", 'c', "ctrl F4",
             "closeROM", this));
-        fileMenu.add(HackModule.createJMenuItem("Save ROM", 's', "ctrl S",
-            "save", this));
-        fileMenu.add(HackModule.createJMenuItem("Save ROM As...", 'a',
+        fileMenu.add(save = HackModule.createJMenuItem("Save ROM", 's',
+            "ctrl S", "save", this));
+        fileMenu.add(saveAs = HackModule.createJMenuItem("Save ROM As...", 'a',
             "ctrl A", "saveAs", this));
         fileMenu.add(new JSeparator());
         revertMenu = new JMenu("Revert");
@@ -288,8 +290,8 @@ public class MainGUI implements ActionListener, WindowListener
         optionsMenu.add(new PrefsCheckBox("Use Hex Numbers", prefs,
             "useHexNumbers", true, 'h'));
         optionsMenu.addSeparator();
-        optionsMenu.add(new PrefsCheckBox("Use Direct File IO", prefs,
-            "useDirectFileIO", false, 'd', null, "directio", this));
+        optionsMenu.add(useFileIO = new PrefsCheckBox("Use Direct File IO",
+            prefs, "useDirectFileIO", false, 'd', null, "directio", this));
         optionsMenu.add(new PrefsCheckBox("Load Last ROM on Startup", prefs,
             "autoLoad", true, 'l'));
         optionsMenu.add(HackModule.createJMenuItem("Change Default ROM...",
@@ -1137,7 +1139,7 @@ public class MainGUI implements ActionListener, WindowListener
 
     private void closeRom()
     {
-        if (rom.isLoaded && !rom.isDirectFileIO())
+        if (rom.isLoaded && !rom.isDirectFileIO() && save.isEnabled())
         {
             int ques = JOptionPane.showConfirmDialog(null,
                 "Do you want to save your changes?", "Save?",
@@ -1158,6 +1160,14 @@ public class MainGUI implements ActionListener, WindowListener
         mainWindow.setTitle(MainGUI.getDescription() + " "
             + MainGUI.getVersion());
         this.refreshRevertMenu();
+
+        /*
+         * Make sure save and use file io are enabled after loading of an
+         * original ROM.
+         */
+        save.setEnabled(true);
+        saveAs.setEnabled(true);
+        useFileIO.setEnabled(true);
     }
 
     private void hideModules()
@@ -1244,6 +1254,52 @@ public class MainGUI implements ActionListener, WindowListener
             loading = false;
             return false;
         }
+
+        // TODO finish original ROM loading special case
+        // If ROM just loaded is the original ROM...
+        if (rom.getFilePath().getAbsoluteFile()
+            .equals(
+                getOrginalRomFile(rom.getRomType()).getFilePath()
+                    .getAbsoluteFile()))
+        {
+            // If using direct file IO, changes could be made without saving.
+            if (rom.isDirectFileIO())
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "You have attempted to load the ROM you have\n"
+                        + "designated as the original ROM. In order\n"
+                        + "for this program to work correctly, that\n"
+                        + "ROM must stay unmodified. If you wish to\n"
+                        + "do any hacking, make a copy of that ROM,\n"
+                        + "and edit the copy. If you wish to simply\n"
+                        + "view but not modify the original ROM,\n"
+                        + "disable direct file IO mode, and try again.",
+                    "May Not Load ROM", JOptionPane.WARNING_MESSAGE);
+                rom.isLoaded = false;
+                loading = false;
+                return false;
+            }
+            // If not using direct file IO, just disallowing saving
+            else
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "You have choosen to load the ROM you have\n"
+                        + "designated as the original ROM. In order\n"
+                        + "for this program to work correctly, that\n"
+                        + "ROM must stay unmodified. If you wish to\n"
+                        + "do any hacking, make a copy of that ROM,\n"
+                        + "and edit the copy. If you wish to simply\n"
+                        + "view but not modify the original ROM,\n"
+                        + "continue, but remember you will not be\n"
+                        + "allowed to save your changes in any way.",
+                    "May Not Save Over Original ROM",
+                    JOptionPane.WARNING_MESSAGE);
+                save.setEnabled(false);
+                saveAs.setEnabled(false);
+                useFileIO.setEnabled(false);
+            }
+        }
+
         //if a Earthbound ROM was just loaded and it is unexpanded (3 MB + 512
         // byte header) then we may want to expand it
         if (rom.getRomType().equals("Earthbound")

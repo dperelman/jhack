@@ -7,7 +7,6 @@ DONE? (CHANGES TO CONFIRM/DEBUG)
 NEXT v0.0.0.x (bugfix) RELEASE
 # Look into threading of error console GUI building (ERROR#65895)
 # Look into use of JOptionPane.showOptionDialog() for abort/retry/fail.
-# Warn/disallow editing of default ROM
 
 NEXT v0.0.x (minor) RELEASE
 
@@ -27,8 +26,6 @@ NEXT v0.0.x (minor) RELEASE
 		with a null entry or not... I don't think so
 # [12:38:45] <JeffMan> oh and you should add the mother 2 font 
 	and the debug menu font to jhack's font editor if you can
-# Sprite Placement Editor API (GUI to be done by MrTenda), see 20040826 log for how to edit:
-	http://pkhack.fobby.net/misc/IRCLogs/spriteplacement.log
 # Text Editor: Preview of next text block (optional) (in separate window?)
 
 LONG TERM
