@@ -16,7 +16,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -53,7 +52,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
      * @see EnemyEditor.Enemy
      * @see #readFromRom(HackModule)
      */
-    public static Enemy[] enemies = new Enemy[230]; //data
+    public static Enemy[] enemies = new Enemy[231]; //data
     private static Icon fobbyIcon = initIcon();
     private JComboBox selector;
     private JTextField search;
@@ -116,7 +115,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         //mainWindow.setSize(550, 400);
         mainWindow.setResizable(false);
 
-        selector = EnemyEditor.createEnemyComboBox(true, this);
+        selector = EnemyEditor.createEnemyComboBox(this);
         selector.setActionCommand("enemySelector");
 
         //		JButton searchb = new JButton("Find");
@@ -637,7 +636,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
             case TYPE_CALL :
                 arguements[j].setModel(
-                    EnemyEditor.createEnemyComboBoxModel(false));
+                    EnemyEditor.createEnemyComboBoxModel());
                 break;
 
             case TYPE_PSI :
@@ -892,15 +891,13 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             HackModule.search(in.toString(), selector, true);
     }
 
-    public static SimpleComboBoxModel createEnemyComboBoxModel(final boolean zeroBased)
+    public static SimpleComboBoxModel createEnemyComboBoxModel()
     {
         SimpleComboBoxModel out = new SimpleComboBoxModel()
         {
-            boolean zb = zeroBased;
-
             public int getSize()
             {
-                return enemies.length + offset;
+                return enemies.length;
             }
 
             public Object getElementAt(int i)
@@ -908,10 +905,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
                 String out;
                 try
                 {
-                    if (i == 0 && !zb)
-                        out = "Null";
-                    else
-                        out = enemies[i - offset].toString();
+                    out = enemies[i].toString();
                 }
                 catch (NullPointerException e)
                 {
@@ -925,7 +919,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             }
         };
         addEnemyDataListener(out);
-        out.setOffset(zeroBased ? 0 : 1);
+        //out.setOffset(zeroBased ? 0 : 1);
 
         return out;
     }
@@ -946,10 +940,9 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         }
     }
     public static JComboBox createEnemyComboBox(
-        boolean zeroBased,
         final ActionListener al)
     {
-        SimpleComboBoxModel model = createEnemyComboBoxModel(zeroBased);
+        SimpleComboBoxModel model = createEnemyComboBoxModel();
         final JComboBox out = new JComboBox(model);
         out.addActionListener(al);
         model.addListDataListener(new ListDataListener()
@@ -1043,7 +1036,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         {
             this.hm=hm;
             this.num = num;
-            this.address = 0x1597e7 + (num * 94);
+            this.address = /*0x1597e7*/ 0x159789  + (num * 94);
             
             Rom rom = hm.rom;
             

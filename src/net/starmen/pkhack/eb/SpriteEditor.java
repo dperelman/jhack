@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBoxMenuItem;

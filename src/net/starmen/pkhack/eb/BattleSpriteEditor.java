@@ -24,7 +24,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -35,8 +34,6 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
-import sun.security.x509.IssuerAlternativeNameExtension;
 
 import net.starmen.pkhack.BMPReader;
 import net.starmen.pkhack.DrawingToolset;

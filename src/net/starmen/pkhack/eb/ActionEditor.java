@@ -1,12 +1,7 @@
 package net.starmen.pkhack.eb;
 
-import net.starmen.pkhack.AutoSearchBox;
-
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Graphics;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -15,19 +10,14 @@ import java.awt.event.MouseListener;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 
+import net.starmen.pkhack.AutoSearchBox;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.MaxLengthDocument;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.XMLPreferences;
 

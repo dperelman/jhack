@@ -11,7 +11,6 @@ package net.starmen.pkhack;
 =====================================================================
 */
 
-import java.io.*;
 
 public interface HexData
 {

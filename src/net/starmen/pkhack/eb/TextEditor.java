@@ -24,7 +24,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
@@ -51,8 +50,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import sun.security.krb5.internal.crypto.d;
 
 import net.starmen.pkhack.CCInfo;
 import net.starmen.pkhack.HackModule;

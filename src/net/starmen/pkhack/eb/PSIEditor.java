@@ -1,32 +1,22 @@
 package net.starmen.pkhack.eb;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Graphics;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.StringTokenizer;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import net.starmen.pkhack.AutoSearchBox;
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.MaxLengthDocument;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.XMLPreferences;
-import net.starmen.pkhack.AutoSearchBox;
 
 /**
  * Class providing GUI and API for editing the PSI in Earthbound.

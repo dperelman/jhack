@@ -36,10 +36,8 @@ import javax.swing.filechooser.FileFilter;
 
 import net.starmen.pkhack.CommentedLineNumberReader;
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.IPSFile;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.Rom;
-import net.starmen.pkhack.Stopwatch;
 import net.starmen.pkhack.XMLPreferences;
 
 /**

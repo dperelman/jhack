@@ -10,7 +10,6 @@ import java.awt.event.ActionListener;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 
 import net.starmen.pkhack.HackModule;
@@ -200,7 +199,7 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
         npcEntry = new Box(BoxLayout.Y_AXIS);
 
         npcEntry.add(enemyWrapper = new JSearchableComboBox(enemy = EnemyEditor
-            .createEnemyComboBox(false, this), "Enemy Stats: "));
+            .createEnemyComboBox(this), "Enemy Stats: "));
         enemy.setActionCommand("spctEnemySelector");
         enemy.setSelectedIndex(0);
         npcEntry.add(pairComponents(targetLabel = new JLabel("Targeting: "),

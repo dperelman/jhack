@@ -3,9 +3,11 @@
 
 package net.starmen.pkhack;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
+import java.awt.image.ImageProducer;
+import java.awt.image.MemoryImageSource;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 // This class provides a public static method that takes an InputStream
 // to a Windows .BMP file and converts it into an ImageProducer via

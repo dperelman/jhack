@@ -3,7 +3,6 @@
  */
 package net.starmen.pkhack.eb;
 
-import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.XMLPreferences;
 

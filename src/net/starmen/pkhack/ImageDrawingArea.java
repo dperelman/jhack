@@ -12,8 +12,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
 import java.util.ArrayList;
 
-import net.starmen.pkhack.DrawingArea.Palette;
-
 /**
  * {@link DrawingArea}for editing images.
  * 

@@ -11,10 +11,12 @@ package net.starmen.pkhack;
 =====================================================================
 */
 
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
 
 public class HexTableModel
   implements TableModel

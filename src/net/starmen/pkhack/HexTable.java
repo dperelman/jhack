@@ -6,10 +6,12 @@ package net.starmen.pkhack;
  * =====================================================================
  */
 
-import java.io.*;
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.table.*;
+import java.awt.Dimension;
+import java.awt.Font;
+
+import javax.swing.JTable;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 public class HexTable extends JTable
 {

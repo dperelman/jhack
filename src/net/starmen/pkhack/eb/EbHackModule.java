@@ -3,15 +3,7 @@
  */
 package net.starmen.pkhack.eb;
 
-import java.awt.event.ActionListener;
 import java.io.EOFException;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import javax.swing.JComboBox;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.Rom;

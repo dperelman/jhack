@@ -11,10 +11,14 @@ package net.starmen.pkhack;
 =====================================================================
 */
 
-import java.io.*;
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.table.*;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.io.File;
+import java.io.IOException;
+
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 public class JHexEdit extends JPanel
 {

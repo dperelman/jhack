@@ -52,6 +52,7 @@ import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.ImageDrawingArea;
 import net.starmen.pkhack.IntArrDrawingArea;
+import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.PrefsCheckBox;
 import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.RomWriteOutOfRangeException;
@@ -75,7 +76,6 @@ public class TileEditor extends EbHackModule implements ActionListener
     public TileEditor(Rom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
-        // TODO Auto-generated constructor stub
     }
 
     //Static stuff
@@ -143,8 +143,10 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             if (!isInited)
             {
-                if(!readTiles()) return false;
-                if(!readArrangements()) return false;
+                if (!readTiles())
+                    return false;
+                if (!readArrangements())
+                    return false;
                 readCollision();
                 //readPalettes();
                 //all palettes must be done at the same time by
@@ -153,7 +155,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             }
             return true;
         }
-        
+
         public void initToNull()
         {
             if (!isInited)
@@ -162,7 +164,8 @@ public class TileEditor extends EbHackModule implements ActionListener
                 readArrangements();
                 readCollision();
                 isInited = true;
-            };
+            }
+            ;
         }
 
         /**
@@ -222,10 +225,14 @@ public class TileEditor extends EbHackModule implements ActionListener
                     for (int y = 0; y < 8; y++)
                     {
                         int c = 0;
-                        if ((tile[0 + 2 * y] & (128 >> x)) != 0) c = 1;
-                        if ((tile[1 + 2 * y] & (128 >> x)) != 0) c |= 2;
-                        if ((tile[16 + 2 * y] & (128 >> x)) != 0) c |= 4;
-                        if ((tile[17 + 2 * y] & (128 >> x)) != 0) c |= 8;
+                        if ((tile[0 + 2 * y] & (128 >> x)) != 0)
+                            c = 1;
+                        if ((tile[1 + 2 * y] & (128 >> x)) != 0)
+                            c |= 2;
+                        if ((tile[16 + 2 * y] & (128 >> x)) != 0)
+                            c |= 4;
+                        if ((tile[17 + 2 * y] & (128 >> x)) != 0)
+                            c |= 8;
                         this.tiles[t][x][y] = c;
                     }
                 }
@@ -308,7 +315,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             int mtileset, mpalette, start;
         }
-        
+
         /**
          * Finds the internal palette number used for the specified map palette.
          * 
@@ -320,10 +327,11 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             for (int i = 0; i < numPalettes; i++)
                 if (palettes[i].mtileset == mtileset
-                    && palettes[i].mpalette == mpalette) return i;
+                    && palettes[i].mpalette == mpalette)
+                    return i;
             return 0;
         }
-        
+
         /**
          * Finds the internal palette number used for the specified map palette.
          * Format for the input is the map tileset number and then the map
@@ -473,7 +481,10 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             for (int i = 0; i < 16; i++)
             {
-                if (c == this.getPaletteColor(i, palette, subPalette)) { return i; }
+                if (c == this.getPaletteColor(i, palette, subPalette))
+                {
+                    return i;
+                }
             }
             return -1;
         }
@@ -1287,7 +1298,8 @@ public class TileEditor extends EbHackModule implements ActionListener
             for (int j = 1024; j > 0; j--)
                 for (int x = 0; x < 4; x++)
                     for (int y = 0; y < 4; y++)
-                        if (this.arrangements[j - 1][x][y] != 0) return j;
+                        if (this.arrangements[j - 1][x][y] != 0)
+                            return j;
             return 0;
         }
 
@@ -1399,7 +1411,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                 + (int) (32 * zoom), (gridLines ? 3 : 0) + (int) (32 * zoom),
                 BufferedImage.TYPE_4BYTE_ABGR_PRE);
             Graphics g = out.getGraphics();
-	    init();
+            init();
             for (int x = 0; x < 4; x++)
             {
                 for (int y = 0; y < 4; y++)
@@ -1764,7 +1776,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             byte[] buffer = new byte[32 * 1024], tmpTile;
             int i = 0;
 
-	    init();
+            init();
             for (int t = 0; t < tiles.length; t++)
             {
                 tmpTile = this.interlaceTile(this.tiles[t]);
@@ -1781,7 +1793,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
             byte[] compTileset; //, compTilesetTv;
             int compTileLen = comp(buffer, compTileset = new byte[65536], 28673);
-            if (compTileLen + offset - 1 > hm.rom.length()) return -1;
+            if (compTileLen + offset - 1 > hm.rom.length())
+                return -1;
             //				compTileLenTv =
             //					TileViewer.Tileset.comp(
             //						buffer,
@@ -1860,7 +1873,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
             byte[] compArr;
             int compArrLen = comp(arrBuffer, compArr = new byte[65536], a);
-            if (compArrLen + offset - 1 > hm.rom.length()) return -1;
+            if (compArrLen + offset - 1 > hm.rom.length())
+                return -1;
             hm.rom.write(this.arrangmentsAddress, compArr, compArrLen);
             System.out.println("Wrote " + compArrLen + " bytes of tileset #"
                 + num + " arrangements at "
@@ -1935,7 +1949,8 @@ public class TileEditor extends EbHackModule implements ActionListener
             int compTileLen = comp(buffer, compTileset = new byte[65536], 28673);
 
             if (!hm.writeToFree(compTileset, 0x2F125B + (num * 4),
-                tileOldCompLen, compTileLen)) return -1;
+                tileOldCompLen, compTileLen))
+                return -1;
             System.out
                 .println("Wrote "
                     + (tileOldCompLen = compTileLen)
@@ -1985,7 +2000,8 @@ public class TileEditor extends EbHackModule implements ActionListener
             int compArrLen = comp(arrBuffer, compArr = new byte[65536], a);
 
             if (!hm.writeToFree(compArr, 0x2F12AB + (num * 4), arrOldCompLen,
-                compArrLen)) return -1;
+                compArrLen))
+                return -1;
             System.out.println("Wrote "
                 + (arrOldCompLen = compArrLen)
                 + " bytes of tileset #"
@@ -2093,6 +2109,7 @@ public class TileEditor extends EbHackModule implements ActionListener
     {
         readFromRom();
     }
+
     private static void readPalettes(Rom rom)
     {
         for (int i = 0; i < 32; i++)
@@ -2100,7 +2117,8 @@ public class TileEditor extends EbHackModule implements ActionListener
             int t = rom.read(0x2F121B + 2 * i);
             int k = rom.readMulti(0x2F12FB + ((i + 1) * 4), 4)
                 - rom.readMulti(0x2F12FB + (i * 4), 4);
-            if (i == 31) k = 0xDAFAA7 - rom.readMulti(0x2F12FB + (i * 4), 4);
+            if (i == 31)
+                k = 0xDAFAA7 - rom.readMulti(0x2F12FB + (i * 4), 4);
             for (int j = 0; j < k / 0xC0; j++)
             {
                 Tileset.Palette tempPal = new Tileset.Palette();
@@ -2117,7 +2135,8 @@ public class TileEditor extends EbHackModule implements ActionListener
     private static boolean isCollisionChanged()
     {
         for (int i = 0; i < tilesets.length; i++)
-            if (tilesets[i].isCollisionChanged()) return true;
+            if (tilesets[i].isCollisionChanged())
+                return true;
         return false;
     }
 
@@ -2126,7 +2145,8 @@ public class TileEditor extends EbHackModule implements ActionListener
         //Collision info can not be written separately
 
         //Check if collision data has been changed, just return if not
-        if (!isCollisionChanged()) return;
+        if (!isCollisionChanged())
+            return;
 
         int cc = 0, l; //cc = number of collision sequences written so far
         int cp[] = new int[20480]; //cp = collision pointers
@@ -2208,7 +2228,8 @@ public class TileEditor extends EbHackModule implements ActionListener
     {
         int len = 0, tmp;
         boolean exp = rom.length() == 0x400200, inited[] = new boolean[20];
-        if (!exp) rom.expand();
+        if (!exp)
+            rom.expand();
         for (int i = 0; i < tilesets.length; i++)
         {
             inited[i] = tilesets[i].isInited();
@@ -2267,7 +2288,8 @@ public class TileEditor extends EbHackModule implements ActionListener
     {
         int len = 0, tmp;
         boolean exp = rom.length() == 0x400200, inited[] = new boolean[20];
-        if (!exp) rom.expand();
+        if (!exp)
+            rom.expand();
         for (int i = 0; i < tilesets.length; i++)
         {
             inited[i] = tilesets[i].isInited();
@@ -2459,7 +2481,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             //each increment shows four arrangments (height)
         }
 
-public void repaintTile(int tile)
+        public void repaintTile(int tile)
         {
             Graphics g = display.getGraphics();
             Image img[] = new Image[8]; //one for each subpal
@@ -2480,20 +2502,13 @@ public void repaintTile(int tile)
                                         subPal);
                             //(dx, dy) = top-left corner of destination
                             int dx = (((a - getArrangementOffset()) / 4) * 33)
-                            + (x * 8), dy = (((a - getArrangementOffset()) % 4) * 33)
-                            + (y * 8);
-                            g.drawImage(img[subPal],
-                                dx,dy, dx + 8, dy + 8, ((arr & 0x4000) == 0
-                                        ? 0
-                                            : 8), ((arr & 0x8000) == 0
-                                                    ? 0
-                                                        : 8),((arr & 0x4000) != 0
-                                                                ? 0
-                                                                    : 8), ((arr & 0x8000) != 0
-                                                                            ? 0
-                                                                                : 8)
-                                ,
-                                null);
+                                + (x * 8), dy = (((a - getArrangementOffset()) % 4) * 33)
+                                + (y * 8);
+                            g.drawImage(img[subPal], dx, dy, dx + 8, dy + 8,
+                                ((arr & 0x4000) == 0 ? 0 : 8),
+                                ((arr & 0x8000) == 0 ? 0 : 8),
+                                ((arr & 0x4000) != 0 ? 0 : 8),
+                                ((arr & 0x8000) != 0 ? 0 : 8), null);
                             //if this just drew on the current arrangement...
                             if (a == getCurrentArrangement())
                             {
@@ -2509,7 +2524,9 @@ public void repaintTile(int tile)
                     }
                 }
             }
-        }        public void repaintCurrentTile()
+        }
+
+        public void repaintCurrentTile()
         {
             repaintTile(getCurrentTile());
         }
@@ -2777,7 +2794,8 @@ public void repaintTile(int tile)
 
         public void paste()
         {
-            if (cb == null) return;
+            if (cb == null)
+                return;
             getSelectedTileset().setCollisionData(getCurrentArrangement(), cb);
             updateCollisionEditor();
         }
@@ -2847,8 +2865,16 @@ public void repaintTile(int tile)
 
         protected boolean isDrawGridLines()
         {
-            return prefs
-            .getValueAsBoolean("eb.TileEditor.arrEditor.gridLines");
+            try
+            {
+                System.out.println(prefs == null ? "prefs is null" : "prefs isn't null");
+            }
+            catch (RuntimeException e)
+            {
+                System.out.println("prefs...?");
+                e.printStackTrace();
+            }
+            return prefs.getValueAsBoolean("eb.TileEditor.arrEditor.gridLines");
         }
 
         protected boolean isGuiInited()
@@ -3308,7 +3334,8 @@ public void repaintTile(int tile)
         private void cycleFocus()
         {
             focus++;
-            if (focus > 2) focus = 1;
+            if (focus > 2)
+                focus = 1;
             fi.setFocus(this);
             repaint();
         }
@@ -3523,7 +3550,7 @@ public void repaintTile(int tile)
             "eb.TileEditor.arrEditor.gridLines", true, 'a', null,
             "arrEdGridLines", this));
         mb.add(optionsMenu);
-        
+
         JMenu focusMenu = new JMenu("Focus");
         focusMenu.setMnemonic('c');
 
@@ -3550,7 +3577,6 @@ public void repaintTile(int tile)
 
         display.add(tileSelector = new TileSelector()
         {
-
             public int getTilesWide()
             {
                 return 32;
@@ -3570,9 +3596,17 @@ public void repaintTile(int tile)
             {
                 return 2;
             }
-            
+
             public boolean isDrawGridLines()
             {
+                TileEditor t = TileEditor.this;
+                System.out.println(t == null
+                    ? "TileEditor.this is null"
+                    : "TileEditor.this is good!");
+                XMLPreferences prefs = JHack.main.getPrefs();
+                System.out.println(JHack.main.getPrefs() == prefs
+                    ? "the same"
+                    : "different");
                 return prefs
                     .getValueAsBoolean("eb.TileEditor.tileSelector.gridLines");
             }
@@ -3707,7 +3741,7 @@ public void repaintTile(int tile)
         toolsetBox.add(Box.createVerticalStrut(200));
 
         scrolledArea.add(toolsetBox, BorderLayout.EAST);
-        
+
         mainWindow.getContentPane().add(new JScrollPane(scrolledArea),
             BorderLayout.CENTER);
 
@@ -3768,23 +3802,22 @@ public void repaintTile(int tile)
         guiInited = true;
         tilesetSelector.setSelectedIndex(0);
     }
-    
+
     private void doTilesetSelectAction()
     {
         if (!getSelectedTileset().init())
         {
             guiInited = false;
             Object opt = JOptionPane.showInputDialog(mainWindow,
-                "Error decompressing the "
-                    + getSelectedTileset().name + " tileset (#"
-                    + getCurrentTileset() + ").", "Decompression Error",
-                JOptionPane.ERROR_MESSAGE, null, new String[]{"Abort", "Retry",
-                    "Fail"}, "Retry");
+                "Error decompressing the " + getSelectedTileset().name
+                    + " tileset (#" + getCurrentTileset() + ").",
+                "Decompression Error", JOptionPane.ERROR_MESSAGE, null,
+                new String[]{"Abort", "Retry", "Fail"}, "Retry");
             if (opt == null || opt.equals("Abort"))
             {
-                tilesetSelector
-                    .setSelectedIndex((tilesetSelector.getSelectedIndex() + 1)
-                        % tilesetSelector.getItemCount());
+                tilesetSelector.setSelectedIndex((tilesetSelector
+                    .getSelectedIndex() + 1)
+                    % tilesetSelector.getItemCount());
                 doTilesetSelectAction();
                 return;
             }
@@ -3800,7 +3833,7 @@ public void repaintTile(int tile)
             }
         }
         guiInited = true;
-        
+
         updatePaletteSelector();
         updateTileSelector();
         updateArrangementSelector();
@@ -3811,7 +3844,7 @@ public void repaintTile(int tile)
         updatePaletteDisplay();
         updateTileGraphicsEditor();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -3822,16 +3855,16 @@ public void repaintTile(int tile)
         //respond to each component
         if (ae.getActionCommand().equals("tilesetSelector"))
         {
-//            getSelectedTileset().init();
-//            updatePaletteSelector();
-//            updateTileSelector();
-//            updateArrangementSelector();
-//            resetArrangementUndo();
-//            updateCollisionEditor();
-//            arrangementEditor.clearSelection();
-//            updateArrangementEditor();
-//            updatePaletteDisplay();
-//            updateTileGraphicsEditor();
+            //            getSelectedTileset().init();
+            //            updatePaletteSelector();
+            //            updateTileSelector();
+            //            updateArrangementSelector();
+            //            resetArrangementUndo();
+            //            updateCollisionEditor();
+            //            arrangementEditor.clearSelection();
+            //            updateArrangementEditor();
+            //            updatePaletteDisplay();
+            //            updateTileGraphicsEditor();
             doTilesetSelectAction();
         }
         else if (ae.getActionCommand().equals("paletteSelector"))
@@ -4231,10 +4264,14 @@ public void repaintTile(int tile)
     private int getFocusNum()
     {
         Component c = getCurrentComponent();
-        if (c == this.tileDrawingArea) return 1;
-        if (c == this.tileForegroundDrawingArea) return 2;
-        if (c == this.arrangementEditor) return 3;
-        if (c == this.collisionEditor) return 4;
+        if (c == this.tileDrawingArea)
+            return 1;
+        if (c == this.tileForegroundDrawingArea)
+            return 2;
+        if (c == this.arrangementEditor)
+            return 3;
+        if (c == this.collisionEditor)
+            return 4;
         return 0;
     }
 
@@ -4524,7 +4561,8 @@ public void repaintTile(int tile)
             {
                 tilesets[i].init();
                 out.write(tilesets[i].getAllDataAsString());
-                if (i != tilesets.length - 1) out.write("\n\n\n\n");
+                if (i != tilesets.length - 1)
+                    out.write("\n\n\n\n");
             }
             out.close();
         }
