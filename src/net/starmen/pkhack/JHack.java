@@ -14,7 +14,7 @@ import java.util.Date;
 public class JHack
 {
     /**
-     * Directory where all JHack 
+     * Directory where all JHack settings and logs should be stored.
      */
     public static final File JHACK_DIR = new File(System
         .getProperty("user.home")
@@ -55,6 +55,14 @@ public class JHack
         {
             out.stop();
             err.stop();
+
+            String logbasestr = JHACK_DIR.toString() + File.separator + "logs"
+                + File.separator + date;
+            File outlog = new File(logbasestr + ".out.log"), errlog = new File(
+                logbasestr + ".err.log");
+
+            outlog.deleteOnExit();
+            errlog.deleteOnExit();
         }
 
         main = new MainGUI();
