@@ -1272,35 +1272,38 @@ public abstract class HackModule
      * @see #findFreeRange(int, int)
      */
 
-    public boolean writetoFree(byte[] data, int pointerLoc, int pointerBase,
+    public boolean writetoFree(byte[] rawData, int pointerLoc, int pointerBase,
         int pointerLen, int oldLen, int newLen, int beginAt, boolean mustBeInExpanded)
     {
+    	boolean latePointer = false;
+    	byte[] data;
     	// 0xff shielding if the new data starts or ends with 0
-    	if ((data[0] == 0) && (data[data.length - 1] == 0))
+    	if ((rawData[0] == 0) && (rawData[rawData.length - 1] == 0))
     	{
-    		byte[] tmp = new byte[data.length + 2];
-    		tmp[0] = (byte) 0xff;
-    		tmp[tmp.length - 1] = (byte) 0xff;
-    		System.arraycopy(data, 0, tmp, 1, data.length);
-    		data = tmp;
+    		data = new byte[rawData.length + 2];
+    		data[0] = (byte) 0xff;
+    		data[data.length - 1] = (byte) 0xff;
+    		System.arraycopy(rawData, 0, data, 1, rawData.length);
     		newLen += 2;
+    		latePointer = true;
     	}
-    	else if (data[0] == 0)
+    	else if (rawData[0] == 0)
     	{
-    		byte[] tmp = new byte[data.length + 1];
-    		tmp[0] = (byte) 0xff;
-    		System.arraycopy(data, 0, tmp, 1, data.length);
-    		data = tmp;
+    		data = new byte[rawData.length + 1];
+    		data[0] = (byte) 0xff;
+    		System.arraycopy(rawData, 0, data, 1, rawData.length);
+    		newLen++;
+    		latePointer = true;
+    	}
+    	else if (rawData[rawData.length - 1] == 0)
+    	{
+    		data = new byte[rawData.length + 1];
+    		data[data.length - 1] = (byte) 0xff;
+    		System.arraycopy(rawData, 0, data, 0, rawData.length);
     		newLen++;
     	}
-    	else if (data[data.length - 1] == 0)
-    	{
-    		byte[] tmp = new byte[data.length + 1];
-    		tmp[tmp.length - 1] = (byte) 0xff;
-    		System.arraycopy(data, 0, tmp, 0, data.length);
-    		data = tmp;
-    		newLen += 2;
-    	}
+    	else
+    		data = rawData;
     	
         //make sure ROM is expanded if needed
         if ((newLen > oldLen) || mustBeInExpanded)
@@ -1314,7 +1317,14 @@ public abstract class HackModule
         {
             //if it fits in the same place, then write there
             nullifyArea(oldPointer, oldLen);
-            rom.write(oldPointer, data, newLen);
+            if (oldPointer < 0x300200)
+            	rom.write(oldPointer, rawData, newLen);
+            else
+            {
+            	if (latePointer)
+            		rom.write(pointerLoc, rom.readMulti(pointerLoc, pointerLen) + 1, pointerLen);
+            	rom.write(oldPointer, data, newLen);
+            }
             return true;
         }
         else
@@ -1332,7 +1342,9 @@ public abstract class HackModule
                 //write data there
                 rom.write(newPointer, data, newLen);
                 //change pointer
-                newPointer = toSnesPointer(newPointer - pointerBase);                	
+                newPointer = toSnesPointer(newPointer - pointerBase);
+                if (latePointer)
+                	newPointer++;
                 //write pointer
                 rom.write(pointerLoc, newPointer, pointerLen);
                 //success!
