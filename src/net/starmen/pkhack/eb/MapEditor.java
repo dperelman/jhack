@@ -2898,9 +2898,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			int pointer = rom.readMulti(address, 4);
         			int flag = rom.readMulti(address + 4, 2);
         			boolean flagReversed;
-        			System.out.println("address: " 
-        					+ Integer.toHexString(rom.readMulti(address + 4, 2))
-							+ " raw flag: " + Integer.toHexString(flag));
         			if (flag > 0x8000)
         			{
         				flag -= 0x8000;
@@ -2908,9 +2905,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
         			}
         			else
         				flagReversed = false;
-        			System.out.println("new flag: "
-        					+ Integer.toHexString(flag)
-							+ " is reversed?: " + flagReversed);
         			short yCoord = (short) rom.read(address + 6);
         			yCoord += (short) ((rom.read(address + 7) & 0x3F) << 8);
         			short xCoord = (short) (rom.readMulti(address + 8, 2));
