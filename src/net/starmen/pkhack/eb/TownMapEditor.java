@@ -71,7 +71,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         try
         {
             Class[] c = new Class[]{byte[].class, TownMapEditor.class};
-            IPSDatabase.registerExtension("gas", TownMapEditor.class.getMethod(
+            IPSDatabase.registerExtension("tnm", TownMapEditor.class.getMethod(
                 "importData", c), TownMapEditor.class.getMethod("restoreData",
                 c), TownMapEditor.class.getMethod("checkData", c), this);
         }
