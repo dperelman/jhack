@@ -43,6 +43,9 @@ public class RomMem extends AbstractRom
         }
         this.path = rompath;
         setDefaultDir(rompath.getParent());
+        //ensure mirror for ExHiRom
+        if (length() == 0x600200)
+            System.arraycopy(rom, 0x008200, rom, 0x408200, 0x8000);
 
         try
         {
@@ -75,6 +78,10 @@ public class RomMem extends AbstractRom
         }
 
         this.rom[offset] = (byte) (arg & 255);
+
+        if (getRomType().equals("Earthbound") && length() == 0x600200
+            && offset >= 0x008200 && offset < 0x009200)
+            write(offset + 0x400000, arg);
     }
 
     public void write(int offset, byte[] arg, int len)
@@ -131,6 +138,7 @@ public class RomMem extends AbstractRom
         //        {
         //            out[i] = (byte) read(i);
         //        }
+        Arrays.fill(out, rl, out.length, (byte) 0);
         System.arraycopy(rom, 0, out, 0, rl);
         for (int j = 0; j < 4096; j++)
         {
@@ -138,9 +146,22 @@ public class RomMem extends AbstractRom
             //            {
             //                out[((j * 256) + i) + rl] = 0;
             //            }
-            Arrays.fill(out, (j * 256) + rl, (j * 256) + rl + 255, (byte) 0);
+            //Arrays.fill(out, (j * 256) + rl, (j * 256) + rl + 255, (byte) 0);
             out[((j * 256) + 255) + rl] = 2;
         }
+
+        rom = out;
+
+        return true;
+    }
+
+    protected boolean _expandEx()
+    {
+        int rl = length();
+        byte[] out = new byte[rl + (2 << 20)];
+        Arrays.fill(out, rl, out.length, (byte) 0);
+        System.arraycopy(rom, 0, out, 0, rl);
+        System.arraycopy(out, 0x008200, out, 0x408200, 0x8000);
 
         rom = out;
 
@@ -193,6 +214,9 @@ public class RomMem extends AbstractRom
         try
         {
             ips.apply(this.rom);
+            //ensure mirror for ExHiRom
+            if (length() == 0x600200)
+                System.arraycopy(rom, 0x008200, rom, 0x408200, 0x8000);
             return true;
         }
         catch (ArrayIndexOutOfBoundsException e)
@@ -220,12 +244,12 @@ public class RomMem extends AbstractRom
             return super.unapply(ips, orgRom);
         }
     }
-    
+
     public boolean check(IPSFile ips)
     {
         return ips.check(rom);
     }
-    
+
     public boolean isDirectFileIO()
     {
         return false;

@@ -613,14 +613,14 @@ public abstract class AbstractRom
         }
         return returnValue;
     }
-    
+
     /**
      * Reads a <code>List</code> from <code>offset</code> in the rom.
      * 
      * @param offset Where to read from.
      * @param length Number of bytes to read.
-     * @return <code>ArrayList</code> at <code>offset</code> with a length of
-     *         <code>length</code>. If
+     * @return <code>ArrayList</code> at <code>offset</code> with a length
+     *         of <code>length</code>. If
      *         <code>offset &gt; the rom.length</code> then it is -1.
      */
     public ArrayList readList(int offset, int length)
@@ -1664,9 +1664,9 @@ public abstract class AbstractRom
     }
 
     /**
-     * Expands an Earthbound ROM. Will fail if ROM is already expanded or is not
-     * Earthbound. Important implementation note: override {@link #_expand()}to
-     * do actual expansion, not this.
+     * Expands an Earthbound ROM from 24 megabits to 32 megabits. Will fail if
+     * ROM is already expanded or is not Earthbound. Important implementation
+     * note: override {@link #_expand()}to do actual expansion, not this.
      * 
      * @return True if succesful, false if ROM already expanded or not
      *         Earthbound.
@@ -1679,15 +1679,44 @@ public abstract class AbstractRom
         else
             return false;
     }
-
     /**
-     * Actual implementation of ROM expansion. Called only when this contains a
-     * 0x300200 byte EarthBound ROM. Adds a megabyte of 4096 copies of the same
-     * 256 byte set. This 256 set is all zeros except the last byte is 0x02.
+     * Actual implementation of ROM expansion from 24 to 32 megabits. Called
+     * only when this contains a 0x300200 byte EarthBound ROM. Adds a megabyte
+     * of 4096 copies of the same 256 byte set. This 256 set is all zeros except
+     * the last byte is 0x02.
      * 
      * @return true if expansion was successful
      */
     protected abstract boolean _expand();
+
+    /**
+     * Expands an Earthbound ROM from 24 or 32 megabits to 48 megabits. Will
+     * fail if ROM is already expanded to 48 megabits or is not Earthbound.
+     * Important implementation note: override {@link #_expandEx()}to do actual
+     * expansion, not this.
+     * 
+     * @return True if succesful, false if ROM already expanded or not
+     *         Earthbound.
+     */
+    public boolean expandEx()
+    {
+        //Only expand Earthbound ROMs that are expanded to 32 megabits and
+        // have a 0x200 header. Expand from 24 megabits to 32 megabits first.
+        expand();
+        if ((getRomType().equals("Earthbound")) && length() == 0x400200)
+            return _expandEx();
+        else
+            return false;
+    }
+    /**
+     * Actual implementation of ROM expansion from 32 to 48 megabits. Called
+     * only when this contains a 0x400200 byte EarthBound ROM. Adds 2MB of zeros
+     * except the code from 0x008000-0x00FFFF has to be copied to
+     * 0x408000-0x40FFFF (those addresses not counting 0x200 byte header).
+     * 
+     * @return true if expansion was successful
+     */
+    protected abstract boolean _expandEx();
 
     //class info functions
     /**

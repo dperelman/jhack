@@ -2294,9 +2294,8 @@ public class TileEditor extends EbHackModule implements ActionListener
     public static int writeInfo(AbstractRom rom)
     {
         int len = 0, tmp;
-        boolean exp = rom.length() == 0x400200, inited[] = new boolean[20];
-        if (!exp)
-            rom.expand();
+        boolean exp = rom.length() != 0x300200, inited[] = new boolean[20];
+        rom.expandEx();
         for (int i = 0; i < tilesets.length; i++)
         {
             inited[i] = tilesets[i].isInited();

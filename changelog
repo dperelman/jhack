@@ -1,4 +1,6 @@
 NEXT VERSION (after v0.5.0.2):
+# Native comp() and decomp() support.
+# 48 megabit/6 megabyte/ExHiRom support.
 
 v0.5.0.2:
 # IPSFile: BUGFIX: IPS creation no longer uses recursion, should fix obscure

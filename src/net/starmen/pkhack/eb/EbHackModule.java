@@ -6,8 +6,8 @@ package net.starmen.pkhack.eb;
 import java.io.EOFException;
 import java.util.Arrays;
 
-import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.AbstractRom;
+import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -186,7 +186,8 @@ public abstract class EbHackModule extends HackModule
             int offset = address + i;
             //in the expanded meg every 256th byte should be [02] instead of
             // [00]
-            rom.write(offset, offset > 0x300200 && ((i + 1) % 0x100) == 0
+            rom.write(offset, offset < 0x400200 && offset > 0x300200 && 
+                ((i + 1) % 0x100) == 0
                 ? 0x02
                 : 0x00);
         }
@@ -201,6 +202,63 @@ public abstract class EbHackModule extends HackModule
                 return i + 1;
         return 0;
     }
+    
+    private static final int nativeComp, nativeCompMinor;
+    private static final int LIBCOMP_COMP_VER = 1;
+    private static final int LIBCOMP_DECOMP_VER = 2;
+    static
+    {
+        int compver = -1, minor = -1;
+        try
+        {
+            System.loadLibrary("comp");
+            compver = getLibcompVersion();
+            minor = getLibcompMinorVersion();
+            System.out.println("Earthbound compression library libcomp v" +
+                compver + "." + minor + " loaded.");
+            
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error loading Earthbound compression library " +
+                System.mapLibraryName("comp") + ".");
+            e.printStackTrace(System.out);
+        }
+        nativeComp = compver;
+        nativeCompMinor= minor;
+    }
+    
+    /**
+     * Returns the major version of the currently loaded libcomp. This will
+     * throw an exception if there is no loaded libcomp. This tells what
+     * functions this version of libcomp supports. Zero or negative mean no
+     * functions. 1 means comp(). 2 means it also supports decomp().
+     * 
+     * @return major version number of currently loaded libcomp.
+     */
+    public static native int getLibcompVersion();
+    /**
+     * Returns the minor version of the currently loaded libcomp. This will
+     * throw an exception if there is no loaded libcomp. This indicates the
+     * bugfix/speed improvement level of this libcomp. The return value of this
+     * function is not used except to show the user. It should be used to show
+     * the differences between different releases.
+     * 
+     * @return minor version number of currently loaded libcomp.
+     */
+    public static native int getLibcompMinorVersion();
+    /**
+     * Returns string to be shown in credits for libcomp.
+     * 
+     * @return string to be shown in credits for libcomp
+     */
+    public static String getLibcompCreditsLine()
+    {
+        return (nativeComp < 0 ? "Using Java comp implementation" : 
+            ("Using libcomp v" + nativeComp + "." + nativeCompMinor)) + 
+            " based on cabbage's source, ported by AnyoneEB.";
+    }
+    
     /**
      * The decompressor function. Takes a pointer to the compressed block, a
      * pointer to the buffer which it decompresses into, and the maximum length.
@@ -219,6 +277,26 @@ public abstract class EbHackModule extends HackModule
      */
     public static int[] decomp(int cdata, byte[] buffer, int maxlen, AbstractRom rom)
     {
+        if(nativeComp >= LIBCOMP_DECOMP_VER)
+            return native_decomp(cdata, buffer, maxlen, rom);
+        else
+            return _decomp(cdata, buffer, maxlen, rom);
+        
+/*
+ * Stopwatch nsw = new Stopwatch(), jsw = new Stopwatch(); nsw.start();
+ * native_decomp(cdata, buffer, maxlen, rom); nsw.stop(); jsw.start();
+ * _decomp(cdata, buffer, maxlen, rom); jsw.stop(); System.out.println("Java
+ * decomp() took " + jsw + "; native decomp took " + nsw);
+ * 
+ * return native_decomp(cdata, buffer, maxlen, rom);
+ */
+    }
+    private static native int[] native_decomp(int cdata, byte[] buffer, int maxlen, AbstractRom rom);
+    private static int[] _decomp(int cdata, byte[] buffer, int maxlen, AbstractRom rom)
+    {
+        if(EbHackModule.bitrevs == null)
+            initBitrevs();
+        
         int start = cdata;
         int bpos = 0, bpos2 = 0;
         byte tmp;
@@ -293,15 +371,16 @@ public abstract class EbHackModule extends HackModule
                         return new int[] { -5 };
                     while (len-- != 0)
                     {
-                        tmp = buffer[bpos2++];
-                        /* reverse the bits */
-                        tmp =
-                            (byte) (((tmp >> 1) & 0x55) | ((tmp << 1) & 0xAA));
-                        tmp =
-                            (byte) (((tmp >> 2) & 0x33) | ((tmp << 2) & 0xCC));
-                        tmp =
-                            (byte) (((tmp >> 4) & 0x0F) | ((tmp << 4) & 0xF0));
-                        buffer[bpos++] = tmp;
+//                        tmp = buffer[bpos2++];
+//                        /* reverse the bits */
+//                        tmp =
+//                            (byte) (((tmp >> 1) & 0x55) | ((tmp << 1) & 0xAA));
+//                        tmp =
+//                            (byte) (((tmp >> 2) & 0x33) | ((tmp << 2) & 0xCC));
+//                        tmp =
+//                            (byte) (((tmp >> 4) & 0x0F) | ((tmp << 4) & 0xF0));
+//                        buffer[bpos++] = tmp;
+                        buffer[bpos++] = bitrevs[buffer[bpos2++]];
                     }
                     break;
                 case 6 :
@@ -444,6 +523,31 @@ public abstract class EbHackModule extends HackModule
      * @return Length of compressed output.
      */
     public static int comp(final byte[] udata, final byte[] buffer, final int limit)
+    {
+        //Stopwatch jsw = new Stopwatch();
+        //Stopwatch nsw = new Stopwatch();
+        //int nret = -255, jret = -255;
+        if(nativeComp >= LIBCOMP_COMP_VER)
+        {
+            //nsw.start();
+            return native_comp(udata, buffer, limit);
+            //nsw.stop();
+        }
+        else
+        {
+            //jsw.start();
+            return _comp(udata, buffer, limit);
+            //jsw.stop();
+        }
+        //System.out.println("Native comp()="+ nret +" took " +
+        // nsw.toString());
+        //System.out.println("Java comp()=" + jret + " took " +
+        // jsw.toString());
+        //return jret;
+    }
+    private static native int native_comp(final byte[] udata, final byte[] buffer, final int limit);
+    
+    private static int _comp(final byte[] udata, final byte[] buffer, final int limit)
     {
 //        Stopwatch sw = new Stopwatch(), swf = new Stopwatch(); //sw temp
 //        sw.start();

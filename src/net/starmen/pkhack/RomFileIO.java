@@ -38,12 +38,13 @@ public class RomFileIO extends AbstractRom
         try
         {
             if (offset >= this.length()) //don't write past the end of the ROM
-            { 
-            //			System.out.println(
-            //				"Attempted read past end of rom, (0x"
-            //					+ Integer.toHexString(offset)
-            //					+ ")");
-            return -1; }
+            {
+                //			System.out.println(
+                //				"Attempted read past end of rom, (0x"
+                //					+ Integer.toHexString(offset)
+                //					+ ")");
+                return -1;
+            }
             rom.seek((long) offset);
             return rom.readUnsignedByte();
         }
@@ -94,9 +95,14 @@ public class RomFileIO extends AbstractRom
     {
         try
         {
-            if (offset >= rom.length()) return;
+            if (offset >= rom.length())
+                return;
             rom.seek((long) offset);
             rom.writeByte(arg);
+
+            if (getRomType().equals("Earthbound") && length() == 0x600200
+                && offset >= 0x008200 && offset < 0x009200)
+                write(offset + 0x400000, arg);
         }
         catch (IOException e)
         {
@@ -108,7 +114,8 @@ public class RomFileIO extends AbstractRom
     {
         try
         {
-            if (offset >= rom.length()) return;
+            if (offset >= rom.length())
+                return;
             rom.seek((long) offset);
             rom.write(arg, 0, len);
         }
@@ -190,8 +197,13 @@ public class RomFileIO extends AbstractRom
     public boolean saveRom(File rompath)
     {
         if (!this.isLoaded) //don't try to save if nothing is loaded
-        { return false; }
+        {
+            return false;
+        }
 
+        //ensure mirror for ExHiRom
+        if (length() == 0x600200)
+            write(0x408200, readByte(0x008200, 0x8000));
         if (rompath != super.path)
         {
             try
@@ -225,9 +237,27 @@ public class RomFileIO extends AbstractRom
         try
         {
             rom.seek(rom.length());
-            byte[] b = new byte[1 << 20];
+            byte[] b = new byte[1 << 20]; //1 mebibyte
             for (int j = 0; j < 4096; j++)
                 b[(j * 256) + 255] = 2;
+            rom.write(b);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    protected boolean _expandEx()
+    {
+        try
+        {
+            rom.seek(rom.length());
+            byte[] b = new byte[2 << 20]; //2 mebibytes
+            System.arraycopy(readByte(0x008200, 0x8000), 0, b, 0x8000, 0x8000);
             rom.write(b);
         }
         catch (IOException e)

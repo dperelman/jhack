@@ -1245,7 +1245,7 @@ public abstract class HackModule
     	int oldLen, int newLen, boolean nullifyNow)
     {
         //make sure ROM is expanded
-        rom.expand();
+        rom.expandEx();
         //store old pointer for use later
         int oldPointer = toRegPointer(rom.readMulti(pointerLoc, pointerLen));
         if ((newLen <= oldLen)
@@ -1334,7 +1334,7 @@ public abstract class HackModule
         int oldLen, int newLen)
     {
         //make sure ROM is expanded
-        rom.expand();
+        rom.expandEx();
         //store old pointer for use later
         int oldPointer = rom.readRegAsmPointer(pointerLoc[0]);
         System.out.println("writeToFreeASMLink(): read pointer as being: 0x"

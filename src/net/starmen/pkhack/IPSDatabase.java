@@ -522,7 +522,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
             DatabaseEntry de = (DatabaseEntry) entries.get(ipsTable
                 .getSelectedRow());
             //make sure ROM is expanded
-            rom.expand();
+            rom.expandEx();
             de.apply();
             checkAllApplied(rom);
             ipsTable.repaint();
@@ -532,7 +532,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
             DatabaseEntry de = (DatabaseEntry) entries.get(ipsTable
                 .getSelectedRow());
             //make sure ROM is expanded
-            rom.expand();
+            rom.expandEx();
             de.unapply();
             checkAllApplied(rom);
             ipsTable.repaint();

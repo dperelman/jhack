@@ -56,6 +56,8 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 
+import net.starmen.pkhack.eb.EbHackModule;
+
 /**
  * Main GUI class of JHack. Shows the main window with the list of module
  * buttons. This is called by {@link JHack#main(String[])}.
@@ -627,7 +629,8 @@ public class MainGUI implements ActionListener, WindowListener
 
     private String getModuleCredits()
     {
-        String returnValue = "\n\n" + AbstractRom.getDescription() + " "
+        String returnValue = "\n\n" + EbHackModule.getLibcompCreditsLine()
+            + "\n\n" + AbstractRom.getDescription() + " "
             + AbstractRom.getVersion() + "\n" + AbstractRom.getCredits();
         for (int i = 0; i < getModuleCount(); i++)
         {
@@ -784,7 +787,7 @@ public class MainGUI implements ActionListener, WindowListener
 
         AbstractRom r = new RomMem();
         r.loadRom(new File(orgRom));
-        r.expand();
+        r.expandEx();
         r.saveRom(new File(expRom));
 
         this.getPrefs().setValue(romType + ".expRomPath", expRom);
@@ -823,7 +826,8 @@ public class MainGUI implements ActionListener, WindowListener
                 (tmpf = getFile("Select a unmodified or expanded " + romType
                     + " ROM.", true)).toString());
             if (romType.equals("Earthbound")
-                && tmpf.length() == AbstractRom.EB_ROM_SIZE_REGULAR)
+                && (tmpf.length() == AbstractRom.EB_ROM_SIZE_REGULAR || tmpf
+                    .length() == AbstractRom.EB_ROM_SIZE_EXPANDED))
             {
                 this.getPrefs().setValue(romType + ".orgRomPath",
                     tmpf.toString());
@@ -836,8 +840,10 @@ public class MainGUI implements ActionListener, WindowListener
             + AbstractRom.EB_ROM_SIZE_REGULAR
             + "; romType = "
             + romType);
+        long expromlen = new File(getPrefs().getValue(romType + ".expRomPath"))
+            .length();
         if (romType.equals("Earthbound")
-            && new File(getPrefs().getValue(romType + ".expRomPath")).length() == AbstractRom.EB_ROM_SIZE_REGULAR)
+            && (expromlen == AbstractRom.EB_ROM_SIZE_REGULAR || expromlen == AbstractRom.EB_ROM_SIZE_EXPANDED))
         {
             System.out
                 .println("Exp rom not actually expanded. Bug in previous versions.");
@@ -893,6 +899,11 @@ public class MainGUI implements ActionListener, WindowListener
             //			new FileInputStream(getOrginalRomFile()).read(orgRomArr);
             System.out.println("About to write backup .ips...");
             IPSFile ips = rom.createIPS(orgRom);
+            if (ips == null)
+            {
+                System.out.println("Failed writting backup .ips.");
+                return;
+            }
             //			FileOutputStream out =
             //				new FileOutputStream(
             File f = new File(backupDir.toString()
@@ -907,7 +918,7 @@ public class MainGUI implements ActionListener, WindowListener
             //				out.write(ips.charAt(i));
             //			}
             //			out.close();
-            System.out.println("Completed writing backup .ips...");
+            System.out.println("Completed writting backup .ips.");
 
             this.refreshRevertMenu();
         }
@@ -925,7 +936,7 @@ public class MainGUI implements ActionListener, WindowListener
                 .println("Warning: Unknown ROM type. No backups will be made.");
             return;
         }
-        
+
         try
         {
             writeBackup();
@@ -1214,7 +1225,8 @@ public class MainGUI implements ActionListener, WindowListener
         }
         //if a Earthbound ROM was just loaded and it is unexpanded (3 MB + 512
         // byte header) then we may want to expand it
-        if (rom.getRomType().equals("Earthbound") && rom.length() == 0x300200)
+        if (rom.getRomType().equals("Earthbound")
+            && (rom.length() == 0x300200 || rom.length() == 0x400200))
         {
             //name of the automatic expansion preference
             String prefName = "Earthbound.autoExpand";
@@ -1228,7 +1240,7 @@ public class MainGUI implements ActionListener, WindowListener
                 if (getPrefs().getValueAsBoolean(prefName))
                 {
                     //if user selected always expand, do so
-                    rom.expand();
+                    rom.expandEx();
                 }
                 //if user selected never expand, do nothing
             }
@@ -1245,8 +1257,8 @@ public class MainGUI implements ActionListener, WindowListener
                     "The Earthbound ROM you loaded is "
                         + "not expanded. Expanding a ROM allows you to "
                         + "have an extra megabyte of storage for more "
-                        + "of anything. ROM expansion cannot not be "
-                        + "undone. If you do not expand your ROM now "
+                        + "of anything. ROM expansion cannot be undone"
+                        + "If you do not expand your ROM now "
                         + "you can do so later by using the "
                         + "ROM Expander located in the \"General\" "
                         + "group.\n\nDo you wish to expand this ROM?", 10, 30);
@@ -1269,7 +1281,7 @@ public class MainGUI implements ActionListener, WindowListener
                 //yes is true if user selected yes, false if they did not
                 boolean yes = opt == JOptionPane.YES_OPTION;
                 if (yes)
-                    rom.expand();
+                    rom.expandEx();
                 //if user selected to remember their selection, put it into
                 //the preferences
                 if (remember.isSelected())
