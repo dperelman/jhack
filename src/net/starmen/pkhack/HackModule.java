@@ -1432,13 +1432,15 @@ public abstract class HackModule
      * @param oldLen length of orginal data; that many bytes starting at the old
      *            pointer at pointerLoc will be set to null
      * @param newLen how many bytes to read from <code>data</code>
+     * @param mustBeInExpanded if true, data will always be written to the
+     *            expanded area, never to where it originally was
      * @return true on success, false on failure (no change will be made to the
      *         ROM on failure)
      * @see #findFreeRange(int, int)
      * @see AbstractRom#writeAsmPointer(int, int)
      */
     public boolean writeToFreeASMLink(byte[] data, int[] pointerLoc,
-        int oldLen, int newLen)
+        int oldLen, int newLen, boolean mustBeInExpanded)
     {
         //make sure ROM is expanded if needed
         if (newLen > oldLen)
@@ -1447,7 +1449,7 @@ public abstract class HackModule
         int oldPointer = rom.readRegAsmPointer(pointerLoc[0]);
         System.out.println("writeToFreeASMLink(): read pointer as being: 0x"
             + Integer.toHexString(oldPointer));
-        if (newLen <= oldLen)
+        if (newLen <= oldLen && !mustBeInExpanded)
         {
             //if it fits in the same place, then write there
             nullifyArea(oldPointer, oldLen);
@@ -1491,6 +1493,53 @@ public abstract class HackModule
      * returned and the ROM will not be changed.
      * 
      * @param data data to write
+     * @param pointerLoc location of ASM links to data, all will be set to point
+     *            to the location <code>data</code> is written to
+     * @param oldLen length of orginal data; that many bytes starting at the old
+     *            pointer at pointerLoc will be set to null
+     * @param newLen how many bytes to read from <code>data</code>
+     * @return true on success, false on failure (no change will be made to the
+     *         ROM on failure)
+     * @see #findFreeRange(int, int)
+     * @see AbstractRom#writeAsmPointer(int, int)
+     */
+    public boolean writeToFreeASMLink(byte[] data, int[] pointerLoc,
+        int oldLen, int newLen)
+    {
+        return writeToFreeASMLink(data, pointerLoc, oldLen, newLen, false);
+    }
+
+    /**
+     * Writes the specified data into a free spot in the ROM and nulls the
+     * previous copy. If a free spot large enough cannot be found, false will be
+     * returned and the ROM will not be changed.
+     * 
+     * @param data data to write
+     * @param pointerLoc location of ASM link to data, will be set to point to
+     *            the location <code>data</code> is written to
+     * @param oldLen length of orginal data; that many bytes starting at the old
+     *            pointer at pointerLoc will be set to null
+     * @param newLen how many bytes to read from <code>data</code>
+     * @param mustBeInExpanded if true, data will always be written to the
+     *            expanded area, never to where it originally was
+     * @return true on success, false on failure (no change will be made to the
+     *         ROM on failure)
+     * @see #findFreeRange(int, int)
+     * @see AbstractRom#writeAsmPointer(int, int)
+     */
+    public boolean writeToFreeASMLink(byte[] data, int pointerLoc, int oldLen,
+        int newLen, boolean mustBeInExpanded)
+    {
+        return writeToFreeASMLink(data, new int[]{pointerLoc}, oldLen, newLen,
+            mustBeInExpanded);
+    }
+
+    /**
+     * Writes the specified data into a free spot in the ROM and nulls the
+     * previous copy. If a free spot large enough cannot be found, false will be
+     * returned and the ROM will not be changed.
+     * 
+     * @param data data to write
      * @param pointerLoc location of ASM link to data, will be set to point to
      *            the location <code>data</code> is written to
      * @param oldLen length of orginal data; that many bytes starting at the old
@@ -1504,7 +1553,8 @@ public abstract class HackModule
     public boolean writeToFreeASMLink(byte[] data, int pointerLoc, int oldLen,
         int newLen)
     {
-        return writeToFreeASMLink(data, new int[]{pointerLoc}, oldLen, newLen);
+        return writeToFreeASMLink(data, new int[]{pointerLoc}, oldLen, newLen,
+            false);
     }
 
     //1BPP
