@@ -6,22 +6,20 @@ DONE? (CHANGES TO CONFIRM/DEBUG)
 
 NEXT RELEASE
 
-# ??? --> [03:09:02] <EBisumaru> Dammit, JHack can't do the compression.
-	Fixed by comp() bug fixes?
-# [12:38:45] <JeffMan> oh and you should add the mother 2 font 
-	and the debug menu font to jhack's font editor if you can
+# Fixed by comp() bug fixes??? --> [03:09:02] <EBisumaru> Dammit,
+	JHack can't do the compression.
+	(Note to self: Don't worry about it. Can't find EBi, anyway.)
 
 LONG TERM
 
+# [12:38:45] <JeffMan> oh and you should add the mother 2 font 
+	and the debug menu font to jhack's font editor if you can
 # Gas Station image import/export
 # IPSDatabase extensions?
 # Starting stat editor ( 1DAF1 = Value for Ness' starting stats )
 # Battle Animation editor ( http://pkhack.fobby.net/misc/txt/psi_animation_doc.txt )
 # Title screen editor
 # Death screen editor
-# Credits Font editor
-	[16:47:11] <Chris_Davis|Away> •21E728 to 21EB13 = Credits font 
-	[16:47:11] <Chris_Davis|Away> •21EB14 to 21EB29 = Credits font palette
 # Credits photo border graphics
 	[16:53:42] <Chris_Davis|Away> Oh. BTW, you could add the 21EB4A to 21EC4F = Credits photo border graphics and arrangement (compressed)
 	[16:54:36] <AnyoneEB> what palette does that use?

@@ -20,6 +20,8 @@ Next version (after v0.4.7.1):
 	and Goplat for helping fix them). Attempt made to ensure that any other
 	comp() bugs will not be fatal, unsure if it works.
 # BUGFIX: Selecting "Close ROM" now hides module windows.
+# Enemy Editor: Problems related to too high arguments are fixed and show a
+	warning	message to inform the user what happened. (thanks EBPlayer1028)
 
 v0.4.7.1:
 # IPSDatabase extensions:

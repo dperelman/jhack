@@ -15,6 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -454,233 +455,59 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         drawTile(i, g, subPalNums[i], x, y, zoom);
     }
 
-    private class TileSelector extends AbstractButton implements MouseListener,
-        MouseMotionListener
+    private class TileSelector extends DoubleSelTileSelector
     {
-        private int currentTile = 0;
-        private boolean doubleSel = false;
-        private static final int TILES_WIDE = 16, TILES_HIGH = 32,
-                TILE_SIZE = 16;
-
-        public int getCurrentTile()
+        public int getSubPalNum(int tile)
         {
-            return currentTile;
+            return subPalNums[tile];
         }
 
-        /**
-         * If double selection is true, the current tile and the tile 16 after
-         * it are both selected. The first tile should be shown above the
-         * second. Both will have the same palette (if they do not, this would
-         * be false).
-         * 
-         * @return Returns the doubleSel.
-         */
-        public boolean isDoubleSel()
+        public String getDoubleSelPrefName()
         {
-            return doubleSel;
+            return "eb_window_border_editor.allow_2x_sel";
         }
 
-        public void setCurrentTile(int newTile, boolean force)
+        public int getTilesWide()
         {
-            //only fire ActionPerformed if new tile
-            if (currentTile != newTile || force)
-            {
-                boolean curDoubleSel = doubleSel;
-                if (JHack.main.getPrefs().getValueAsBoolean(
-                    "eb_window_border_editor.allow_2x_sel"))
-                {
-                    try
-                    {
-                        //if tile row number is even and has the same palette
-                        // as
-                        //the tile below it
-                        if (newTile + TILES_WIDE < graphics.length
-                            && (newTile / TILES_WIDE) % 2 == 0
-                            && subPalNums[newTile] == subPalNums[newTile
-                                + TILES_WIDE])
-                            doubleSel = true;
-                        else if (newTile - TILES_WIDE >= 0
-                            && subPalNums[newTile] == subPalNums[newTile
-                                - TILES_WIDE])
-                        {
-                            newTile -= TILES_WIDE;
-                            doubleSel = true;
-                        }
-                        else
-                            doubleSel = false;
-                    }
-                    catch (ArrayIndexOutOfBoundsException e)
-                    {
-                        doubleSel = false;
-                    }
-                }
-                else
-                    doubleSel = false;
-                reHighlight(currentTile, curDoubleSel, newTile);
-                currentTile = newTile;
-                this.fireActionPerformed(new ActionEvent(this,
-                    ActionEvent.ACTION_PERFORMED, this.getActionCommand()));
-            }
+            return 16;
         }
 
-        public void setCurrentTile(int newTile)
+        public int getTilesHigh()
         {
-            setCurrentTile(newTile, false);
+            return 32;
         }
 
-        private void setCurrentTile(int x, int y)
+        public int getTileSize()
         {
-            //new char
-            int nc = ((y / TILE_SIZE) * TILES_WIDE) + (x / TILE_SIZE);
-            if (nc < 423 && nc > -1)
-                setCurrentTile(nc);
+            return 8;
         }
 
-        private int x(int i)
+        public int getZoom()
         {
-            return (i % TILES_WIDE) * TILE_SIZE;
+            return 2;
         }
 
-        private int y(int i)
+        protected boolean isDrawGridLines()
         {
-            return (i / TILES_WIDE) * TILE_SIZE;
+            return false;
         }
 
-        private void reHighlight(int oldTile, boolean curDoubleSel, int newTile)
+        public int getTileCount()
         {
-            Graphics g = this.getGraphics();
-            g.setColor(Color.BLACK);
-            g.fillRect(x(oldTile), y(oldTile), TILE_SIZE, TILE_SIZE);
-            drawTile(oldTile, g, x(oldTile), y(oldTile), TILE_SIZE / 8);
-            if (curDoubleSel)
-                drawTile(oldTile + TILES_WIDE, g, x(oldTile + TILES_WIDE),
-                    y(oldTile + TILES_WIDE), TILE_SIZE / 8);
-            g.setColor(new Color(255, 255, 0, 128));
-            g.fillRect(x(newTile), y(newTile), TILE_SIZE, TILE_SIZE);
-            if (doubleSel)
-                g.fillRect(x(newTile + TILES_WIDE), y(newTile + TILES_WIDE),
-                    TILE_SIZE, TILE_SIZE);
+            return graphics.length; //TODO better way?
         }
 
-        public void repaintCurrent()
+        public Image getTileImage(int tile)
         {
-            Graphics g = this.getGraphics();
-            int c = getCurrentTile();
-            drawTile(c, g, x(c), y(c), TILE_SIZE / 8);
-            if (doubleSel)
-                drawTile(c + TILES_WIDE, g, x(c + TILES_WIDE),
-                    y(c + TILES_WIDE), TILE_SIZE / 8);
-            g.setColor(new Color(255, 255, 0, 128));
-            g.fillRect(x(c), y(c), TILE_SIZE, TILE_SIZE);
-            if (doubleSel)
-                g.fillRect(x(c + TILES_WIDE), y(c + TILES_WIDE), TILE_SIZE,
-                    TILE_SIZE);
+            return HackModule.drawImage(graphics[tile],
+                palettes[getCurrentFlavor()][subPalNums[tile]]);
         }
 
-        public void paint(Graphics g)
+        protected boolean isGuiInited()
         {
-            for (int i = 0; i < graphics.length; i++)
-            {
-                drawTile(i, g, x(i), y(i), TILE_SIZE / 8);
-            }
-            g.setColor(new Color(255, 255, 0, 128));
-            g.fillRect(x(getCurrentTile()), y(getCurrentTile()), TILE_SIZE,
-                TILE_SIZE);
-            if (doubleSel)
-                g.fillRect(x(getCurrentTile() + TILES_WIDE), y(getCurrentTile()
-                    + TILES_WIDE), TILE_SIZE, TILE_SIZE);
+            return true;
         }
 
-        public void mouseClicked(MouseEvent me)
-        {
-            setCurrentTile(me.getX(), me.getY());
-            this.grabFocus();
-        }
-
-        //        private boolean rightPress = false;
-
-        public void mousePressed(MouseEvent me)
-        {
-            setCurrentTile(me.getX(), me.getY());
-            //            if (me.getButton() == 3)
-            //            {
-            //                rightPress = true;
-            //                changeSubPal();
-            //            }
-        }
-
-        public void mouseReleased(MouseEvent me)
-        {
-        //            rightPress = false;
-        }
-
-        public void mouseEntered(MouseEvent me)
-        {}
-
-        public void mouseExited(MouseEvent me)
-        {}
-
-        public void mouseDragged(MouseEvent me)
-        {
-            if (!(me.getX() < 0 || me.getY() < 0
-                || me.getX() > TILES_WIDE * TILE_SIZE - 1 || me.getY() > TILES_HIGH
-                * TILE_SIZE - 1))
-                setCurrentTile(me.getX(), me.getY());
-            //            if (rightPress) changeSubPal();
-        }
-
-        public void mouseMoved(MouseEvent me)
-        {}
-        private String actionCommand = new String();
-
-        public String getActionCommand()
-        {
-            return this.actionCommand;
-        }
-
-        public void setActionCommand(String ac)
-        {
-            this.actionCommand = ac;
-        }
-
-        public TileSelector()
-        {
-            setPreferredSize(new Dimension(TILES_WIDE * TILE_SIZE, TILES_HIGH
-                * TILE_SIZE));
-            this.addMouseListener(this);
-            this.addMouseMotionListener(this);
-            //            this.addKeyListener(this);
-            this.setFocusable(true);
-        }
-        private byte subPalN = 0;
-
-        //        private void changeSubPal()
-        //        {
-        //            subPalNums[getCurrentTile()] = subPalN;
-        //            updatePalette();
-        //            da.repaint();
-        //            repaintCurrent();
-        //        }
-
-        //        public void keyPressed(KeyEvent ke)
-        //        {}
-        //
-        //        public void keyReleased(KeyEvent ke)
-        //        {}
-        //
-        //        public void keyTyped(KeyEvent ke)
-        //        {
-        //            char c = ke.getKeyChar();
-        //            byte n;
-        //            if (Character.isDigit(c) && (n = Byte.parseByte(c + "")) < 8)
-        //            {
-        //                subPalN = n;
-        //                System.out
-        //                    .println("WindowBorderEditor.TileSelector.keyTyped(): new subPalN: "
-        //                        + subPalN);
-        //                changeSubPal();
-        //            }
-        //        }
     }
 
     private class WindowGraphicPrevArrangementViewer extends ArrangementEditor
@@ -810,7 +637,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         {
             repaintTile(getCurrentTile());
             if (tileSelector.isDoubleSel())
-                repaintTile(getCurrentTile() + TileSelector.TILES_WIDE);
+                repaintTile(getCurrentTile() + tileSelector.getTilesWide());
         }
 
         //        private void draw(int x, int y, Graphics g)

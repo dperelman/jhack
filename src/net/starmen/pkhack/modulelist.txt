@@ -50,6 +50,7 @@ eb.SpriteCharacterTableEditor
 eb.BattleSpriteEditor	#Edits sprites used by enemies in battle
 ----------------------Graphics-------------------------------------------------
 eb.FontEditor			#Edits Fonts
+eb.CreditsFontEditor	#Edits Credits font
 eb.WindowBorderEditor	#Edits Window appearence
 eb.TownMapEditor		#Edits town maps
 eb.LogoScreenEditor		#Edits logo screens at start of game (Nitendo, HAL, APE)
@@ -60,4 +61,4 @@ eb.TileEditor		#Edits map tiles, tile arrangements, and collision info,
 #eb.HotspotEditor	#Edits hotspots (places on the map that trigger text
 					#when you walk over them
 #eb.ItemDumper		#Dumps the item info for walkthru
-eb.MapEditor		#Views the map (in future may edit as well)
+eb.MapEditor		#Edits the map

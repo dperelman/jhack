@@ -22,7 +22,10 @@ import javax.swing.AbstractButton;
 public abstract class TileSelector extends AbstractButton implements
     MouseListener, MouseMotionListener
 {
-    private int currentTile = 0;
+    /**
+     * Used internally to store the number of the currently selected tile.
+     */
+    protected int currentTile = 0;
 
     /**
      * Returns the number of tiles wide the tile selector should be.
@@ -137,7 +140,7 @@ public abstract class TileSelector extends AbstractButton implements
     }
 
     /**
-     * Sets the current tile. This is visually show the specificed tile as
+     * Sets the current tile. This also visually shows the specificed tile as
      * highlighted.
      * 
      * @param newTile tile to change selection to
@@ -166,7 +169,7 @@ public abstract class TileSelector extends AbstractButton implements
      * @param tile tile number to check
      * @return true if within valid range, false if out of range
      */
-    private boolean isValidTile(int tile)
+    protected boolean isValidTile(int tile)
     {
         return tile >= 0 && tile < getTileCount();
     }
@@ -178,7 +181,7 @@ public abstract class TileSelector extends AbstractButton implements
      * @param g <code>Graphics</code> to draw with
      * @param tile which tile to draw
      */
-    private void drawTile(Graphics g, int tile)
+    protected void drawTile(Graphics g, int tile)
     {
         g.drawImage(getTileImage(tile), (tile % getTilesWide())
             * getDrawnTileSize(), (tile / getTilesWide()) * getDrawnTileSize(),
@@ -191,7 +194,7 @@ public abstract class TileSelector extends AbstractButton implements
      * 
      * @param tile which tile to draw
      */
-    private void drawTile(int tile)
+    protected void drawTile(int tile)
     {
         drawTile(this.getGraphics(), tile);
     }
@@ -202,7 +205,7 @@ public abstract class TileSelector extends AbstractButton implements
      * @param g <code>Graphics</code> to draw with
      * @param tile which tile to highlight
      */
-    private void highlightTile(Graphics g, int tile)
+    protected void highlightTile(Graphics g, int tile)
     {
         g.setColor(new Color(255, 255, 0, 128));
         g.fillRect((tile % getTilesWide()) * getDrawnTileSize(),
@@ -215,12 +218,20 @@ public abstract class TileSelector extends AbstractButton implements
      * 
      * @param tile which tile to highlight
      */
-    private void highlightTile(int tile)
+    protected void highlightTile(int tile)
     {
         highlightTile(this.getGraphics(), tile);
     }
 
-    private void reHighlight(int oldTile, int newTile)
+    /**
+     * Redraws a deselected tile and highlights a newly selected one.
+     * 
+     * @param oldTile tile to redraw as not highlighted
+     * @param newTile tile to highlight
+     * @see #drawTile(int)
+     * @see #highlightTile(int)
+     */
+    protected void reHighlight(int oldTile, int newTile)
     {
         drawTile(oldTile);
         highlightTile(newTile);
@@ -245,8 +256,8 @@ public abstract class TileSelector extends AbstractButton implements
             Image buffer = this.createImage(d.width, d.height);
             Graphics bg = buffer.getGraphics();
             //black background so grid is black
-            bg.setColor(Color.BLACK);
-            bg.fillRect(0, 0, this.getWidth(), this.getHeight());
+//            bg.setColor(Color.BLACK);
+//            bg.fillRect(0, 0, this.getWidth(), this.getHeight());
             //draw tiles
             for (int tile = 0; tile < getTileCount(); tile++)
                 drawTile(bg, tile);
@@ -280,7 +291,8 @@ public abstract class TileSelector extends AbstractButton implements
     {
         if (!(me.getX() < 0 || me.getY() < 0
             || me.getX() > getTilesWide() * getDrawnTileSize() - 1 || me.getY() > getTilesHigh()
-            * getDrawnTileSize() - 1)) setCurrentTile(me.getX(), me.getY());
+            * getDrawnTileSize() - 1))
+            setCurrentTile(me.getX(), me.getY());
     }
 
     public void mouseMoved(MouseEvent arg0)

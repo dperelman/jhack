@@ -81,6 +81,10 @@
 	<ips src = "pkring.gas" size = "43778" author = "Jeffman" name = "PK Hack Gas"
 		sdesc = "Replaces gas station with PK Hack logo" sshot = "pkring.png" sssize = "2198"
 		type = "gasstation" romtype = "Earthbound" />
+	<!-- Penguin hacks -->
+	<ips src = "pkfilescreen.ips" size = "882" author = "Penguin" name = "PK File Screen"
+		sdesc = "PK Hack logo file screen background" sshot = "pkfilescreen.png" sssize = "2379"
+		type = "misc" romtype = "Earthbound" />
 	<!-- Mr. A asm hacks -->
 	<ips src = "eb6c_003.ips" size = "2558" author = "Mr. Accident"
 		name = "Six Character Name" sdesc = "Allows 6-character names. (BETA)"

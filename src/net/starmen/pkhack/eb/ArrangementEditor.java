@@ -249,8 +249,8 @@ public abstract class ArrangementEditor extends AbstractButton implements
      * V = vertical flip flag (1 = flip) <br>
      * H = horizonal flip flag (1 = flip) <br>
      * S = sub-palette + 2 (2-7) <br>
-     * T = tile number (0-1023) for the lower tiles depending on collision byte. ? =
-     * unkown purpose, always 0
+     * T = tile number (0-1023) for the lower tiles depending on collision byte.
+     * ? = unkown purpose, always 0
      * 
      * @param tile Number tile (0-1023).
      * @param subPalette Number of the subpalette to use (0-5).

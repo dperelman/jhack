@@ -138,7 +138,7 @@
 1E 0D XX YY,"Boost Vitality in character $XX by $YY";
 1E 0E XX YY,"Boost Luck in character $XX by $YY";
 1F 00 XX XX,"Play music track $XXXX";
-1F 01 XX,"UNKNOWN";
+1F 01 XX,"Stops music (argument is unused)";
 1F 02 XX,"Play sound effect $XX";
 1F 03,"Return music setting to sector default";
 1F 04 XX,"Toggles sound for text printing (?)";

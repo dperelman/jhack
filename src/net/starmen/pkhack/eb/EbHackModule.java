@@ -901,10 +901,10 @@ public abstract class EbHackModule extends HackModule
         creditsChars[110] = 'y';
         creditsChars[126] = 'z';
         creditsChars[76] = '<';
-        creditsChars[78] = '>';
+        creditsChars[0x4e] = '>';
         creditsChars[80] = '_'; //why is this here?
         creditsChars[64] = ' ';
-        creditsChars[173] = '.';
+        creditsChars[0xad] = '.';
         
         creditsChars[0x80] = '-';
         creditsChars[0x47] = '\'';

@@ -1359,11 +1359,6 @@ public class FontEditor extends EbHackModule implements ActionListener
         {
             for (int i = 0; i < fonts.length; i++)
                 fonts[i].writeInfo();
-
-            //            /* TODO: DEBUG */
-            //            readFromRom(this);
-            //            charSelector.repaint();
-            //            updateDrawingArea();
         }
         else if (ae.getActionCommand().equals("close"))
         {
