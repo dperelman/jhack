@@ -682,7 +682,7 @@ public abstract class EbHackModule extends HackModule
         if (!bigArraysInited)
         {
             readArray(DEFAULT_BASE_DIR,"soundeffectslisting.txt", true, soundEffects);
-            readArray(DEFAULT_BASE_DIR,"psiNames.txt", false, psiNames);
+            //readArray(DEFAULT_BASE_DIR,"psiNames.txt", false, psiNames);
             //readArray(DEFAULT_BASE_DIR,"insideSprites.txt", false,
             // battleSpriteNames);
             readArray(DEFAULT_BASE_DIR,"musiclisting.txt", true, musicNames);
