@@ -22,7 +22,7 @@ import net.starmen.pkhack.XMLPreferences;
  * Edits misc text in the Earthbound ROM. Locations of the misc text are gotten
  * from miscTextLocations.txt. Look at that file for its format.
  * 
- * @author AnyoneEB
+ * @author EBisumaru
  */
 public class MiscEditor extends EbHackModule implements ActionListener
 {
