@@ -42,8 +42,9 @@ public class DrawingToolset extends JComponent implements Toolset
 
     private JToggleButton pencil, pBucket, eyedropper, selection, line, rect,
             oval, roundedRect;
-    private final static int[] TOOL_ORDER = new int[]{TOOL_PENCIL, TOOL_PAINT_BUCKET, TOOL_EYEDROPER,
-        TOOL_SELECTION, TOOL_LINE, TOOL_RECTANGLE, TOOL_OVAL, TOOL_ROUND_RECTANGLE}; 
+    private final static int[] TOOL_ORDER = new int[]{TOOL_PENCIL,
+        TOOL_PAINT_BUCKET, TOOL_EYEDROPER, TOOL_SELECTION, TOOL_LINE,
+        TOOL_RECTANGLE, TOOL_OVAL, TOOL_ROUND_RECTANGLE};
 
     private void initGraphics(boolean flip)
     {
@@ -259,11 +260,16 @@ public class DrawingToolset extends JComponent implements Toolset
     }
 
     //Icons for the buttons
-    private static Icon getRectangleIcon()
+    private static Icon rectIco, rrectIco, ovalIco, lineIco, hFlipIco,
+            vFlipIco, pencilIco, selIco, paintIco, eyeIco;
+
+    public static Icon getRectangleIcon()
     {
-        BufferedImage out = new BufferedImage(16, 16,
+        if (rectIco != null)
+            return rectIco;
+        BufferedImage rectImg = new BufferedImage(16, 16,
             BufferedImage.TYPE_4BYTE_ABGR);
-        Graphics g = out.getGraphics();
+        Graphics g = rectImg.getGraphics();
 
         //Created by ImageFileToCode from net/starmen/pkhack/rect.gif
         g.setColor(new Color(0, 0, 0));
@@ -272,11 +278,13 @@ public class DrawingToolset extends JComponent implements Toolset
         g.drawLine(15, 2, 15, 13);
         g.drawLine(0, 14, 15, 14);
 
-        return new ImageIcon(out);
+        return rectIco = new ImageIcon(rectImg);
     }
 
-    private static Icon getOvalIcon()
+    public static Icon getOvalIcon()
     {
+        if (ovalIco != null)
+            return ovalIco;
         BufferedImage out = new BufferedImage(16, 16,
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
@@ -333,11 +341,13 @@ public class DrawingToolset extends JComponent implements Toolset
         g.drawLine(9, 12, 9, 12);
         g.drawLine(10, 12, 10, 12);
 
-        return new ImageIcon(out);
+        return ovalIco = new ImageIcon(out);
     }
 
-    private static Icon getRoundedRectangleIcon()
+    public static Icon getRoundedRectangleIcon()
     {
+        if (rrectIco != null)
+            return rrectIco;
         BufferedImage out = new BufferedImage(16, 16,
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
@@ -402,11 +412,13 @@ public class DrawingToolset extends JComponent implements Toolset
         g.drawLine(12, 14, 12, 14);
         g.drawLine(13, 14, 13, 14);
 
-        return new ImageIcon(out);
+        return rrectIco = new ImageIcon(out);
     }
 
-    private static Icon getSelectionIcon()
+    public static Icon getSelectionIcon()
     {
+        if (selIco != null)
+            return selIco;
         BufferedImage out = new BufferedImage(16, 16,
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
@@ -444,11 +456,13 @@ public class DrawingToolset extends JComponent implements Toolset
         g.drawLine(14, 15, 14, 15);
         g.drawLine(15, 15, 15, 15);
 
-        return new ImageIcon(out);
+        return selIco = new ImageIcon(out);
     }
 
-    private static Icon getPencilIcon()
+    public static Icon getPencilIcon()
     {
+        if (pencilIco != null)
+            return pencilIco;
         BufferedImage out = new BufferedImage(16, 16,
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
@@ -569,11 +583,13 @@ public class DrawingToolset extends JComponent implements Toolset
         g.drawLine(1, 14, 1, 14);
         g.drawLine(2, 14, 2, 14);
 
-        return new ImageIcon(out);
+        return pencilIco = new ImageIcon(out);
     }
 
-    private static Icon getPaintBucketIcon()
+    public static Icon getPaintBucketIcon()
     {
+        if (paintIco != null)
+            return paintIco;
         BufferedImage out = new BufferedImage(16, 16,
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
@@ -797,11 +813,13 @@ public class DrawingToolset extends JComponent implements Toolset
         g.setColor(new Color(0, 0, 4));
         g.drawLine(2, 14, 2, 14);
 
-        return new ImageIcon(out);
+        return paintIco = new ImageIcon(out);
     }
 
-    private static Icon getEyedropperIcon()
+    public static Icon getEyedropperIcon()
     {
+        if (eyeIco != null)
+            return eyeIco;
         BufferedImage out = new BufferedImage(16, 16,
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
@@ -884,11 +902,13 @@ public class DrawingToolset extends JComponent implements Toolset
         g.drawLine(4, 15, 4, 15);
         g.drawLine(5, 15, 5, 15);
 
-        return new ImageIcon(out);
+        return eyeIco = new ImageIcon(out);
     }
 
-    private static Icon getLineIcon()
+    public static Icon getLineIcon()
     {
+        if (lineIco != null)
+            return lineIco;
         BufferedImage out = new BufferedImage(16, 16,
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
@@ -947,11 +967,13 @@ public class DrawingToolset extends JComponent implements Toolset
         g.drawLine(12, 14, 12, 14);
         g.drawLine(13, 14, 13, 14);
 
-        return new ImageIcon(out);
+        return lineIco = new ImageIcon(out);
     }
 
-    private static Icon getHFlipIcon()
+    public static Icon getHFlipIcon()
     {
+        if (hFlipIco != null)
+            return hFlipIco;
         BufferedImage out = new BufferedImage(16, 16,
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
@@ -1032,11 +1054,13 @@ public class DrawingToolset extends JComponent implements Toolset
         g.drawLine(4, 12, 4, 12);
         g.drawLine(11, 12, 11, 12);
 
-        return new ImageIcon(out);
+        return hFlipIco = new ImageIcon(out);
     }
 
-    private static Icon getVFlipIcon()
+    public static Icon getVFlipIcon()
     {
+        if (vFlipIco != null)
+            return vFlipIco;
         BufferedImage out = new BufferedImage(16, 16,
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
@@ -1117,6 +1141,6 @@ public class DrawingToolset extends JComponent implements Toolset
         g.drawLine(7, 15, 7, 15);
         g.drawLine(8, 15, 8, 15);
 
-        return new ImageIcon(out);
+        return vFlipIco = new ImageIcon(out);
     }
 }

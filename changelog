@@ -5,6 +5,7 @@ NEXT VERSION (after v0.5.1.2):
 	flash are read from the same place.
 # BUGFIX: Title of main window is correctly changed after a "save as"
 # Added Window Position Editor.
+# SPT Editor v0.5: Added all sprites flip and swap x/y buttons.
 
 v0.5.1.2:
 # Map Editor: BUGFIX: Map Editor handles event flags in door destinations correctly

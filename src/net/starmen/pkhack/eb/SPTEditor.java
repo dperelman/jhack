@@ -8,7 +8,9 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -20,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.starmen.pkhack.AbstractRom;
+import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.JSearchableComboBox;
@@ -130,8 +133,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
         }
         mainWindow.getContentPane().add(display, BorderLayout.CENTER);
 
-        JPanel entry = new JPanel();
-        entry.setLayout(new BoxLayout(entry, BoxLayout.Y_AXIS));
+        Box entry = new Box(BoxLayout.Y_AXIS);
         entry.add(getLabeledComponent("Name: ", name = new JTextField(20)));
         entry.add(getLabeledComponent("Width: ", width = createSizedJTextField(
             3, true)));
@@ -211,6 +213,22 @@ public class SPTEditor extends EbHackModule implements ActionListener
             if (i == 0)
                 unknowns.add(Box.createVerticalStrut(5));
         }
+        unknowns.add(Box.createVerticalStrut(20));
+        unknowns.add(new JLabel("\tTo all sprites:"));
+        unknowns.add(Box.createVerticalStrut(5));
+        JButton hFlip = new JButton(), vFlip = new JButton(), swap = new JButton(
+            "Swap X<-->Y");
+        hFlip.setIcon(DrawingToolset.getHFlipIcon());
+        hFlip.setActionCommand("hFlipAll");
+        hFlip.addActionListener(this);
+        unknowns.add(hFlip);
+        vFlip.setIcon(DrawingToolset.getVFlipIcon());
+        vFlip.setActionCommand("vFlipAll");
+        vFlip.addActionListener(this);
+        unknowns.add(vFlip);
+        swap.setActionCommand("swapXYAll");
+        swap.addActionListener(this);
+        unknowns.add(swap);
         mainWindow.getContentPane().add(
             pairComponents(unknowns, new JLabel(), false), BorderLayout.WEST);
     }
@@ -220,7 +238,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
      */
     public String getVersion()
     {
-        return "0.4";
+        return "0.5";
     }
 
     /**
@@ -471,6 +489,77 @@ public class SPTEditor extends EbHackModule implements ActionListener
                 tilesetPal.addItem(ts.getPaletteName(i));
             tilesetPal.addActionListener(this);
             tilesetPal.setSelectedIndex(0);
+        }
+        else if (ae.getActionCommand().equals("hFlipAll"))
+        {
+            Set addresses = new TreeSet();
+            for (int i = 0; i < sib.numSprites; i++)
+            {
+                SpriteEditor.SpriteInfo si = sib.getSpriteInfo(i);
+                SpriteEditor.Sprite sp = new SpriteEditor.Sprite(sib
+                    .getSpriteInfo(i), this);
+                if (addresses.contains(new Integer(si.address & 0xfffc)))
+                    continue;
+                addresses.add(new Integer(si.address & 0xfffc));
+                byte[][] b = sp.getSpriteByte();
+                int w = b.length, h = b[0].length;
+                byte[][] n = new byte[w][h];
+                for (int x = 0; x < w; x++)
+                {
+                    System.arraycopy(b[w - x - 1], 0, n[x], 0, h);
+                }
+                sp.setSprite(n);
+                sp.writeInfo();
+            }
+            updateImages();
+        }
+        else if (ae.getActionCommand().equals("vFlipAll"))
+        {
+            Set addresses = new TreeSet();
+            for (int i = 0; i < sib.numSprites; i++)
+            {
+                SpriteEditor.SpriteInfo si = sib.getSpriteInfo(i);
+                SpriteEditor.Sprite sp = new SpriteEditor.Sprite(si, this);
+                if (addresses.contains(new Integer(si.address & 0xfffc)))
+                    continue;
+                addresses.add(new Integer(si.address & 0xfffc));
+                byte[][] b = sp.getSpriteByte();
+                int w = b.length, h = b[0].length;
+                byte[][] n = new byte[w][h];
+                for (int y = 0; y < h; y++)
+                    for (int x = 0; x < w; x++)
+                        n[x][y] = b[x][h - y - 1];
+                sp.setSprite(n);
+                sp.writeInfo();
+            }
+            updateImages();
+        }
+        else if (ae.getActionCommand().equals("swapXYAll"))
+        {
+            Set addresses = new TreeSet();
+            int nh = sib.width, nw = sib.height;
+            for (int i = 0; i < sib.numSprites; i++)
+            {
+                SpriteEditor.SpriteInfo si = sib.getSpriteInfo(i);
+                SpriteEditor.Sprite sp = new SpriteEditor.Sprite(si, this);
+                if (addresses.contains(new Integer(si.address & 0xfffc)))
+                    continue;
+                addresses.add(new Integer(si.address & 0xfffc));
+                byte[][] b = sp.getSpriteByte();
+                int w = b.length, h = b[0].length;
+                byte[][] n = new byte[h][w];
+                for (int y = 0; y < h; y++)
+                    for (int x = 0; x < w; x++)
+                        n[y][x] = b[x][y];
+                si.height = nh;
+                si.width = nw;
+                sp.setSprite(n);
+                sp.writeInfo();
+            }
+            sib.height = nh;
+            sib.width = nw;
+            updateTFs();
+            updateImages();
         }
         else if (ae.getActionCommand().startsWith("pics"))
         {

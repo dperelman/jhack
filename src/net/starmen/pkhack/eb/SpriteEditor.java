@@ -957,6 +957,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          */
         public void setSprite(int[][] in)
         {
+            sprite = new byte[si.width * 8][si.height * 8];
             for (int x = 0; x < sprite.length; x++)
                 for (int y = 0; y < sprite[0].length; y++)
                     sprite[x][y] = (byte) in[x][y];
@@ -971,6 +972,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          */
         public void setSprite(byte[][] in)
         {
+            sprite = new byte[si.width * 8][si.height * 8];
             for (int x = 0; x < sprite.length; x++)
                 System.arraycopy(in[x], 0, sprite[x], 0, sprite[0].length);
         }
