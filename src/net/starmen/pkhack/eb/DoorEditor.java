@@ -1,15 +1,9 @@
 package net.starmen.pkhack.eb;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Rectangle2D;
 
-import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -35,7 +29,7 @@ public class DoorEditor extends EbHackModule
 	implements ActionListener, SeekListener
 {
 	private JTextField areaXField, areaYField, entryNumField, 
-		numField, ptrField, xField, yField, flagField;
+		numField, ptrField, flagField;
 	private JComboBox typeBox, dirClimbBox, typeDestBox, styleBox, dirBox;
 	private JLabel warnLabel;
 	private JButton setXYButton;
@@ -52,7 +46,7 @@ public class DoorEditor extends EbHackModule
 	};
 	private boolean muteEvents = false;
 
-	private DestPreview destPreview;
+	private MapEditor.MapGraphics destPreview;
 	
 	/**
 	 * @param rom
@@ -70,7 +64,7 @@ public class DoorEditor extends EbHackModule
 	{
 		readFromRom();
 		TeleportTableEditor.initWarpStyleNames();
-		destPreview = new DestPreview();
+		destPreview = new MapEditor.MapGraphics(this, 5, 5, 5, false, false, true, 8, true);
 		createGUI();
 	}
 	
@@ -230,43 +224,13 @@ public class DoorEditor extends EbHackModule
 		buttonPanel.add(setXYButton);
 		destPanel.add(buttonPanel);
 		
-		DocumentListener xyListener = 
-			new DocumentListener()
-					{
-	            public void changedUpdate(DocumentEvent de)
-	            {
-	            	if ((xField.getText().length() > 0)
-	            			&& (yField.getText().length() > 0))
-	            	{
-	            		destPreview.setXY(
-	    						Integer.parseInt(xField.getText()), 
-								Integer.parseInt(yField.getText()));
-	            		destPreview.remoteRepaint();
-	            	}
-	            }
-
-	            public void insertUpdate(DocumentEvent de)
-	            {
-	                changedUpdate(de);
-	            }
-
-	            public void removeUpdate(DocumentEvent de)
-	            {
-	                changedUpdate(de);
-	            }
-					};
-		
-		xField = HackModule.createSizedJTextField(5, true);
-		xField.getDocument().addDocumentListener(xyListener);
 		destPanel.add(
 				HackModule.getLabeledComponent(
-						"X: ", xField));
+						"X: ", destPreview.getXField()));
 		
-		yField = HackModule.createSizedJTextField(5, true);
-		yField.getDocument().addDocumentListener(xyListener);
 		destPanel.add(
 				HackModule.getLabeledComponent(
-						"Y: ", yField));
+						"Y: ", destPreview.getYField()));
 		
 		dirBox = new JComboBox(new String[] {
 				"Down", "Up", "Right", "Left"
@@ -284,10 +248,10 @@ public class DoorEditor extends EbHackModule
 		previewPanel.setLayout(
 				new BoxLayout(previewPanel, BoxLayout.Y_AXIS));
 		previewPanel.add(new JLabel("Destination Preview",0));
-		destPreview.setPreferredSize(
+		/*destPreview.setPreferredSize(
 				new Dimension(
 						destPreview.getWidthTiles() * MapEditor.tileWidth + 2,
-						destPreview.getHeightTiles() * MapEditor.tileHeight + 2));
+						destPreview.getHeightTiles() * MapEditor.tileHeight + 2));*/
 		destPreview.setAlignmentX(0);
 		previewPanel.add(destPreview);
 		
@@ -300,7 +264,7 @@ public class DoorEditor extends EbHackModule
 		contentPanel.add(new JLabel("Destination Properties:",0));
 		destPanel.setAlignmentX(0);
 		contentPanel.add(destPanel);
-		warnLabel = new JLabel("Type match.");
+		warnLabel = new JLabel("<html>Type match.</html>");
 		warnLabel.setHorizontalAlignment(0);
 		contentPanel.add(warnLabel);
 		
@@ -314,8 +278,6 @@ public class DoorEditor extends EbHackModule
 	private void disableDestGUI()
 	{
 		ptrField.setText(null);
-		xField.setText(null);
-		yField.setText(null);
 		dirBox.setSelectedIndex(0);
 		flagField.setText(null);
 		reverseCheck.setSelected(false);
@@ -323,13 +285,11 @@ public class DoorEditor extends EbHackModule
 		typeDestBox.setEnabled(false);
 		ptrField.setEditable(false);
 		setXYButton.setEnabled(false);
-		xField.setEditable(false);
-		yField.setEditable(false);
 		dirBox.setEnabled(false);
 		flagField.setEditable(false);
 		reverseCheck.setEnabled(false);
 		styleBox.setEnabled(false);
-		destPreview.clearMapArray();
+		destPreview.setEnabled(false); 
 	}
 
 	private void updateComponents(boolean loadDest, boolean loadEntry, 
@@ -403,16 +363,24 @@ public class DoorEditor extends EbHackModule
 			
 			//update destination properties?
 			if (EbMap.getDoorDestType(typeBox.getSelectedIndex()) < 0)
+			{
+				warnLabel.setText("Type match.");
 				disableDestGUI();
+			}
 			else
 			{
+				if (EbMap.getDoorDestType(typeBox.getSelectedIndex()) == typeDestBox.getSelectedIndex())
+					warnLabel.setText("<html>Type match.</html>");
+				else
+					warnLabel.setText("<html><font color = \"red\"><u>TYPE MISMATCH!</u></font></html>");
 				EbMap.Destination dest = 
 					EbMap.getDestination(Integer.parseInt(numField.getText()));
+				
+				destPreview.setEnabled(typeDestBox.getSelectedIndex() == 0);
+				
 				if (typeDestBox.getSelectedIndex() == 0)
 				{
 					ptrField.setEditable(true);
-					xField.setEditable(true);
-					yField.setEditable(true);
 					dirBox.setEnabled(true);
 					flagField.setEditable(true);
 					reverseCheck.setEnabled(true);
@@ -422,8 +390,10 @@ public class DoorEditor extends EbHackModule
 					if (loadDest)
 					{
 						ptrField.setText(Integer.toHexString(dest.getPointer()));
-		        		xField.setText(Integer.toString(dest.getX()));
-		        		yField.setText(Integer.toString(dest.getY()));
+						destPreview.setMapXY(dest.getX(), dest.getY());
+						destPreview.reloadMap();
+						destPreview.updateComponents();
+						destPreview.repaint();
 		        		dirBox.setSelectedIndex(dest.getDirection());
 		        		flagField.setText(Integer.toHexString(dest.getFlag()));
 		        		reverseCheck.setSelected(dest.isFlagReversed());
@@ -432,10 +402,6 @@ public class DoorEditor extends EbHackModule
 				}
 				else if (typeDestBox.getSelectedIndex() == 1)
 				{
-					xField.setText(null);
-					xField.setEditable(false);
-					yField.setText(null);
-					yField.setEditable(false);
 					dirBox.setSelectedIndex(0);
 					dirBox.setEnabled(false);
 					styleBox.setSelectedIndex(0);
@@ -444,7 +410,6 @@ public class DoorEditor extends EbHackModule
 					setXYButton.setEnabled(false);
 					flagField.setEditable(true);
 					reverseCheck.setEnabled(true);
-					destPreview.clearMapArray();
 					
 					if (loadDest)
 					{
@@ -455,21 +420,16 @@ public class DoorEditor extends EbHackModule
 				}
 				else
 				{
-					xField.setText(null);
-					yField.setText(null);
 					dirBox.setSelectedIndex(0);
 					flagField.setText(null);
 					reverseCheck.setSelected(false);
 					styleBox.setSelectedIndex(0);
 					ptrField.setEditable(true);
 					setXYButton.setEnabled(false);
-					xField.setEditable(false);
-					yField.setEditable(false);
 					dirBox.setEnabled(false);
 					flagField.setEditable(false);
 					reverseCheck.setEnabled(false);
 					styleBox.setEnabled(false);
-					destPreview.clearMapArray();
 					
 					if (loadDest)
 						ptrField.setText(Integer.toHexString(dest.getPointer()));
@@ -519,14 +479,11 @@ public class DoorEditor extends EbHackModule
 		        						flagField.getText(),16));
 		    		if (reverseCheck.isEnabled())
 		    			dest.setFlagReversed(reverseCheck.isSelected());
-		    		if (yField.isEditable())
-		    			dest.setY(
-		        				(short) Integer.parseInt(
-		        						yField.getText()));
-		    		if (xField.isEditable())
-		    			dest.setX(
-		        				(short) Integer.parseInt(
-		        						xField.getText()));
+		    		if (destPreview.isEnabled())
+		    		{
+		    			dest.setX((short) destPreview.getMapX());
+		    			dest.setY((short) destPreview.getMapY());
+		    		}
 		    		if (styleBox.isEnabled())
 		    			dest.setStyle(
 		        				(byte) styleBox.getSelectedIndex());
@@ -576,14 +533,14 @@ public class DoorEditor extends EbHackModule
 	{
 		int newX = ((tileX * MapEditor.tileWidth) / 8) + (x / 8),
 			newY = ((tileY * MapEditor.tileHeight) / 8) + (y / 8);
-		xField.setText(Integer.toString(newX));
-		yField.setText(Integer.toString(newY));
-		destPreview.setXY(newX, newY);
-		destPreview.remoteRepaint();
+		destPreview.setMapXY(newX, newY);
+		destPreview.updateComponents();
+		destPreview.reloadMap();
+		destPreview.repaint();
 		setXYButton.setEnabled(true);
 	}
 	
-	public class DestPreview extends AbstractButton
+	/*public class DestPreview extends AbstractButton
 	{
 	    private int[][] mapArray;
 	    private boolean knowsMap = false;
@@ -624,9 +581,6 @@ public class DoorEditor extends EbHackModule
 	                tile_set = EbMap.getDrawTileset( 
 	                		EbMap.getTset(sectorX, sectorY));
 	                tile_tile = mapArray[i][j];
-	                    /*| (EbMap.getLocalTileset( 
-	                    		tileX + j,
-								tileY + i) << 8);*/
 	                tile_pal = 
 	                	TileEditor.tilesets[tile_set].getPaletteNum(
 	                			EbMap.getTset(sectorX, sectorY),
@@ -699,5 +653,5 @@ public class DoorEditor extends EbHackModule
 	    {
 	    	return heightTiles;
 	    }
-	}
+	}*/
 }
