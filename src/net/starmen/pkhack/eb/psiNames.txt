@@ -1,0 +1,52 @@
+ 0 - PSI Special 1
+ 1 - PSI Special 2
+ 2 - PSI Special 3
+ 3 - PSI Special 4
+ 4 - PSI Fire 1
+ 5 - PSI Fire 2
+ 6 - PSI Fire 3
+ 7 - PSI Fire 4
+ 8 - PSI Freeze 1
+ 9 - PSI Freeze 2
+10 - PSI Freeze 3
+11 - PSI Freeze 4
+12 - PSI Thunder 1
+13 - PSI Thunder 2
+14 - PSI Thunder 3
+15 - PSI Thunder 4
+16 - PSI Flash 1
+17 - PSI Flash 2
+18 - PSI Flash 3
+19 - PSI Flash 4
+20 - PSI Starstorm 1
+21 - PSI Starstorm 2
+22 - PSI Lifeup 1
+23 - PSI Lifeup 2
+24 - PSI Lifeup 3
+25 - PSI Lifeup 4
+26 - PSI Healing 1
+27 - PSI Healing 2
+28 - PSI Healing 3
+29 - PSI Healing 4
+30 - Shield 1
+31 - Shield 2
+32 - Shield 3
+33 - Shield 4
+34 - PSI Shield 1
+35 - PSI Shield 2
+36 - PSI Shield 3
+37 - PSI Shield 4
+38 - PSI Offense up 1
+39 - PSI Offense up 2
+40 - PSI Defense down 1
+41 - PSI Defense down 2
+42 - PSI Hypnosis 1
+43 - PSI Hypnosis 2
+44 - PSI Magnet 1
+45 - PSI Magnet 2
+46 - PSI Paralysis 1
+47 - PSI Paralysis 2
+48 - PSI Brainshock 1
+49 - PSI Brainshock 2
+50 - PSI Teleport 1
+51 - PSI Teleport 2

@@ -1,0 +1,126 @@
+               01 - cursor moving
+	       02 - cursor confirm
+               03 - cursor moving
+               04 - naming cursor
+	       05 - error blip
+	       06 - *** NO SOUND ***
+	       07 - text typing out
+	       08 - door open
+	       09 - door close
+               0A - phone ring
+               0B - pick up/hang up phone
+	       0C - cash register
+	       0D - Magicant footstep
+	       0E - fuel replenishment?
+	       0F - Buzz Buzz buzzing
+               10 - opening a present
+               11 - landing after a jump/fall
+	       12 - walking up stairs
+	       13 - high pitched buzzing
+	       14 - low pitched buzzing
+	       15 - high, squeaky buzzing
+               16 - Onett trumpet
+	       17 - muffled buzzing
+	       18 - hero attacking
+	       19 - monster attacking
+	       1A - bash weapon sound
+	       1B - shoot weapon sound
+               1C - praying
+               1D - using PSI
+               1E - normal bash
+               1F - SMAAASH hit
+               20 - party member dying
+               21 - enemy defeated
+	       22 - open present box
+	       23 - take what's inside
+               24 - recovering HP/PP
+               25 - status recovery
+               26 - power or psychic shield
+               27 - power or psychic shield
+               28 - stats going up
+               29 - stats going down
+               2A - PSI Hypnosis a
+               2B - PSI Magnet a
+               2C - PSI Paralysis a
+               2D - PSI Brainshock a
+	       2E - thump
+               2F - critical blow
+               30 - PSI Rockin’
+               31 - PSI Rockin’ 2
+               32 - PSI Rockin’ 3
+               33 - PSI Fire
+	       34 - PSI Fire
+	       35 - PSI Fire
+	       36 - PSI Brainshock
+	       37 - using PSI
+	       38 - PSI Freeze 1
+	       39 - PSI Freeze 2
+	       3A - PSI Defense Down
+	       3B - PSI Defense Down
+	       3C - PSI Thunder - Miss
+	       3D - PSI Thunder - Hit
+	       3E - PSI Thunder - Hit
+	       3F - PSI Thunder - Damage
+               40 - PSI Starstorm
+               41 - PSI Flash a
+               42 - another PSI Flash
+               43 - another PSI Flash
+               44 - eating/drinking an item
+	       45 - quiet beep
+	       46 - launching missile?
+	       47 - hiss
+	       48 - status change?
+               49 - Devil’s Machine reflecting attack/Sky Runner radar
+	       4A - ? thump ?
+	       4B - launching multi-bottle rocket?
+               4C - PSI Magnet
+	       4D - PSI Magnet
+	       4E - muffled buzzy whirring
+	       4F - PSI Paralysis o
+               50 - PSI Brainshock o
+	       51 - drilling
+               52 - spores being scattered
+               53 - got a status affliction
+               54 - beat up by zombies
+               55 - zombies doing something mysterious
+	       56 - strange warbling noise
+	       57 - *** NO SOUND ***
+	       58 - magical sproingy noise
+               59 - fuel replenishment
+               5A - Giygas weakened by 1st prayer?
+	       5B - PSI Fire
+	       5C - muffled buzzy noise
+	       5D - shield reflection
+               5E - chick?
+               5F - Magic Butterfly fluttering towards you
+               60 - possess by ghost sound
+	       61 - run down stairs
+	       62 - fast drum solo
+               63 - Starmaster arriving/leaving
+               64 - warping to Sea of Eden by tentacle
+               65 - chick hatching
+               66 - receiving special item?
+               67 - learning PSI?
+               68 - chicken
+               69 - Sphinx tile 1
+	       6A - Sphinx tile 2
+	       6B - Sphinx tile 3
+	       6C - Sphinx tile 4
+	       6D - Sphinx tile 5
+	       6E - Pyramid door unlocked
+               6F - rapid knocking on the door
+	       70 - *** NO SOUND ***
+               71 - sound when you check Mani Mani statue
+               72 - creepy/eerie sound
+	       73 - open a box
+               74 - take what's inside
+	       75 - open a box
+	       76 - take what's inside
+	       77 - ? unknown ?
+	       78 - chicken
+	       79 - odd noise like using PSI
+	       7A - guitar strum
+	       7B - cursor beep
+	       7C - trumpet blast
+	       7D - *** NO SOUND ***
+	       7E - funky little tune

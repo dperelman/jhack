@@ -1,0 +1,65 @@
+ 0 - Onett Drugstore 1
+ 1 - Onett Drugstore 2
+ 2 - Gelato Stand
+ 3 - Onett Burger Shop
+ 4 - Twoson Dept Store Bakery
+ 5 - Twoson Dept Store Burger Shop
+ 6 - Onett Bakery
+ 7 - Twoson Dept Store General Shop 1
+ 8 - Twoson Dept Store General Shop 2
+ 9 - Magic Tart Stand
+10 - Burglin Park Junk Stand
+11 - Burglin Park Ruler Stand
+12 - Burglin Park Egg Stand
+13 - Burglin Park Bakery Stand
+14 - Banana stand Burglin Park
+15 - Happy Happy Village Drugstore?
+16 - Threed Drugstore 1
+17 - Threed Drugstore 2
+18 - Threed Arms Dealer
+19 - Threed Bakery
+20 - Scaraba Desert Water Store
+21 - Winters Drugstore
+22 - Saturn Valley Store 2
+23 - Dusty Dunes Drugstore 1
+24 - Dusty Dunes Arms Dealer
+25 - Fourside Bakery
+26 - Fourside Dept. Store Tool Shop
+27 - Fourside Dept. Store 3rd level
+28 - Fourside Dept. Store Food Shop
+29 - Burglin Park Spice Stand 1?
+30 - Fourside Dept. Store Toy Store
+31 - Fourside Dept. Store Sports Shop
+32 - Fourside Dept. Store Burger Shop
+33 - Fourside Dept. Store Arms Dealer
+34 - Fourside Back Alley Shop
+35 - Magicant Store
+36 - Unknown 1
+37 - Summers Shop
+38 - Toto Store
+39 - Summers Restaurant
+40 - Scaraba Drugstore
+41 - Unknown 2
+42 - Scaraba Store 1
+43 - Scaraba Store 2
+44 - Scaraba Arms Dealer
+45 - Deep Darkness Businessman
+46 - Tenda Store
+47 - Happy Happy Village store 1
+48 - Happy Happy Village store 2
+49 - Saturn Valley Pendant Peddler
+50 - Pyramid Shop
+51 - Deep Darkness Arms Dealer
+52 - Lost Underworld Store
+53 - Fourside Dept. Store Spice Stand?
+54 - Happy Happy Village Drugstore
+55 - Grapefruit Falls Shop
+56 - Saturn Valley Store
+57 - Dusty Dunes Drugstore 2
+58 - Dusty Dunes Gold Mine Store
+59 - Unknown 3
+60 - Dalaam Restaurant
+61 - Scaraba Store MAT
+62 - Scaraba Spice Stand?
+63 - Unknown 4
+64 - Dr. Andonut's Caveman Store

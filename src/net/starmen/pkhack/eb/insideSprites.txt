@@ -1,0 +1,110 @@
+0   - Antoid
+1   - Runaway dog
+2   - Frog
+3   - Smilin' sphere
+4   - Mushroom
+5   - Carefree bomb
+6   - Octobot
+7   - Musica
+8   - Ranboob
+9  - P. Moldyman
+10  - Shrooom!
+11  - Booka
+12  - Wooly shambler
+13  - Wetnosaur
+14  - Abstract Art
+15  - Spiteful Crow
+16  - Foppy
+17  - Mad Duck
+18  - Bat
+19  - Mouse
+20  - French Kiss
+21  - Electro Swoosh
+22  - D. Petunia
+23  - S.C. Flame
+24  - Snake
+25  - Crazed Sign
+26  - T. or T. Kid
+27  - Puppet
+28  - Psychic Psycho
+29  - Thunder Mite
+30  - Manly Fish
+31  - Everdred
+32  - Carpainter
+33  - A.O. Party Man
+34  - U. Local Guy
+35  - E. Menace
+36  - Frank
+37  - Tough Guy
+38  - Thunder & Storm
+39  - Carbon Dog
+40  - Kraken
+41  - H.A. Pokey
+42  - UFO
+43  - Coffee
+44  - Mr. Molecule
+45  - Mystic Record
+46  - Slug
+47  - Evil Elemental
+48  - UFO with bow
+49  - Ghost
+50  - Cop
+51  - Spinning Robo
+52  - Stinky Ghost
+53  - Sentry Robot
+54  - Starman
+55  - Shattered Man
+56  - Electro Specter
+57  - Loaded Dice
+58  - E. Fire Plug
+59  - W. Protoplasm
+60  - Mook
+61  - Robo Pump
+62  - Insane Cultist
+63  - Yesman Jr.
+64  - Chomposaur
+65  - Zombie Dog
+66  - Lethal Asp
+67  - Shock Eel
+68  - Captain Strong
+69  - Hieroglyph
+70  - Clumsy Robot
+71  - Zombie
+72  - Titanic Ant
+73  - Buffalo
+74  - P. Rat of Doom
+75  - Diamond Dog
+76  - Arachnid
+77  - Mole (little)
+78  - Mani Mani
+79  - Roach
+80  - Noose Man
+81  - Tangoo
+82  - Mondo Mole
+83  - Crocodile
+84  - Mad Taxi
+85  - Boogie Tent
+86  - G. General
+87  - Trill. Sprout
+88  - No Good Fly
+89  - M. Sprout
+90  - Pile of Puke
+91  - Skelpion
+92  - Dali's clock
+93  - Gruff Goat
+94  - Terr. Oak
+95  - Pogo Punk
+96  - Frankystein
+97  - Master Belch
+98  - Cranky Lady
+99 - Skate Punk
+100 - Cave Boy
+101 - Ego Orb
+102 - Desert Wolf
+103 - Mighty Bear
+104 - Atomic Robot
+105 - Starman DX
+106 - Hippie
+107 - Giygas
+108 - Criminal Worm
+109 - Evil Eye

@@ -1,0 +1,96 @@
+# = comment
+# form: address:length
+# address is 6 hex digits
+# length is any number of decimal digits
+# length is the max length of the string
+# if address = 000000, then the string
+#   after the colon will be used as a title
+# the line: 000000:title
+# would make a title that looked like: _TITLE_
+# DO NOT put two titles next to each other
+# blank lines will be ignored
+
+
+#From JeffMan, starting text:
+000000:Starting text	#title that says "Starting text"
+04c260:14 	#1 from JeffMan's list
+04c274:11 	#2 from JeffMan's list
+04c27f:6 	#3 from JeffMan's list
+04c286:6 	#4 from JeffMan's list
+04c28d:6 	#5 from JeffMan's list
+04c294:9 	#6 from JeffMan's list
+04c29d:5 	#7 from JeffMan's list
+04c2a2:6 	#8 from JeffMan's list
+04c2a9:7 	#9 from JeffMan's list
+04c2b0:14 	#10 from JeffMan's list
+04c2be:32 	#11 from JeffMan's list
+04c2de:2 	#12 from JeffMan's list
+04c2e1:3 	#13 from JeffMan's list
+04c2e5:25 	#14 from JeffMan's list
+04c2fe:28 	#15 from JeffMan's list
+04c31a:6 	#16 from JeffMan's list
+04c321:6 	#17 from JeffMan's list
+04c328:37 	#18 from JeffMan's list
+#04c34d:12 	#19 from JeffMan's list
+#04c35a:11 	#20 from JeffMan's list
+#04c366:18 	#21 from JeffMan's list
+#04c378:14 	#22 from JeffMan's list
+#04c386:14 	#23 from JeffMan's list
+04c394:40 	#24 from JeffMan's list
+04c3bc:40 	#25 from JeffMan's list
+04c3e4:40 	#26 from JeffMan's list
+04c40c:40 	#27 from JeffMan's list
+04c434:40 	#28 from JeffMan's list
+04c45c:40 	#29 from JeffMan's list
+04c484:40 	#30 from JeffMan's list
+04c4ac:14 	#31 from JeffMan's list
+04c4ba:14 	#32 from JeffMan's list
+04c4c8:13 	#33 from JeffMan's list
+04c4d5:3 	#34 from JeffMan's list
+04c4d9:4 	#35 from JeffMan's list
+
+#From PK Hack source:
+000000:Ailments	#title that says "Ailments"
+045d70:16 	# Ailment #1
+045d80:16 	# Ailment #2
+045d90:16 	# Ailment #3
+045da0:16 	# Ailment #4
+045db0:16 	# Ailment #5
+045dc0:16 	# Ailment #6
+045dd0:16 	# Ailment #7
+045de0:16 	# Ailment #8
+045df0:16 	# Ailment #9
+045e00:16 	# Ailment #10
+000000:Battle menu	#title that says "Battle menu"
+04a1e1:16 	# Battle menu #1
+04a1f1:16 	# Battle menu #2
+04a201:16 	# Battle menu #3
+04a211:16 	# Battle menu #4
+04a221:16 	# Battle menu #5
+04a231:16 	# Battle menu #6
+04a241:16 	# Battle menu #7
+04a251:16 	# Battle menu #8
+04a261:16 	# Battle menu #9
+04a271:16 	# Battle menu #10
+#By AnyoneEB
+000000:Out of battle menu 	#title: "Out of battle menu"
+2fa57a:9	#10th char is null to show end
+2fa584:9	#of the string if it's not there
+2fa58e:9	#the game with show the start
+2fa598:9	#of the next string
+2fa5a2:9
+2fa5ac:9
+
+000000:Status Window	#title: "Status Window"
+2fa5ba:6	#"Level:"
+2fa5c4:11	#"Hit Points:"
+2fa5d3:15	#"Psychic Points:"
+2fa5e6:18	#"Expericence Points:"
+2fa5fc:20	#"Exp. for next level."
+2fa614:8	#"Offense:"
+2fa620:8	#"Defense:"
+2fa62c:6	#"Speed:"
+2fa636:5	#"Guts:"
+2fa63f:9	#"Vitality:"
+2fa64c:3	#"IQ:"
+2fa653:5	#"Luck:"

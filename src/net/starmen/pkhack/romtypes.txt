@@ -1,0 +1,53 @@
+# This file defines how various ROM types are identified.
+# A ROM type is a what game a ROM is (or at least was before
+# being edited). The format is realitively simple, and making
+# your own entries by example should be easy.
+# ROM type names can contain any characters, including white
+# space characters, other than #, and may not begin with a *,
+# but it is suggested that no untypable characters are used
+# and no characters outside of 7-bit ASCII are used.
+# Whitespace at the start and end of each line is striped
+# when reading. Tabs are used only for readability.
+# Empty lines are ignored.
+# 
+# Format:
+# First line = ROM type name
+# Subsequent lines = an '*' then a hex offset, then a ':', and
+#     then a series of bytes represented as two hex digits
+#     separated by spaces. If a ROM has those bytes at that
+#     offset, it is considered to have matched that check.
+# Repeat the format for subsequent lines for as many checks as
+# are required. If a rom matches all checks, it is considered 
+# to be the ROM type name set on the first line.
+# 
+# Repeat that format for as many ROM types as are required.
+
+Earthbound
+	#1F005 - 1F00C = "Start New Game" text pointer
+	*1f005: a9 5e c0 85 12 a9 c4 00
+
+Secret of Mana
+	*230: 48 ab bd 00 00 #unknown
+
+Chrono Trigger
+	*270: 00 c2 e0 ff 01 30 06 a2 #unknown
+
+#Different Yoshi's Island versions:
+#(1.1U) is the version that has been hacked
+Yoshi's Island (1.0U)
+	*81DB: 00 03 EC 2C 13 
+Yoshi's Island (1.1U)
+	*81DB: 01 CD A1 32 5E #<--we want this one
+Yoshi's Island (1.0E)
+	*7FDD: 00 F4 1E 0B E1
+Yoshi's Island (1.1E)
+	*81DB: 01 AB CE 54 31
+Yoshi's Island (1.0J)
+	*7FDD: 00 F1 8C 0E 73
+Yoshi's Island (1.1J)
+	*7FDD: 01 32 BC CD 43
+Yoshi's Island (1.2J)
+	*7FDD: 02 6D BC 92 43
+
+Unknown
+	#no tests, if all others fail, all ROMs will pass this

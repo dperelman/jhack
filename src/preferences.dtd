@@ -1,0 +1,6 @@
+<!ELEMENT preferences (preference*)>
+<!ELEMENT preference EMPTY>
+<!ATTLIST preference
+			id       ID       #REQUIRED
+			value    CDATA    #REQUIRED			
+>

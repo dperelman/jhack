@@ -1,0 +1,52 @@
+00 - The screen goes black instantly and fades in, standard-door style.
+01 - Standard door-style warp.
+02 - Standard door-style warp, but the screen turns white instead of black.
+03 - Standard door-style warp.
+04 - Standard door-style warp, with a door sound.
+05 - Touching a hole warp - falling sound and the screen slides up.
+06 - Standard door-style warp.
+07 - Standard door-style warp, with a door sound.
+08 - Standard door-style warp, with a door sound.
+09 - Standard door-style warp, with a door sound.
+0A - Standard door-style warp.
+0B - ...Uhm, freaky. Try it for yourself, you'll see what I mean.
+0C - Standard door-style warp.
+0D - Standard door-style warp.
+0E - Standard door-style warp, but the screen turns white instead of black.
+0F - Standard door-style warp, but makes a weird sound.
+10 - Phase Distorter III-like warp.
+11 - Moonside style warp.
+12 - Moonside style warp.
+13 - Moonside style warp.
+14 - Moonside style warp.
+15 - Moonside style warp.
+16 - Moonside style warp.
+17 - Moonside style warp.
+18 - Moonside style warp.
+19 - Moonside style warp.
+1A - Moonside style warp.
+1B - Moonside style warp.
+1C - Standard door-style warp.
+1D - Standard door-style warp, but the screen turns white instead of black. Slower than 02.
+1E - Same as 1D. Makes a weird sound.
+1F - Ghost-filled tunnel warp.
+20 - Ghost-filled tunnel warp.
+21 - Touching a hole warp - falling sound and the screen slides up.
+22 - Moonside style warp, but the screen darkens slowly. You hear a trumpetish sound upon reappearance.
+23 - Same as 22, but slower and with no trumpet sound.
+24 - Super fast hole warp (screen slides up).
+25 - Weirdness.
+26 - Standard door-style warp.
+27 - Standard door-style warp.
+28 - The screen goes black instantly and fades in, standard-door style.
+29 - Moonside style warp.
+2A - Very slow Moonside style warp.
+2B - Moonside style warp.
+2C - Moonside style warp.
+2D - Moonside style warp.
+2E - Moonside style warp.
+2F - Moonside style warp.
+30 - Moonside style warp.
+31 - Moonside style warp.
+32 - Standard door-style warp.
+33 - Very slow Moonside style warp.

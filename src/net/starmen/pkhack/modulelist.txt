@@ -1,0 +1,62 @@
+# = comment
+# each line should be the class name of a module relative to pkhack.starmen.net
+# all modules must extend net.starmen.pkhack.HackModule
+
+----------------------IPS------------------------------------------------------
+IPSPatchMaker
+IPSPatchApplier
+IPSDatabase			#shows IPS's made by other people applicable to multiple hacks
+----------------------General--------------------------------------------------
+eb.RomExpander		#Expands 3MB ROMs to 4MB
+HexEditor			#Directly edits ROM, Be CAREFUL with this!
+#eb.RomCorrupter	#Adds 1 to every byte of the ROM up to 0x10000
+eb.PointerEditor	#Edits ASM links in net/starmen/pkhack/eb/pointerlist.txt
+eb.ResetButton		#Resets areas from an older ROM to correct mistakes easily
+----------------------Items----------------------------------------------------
+eb.ItemEditor		#Edits items
+eb.ItemTransformationEditor
+					#Edits item transformation table
+eb.CondimentEditor	#Edits the effect on condiments (item type-40) on
+					#food (item type-32)
+----------------------Teleport-------------------------------------------------
+eb.TeleportEditor	#Edits teleport destination names and locations
+eb.TeleportTableEditor #Edits the [1F 21 XX] teleport table
+----------------------Text-----------------------------------------------------
+eb.DontCare			#"Don't Care" names editor
+eb.MiscTextEditor	#Edits misc. [uncompressed] text in the ROM
+eb.PhoneListEditor	#Edits phone list
+eb.FlyoverEditor	#Edits flyover sequence
+eb.TPTEditor		#Edits Text Pointer Table
+eb.TextEditor		#Edits Text
+eb.StoreEditor		#Edits what items stores sell and their prices
+----------------------Stats----------------------------------------------------
+eb.StartingStatsEditor 
+					#Edits starting stats for each of the chosen 4:
+					#money, exp, level, items
+eb.LevelUpEditor	#Edits exp. needed for each level-up
+eb.LevelUpStatsEditor
+					#Edits average stat increase / level-up for each character
+----------------------Battle---------------------------------------------------
+eb.EnemyEditor		#Edits enemy information
+eb.ActionEditor		#Edits attack actions
+eb.PSIEditor		#Edits PSI effects
+eb.PSIDamageEditor	#Edits the damage caused by PSI attacks
+----------------------Sprites--------------------------------------------------
+eb.SpriteEditor		#Edits the appearence of out of battle (uncompressed) sprites
+eb.SPTEditor		#Edits the SPT
+eb.SpriteCharacterTableEditor
+					#tells which sprites are used for playable chacters
+eb.BattleSpriteEditor	#Edits sprites used by enemies in battle
+----------------------Graphics-------------------------------------------------
+eb.FontEditor			#Edits Fonts
+eb.WindowBorderEditor	#Edits Window appearence
+eb.TownMapEditor		#Edits town maps
+eb.LogoScreenEditor		#Edits logo screens at start of game (Nitendo, HAL, APE)
+eb.GasStationEditor		#Edits the gas station screen at the start of the game
+----------------------Maps-----------------------------------------------------
+eb.TileEditor		#Edits map tiles, tile arrangements, and collision info,
+					#map tile palette editing may be added
+#eb.HotspotEditor	#Edits hotspots (places on the map that trigger text
+					#when you walk over them
+#eb.ItemDumper		#Dumps the item info for walkthru
+eb.MapEditor		#Views the map (in future may edit as well)

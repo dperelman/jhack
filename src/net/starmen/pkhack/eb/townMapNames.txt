@@ -1,0 +1,6 @@
+ 0 - Onett
+ 1 - Twoson
+ 2 - Threed
+ 3 - Fourside
+ 4 - Scaraba
+ 5 - Summers

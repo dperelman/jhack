@@ -1,0 +1,126 @@
+C28CF1 Solidification
+C2A89D Small damage, possibility of poison
+C2A86B Yogurt dispenser
+C2A82C Poison
+C2A507 Suck HP (Hungry HP-Sucker)
+C2A99C Big damage? (Bag of Dragonite)
+C2AA0C Insecticide spray
+C2AA15 Xterminator spray
+C2AA6D Rust promoter
+C2AA76 Rust promoter DX
+C2AA7F Guts increase
+C2AAC6 Defense
+C29039 Nothing
+C29033 Nothing (Ruler)
+C299EF Transform, full health (glorious light)
+C2C1BD Fly honey
+C28A92 Paralyze (Pollen scatter)
+C28D3A Exhaust fumes/something mysterious
+C28E3B Laugh maciacally/sprinkle powder
+C28B6D Cold attack (cold as in the sickness, you dumbass)
+C286CB Immobilize (make opponent not be able to move)
+C28740 Mid-level attack (come out swinging)
+C2859F Low-level attack (stomp with huge foot)
+C28651 High-level attack (charge forward)
+C2916E More-than-high-level attack (bite hard)
+C28EAE Guts down
+C29254 Offense and defense down
+C28F21 Offense and defense down 2
+C1DE43 Weapon
+C1E00F Armor
+C28CB8 Immobilize
+C29298 Smoke pour out from body
+C292EE Add Poo to party
+C292EB Transform (enemy extender)
+C290C6 Neutralize
+C2B27D Food
+C2B24E Is homesick
+C29042 Is asleep
+C28770 Spy
+C2AD1B Pray
+C2889B On guard
+C29556 Special 1
+C2955F Special 2
+C29568 Special 3
+C29571 Special 4
+C295AB Fire 1
+C295B4 Fire 2
+C295BD Fire 3
+C295C6 Fire 4
+C29547 Freeze 1
+C29550 Freeze 2
+C29559 Freeze 3
+C29562 Freeze 4
+C29871 Thunder 1
+C2987D Thunder 2
+C29889 Thunder 3
+C29895 Thunder 4
+C29987 Flash 1
+C299AE Flash 2
+C299EF Flash 3
+C29A35 Flash 4
+C29AA6 Starstorm 1
+C29AAF Starstorm 2
+C29AC6 Lifeup 1
+C29ACF Lifeup 2
+C29AD8 Lifeup 3
+C29AE1 Lifeup 4
+C29AEA Healing 1
+C29B7A Healing 2
+C29C2C Healing 3
+C29CB8 Healing 4
+C29D44 Shield 1
+C29D81 Shield 2
+C29D7A Shield 3
+C29DB7 Shield 4
+C29DBE PSI Shield 1
+C29DFB PSI Shield 2
+C29DF4 PSI Shield 3
+C29E31 PSI Shield 4
+C29E38 Offense up 1
+C29E7F Offense up 2
+C29E86 Defense down 1
+C29EFF Defense down 2
+C29E06 Hypnosis 1
+C29E57 Hypnosis 2
+C29E5E Magnet 1
+C29EE1 Magnet 2
+C29EFE Paralysis 1
+C2A04F Paralysis 2
+C2A056 Brainshock 1
+C2A0A7 Brainshock 2
+C28AEB Burp and blow breath
+C28CF1 Stumble, fire beam
+C289CE Diamondize
+C288EB Freeze time
+C2889E Steal an item
+C2A821 Explosive high damage
+C2C13C Sow seeds
+C2C145 Call for help
+C28BBE Mushroomize
+C28BFD Possess
+C28C69 Mold spores
+C28D5A Make not able to use PSI
+C28DBB Begin to feel strange
+C28DFC Make cry
+C28E42 Drain PP
+C28F97 Damage, poison chance
+C28FF9 Continuous attack
+C2900B Flaming fireball
+C285DA Rush in and intertwine
+C2902C Tornado/blast of water
+C2A0FF IQ up 1
+C2A1AB Guts up 1
+C2A193 Speed up 1
+C2A1DB Vitality up 1
+C2A227 Luck up 1
+C2A3D1 Counter-PSI unit
+C2A422 Shield Killer
+C2A46B HP-sucker
+C2A50E Mummy wrap
+C2A5D1 Bottle rocket
+C2A5DA Big bottle rocket
+C2A5E3 Multi bottle rocket
+C2A5EC Damage and solidify
+C2A818 Bomb
+C2A821 Super Bomb

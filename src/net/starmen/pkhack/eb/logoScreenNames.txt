@@ -1,0 +1,3 @@
+0 - Nintendo
+1 - APE
+2 - HAL

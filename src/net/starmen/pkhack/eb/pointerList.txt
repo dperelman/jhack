@@ -1,0 +1,19 @@
+--Graphics--
+0EDF2 = Title screens "B" and copyright graphics.
+0EE49 = Title screens "Earth ound" graphics.
+0F0A3 = "Nintendo" logo graphics.
+0F0FB = "APE" logo graphics.
+0F152 = "HAL" logo graphics.
+4DF73 = "Produced by Shigesato Itoi" graphics.
+4E01B = "Presented by Nintendo" graphics.
+3030C = "WARNING!" screen graphics.
+3034E = "Bad pak" screen graphics.
+--Graphic Arrangements--
+0F31B = Gas station arrangement.
+0F113 = Ape arrangement.
+0F16A = Halken arrangement.
+0F0BB = Nintendo arrangement.
+--Palettes--
+0F12B = Ape palette.
+0F182 = Halken palette.
+0F0D3 = Nintendo palette.
