@@ -1,4 +1,5 @@
 NEXT VERSION (after v0.5.4.1):
+# Added auxillary windows and type AutoSearchBox to Item Editor
 
 v0.5.4.1:
 # Misc. Crap Editor: BUGFIX: Reads miscData.txt correctly
