@@ -26,6 +26,10 @@ Next version (after v0.4.7.1):
 # Minimised work done on ROM load (moved to module load) in order to do less
 	unneeded tasks and speed up ROM loading.
 # Added Map Editor (written by MrTenda)
+# Created JLinkComboBox to make creation of links easier. Made lots of new
+	links.
+# Created NumericMaxLengthDocument for numbers-only text boxes (currently
+	decimal numbers only). Changed many JTextFields to use this.
 
 v0.4.7.1:
 # IPSDatabase extensions:

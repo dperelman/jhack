@@ -150,7 +150,7 @@ public class DrawingToolset extends JComponent implements Toolset
         settings.add(HackModule.getLabeledComponent("Transparent Selection: ",
             transparentSelection), BorderLayout.CENTER);
 
-        this.roundedRectRad = HackModule.createSizedJTextField(2);
+        this.roundedRectRad = HackModule.createSizedJTextField(2, true);
         this.roundedRectRad.setText("1");
         settings.add(HackModule.getLabeledComponent("Curve Size: ",
             roundedRectRad, "Curve width & height for rounded rectangles"),

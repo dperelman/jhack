@@ -12,9 +12,10 @@ import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 
-import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.JSearchableComboBox;
 import net.starmen.pkhack.AbstractRom;
+import net.starmen.pkhack.HackModule;
+import net.starmen.pkhack.JLinkComboBox;
+import net.starmen.pkhack.JSearchableComboBox;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -124,8 +125,8 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
     }
     /**
      * Array containing all 17 SpriteCharacterTableEntry's. Call
-     * {@link SpriteCharacterTableEditor#readFromRom(AbstractRom)}to be sure the
-     * entries are inited.
+     * {@link SpriteCharacterTableEditor#readFromRom(AbstractRom)}to be sure
+     * the entries are inited.
      * 
      * @see #readFromRom(AbstractRom)
      */
@@ -162,7 +163,8 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
      * [10 - 14] = "Flying Man 1-5" <br>
      * [15 - 16] = "Teddy Bear 1-2"
      * 
-     * @see SpriteCharacterTableEntry#SpriteCharacterTableEntry(int, AbstractRom)
+     * @see SpriteCharacterTableEntry#SpriteCharacterTableEntry(int,
+     *      AbstractRom)
      */
     public static String[] entryNames = new String[]{"Ness", "Paula", "Jeff",
         "Poo", "Pokey", "Picky", "King", "Tony", "Bubble Monkey", "Brick Road",
@@ -188,14 +190,14 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
         readFromRom(rom);
     }
     private JComboBox selector;
-    private JComboBox[] sprite = new JComboBox[7];
+    private JLinkComboBox[] sprite = new JLinkComboBox[7];
 
     //NPC only stuff
     private Box npcEntry;
     private JLabel targetLabel;
     private JComboBox target;
     private JComboBox enemy;
-    private JSearchableComboBox enemyWrapper;
+    private JLinkComboBox enemyWrapper;
 
     protected void init()
     {
@@ -212,13 +214,16 @@ public class SpriteCharacterTableEditor extends EbHackModule implements
         selector.addActionListener(this);
 
         for (int i = 0; i < 7; i++)
-            entry.add(new JSearchableComboBox(sprite[i] = createComboBox(
-                sptNames, true, this), spriteLabels[i] + ": "));
+        {
+            entry.add(sprite[i] = new JLinkComboBox(SPTEditor.class, sptNames,
+                spriteLabels[i]));
+            sprite[i].addActionListener(this);
+        }
 
         npcEntry = new Box(BoxLayout.Y_AXIS);
 
-        npcEntry.add(enemyWrapper = new JSearchableComboBox(enemy = EnemyEditor
-            .createEnemyComboBox(this), "Enemy Stats: "));
+        npcEntry.add(enemyWrapper = new JLinkComboBox(EnemyEditor.class,
+            enemy = EnemyEditor.createEnemyComboBox(this), "Enemy Stats"));
         enemy.setActionCommand("spctEnemySelector");
         enemy.setSelectedIndex(0);
         npcEntry.add(pairComponents(targetLabel = new JLabel("Targeting: "),

@@ -1,16 +1,21 @@
 package net.starmen.pkhack.eb;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.util.StringTokenizer;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -132,9 +137,9 @@ public class SPTEditor extends EbHackModule implements ActionListener
         entry.setLayout(new BoxLayout(entry, BoxLayout.Y_AXIS));
         entry.add(getLabeledComponent("Name: ", name = new JTextField(20)));
         entry.add(getLabeledComponent("Width: ",
-            width = createSizedJTextField(3)));
+            width = createSizedJTextField(3, true)));
         entry.add(getLabeledComponent("Height: ",
-            height = createSizedJTextField(3)));
+            height = createSizedJTextField(3, true)));
         entry.add(getLabeledComponent("Palette: ",
             palette = createJComboBoxFromArray(new Object[8])));
         entry
@@ -465,5 +470,4 @@ public class SPTEditor extends EbHackModule implements ActionListener
                     + "SpriteEditor.SpriteInfo, or SpriteEditor.Sprite.");
         }
     }
-
 }

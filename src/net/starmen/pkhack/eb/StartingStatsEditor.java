@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -27,11 +28,12 @@ public class StartingStatsEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public StartingStatsEditor(AbstractRom rom, XMLPreferences prefs) {
+    public StartingStatsEditor(AbstractRom rom, XMLPreferences prefs)
+    {
         super(rom, prefs);
     }
     private JComboBox selector;
-    private JComboBox[] items;
+    private ItemEditor.ItemEntry[] items;
     private JTextField[] unknown;
     private JTextField money, level, exp;
     /**
@@ -60,29 +62,24 @@ public class StartingStatsEditor extends EbHackModule implements ActionListener
         unknown = new JTextField[2]; //assuming 2 two-byte values
         for (int i = 0; i < unknown.length; i++)
         {
-            unknown[i] = new JTextField(5);
-            unknown[i].setDocument(new MaxLengthDocument(5));
+            unknown[i] = createSizedJTextField(5, true);
             entry.add(getLabeledComponent("Unknown " + (i + 1) + ":",
                 unknown[i]));
         }
 
-        money = new JTextField(5);
-        money.setDocument(new MaxLengthDocument(5));
+        money = createSizedJTextField(5, true);
         entry.add(getLabeledComponent("Money:", money));
 
-        level = new JTextField(5);
-        level.setDocument(new MaxLengthDocument(5));
+        level = createSizedJTextField(5, true);
         entry.add(getLabeledComponent("Level:", level));
 
-        exp = new JTextField(5);
-        exp.setDocument(new MaxLengthDocument(5));
+        exp = createSizedJTextField(5, true);
         entry.add(getLabeledComponent("Experience Points:", exp));
 
-        items = new JComboBox[10];
+        items = new ItemEditor.ItemEntry[10];
         for (int i = 0; i < items.length; i++)
         {
-            items[i] = ItemEditor.createItemComboBox(this, this);
-            entry.add(getLabeledComponent("Item " + (i + 1) + ":", items[i]));
+            entry.add(items[i] = new ItemEditor.ItemEntry("Item " + (i + 1), this));
         }
 
         mainWindow.getContentPane().add(entry, BorderLayout.CENTER);
@@ -160,7 +157,18 @@ public class StartingStatsEditor extends EbHackModule implements ActionListener
 
     private void saveInfo(int i)
     {
-        if (i < 0) return;
+        if (i < 0)
+            return;
+
+        for (int it = 0; it < items.length; it++)
+            if (items[it].getSelectedIndex() == -1)
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Please select an item " + (it + 1) + " and try again.",
+                    "Save Failed", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
         for (int j = 0; j < unknown.length; j++)
         {
             stats[i].setUnknownAsTwoByte(j, Integer.parseInt(unknown[j]
@@ -179,7 +187,8 @@ public class StartingStatsEditor extends EbHackModule implements ActionListener
 
     private void showInfo(int i)
     {
-        if (i < 0) return;
+        if (i < 0)
+            return;
         for (int j = 0; j < unknown.length; j++)
         {
             unknown[j].setText(Integer
@@ -245,7 +254,8 @@ public class StartingStatsEditor extends EbHackModule implements ActionListener
          * @param num Number of the entry to read. (0 = Ness, 1 = Paula, 2 =
          *            Jeff, 3 = Poo)
          */
-        public StartingStatsEntry(int num, AbstractRom rom) {
+        public StartingStatsEntry(int num, AbstractRom rom)
+        {
             this.rom = rom;
             this.num = num;
             this.address = 0x15F7F5 + (num * 20);

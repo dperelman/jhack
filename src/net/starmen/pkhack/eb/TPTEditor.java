@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.starmen.pkhack.HackModule;
+import net.starmen.pkhack.JLinkComboBox;
 import net.starmen.pkhack.JSearchableComboBox;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
@@ -71,7 +72,7 @@ public class TPTEditor extends EbHackModule implements ActionListener
             this.hm = hm;
             AbstractRom rom = hm.rom;
 
-            address = /*0x0F8B96*/ 0xF8B85 + (num * 0x11);
+            address = /* 0x0F8B96 */0xF8B85 + (num * 0x11);
             rom.seek(address);
 
             type = rom.readSeek();
@@ -315,8 +316,8 @@ public class TPTEditor extends EbHackModule implements ActionListener
     {
         readFromRom(this);
     }
-    private JComboBox selector, sprite, item, type, direction, showSprite;
-    private JSearchableComboBox itemSearch;
+    private JComboBox selector, type, direction, showSprite;
+    private JLinkComboBox sprite, item;
     private JTextField money, eventFlag, movement;
     private TextEditor.TextOffsetEntry pointer, secPointer;
     private JLabel spritePreview;
@@ -335,16 +336,17 @@ public class TPTEditor extends EbHackModule implements ActionListener
 
         Box main = new Box(BoxLayout.Y_AXIS);
 
-        main.add(new JSearchableComboBox(selector = HackModule
-            .createComboBox(tptEntries, this), "Entry: "));
+        main.add(new JSearchableComboBox(selector = HackModule.createComboBox(
+            tptEntries, this), "Entry: "));
         selector.setActionCommand("TPTSelector");
 
-        main.add(new JSearchableComboBox(sprite = createComboBox(sptNames,
-            true, this), "Sprite: "));
+        main
+            .add(sprite = new JLinkComboBox(SPTEditor.class, sptNames, "Sprite"));
+        sprite.addActionListener(this);
         sprite.setActionCommand("spriteSelector");
 
-        main.add(itemSearch = new JSearchableComboBox(item = ItemEditor
-            .createItemComboBox(this, this), "Item: "));
+        main.add(item = new ItemEditor.ItemEntry("Item", this, this, -1,
+            JLinkComboBox.SEARCH_LEFT));
         item.setActionCommand("itemSelector");
 
         JPanel bottom = new JPanel(new BorderLayout());
@@ -381,7 +383,8 @@ public class TPTEditor extends EbHackModule implements ActionListener
         entry.add(secPointer = new TextEditor.TextOffsetEntry(
             "Secondary Pointer", true));
 
-        entry.add(HackModule.getLabeledComponent("Movement: ", movement = HackModule.createSizedJTextField(5)));
+        entry.add(HackModule.getLabeledComponent("Movement: ",
+            movement = HackModule.createSizedJTextField(5)));
 
         entry.add(HackModule.getLabeledComponent("Direction: ",
             direction = HackModule.createJComboBoxFromArray(new String[]{"Up",
@@ -446,9 +449,10 @@ public class TPTEditor extends EbHackModule implements ActionListener
     {
         readFromRom();
         super.show();
-        
+
         SpriteEditor.readFromRom(rom);
-        selector.setSelectedIndex(0);
+        int i = selector.getSelectedIndex();
+        selector.setSelectedIndex(i == -1 ? 0 : i);
         selector.updateUI();
         mainWindow.pack();
 
@@ -480,36 +484,37 @@ public class TPTEditor extends EbHackModule implements ActionListener
         }
         SpriteEditor.SpriteInfoBlock sib = SpriteEditor.sib[spt];
         int d = dir;
-        if (sib.numSprites > 9) switch (dir)
-        {
-            case 0:
-                d = 0;
-                break;
-            case 1:
-                d = 8;
-                break;
-            case 2:
-                d = 2;
-                break;
-            case 3:
-                d = 10;
-                break;
-            case 4:
-                d = 4;
-                break;
-            case 5:
-                d = 12;
-                break;
-            case 6:
-                d = 6;
-                break;
-            case 7:
-                d = 14;
-                break;
-        }
-        this.spritePreview.setIcon(new ImageIcon(zoomImage(
-            new SpriteEditor.Sprite(sib.getSpriteInfo(d),
-                this).getImage(), 2)));
+        if (sib.numSprites > 9)
+            switch (dir)
+            {
+                case 0:
+                    d = 0;
+                    break;
+                case 1:
+                    d = 8;
+                    break;
+                case 2:
+                    d = 2;
+                    break;
+                case 3:
+                    d = 10;
+                    break;
+                case 4:
+                    d = 4;
+                    break;
+                case 5:
+                    d = 12;
+                    break;
+                case 6:
+                    d = 6;
+                    break;
+                case 7:
+                    d = 14;
+                    break;
+            }
+        this.spritePreview
+            .setIcon(new ImageIcon(zoomImage(new SpriteEditor.Sprite(sib
+                .getSpriteInfo(d), this).getImage(), 2)));
     }
 
     private void showInfo(int i)
@@ -581,14 +586,14 @@ public class TPTEditor extends EbHackModule implements ActionListener
         {
             if (type.getSelectedIndex() + 1 == TPTEntry.TYPE_ITEM)
             {
-                itemSearch.setEnabled(!moneyCheckBox.isSelected());
+                item.setEnabled(!moneyCheckBox.isSelected());
                 money.setEnabled(moneyCheckBox.isSelected());
                 moneyCheckBox.setEnabled(true);
                 secPointer.setEnabled(false);
             }
             else
             {
-                itemSearch.setEnabled(false);
+                item.setEnabled(false);
                 money.setEnabled(false);
                 moneyCheckBox.setEnabled(false);
                 secPointer.setEnabled(true);
@@ -598,14 +603,15 @@ public class TPTEditor extends EbHackModule implements ActionListener
         {
             if (type.getSelectedIndex() + 1 == TPTEntry.TYPE_ITEM)
             {
-                itemSearch.setEnabled(!moneyCheckBox.isSelected());
+                item.setEnabled(!moneyCheckBox.isSelected());
                 money.setEnabled(moneyCheckBox.isSelected());
             }
         }
         else if (ae.getActionCommand().equals(sprite.getActionCommand())
             || ae.getActionCommand().equals(direction.getActionCommand()))
         {
-            if (direction.getSelectedIndex() == -1) return;
+            if (direction.getSelectedIndex() == -1)
+                return;
             updateSpritePreview(sprite.getSelectedIndex(), direction
                 .getSelectedIndex());
         }

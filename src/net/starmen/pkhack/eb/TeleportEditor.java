@@ -89,7 +89,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener
         out.setLayout(new BoxLayout(out, BoxLayout.X_AXIS));
         for (int j = 0; j < in.length; j++)
         {
-            in[j] = HackModule.createSizedJTextField(j == 0 ? 25 : 5);
+            in[j] = HackModule.createSizedJTextField(j == 0 ? 25 : 5, j >= 2);
             out.add(in[j]);
         }
         return out;

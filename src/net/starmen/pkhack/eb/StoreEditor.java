@@ -94,7 +94,7 @@ public class StoreEditor extends EbHackModule implements ActionListener
             entry.add(
                 pairComponents(
                     item[i] = ItemEditor.createItemComboBox(this,this),
-                    money[i] = createSizedJTextField(5),
+                    money[i] = createSizedJTextField(5, true),
                     true));
             item[i].setActionCommand("storeItemList" + i);
             item[i].addActionListener(this);

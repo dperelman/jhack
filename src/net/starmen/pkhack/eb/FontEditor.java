@@ -11,6 +11,7 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -364,8 +365,8 @@ public class FontEditor extends EbHackModule implements ActionListener
 
             public void restoreChar()
             {
-                AbstractRom rom = hm.rom, orgRom = JHack.main.getOrginalRomFile(rom
-                    .getRomType());
+                AbstractRom rom = hm.rom, orgRom = JHack.main
+                    .getOrginalRomFile(rom.getRomType());
                 rom.write(widthAddress, orgRom.readByte(widthAddress));
                 rom.write(address, orgRom.readByte(address, CHAR_SIZES[size]));
 
@@ -482,6 +483,10 @@ public class FontEditor extends EbHackModule implements ActionListener
 
     /** Number of fonts. */
     public final static int NUM_FONTS = 5;
+    
+    /** Names of fonts. */
+    public final static String[] FONT_NAMES = new String[]{"Main", "Saturn",
+        "Large", "Battle", "Tiny"};
 
     /** Constants for fonts. */
     public final static int MAIN = 0;
@@ -489,7 +494,7 @@ public class FontEditor extends EbHackModule implements ActionListener
     public final static int BIG = 2;
     public final static int BATTLE = 3;
     public final static int TINY = 4;
-
+    
     /** Constants for font sizes. */
     public final static int FONT_SIZE_NORMAL = 0;
     public final static int FONT_SIZE_SMALL = 1;
@@ -685,7 +690,7 @@ public class FontEditor extends EbHackModule implements ActionListener
         {
             setLayout(new BorderLayout());
 
-            tf = HackModule.createSizedJTextField(3);
+            tf = HackModule.createSizedJTextField(3, true);
             tf.getDocument().addDocumentListener(this);
             add(HackModule.getLabeledComponent("Width: ", tf),
                 BorderLayout.NORTH);
@@ -1068,8 +1073,7 @@ public class FontEditor extends EbHackModule implements ActionListener
         {
             final StringViewer sv = new StringViewer(text.getText(), zoom, hm);
 
-            final JComboBox f = new JComboBox(new String[]{"Main", "Saturn",
-                "Large", "Battle", "Tiny"});
+            final JComboBox f = new JComboBox(FONT_NAMES);
             f.addActionListener(new ActionListener()
             {
                 public void actionPerformed(ActionEvent ae)
@@ -1089,8 +1093,24 @@ public class FontEditor extends EbHackModule implements ActionListener
                 }
             });
 
+            JLabel label = new JLabel(
+                "<html><font color = \"blue\"><u>Font</u></font>" + ": "
+                    + "</html>");
+            label.addMouseListener(new MouseAdapter()
+            {
+                public void mouseClicked(MouseEvent arg0)
+                {
+                    int i = f.getSelectedIndex();
+                    if (i != -1)
+                    {
+                        JHack.main.showModule(FontEditor.class, new Integer(i));
+                    }
+                }
+            });
+            label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
             return HackModule.pairComponents(sv, pairComponents(refresh,
-                getLabeledComponent("Font: ", f), true), true);
+                pairComponents(label, f, true), true), true);
         }
 
         /**
@@ -1334,6 +1354,31 @@ public class FontEditor extends EbHackModule implements ActionListener
         updateDrawingArea();
 
         mainWindow.setVisible(true);
+    }
+    
+    public void show(Object in)
+    {
+        super.show(in);
+        
+        if(in instanceof Integer)
+        {
+            int i = ((Integer) in).intValue();
+            if(i >= 0 && i < NUM_FONTS)
+                fontSelector.setSelectedIndex(i);
+        }
+        else
+        {
+            String str = in.toString().toLowerCase();
+            for(int i = 0; i < NUM_FONTS; i++)
+            {
+                if(str.indexOf(FONT_NAMES[i].toLowerCase()) != -1)
+                {
+                    fontSelector.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+        fontSelector.repaint();
     }
 
     public void actionPerformed(ActionEvent ae)

@@ -61,7 +61,7 @@ public class LevelUpEditor extends EbHackModule implements ActionListener
         levelSelector.addActionListener(this);
         entry.add(getLabeledComponent("Level:", levelSelector));
 
-        exp = createSizedJTextField(10);
+        exp = createSizedJTextField(10, true);
         entry.add(getLabeledComponent("Experience points:", exp));
 
         mainWindow.getContentPane().add(entry, BorderLayout.CENTER);

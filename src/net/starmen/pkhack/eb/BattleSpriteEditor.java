@@ -486,6 +486,21 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         mainWindow.show();
     }
 
+    public void show(Object in) throws IllegalArgumentException
+    {
+        super.show(in);
+
+        if (in instanceof Integer)
+        {
+            int index = ((Integer) in).intValue() - 1;
+            if (index >= 0 && index < NUM_ENTRIES)
+                spriteSelector.setSelectedIndex(index);
+        }
+        else
+            HackModule.search(in.toString(), spriteSelector, true);
+        spriteSelector.repaint();
+    }
+
     /*
      * (non-Javadoc)
      * 

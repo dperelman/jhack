@@ -493,6 +493,27 @@ public abstract class HackModule
     /**
      * Creates a <code>JTextField</code> with a maximum length. This
      * <code>JTextField</code> uses a
+     * {@link net.starmen.pkhack.MaxLengthDocument}or a
+     * {@link net.starmen.pkhack.NumericMaxLengthDocument}.
+     * 
+     * @param len Maximum length for the <code>JTextField</code>
+     * @param numbersOnly if true, a <code>NumericMaxLengthDocument</code> is
+     *            used to allow only numbers to be typed
+     * @return A new <code>JTextField</code>, which limits the number of
+     *         input characters to <code>len</code>
+     * @see net.starmen.pkhack.MaxLengthDocument
+     * @see NumericMaxLengthDocument
+     */
+    public static JTextField createSizedJTextField(int len, boolean numbersOnly)
+    {
+        return new JTextField(numbersOnly
+            ? new NumericMaxLengthDocument(len)
+            : new MaxLengthDocument(len), "", len);
+    }
+
+    /**
+     * Creates a <code>JTextField</code> with a maximum length. This
+     * <code>JTextField</code> uses a
      * {@link net.starmen.pkhack.MaxLengthDocument}.
      * 
      * @param len Maximum length for the <code>JTextField</code>
@@ -502,9 +523,7 @@ public abstract class HackModule
      */
     public static JTextField createSizedJTextField(int len)
     {
-        JTextField out = new JTextField(len);
-        out.setDocument(new MaxLengthDocument(len));
-        return out;
+        return createSizedJTextField(len, false);
     }
 
     protected static class NumberedComboBoxModel extends SimpleComboBoxModel
@@ -662,6 +681,8 @@ public abstract class HackModule
     public static boolean search(String text, JComboBox selector,
         boolean beginFromStart, boolean displayError)
     {
+        if (text == null || selector == null || selector.getItemCount() == 0)
+            return false;
         text = text.toLowerCase();
         for (int i = (selector.getSelectedIndex() + 1 != selector
             .getItemCount()
@@ -2586,8 +2607,8 @@ public abstract class HackModule
      * a <code>ListDataListener</code> using
      * {@link HackModule#addDataListener(Object[], ListDataListener)}, the
      * {@link #notifyDataListeners(Object[], ListDataEvent)}methods can be used
-     * to force it to be redrawn. If <code>zeroBased</code> is true, the array
-     * values will be pushed up by one (to offsets <code>1</code> to
+     * to force it to be redrawn. If <code>zeroBased</code> is false, the
+     * array values will be pushed up by one (to offsets <code>1</code> to
      * <code>array.length</code>). Offset <code>0</code> will be set to
      * <code>zeroString</code>. If not null, <code>al</code> will be added
      * as an <code>ActionListener</code> to the return value.
@@ -2654,8 +2675,8 @@ public abstract class HackModule
      * a <code>ListDataListener</code> using
      * {@link HackModule#addDataListener(Object[], ListDataListener)}, the
      * {@link #notifyDataListeners(Object[], ListDataEvent)}methods can be used
-     * to force it to be redrawn. If <code>zeroBased</code> is true, the array
-     * values will be pushed up by one (to offsets <code>1</code> to
+     * to force it to be redrawn. If <code>zeroBased</code> is false, the
+     * array values will be pushed up by one (to offsets <code>1</code> to
      * <code>array.length</code>). Offset <code>0</code> will be set to
      * "Nothing". If not null, <code>al</code> will be added as an
      * <code>ActionListener</code> to the return value.
@@ -2702,8 +2723,8 @@ public abstract class HackModule
      * @param array <code>Object</code>'s whose <code>.toString()</code>
      *            method will give the <code>String</code> to use for the
      *            corresponding position in the <code>JComboBox</code>.
-     * @param zeroString <code>String</code> to use as element zero if
-     *            it is not null.
+     * @param zeroString <code>String</code> to use as element zero if it is
+     *            not null.
      * @param al If not null, <code>JComboBox.addActionListener(al);</code>
      *            will be called.
      * @return a <code>JComboBox</code> displaying <code>array</code> as

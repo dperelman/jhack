@@ -65,7 +65,7 @@ public class PSIDamageEditor extends EbHackModule implements ActionListener
 		s.setActionCommand("change_entry");
 		s.addActionListener(this);
 		
-		damage = createSizedJTextField(5);
+		damage = createSizedJTextField(5, true);
 		//damage.setActionCommand("change_damage");
         damage.getDocument().addDocumentListener(new DocumentListener()
         {
@@ -90,7 +90,7 @@ public class PSIDamageEditor extends EbHackModule implements ActionListener
                 change();
             }
         });
-		strike = createSizedJTextField(3);
+		strike = createSizedJTextField(3, true);
 
 		ranges = new JLabel();
 		multis = new JLabel();

@@ -41,7 +41,7 @@ eb.EnemyEditor		#Edits enemy information
 eb.ActionEditor		#Edits attack actions
 eb.PSIEditor		#Edits PSI effects
 eb.PSIDamageEditor	#Edits the damage caused by PSI attacks
-eb.BattleAnimEditor #Edits battle animations (PSIs, items that animate)
+#eb.BattleAnimEditor #Edits battle animations (PSIs, items that animate)
 ----------------------Sprites--------------------------------------------------
 eb.SpriteEditor		#Edits the appearence of out of battle (uncompressed) sprites
 eb.SPTEditor		#Edits the SPT

@@ -27,6 +27,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 import net.starmen.pkhack.HackModule;
+import net.starmen.pkhack.JLinkComboBox;
 import net.starmen.pkhack.JSearchableComboBox;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
@@ -76,7 +77,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
     private TextEditor.TextOffsetEntry startPointer, deathPointer;
 
     //gfx/sound tab stuff
-    private JComboBox outsidePic, insidePic, deathSound, music, row;
+    private JLinkComboBox outsidePic, insidePic;
+    private JComboBox deathSound, music, row;
     private JTextField movement, palette;
     private JLabel insidePicPrev;
 
@@ -91,6 +93,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
     protected void init()
     {
         readFromRom();
+        SpriteEditor.readFromRom(rom);
 
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
@@ -126,19 +129,19 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
         Box statsTabLeft = new Box(BoxLayout.Y_AXIS);
         statsTabLeft.add(getLabeledComponent("HP: ",
-            (hp = createSizedJTextField(5))));
+            (hp = createSizedJTextField(5, true))));
         statsTabLeft.add(getLabeledComponent("PP: ",
-            (pp = createSizedJTextField(5))));
+            (pp = createSizedJTextField(5, true))));
         statsTabLeft.add(getLabeledComponent("Exp:          ",
-            (exp = createSizedJTextField(10))));
+            (exp = createSizedJTextField(10, true))));
         statsTabLeft.add(getLabeledComponent("Money: ",
-            (money = createSizedJTextField(5))));
+            (money = createSizedJTextField(5, true))));
         statsTabLeft.add(getLabeledComponent("Speed: ",
-            (speed = createSizedJTextField(3))));
+            (speed = createSizedJTextField(3, true))));
         statsTabLeft.add(getLabeledComponent("Offense: ",
-            (offense = createSizedJTextField(3))));
+            (offense = createSizedJTextField(3, true))));
         statsTabLeft.add(getLabeledComponent("Defense: ",
-            (defense = createSizedJTextField(3))));
+            (defense = createSizedJTextField(3, true))));
         status = new JComboBox();
         status.addItem("Normal");
         status.addItem("PSI Shield \u03B1 (Blocks PSI)");
@@ -150,11 +153,11 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         status.addItem("Feeling strange");
         statsTabLeft.add(getLabeledComponent("Status: ", status));
         statsTabLeft.add(getLabeledComponent("Level: ",
-            (level = createSizedJTextField(3))));
+            (level = createSizedJTextField(3, true))));
         statsTabLeft.add(getLabeledComponent("Guts: ",
-            (guts = createSizedJTextField(3))));
+            (guts = createSizedJTextField(3, true))));
         statsTabLeft.add(getLabeledComponent("IQ: ",
-            (iq = createSizedJTextField(3))));
+            (iq = createSizedJTextField(3, true))));
         statsTab.add(pairComponents(statsTabLeft, new JLabel(), false),
             BorderLayout.WEST);
 
@@ -164,7 +167,6 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         gender.addItem(HackModule.getNumberedString("Male", 1));
         gender.addItem(HackModule.getNumberedString("Female", 2));
         gender.addItem(HackModule.getNumberedString("Neutral", 3));
-        gender.setSelectedIndex(0); //TODO ??? (gender combobox)
         gender.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -191,7 +193,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         }
         statsTabRight.add(Box.createVerticalStrut(10));
         statsTabRight.add(getLabeledComponent("Miss Rate: ",
-            (missRate = createSizedJTextField(3))));
+            (missRate = createSizedJTextField(3, true))));
         statsTabRight
             .add(getLabeledComponent("Type: ", type = new JComboBox()));
         type.addItem(getNumberedString("Normal", 0));
@@ -272,7 +274,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         actionsTabBottom.add(deathPointer = new TextEditor.TextOffsetEntry(
             "Death Text", true));
         actionsTabBottom.add(getLabeledComponent("Max Call: ",
-            maxCall = createSizedJTextField(3),
+            maxCall = createSizedJTextField(3, true),
             "Values over 8 are treated as 8 by EB"));
         actionsTab.add(pairComponents(actionsTabBottom, new JLabel(), true),
             BorderLayout.SOUTH);
@@ -282,20 +284,28 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         //gfx/sound tab init
         JPanel appearenceTab = new JPanel();
         appearenceTab.setLayout(new BoxLayout(appearenceTab, BoxLayout.Y_AXIS));
-        appearenceTab.add(getLabeledComponent("Outside Pic: ",
-            outsidePic = createComboBox(sptNames, true, this),
-            "Appearance out of battle. Subtract one for SPT entry number."));
+        appearenceTab.add(outsidePic = new JLinkComboBox(SPTEditor.class,
+            sptNames, "Outside Pic", JSearchableComboBox.SEARCH_EDIT));
+        outsidePic.setToolTipText("Appearance out of battle.");
+        //        appearenceTab.add(getLabeledComponent("Outside Pic: ",
+        //            outsidePic = createComboBox(sptNames, true, this),
+        //            "Appearance out of battle. Subtract one for SPT entry number."));
         appearenceTab.add(Box.createVerticalStrut(5));
         appearenceTab.add(getLabeledComponent("Movement: ",
-            movement = createSizedJTextField(5),
+            movement = createSizedJTextField(5, true),
             "Movement pattern, most values unknown"));
         appearenceTab.add(Box.createVerticalStrut(10));
         appearenceTab.add(getLabeledComponent("Row: ", row = HackModule
             .createJComboBoxFromArray(new String[]{"Front", "Back"}, false)));
         appearenceTab.add(Box.createVerticalStrut(10));
-        appearenceTab.add(getLabeledComponent("Battle Sprite: ",
-            insidePic = createComboBox(battleSpriteNames, "Invisible"),
-            "Appearence in battle"));
+        appearenceTab
+            .add(insidePic = new JLinkComboBox(BattleSpriteEditor.class,
+                createComboBox(battleSpriteNames, "Invisible"),
+                "Battle Sprite", JSearchableComboBox.SEARCH_EDIT));
+        insidePic.setToolTipText("Appearance in battle.");
+        //        appearenceTab.add(getLabeledComponent("Battle Sprite: ",
+        //            insidePic = createComboBox(battleSpriteNames, "Invisible"),
+        //            "Appearence in battle"));
         insidePic.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)
@@ -303,18 +313,18 @@ public class EnemyEditor extends EbHackModule implements ActionListener
                 updateInsidePicPrev();
             }
         });
-        insidePic.setEditable(true);
-        insidePic.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                if (ae.getActionCommand().equals("comboBoxEdited"))
-                    HackModule.search((String) insidePic.getSelectedItem(),
-                        insidePic);
-            }
-        });
+        //        insidePic.setEditable(true);
+        //        insidePic.addActionListener(new ActionListener()
+        //        {
+        //            public void actionPerformed(ActionEvent ae)
+        //            {
+        //                if (ae.getActionCommand().equals("comboBoxEdited"))
+        //                    HackModule.search((String) insidePic.getSelectedItem(),
+        //                        insidePic);
+        //            }
+        //        });
         appearenceTab.add(getLabeledComponent("Palette: ",
-            palette = createSizedJTextField(3),
+            palette = createSizedJTextField(3, true),
             "Colors used for battle sprite (0-31)"));
         palette.getDocument().addDocumentListener(new DocumentListener()
         {
@@ -367,51 +377,50 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         unknownsTab.setLayout(new BoxLayout(unknownsTab, BoxLayout.Y_AXIS));
 
         unknownsTab.add(getLabeledComponent("Unknown A (gender): ",
-            unknowna = createSizedJTextField(3),
+            unknowna = createSizedJTextField(3, true),
             "Replaced by gender on the first tab."));
         unknowna.setEnabled(false);
         unknownsTab.add(getLabeledComponent("Unknown B (PSI Fire): ",
-            unknownb = createSizedJTextField(3),
+            unknownb = createSizedJTextField(3, true),
             "Replaced by PSI Fire in weaknesses tab."));
         unknownb.setEnabled(false);
         unknownsTab.add(getLabeledComponent("Unknown C (PSI Freeze): ",
-            unknownc = createSizedJTextField(3),
+            unknownc = createSizedJTextField(3, true),
             "Replaced by PSI Freese in weaknesses tab."));
         unknownc.setEnabled(false);
         unknownsTab.add(getLabeledComponent("Unknown D (PSI Flash): ",
-            unknownd = createSizedJTextField(3),
+            unknownd = createSizedJTextField(3, true),
             "Replaced by PSI Flash in weaknesses tab."));
         unknownd.setEnabled(false);
         unknownsTab.add(getLabeledComponent("Unknown E (Paralysis): ",
-            unknowne = createSizedJTextField(3),
+            unknowne = createSizedJTextField(3, true),
             "Replaced by Paralysis in weaknesses tab."));
         unknowne.setEnabled(false);
         unknownsTab.add(getLabeledComponent(
             "Unknown F (Hypnosis/Brainshock): ",
-            unknownf = createSizedJTextField(3),
+            unknownf = createSizedJTextField(3, true),
             "Replaced by Hypnosis/Brainshock in weaknesses tab."));
         unknownf.setEnabled(false);
         unknownsTab.add(getLabeledComponent("Unknown G (final action): ",
-            unknowng = createSizedJTextField(3),
+            unknowng = createSizedJTextField(3, true),
             "Final action arguement. Edit on the actions tab."));
         unknowng.setEnabled(false);
         unknownsTab.add(getLabeledComponent("Unknown H: ",
-            unknownh = createSizedJTextField(3),
+            unknownh = createSizedJTextField(3, true),
             "Byte after Unknown G, see: unknown3.txt"));
         unknownsTab.add(getLabeledComponent("Unknown I (row): ",
-            unknowni = createSizedJTextField(3),
+            unknowni = createSizedJTextField(3, true),
             "Replaced by row in Graphics/Sound tab."));
         unknowni.setEnabled(false);
-        unknownsTab
-            .add(getLabeledComponent("Unknown J: ",
-                unknownj = createSizedJTextField(3),
-                "Last byte; see: unknown1.txt"));
+        unknownsTab.add(getLabeledComponent("Unknown J: ",
+            unknownj = createSizedJTextField(3, true),
+            "Last byte; see: unknown1.txt"));
         unknownsTab.add(getLabeledComponent("Unknown K: ",
-            unknownk = createSizedJTextField(3),
+            unknownk = createSizedJTextField(3, true),
             "Byte after offense, offense is confirmed one byte"));
         unknownsTab
             .add(getLabeledComponent("Unknown L: ",
-                unknownl = createSizedJTextField(3),
+                unknownl = createSizedJTextField(3, true),
                 "Byte after defense, defense is confirmed one byte; see unknown4.txt"));
 
         tabs.addTab("Unknowns", pairComponents(pairComponents(new JLabel(
@@ -423,6 +432,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
         selector.setSelectedIndex(0);
         mainWindow.pack();
+        //make sure there's room for arguments
+        mainWindow.setSize(mainWindow.getWidth() + 50, mainWindow.getHeight());
     }
 
     /**
@@ -459,6 +470,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
     {
         super.show();
         readFromRom();
+        BattleSpriteEditor.readFromRom(this);
         mainWindow.setVisible(true);
 
         //        //stuff
@@ -590,7 +602,18 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         //stats tab - right side
         theFlag.setSelected(enemies[i].getTheFlag());
         runFlag.setSelected((enemies[i].getRunFlag() & 1) == 1);
-        gender.setSelectedIndex(enemies[i].getGender() - 1); //0 isn't used
+        int gi = enemies[i].getGender() - 1; //gender index; 0 isn't used
+        if (gi >= 0 && gi < 3)
+            gender.setSelectedIndex(gi);
+        else
+        {
+            JOptionPane.showMessageDialog(mainWindow,
+                "The enemy you have selected has an invalid\n"
+                    + "value set for gender (a.k.a. Unknown A) of " + (gi + 1)
+                    + ".\n" + "The gender value has been set to [01] Male.",
+                "Invaild Gender Value", JOptionPane.WARNING_MESSAGE);
+            gender.setSelectedIndex(0);
+        }
         item.setSelectedIndex(enemies[i].getItem());
         itemFreq.setSelectedIndex(enemies[i].getFreq());
         missRate.setText(Integer.toString(enemies[i].getMissRate()));
@@ -599,11 +622,11 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         //actions tab
         for (int j = 0; j < actions.length; j++)
         {
-            actions[j].setSelectedIndex(enemies[i].getAction(j));
-            //set to zero to make sure no incorrect error message is 
+            //set to zero to make sure no incorrect error message is
             //shown by updateArguements()
             arguements[j].setSelectedIndex(0);
-            updateArguements(j);
+            actions[j].setSelectedIndex(enemies[i].getAction(j));
+            //updateArguements(j); //done by actionPerformed
             int earg = enemies[i].getArguement(j);
             if (earg >= arguements[j].getItemCount())
             {
@@ -633,7 +656,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         movement.setText(Integer.toString(enemies[i].getMovement()));
         row.setSelectedIndex(enemies[i].getRow());
         insidePic.setSelectedIndex(enemies[i].getInsidePic());
-        insidePic.getEditor().setItem(insidePic.getSelectedItem());
+        //        insidePic.getEditor().setItem(insidePic.getSelectedItem());
         palette.setText(Integer.toString(enemies[i].getPalette()));
         try
         {
@@ -674,74 +697,92 @@ public class EnemyEditor extends EbHackModule implements ActionListener
     {
         if (i < 0)
             return;
-        //stats tab - left side
-        enemies[i].setName(name.getText());
-        EnemyEditor.notifyEnemyDataListeners(new ListDataEvent(this,
-            ListDataEvent.CONTENTS_CHANGED, i, i));
-        enemies[i].setHp(Integer.parseInt(hp.getText()));
-        enemies[i].setPp(Integer.parseInt(pp.getText()));
-        enemies[i].setExp(Integer.parseInt(exp.getText()));
-        enemies[i].setMoney(Integer.parseInt(money.getText()));
-        enemies[i].setSpeed(Integer.parseInt(speed.getText()));
-        enemies[i].setOffense(Integer.parseInt(offense.getText()));
-        enemies[i].setDefense(Integer.parseInt(defense.getText()));
-        enemies[i].setStatus(status.getSelectedIndex());
-        enemies[i].setLevel(Integer.parseInt(level.getText()));
-        enemies[i].setGuts(Integer.parseInt(guts.getText()));
-        enemies[i].setIq(Integer.parseInt(iq.getText()));
-        //stats tab - right side
-        enemies[i].setTheFlag(theFlag.isSelected());
-        enemies[i].setRunFlag((enemies[i].getRunFlag() & 0xfe)
-            + (runFlag.isSelected() ? 1 : 0));
-        enemies[i].setGender(gender.getSelectedIndex() + 1); //0 isn't used
-        enemies[i].setItem(item.getSelectedIndex());
-        enemies[i].setFreq(itemFreq.getSelectedIndex());
-        enemies[i].setMissRate(Integer.parseInt(missRate.getText()));
-        enemies[i].setType(type.getSelectedIndex());
-
-        //actions tab
-        for (int j = 0; j < actions.length; j++)
+        try
         {
-            enemies[i].setAction(j, actions[j].getSelectedIndex());
-            enemies[i].setArguement(j, arguements[j].getSelectedIndex());
+            //stats tab - left side
+            enemies[i].setName(name.getText());
+            EnemyEditor.notifyEnemyDataListeners(new ListDataEvent(this,
+                ListDataEvent.CONTENTS_CHANGED, i, i));
+            enemies[i].setHp(Integer.parseInt(hp.getText()));
+            enemies[i].setPp(Integer.parseInt(pp.getText()));
+            enemies[i].setExp(Integer.parseInt(exp.getText()));
+            enemies[i].setMoney(Integer.parseInt(money.getText()));
+            enemies[i].setSpeed(Integer.parseInt(speed.getText()));
+            enemies[i].setOffense(Integer.parseInt(offense.getText()));
+            enemies[i].setDefense(Integer.parseInt(defense.getText()));
+            enemies[i].setStatus(status.getSelectedIndex());
+            enemies[i].setLevel(Integer.parseInt(level.getText()));
+            enemies[i].setGuts(Integer.parseInt(guts.getText()));
+            enemies[i].setIq(Integer.parseInt(iq.getText()));
+            //stats tab - right side
+            enemies[i].setTheFlag(theFlag.isSelected());
+            enemies[i].setRunFlag((enemies[i].getRunFlag() & 0xfe)
+                + (runFlag.isSelected() ? 1 : 0));
+            enemies[i].setGender(gender.getSelectedIndex() + 1); //0 isn't used
+            if (item.getSelectedIndex() != -1)
+                enemies[i].setItem(item.getSelectedIndex());
+            enemies[i].setFreq(itemFreq.getSelectedIndex());
+            enemies[i].setMissRate(Integer.parseInt(missRate.getText()));
+            enemies[i].setType(type.getSelectedIndex());
+
+            //actions tab
+            for (int j = 0; j < actions.length; j++)
+            {
+                enemies[i].setAction(j, actions[j].getSelectedIndex());
+                enemies[i].setArguement(j, arguements[j].getSelectedIndex());
+            }
+            enemies[i].setOrder(actionOrder.getSelectedIndex());
+            //enemies[i].setFinalAction(finalAction.getSelectedIndex());
+            //		enemies[i].setStartPointer(
+            //			Integer.parseInt(startPointer.getText(), 16));
+            //		enemies[i].setDeathPointer(
+            //			Integer.parseInt(deathPointer.getText(), 16));
+            enemies[i].setStartPointer(startPointer.getOffset());
+            enemies[i].setDeathPointer(deathPointer.getOffset());
+            enemies[i].setMaxCall(Integer.parseInt(maxCall.getText()));
+
+            //gfx/sound tab
+            if (outsidePic.getSelectedIndex() != -1)
+                enemies[i].setOutsidePic(outsidePic.getSelectedIndex());
+            enemies[i].setMovement(Integer.parseInt(movement.getText()));
+            enemies[i].setRow(row.getSelectedIndex());
+            if (insidePic.getSelectedIndex() != -1)
+                enemies[i].setInsidePic(insidePic.getSelectedIndex());
+            enemies[i].setPalette(Integer.parseInt(palette.getText()));
+            enemies[i].setDieSound(deathSound.getSelectedIndex());
+            enemies[i].setMusic(music.getSelectedIndex());
+
+            //weaknesses tab
+            for (int j = 0; j < weakness.length; j++)
+                enemies[i].setWeakness(j, weakness[j].getSelectedIndex());
+
+            //unknowns tab
+            //enemies[i].setUnknowna(Integer.parseInt(unknowna.getText()));
+            //enemies[i].setUnknownb(Integer.parseInt(unknownb.getText()));
+            //enemies[i].setUnknownc(Integer.parseInt(unknownc.getText()));
+            //enemies[i].setUnknownd(Integer.parseInt(unknownd.getText()));
+            //enemies[i].setUnknowne(Integer.parseInt(unknowne.getText()));
+            //enemies[i].setUnknownf(Integer.parseInt(unknownf.getText()));
+            //enemies[i].setUnknowng(Integer.parseInt(unknowng.getText()));
+            enemies[i].setUnknownh(Integer.parseInt(unknownh.getText()));
+            //enemies[i].setRow(Integer.parseInt(unknowni.getText()));
+            enemies[i].setUnknownj(Integer.parseInt(unknownj.getText()));
+            enemies[i].setUnknownk(Integer.parseInt(unknownk.getText()));
+            enemies[i].setUnknownl(Integer.parseInt(unknownl.getText()));
         }
-        enemies[i].setOrder(actionOrder.getSelectedIndex());
-        //enemies[i].setFinalAction(finalAction.getSelectedIndex());
-        //		enemies[i].setStartPointer(
-        //			Integer.parseInt(startPointer.getText(), 16));
-        //		enemies[i].setDeathPointer(
-        //			Integer.parseInt(deathPointer.getText(), 16));
-        enemies[i].setStartPointer(startPointer.getOffset());
-        enemies[i].setDeathPointer(deathPointer.getOffset());
-        enemies[i].setMaxCall(Integer.parseInt(maxCall.getText()));
-
-        //gfx/sound tab
-        enemies[i].setOutsidePic(outsidePic.getSelectedIndex());
-        enemies[i].setMovement(Integer.parseInt(movement.getText()));
-        enemies[i].setRow(row.getSelectedIndex());
-        if (insidePic.getSelectedIndex() != -1)
-            enemies[i].setInsidePic(insidePic.getSelectedIndex());
-        enemies[i].setPalette(Integer.parseInt(palette.getText()));
-        enemies[i].setDieSound(deathSound.getSelectedIndex());
-        enemies[i].setMusic(music.getSelectedIndex());
-
-        //weaknesses tab
-        for (int j = 0; j < weakness.length; j++)
-            enemies[i].setWeakness(j, weakness[j].getSelectedIndex());
-
-        //unknowns tab
-        //enemies[i].setUnknowna(Integer.parseInt(unknowna.getText()));
-        //enemies[i].setUnknownb(Integer.parseInt(unknownb.getText()));
-        //enemies[i].setUnknownc(Integer.parseInt(unknownc.getText()));
-        //enemies[i].setUnknownd(Integer.parseInt(unknownd.getText()));
-        //enemies[i].setUnknowne(Integer.parseInt(unknowne.getText()));
-        //enemies[i].setUnknownf(Integer.parseInt(unknownf.getText()));
-        //enemies[i].setUnknowng(Integer.parseInt(unknowng.getText()));
-        enemies[i].setUnknownh(Integer.parseInt(unknownh.getText()));
-        //enemies[i].setRow(Integer.parseInt(unknowni.getText()));
-        enemies[i].setUnknownj(Integer.parseInt(unknownj.getText()));
-        enemies[i].setUnknownk(Integer.parseInt(unknownk.getText()));
-        enemies[i].setUnknownl(Integer.parseInt(unknownl.getText()));
+        catch (NumberFormatException nfe)
+        {
+            JOptionPane
+                .showMessageDialog(
+                    mainWindow,
+                    "One of the text fields was detected as having\n "
+                        + "an invalid number format. This was most likely caused by\n"
+                        + "a text field left blank. Please correct the problem and\n"
+                        + "click the \"Apply Changes\" button again. No data has been\n"
+                        + "written to the ROM.", "Invalid Number Format",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         //write to ROM
         enemies[i].writeInfo();

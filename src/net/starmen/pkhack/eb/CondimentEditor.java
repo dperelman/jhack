@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -27,7 +28,8 @@ public class CondimentEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public CondimentEditor(AbstractRom rom, XMLPreferences prefs) {
+    public CondimentEditor(AbstractRom rom, XMLPreferences prefs)
+    {
         super(rom, prefs);
     }
 
@@ -51,7 +53,8 @@ public class CondimentEditor extends EbHackModule implements ActionListener
         private int item, condiment[] = new int[2], effect, goodRev, badRev,
                 runTime;
 
-        public CondimentEntry(int num, AbstractRom rom) {
+        public CondimentEntry(int num, AbstractRom rom)
+        {
             this.rom = rom;
             this.num = num;
             this.address = 0x15EC5B + (num * 7) + 28;
@@ -118,8 +121,7 @@ public class CondimentEditor extends EbHackModule implements ActionListener
          * <li>06 = Increase Speed</li>
          * <li>07 = Increase Vitality</li>
          * <li>08 = Increase Luck</li>
-         * <li>09 = No visible effect (that's what it says if you use it)
-         * </li>
+         * <li>09 = No visible effect (that's what it says if you use it)</li>
          * </ul>
          * 
          * @see #setEffect(int)
@@ -247,8 +249,8 @@ public class CondimentEditor extends EbHackModule implements ActionListener
     }
 
     private JComboBox selector, effectSelector;
-    private ItemEditor.ItemEntry foodSelector, condimentSelector[]
-		= new ItemEditor.ItemEntry[2];
+    private ItemEditor.ItemEntry foodSelector,
+            condimentSelector[] = new ItemEditor.ItemEntry[2];
 
     private JTextField goodAmount, badAmount, runTime;
 
@@ -276,8 +278,8 @@ public class CondimentEditor extends EbHackModule implements ActionListener
 
         for (int i = 0; i < 2; i++)
         {
-            condimentSelector[i] = new ItemEditor.ItemEntry("Condiment " + (i + 1)
-                + " (type-40)", this, 32);
+            condimentSelector[i] = new ItemEditor.ItemEntry("Condiment "
+                + (i + 1) + " (type-40)", this, 32);
             entry.add(condimentSelector[i]);
         }
 
@@ -285,13 +287,13 @@ public class CondimentEditor extends EbHackModule implements ActionListener
             .createJComboBoxFromArray(CondimentEditor.condimentEffects);
         entry.add(getLabeledComponent("Effect: ", effectSelector));
 
-        goodAmount = HackModule.createSizedJTextField(4);
+        goodAmount = HackModule.createSizedJTextField(4, true);
         entry.add(getLabeledComponent("Good Amount (x6 for HP): ", goodAmount));
 
-        badAmount = HackModule.createSizedJTextField(4);
+        badAmount = HackModule.createSizedJTextField(4, true);
         entry.add(getLabeledComponent("Bad Amount (x6 for HP): ", badAmount));
 
-        runTime = HackModule.createSizedJTextField(4);
+        runTime = HackModule.createSizedJTextField(4, true);
         entry.add(getLabeledComponent("Run Time (1/10 sec's): ", runTime));
 
         mainWindow.getContentPane().add(entry);
@@ -344,8 +346,8 @@ public class CondimentEditor extends EbHackModule implements ActionListener
         ItemEditor.createItemSelectorForType(foodSelector.getJComboBox(), 32,
             this);
         for (int i = 0; i < 2; i++)
-            ItemEditor.createItemSelectorForType(
-                condimentSelector[i].getJComboBox(), 40, this);
+            ItemEditor.createItemSelectorForType(condimentSelector[i]
+                .getJComboBox(), 40, this);
         initSelector();
         selector.setSelectedIndex(0);
         mainWindow.pack();
@@ -366,11 +368,13 @@ public class CondimentEditor extends EbHackModule implements ActionListener
 
     private void showInfo()
     {
-        if (selector.getSelectedIndex() < 0) return;
-        setSelectorToNum(foodSelector.getJComboBox(), getCurrentEntry().getItem());
+        if (selector.getSelectedIndex() < 0)
+            return;
+        setSelectorToNum(foodSelector.getJComboBox(), getCurrentEntry()
+            .getItem());
         for (int i = 0; i < 2; i++)
-            setSelectorToNum(condimentSelector[i].getJComboBox(), getCurrentEntry()
-                .getCondiment(i));
+            setSelectorToNum(condimentSelector[i].getJComboBox(),
+                getCurrentEntry().getCondiment(i));
         effectSelector.setSelectedIndex(getCurrentEntry().getEffect());
         goodAmount.setText(Integer.toString(getCurrentEntry().getGoodAmount()));
         badAmount.setText(Integer.toString(getCurrentEntry().getBadAmount()));
@@ -381,7 +385,26 @@ public class CondimentEditor extends EbHackModule implements ActionListener
 
     private void saveInfo()
     {
-        if (selector.getSelectedIndex() < 0) return;
+        if (selector.getSelectedIndex() < 0)
+            return;
+
+        if (foodSelector.getSelectedIndex() == -1)
+        {
+            JOptionPane.showMessageDialog(mainWindow,
+                "Please select a food item and try again.", "Save Failed",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        for (int j = 0; j < condimentSelector.length; j++)
+            if (condimentSelector[j].getSelectedIndex() == -1)
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Please select an item for condiment " + (j + 1)
+                        + " and try again.", "Save Failed",
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
         //Reset selector if item changed
         boolean resetSel = getCurrentEntry().getItem() != HackModule
             .getNumberOfString(foodSelector.getSelectedItem().toString());
@@ -401,7 +424,8 @@ public class CondimentEditor extends EbHackModule implements ActionListener
 
         CondimentEditor.entries[selector.getSelectedIndex()].writeInfo();
 
-        if (resetSel) initSelector();
+        if (resetSel)
+            initSelector();
     }
 
     public void actionPerformed(ActionEvent ae)

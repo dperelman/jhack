@@ -61,7 +61,7 @@ import javax.swing.filechooser.FileFilter;
  * buttons. This is called by {@link JHack#main(String[])}.
  * 
  * @author AnyoneEB
- * @version 0.4.7.1
+ * @version 0.5
  */
 //Made by AnyoneEB.
 //Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
@@ -455,7 +455,7 @@ public class MainGUI implements ActionListener, WindowListener
     public static String getDescription() //Return one line description of
     // class
     {
-        return "JHack";
+        return "PK Hack";
     }
 
     /**
@@ -466,7 +466,7 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public static String getVersion()
     {
-        return "0.4.7.1";
+        return "0.5";
     }
 
     /**
@@ -477,7 +477,7 @@ public class MainGUI implements ActionListener, WindowListener
     public static String getCredits() //Return who made it
     {
         return "Written by AnyoneEB\n" + "Various lists from PK Hack website\n"
-            + "Icons from PK Hack source";
+            + "Icons from PK Hack v0.2 source";
     }
 
     private void exit()
@@ -501,7 +501,7 @@ public class MainGUI implements ActionListener, WindowListener
 
         JHack.out.stop();
         JHack.err.stop();
-        
+
         System.exit(0);
     }
 
@@ -832,7 +832,10 @@ public class MainGUI implements ActionListener, WindowListener
         }
         System.out.println((new File(getPrefs().getValue(
             romType + ".expRomPath")).length())
-            + " == " + AbstractRom.EB_ROM_SIZE_REGULAR + "; romType = " + romType);
+            + " == "
+            + AbstractRom.EB_ROM_SIZE_REGULAR
+            + "; romType = "
+            + romType);
         if (romType.equals("Earthbound")
             && new File(getPrefs().getValue(romType + ".expRomPath")).length() == AbstractRom.EB_ROM_SIZE_REGULAR)
         {
@@ -1117,7 +1120,7 @@ public class MainGUI implements ActionListener, WindowListener
             + MainGUI.getVersion());
         this.refreshRevertMenu();
     }
-    
+
     private void hideModules()
     {
         for (int i = 0; i < getModuleCount(); i++)
@@ -1132,7 +1135,7 @@ public class MainGUI implements ActionListener, WindowListener
             }
         }
     }
-    
+
     private void resetModules()
     {
         //offset in module list where IPSDatabase is

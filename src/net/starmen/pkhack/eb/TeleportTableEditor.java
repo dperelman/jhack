@@ -244,11 +244,11 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener
 		entry.add(
 			HackModule.getLabeledComponent(
 				"X: ",
-				x = HackModule.createSizedJTextField(5)));
+				x = HackModule.createSizedJTextField(5, true)));
 		entry.add(
 			HackModule.getLabeledComponent(
 				"Y: ",
-				y = HackModule.createSizedJTextField(5)));
+				y = HackModule.createSizedJTextField(5, true)));
 
 		entry.add(
 			HackModule.getLabeledComponent(
@@ -273,7 +273,7 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener
 			entry.add(
 				HackModule.getLabeledComponent(
 					"Unknown #" + i + ": ",
-					unknown[i] = HackModule.createSizedJTextField(3)));
+					unknown[i] = HackModule.createSizedJTextField(3, true)));
 
 		mainWindow.getContentPane().add(entry, BorderLayout.CENTER);
 		mainWindow.pack();

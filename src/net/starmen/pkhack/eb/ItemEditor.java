@@ -7,8 +7,8 @@ import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,11 +31,12 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JHack;
+import net.starmen.pkhack.JLinkComboBox;
 import net.starmen.pkhack.JSearchableComboBox;
 import net.starmen.pkhack.MaxLengthDocument;
-import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -1173,16 +1174,37 @@ public class ItemEditor extends EbHackModule implements ActionListener
 
     /**
      * JPanel containing combobox and hyperlink label that calls the Item Editor
-     * and sets the data being edited to the data in the combobox when clicked
-     *  
+     * and sets the data being edited to the data in the combobox when clicked.
      */
-    public static class ItemEntry extends JPanel
+    public static class ItemEntry extends JLinkComboBox
     {
-        protected JComboBox cb;
-        protected JLabel t;
-
         /**
          * Creates a new <code>ItemEntry</code> component.
+         * 
+         * @param label words to identify this component with
+         * @param hm <code>HackModule</code> to get rom to read info from
+         * @param al <code>ActionListener</code> to add to this.
+         * @param type if negitive, all items will be shown; otherwise only
+         *            items of this type will be shown
+         * @param smode Search mode, one of {@link #SEARCH_NONE},
+         *            {@link #SEARCH_LEFT},{@link #SEARCH_RIGHT},
+         *            {@link #SEARCH_EDIT}.
+         */
+        public ItemEntry(final String label, HackModule hm, ActionListener al,
+            int type, int smode)
+        {
+            super(ItemEditor.class, type < 0
+                ? createItemComboBox(null, hm)
+                : createItemSelectorForType(new JComboBox(), type, hm), label,
+                smode);
+
+            if (al != null)
+                comboBox.addActionListener(al);
+        }
+        
+        /**
+         * Creates a new <code>ItemEntry</code> component. It will have the default
+         * search mode of {@link JSearchableComboBox#SEARCH_EDIT}.
          * 
          * @param label words to identify this component with
          * @param hm <code>HackModule</code> to get rom to read info from
@@ -1193,53 +1215,12 @@ public class ItemEditor extends EbHackModule implements ActionListener
         public ItemEntry(final String label, HackModule hm, ActionListener al,
             int type)
         {
-            super(new BorderLayout());
-
-            if (type < 0)
-            {
-                cb = createItemComboBox(null, hm);
-            }
-            else
-            {
-                cb = new JComboBox();
-                createItemSelectorForType(cb, type, hm);
-            }
-
-            if (al != null)
-                addActionListener(al);
-
-            this.add(cb, BorderLayout.EAST);
-
-            t = new JLabel("<html><font color = \"blue\"><u>" + label
-                + "</u></font>" + ": " + "</html>");
-            t.addMouseListener(new MouseListener()
-            {
-                public void mouseClicked(MouseEvent arg0)
-                {
-                    int index = getNumberOfString(cb.getSelectedItem()
-                        .toString());
-                    JHack.main.showModule(ItemEditor.class, new Integer(index));
-                }
-
-                public void mouseEntered(MouseEvent arg0)
-                {}
-
-                public void mouseExited(MouseEvent arg0)
-                {}
-
-                public void mousePressed(MouseEvent arg0)
-                {}
-
-                public void mouseReleased(MouseEvent arg0)
-                {}
-            });
-            t.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-            this.add(t, BorderLayout.WEST);
+            this(label, hm, al, type, SEARCH_EDIT);
         }
 
         /**
-         * Creates a new <code>ItemEntry</code> component.
+         * Creates a new <code>ItemEntry</code> component. It will have the default
+         * search mode of {@link JSearchableComboBox#SEARCH_EDIT}.
          * 
          * @param label words to identify this component with
          * @param hm <code>HackModule</code> to get rom to read info from
@@ -1252,7 +1233,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Creates a new <code>ItemEntry</code> component.
+         * Creates a new <code>ItemEntry</code> component. It will have the default
+         * search mode of {@link JSearchableComboBox#SEARCH_EDIT}.
          * 
          * @param label words to identify this component with
          * @param hm <code>HackModule</code> to get rom to read info from
@@ -1265,7 +1247,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
         }
 
         /**
-         * Creates a new <code>ItemEntry</code> component.
+         * Creates a new <code>ItemEntry</code> component. It will have the default
+         * search mode of {@link JSearchableComboBox#SEARCH_EDIT}.
          * 
          * @param label words to identify this component with
          * @param hm <code>HackModule</code> to get rom to read info from
@@ -1274,47 +1257,5 @@ public class ItemEditor extends EbHackModule implements ActionListener
         {
             this(label, hm, null);
         }
-
-        public int getSelectedIndex()
-        {
-            return cb.getSelectedIndex();
-        }
-
-        public Object getSelectedItem()
-        {
-            return cb.getSelectedItem();
-        }
-
-        public void setSelectedIndex(int index)
-        {
-            cb.setSelectedIndex(index);
-            cb.repaint();
-        }
-
-        public void setModel(ComboBoxModel cbm)
-        {
-            cb.setModel(cbm);
-        }
-
-        public void setActionCommand(String s)
-        {
-            cb.setActionCommand(s);
-        }
-
-        public void addActionListener(ActionListener al)
-        {
-            cb.addActionListener(al);
-        }
-
-        public String getActionCommand()
-        {
-            return cb.getActionCommand();
-        }
-
-        public JComboBox getJComboBox()
-        {
-            return cb;
-        }
     }
-
 }
