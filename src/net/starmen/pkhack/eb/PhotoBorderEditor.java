@@ -36,10 +36,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.tree.TreeSelectionModel;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.CheckNode;
 import net.starmen.pkhack.CheckRenderer;
 import net.starmen.pkhack.CopyAndPaster;
@@ -50,7 +50,6 @@ import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.NodeSelectionListener;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
@@ -109,8 +108,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         private boolean isInited = false;
         private int num, oldPointer, oldLen;
 
-        /** Number of palettes. */
-        public static final int NUM_PALETTES = 2;
         /**
          * Number of arrangements. Note that this is more than fits on the
          * screen, so the last 128 are unused.
@@ -119,8 +116,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         /** Number of tiles. */
         public static final int NUM_TILES = 16;
 
-        /** The <code>Color<code>'s of each 16 color palette. */
-        private Color[][] palette = new Color[NUM_PALETTES][16];
         /** List of all arrangements. */
         private int[] arrangementList = new int[NUM_ARRANGEMENTS];
         /** Two-dimentional array of arrangements used. */
@@ -163,16 +158,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
                 + " bytes from a " + tmp[1] + " byte compressed block.");
 
             int offset = 0;
-            for (int i = 0; i < NUM_PALETTES; i++)
-            {
-                //FIXME palettes aren't here.
-                //make fake target if not to read this
-                Color[] target = toRead[NODE_PAL]
-                    ? palette[i]
-                    : new Color[palette[i].length];
-                HackModule.readPalette(buffer, offset, target);
-                offset += palette[i].length * 2;
-            }
             if (toRead[NODE_ARR])
             {
                 for (int i = 0; i < NUM_ARRANGEMENTS; i++)
@@ -222,13 +207,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
                 + " bytes from a " + tmp[1] + " byte compressed block.");
 
             int offset = 0;
-            hm.rom.seek(0x21EB29);
-            for (int i = 0; i < NUM_PALETTES; i++)
-            {
-                //                HackModule.readPalette(buffer, offset, palette[i]);
-                //                offset += palette[i].length * 2;
-                hm.rom.readPaletteSeek(palette[i]);
-            }
             for (int i = 0; i < NUM_ARRANGEMENTS; i++)
             {
                 arrangementList[i] = (buffer[offset++] & 0xff)
@@ -258,10 +236,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
             if (isInited)
                 return;
 
-            //EMPTY PALETTES
-            for (int i = 0; i < palette.length; i++)
-                Arrays.fill(palette[i], Color.BLACK);
-
             //EMPTY ARRANGEMENTS
             Arrays.fill(arrangementList, 0);
             for (int x = 0; x < arrangement.length; x++)
@@ -285,11 +259,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
 
             byte[] udata = new byte[18496];
             int offset = 0;
-            for (int i = 0; i < NUM_PALETTES; i++)
-            {
-                HackModule.writePalette(udata, offset, palette[i]);
-                offset += palette[i].length * 2;
-            }
             int j = 0;
             for (int y = 0; y < arrangement[0].length; y++)
                 for (int x = 0; x < arrangement.length; x++)
@@ -415,7 +384,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
          * @param subPal
          * @return
          */
-        public Image getTileImage(int tile, int subPal, boolean hFlip,
+        public Image getTileImage(int tile, int pal, int subPal, boolean hFlip,
             boolean vFlip)
         {
             readInfo();
@@ -425,8 +394,8 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
             //                    img[x][y] = tiles[tile][hFlip ? 7 - x : x][vFlip
             //                        ? 7 - y
             //                        : y];
-            return HackModule.drawImage(tiles[tile], palette[subPal], hFlip,
-                vFlip);
+            return HackModule.drawImage(tiles[tile], PhotoEditor.getSubPalette(
+                pal, subPal), hFlip, vFlip);
         }
 
         /**
@@ -439,7 +408,8 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         public Image getTileImage(int tile, int subPal)
         {
             readInfo();
-            return HackModule.drawImage(tiles[tile], palette[subPal]);
+            return HackModule.drawImage(tiles[tile], PhotoEditor.getSubPalette(
+                subPal, 0));
         }
 
         /**
@@ -450,10 +420,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
          */
         public Color[] getSubPal(int pal)
         {
-            readInfo();
-            Color[] out = new Color[palette[pal].length];
-            System.arraycopy(palette[pal], 0, out, 0, palette[pal].length);
-            return out;
+            return PhotoEditor.getSubPalette(pal, 0);
         }
 
         /**
@@ -529,8 +496,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
          */
         public void setPaletteColor(int col, int subPal, Color color)
         {
-            readInfo();
-            palette[subPal][col] = color;
+            PhotoEditor.getSubPalette(subPal, 0)[col] = color;
         }
     }
 
@@ -549,19 +515,8 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         readFromRom(this);
     }
 
-    /**
-     * Reads in {@link EbHackModule#townMapNames}if it hasn't already been read
-     * in. Reads from net/starmen/pkhack/townMapNames.txt.
-     */
-    public static void initTownMapNames(String romPath)
-    {
-        readArray(DEFAULT_BASE_DIR, "townMapNames.txt", romPath, false,
-            townMapNames);
-    }
-
     public void reset()
     {
-        initTownMapNames(rom.getPath());
         readFromRom();
     }
 
@@ -572,16 +527,13 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         public PhotoBorderArrangementEditor()
         {
             super();
-            //            this.setPreferredSize(new Dimension(getTilesWide()
-            //                * (getTileSize() * getZoom()), getTilesHigh()
-            //                * (getTileSize() * getZoom())));
         }
 
         public int makeArrangementNumber(int tile, int subPalette,
             boolean hFlip, boolean vFlip)
         {
-            return (tile & 0x01ff) | (((subPalette) & 1) << 10)
-                | (hFlip ? 0x4000 : 0) | (vFlip ? 0x8000 : 0);
+            return (tile & 0x000f) | ((subPalette & 7) << 10)
+                | (hFlip ? 0x4000 : 0) | (vFlip ? 0x8000 : 0) | 0x2000;
         }
 
         protected int getCurrentTile()
@@ -619,12 +571,12 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
             try
             {
                 return prefs
-                    .getValueAsBoolean("eb.TownMapEditor.arrEditor.gridLines");
+                    .getValueAsBoolean("eb.PhotoBorderEditor.arrEditor.gridLines");
             }
             catch (NullPointerException e)
             {
                 return JHack.main.getPrefs().getValueAsBoolean(
-                    "eb.TownMapEditor.arrEditor.gridLines");
+                    "eb.PhotoBorderEditor.arrEditor.gridLines");
             }
         }
 
@@ -640,7 +592,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
 
         protected int getCurrentSubPalette()
         {
-            return PhotoBorderEditor.this.getCurrentSubPalette();
+            return PhotoBorderEditor.this.getCurrentPalette();
         }
 
         protected int getArrangementData(int x, int y)
@@ -663,16 +615,34 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
             getSelectedMap().setArrangementData(data);
         }
 
-        //        protected Image getArrangementImage(int[][] selection)
-        //        {
-        //            return getSelectedMap().getArrangementImage(selection, getZoom(),
-        //                isDrawGridLines());
-        //        }
-
         protected Image getTileImage(int tile, int subPal, boolean hFlip,
             boolean vFlip)
         {
-            return getSelectedMap().getTileImage(tile, subPal, hFlip, vFlip);
+            return getSelectedMap().getTileImage(tile, getCurrentPalette(),
+                subPal, hFlip, vFlip);
+        }
+
+        public void mouseClicked(MouseEvent me)
+        {
+            super.mouseClicked(me);
+            if (me.isAltDown())
+            {
+                int x = me.getX()
+                    / (getTileSize() * getZoom() + (isDrawGridLines() ? 1 : 0));
+                int y = me.getY()
+                    / (getTileSize() * getZoom() + (isDrawGridLines() ? 1 : 0));
+                System.out
+                    .println("Photo Border Editor: Tile at ("
+                        + x
+                        + ", "
+                        + y
+                        + ") has arrangement data: 0x"
+                        + addZeros(Integer
+                            .toHexString(getArrangementData(x, y)), 4)
+                        + " / "
+                        + addZeros(Integer
+                            .toString(getArrangementData(x, y), 2), 16));
+            }
         }
     }
 
@@ -771,8 +741,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
     private DrawingToolset dt;
     private FocusIndicator fi;
 
-    private JComboBox mapSelector, subPalSelector;
-    private JTextField name;
+    private JComboBox palSelector;
 
     protected void init()
     {
@@ -811,11 +780,11 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         JMenu optionsMenu = new JMenu("Options");
         optionsMenu.setMnemonic('o');
         optionsMenu.add(new PrefsCheckBox("Enable Tile Selector Grid Lines",
-            prefs, "eb.TownMapEditor.tileSelector.gridLines", false, 't', null,
-            "tileSelGridLines", this));
+            prefs, "eb.PhotoBorderEditor.tileSelector.gridLines", false, 't',
+            null, "tileSelGridLines", this));
         optionsMenu.add(new PrefsCheckBox(
             "Enable Arrangement Editor Grid Lines", prefs,
-            "eb.TownMapEditor.arrEditor.gridLines", false, 'a', null,
+            "eb.PhotoBorderEditor.arrEditor.gridLines", false, 'a', null,
             "arrEdGridLines", this));
         mb.add(optionsMenu);
 
@@ -826,12 +795,12 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         {
             public int getTilesWide()
             {
-                return 8;
+                return 16;
             }
 
             public int getTilesHigh()
             {
-                return 2;
+                return 1;
             }
 
             public int getTileSize()
@@ -849,12 +818,12 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
                 try
                 {
                     return prefs
-                        .getValueAsBoolean("eb.TownMapEditor.tileSelector.gridLines");
+                        .getValueAsBoolean("eb.PhotoBorderEditor.tileSelector.gridLines");
                 }
                 catch (RuntimeException e)
                 {
                     return JHack.main.getPrefs().getValueAsBoolean(
-                        "eb.TownMapEditor.tileSelector.gridLines");
+                        "eb.PhotoBorderEditor.tileSelector.gridLines");
                 }
             }
 
@@ -865,8 +834,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
 
             public Image getTileImage(int tile)
             {
-                return getSelectedMap().getTileImage(tile,
-                    getCurrentSubPalette());
+                return getSelectedMap().getTileImage(tile, getCurrentPalette());
             }
 
             protected boolean isGuiInited()
@@ -892,22 +860,16 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         da.setZoom(10);
         da.setPreferredSize(new Dimension(80, 80));
 
-        mapSelector = createComboBox(townMapNames, this);
-        mapSelector.setActionCommand("mapSelector");
-
-        name = new JTextField(15);
-
-        subPalSelector = createJComboBoxFromArray(new Object[2], false);
-        subPalSelector.setSelectedIndex(0);
-        subPalSelector.setActionCommand("subPalSelector");
-        subPalSelector.addActionListener(this);
+        palSelector = createJComboBoxFromArray(
+            new Object[PhotoEditor.NUM_PALETTES], false);
+        palSelector.setSelectedIndex(0);
+        palSelector.setActionCommand("subPalSelector");
+        palSelector.addActionListener(this);
 
         fi = new FocusIndicator();
 
         Box center = new Box(BoxLayout.Y_AXIS);
-        center.add(getLabeledComponent("Map: ", mapSelector));
-        center.add(getLabeledComponent("Map Name: ", name));
-        center.add(getLabeledComponent("SubPalette: ", subPalSelector));
+        center.add(getLabeledComponent("Palette: ", palSelector));
         center.add(Box.createVerticalStrut(20));
         center.add(createFlowLayout(da));
         center.add(Box.createVerticalStrut(5));
@@ -926,6 +888,10 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
             BorderLayout.CENTER);
 
         mainWindow.pack();
+
+        if (!PhotoEditor.readPalettes(this, true))
+            JOptionPane.showMessageDialog(mainWindow,
+                "Unable to load palettes.", "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     public void show()
@@ -933,9 +899,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         super.show();
 
         readFromRom();
-        mapSelector.setSelectedIndex(mapSelector.getSelectedIndex() == -1
-            ? 0
-            : mapSelector.getSelectedIndex());
+        showInfo();
 
         mainWindow.setVisible(true);
     }
@@ -945,7 +909,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         mainWindow.setVisible(false);
     }
 
-    private void doMapSelectAction()
+    private void showInfo()
     {
         if (!getSelectedMap().readInfo())
         {
@@ -957,16 +921,12 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
                 new String[]{"Abort", "Retry", "Fail"}, "Retry");
             if (opt == null || opt.equals("Abort"))
             {
-                mapSelector
-                    .setSelectedIndex((mapSelector.getSelectedIndex() + 1)
-                        % mapSelector.getItemCount());
-                doMapSelectAction();
+                hide();
                 return;
             }
             else if (opt.equals("Retry"))
             {
-                //                mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
-                doMapSelectAction();
+                showInfo();
                 return;
             }
             else if (opt.equals("Fail"))
@@ -975,7 +935,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
             }
         }
         guiInited = true;
-        name.setText(townMapNames[getCurrentMap()]);
         updatePaletteDisplay();
         tileSelector.repaint();
         arrangementEditor.clearSelection();
@@ -996,10 +955,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         {
             fi.setFocus(arrangementEditor);
         }
-        else if (ae.getActionCommand().equals("mapSelector"))
-        {
-            doMapSelectAction();
-        }
         else if (ae.getActionCommand().equals("tileSelector"))
         {
             updateTileEditor();
@@ -1007,13 +962,14 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         else if (ae.getActionCommand().equals("subPalSelector"))
         {
             updatePaletteDisplay();
+            arrangementEditor.repaint();
             tileSelector.repaint();
             da.repaint();
         }
         else if (ae.getActionCommand().equals("paletteEditor"))
         {
-            getSelectedMap().setPaletteColor(pal.getSelectedColorIndex(),
-                getCurrentSubPalette(), pal.getNewColor());
+            PhotoEditor.getSubPalette(getCurrentPalette(), 0)[pal
+                .getSelectedColorIndex()] = pal.getNewColor();
             updatePaletteDisplay();
             da.repaint();
             tileSelector.repaint();
@@ -1088,10 +1044,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
             //TownMap.writeInfo() will only write if the map has been inited
             for (int i = 0; i < photoBorders.length; i++)
                 photoBorders[i].writeInfo();
-            int m = getCurrentMap();
-            townMapNames[m] = name.getText();
-            notifyDataListeners(townMapNames, this, m);
-            writeArray("townMapNames.txt", false, townMapNames);
+            PhotoEditor.writePalettes(this);
         }
         else if (ae.getActionCommand().equals("close"))
         {
@@ -1100,14 +1053,14 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         else
         {
             System.err
-                .println("TownMapEditor.actionPerformed: ERROR: unhandled "
+                .println("PhotoBorderEditor.actionPerformed: ERROR: unhandled "
                     + "action command: \"" + ae.getActionCommand() + "\"");
         }
     }
 
     private int getCurrentMap()
     {
-        return mapSelector.getSelectedIndex();
+        return 0;
     }
 
     private PhotoBorder getSelectedMap()
@@ -1115,14 +1068,14 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         return photoBorders[getCurrentMap()];
     }
 
-    private int getCurrentSubPalette()
+    private int getCurrentPalette()
     {
-        return subPalSelector.getSelectedIndex();
+        return palSelector.getSelectedIndex();
     }
 
-    private Color[] getSelectedSubPalette()
+    private Color[] getSelectedPalette()
     {
-        return getSelectedMap().getSubPal(getCurrentSubPalette());
+        return PhotoEditor.getSubPalette(getCurrentPalette(), 0);
     }
 
     private int getCurrentTile()
@@ -1132,7 +1085,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
 
     private void updatePaletteDisplay()
     {
-        pal.setPalette(getSelectedSubPalette());
+        pal.setPalette(getSelectedPalette());
         pal.repaint();
     }
 
@@ -1144,7 +1097,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
     public static final int NODE_BASE = 0;
     public static final int NODE_TILES = 1;
     public static final int NODE_ARR = 2;
-    public static final int NODE_PAL = 3;
 
     public static class PhotoBorderImportData
     {
@@ -1153,7 +1105,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         public Color[][] palette;
     }
 
-    public static final byte TNM_VERSION = 1;
+    public static final byte PHB_VERSION = 1;
 
     public static void exportData(File f, boolean[][] a)
     {
@@ -1167,7 +1119,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         {
             FileOutputStream out = new FileOutputStream(f);
 
-            out.write(TNM_VERSION);
+            out.write(PHB_VERSION);
             out.write(whichMaps);
             for (int m = 0; m < a.length; m++)
             {
@@ -1202,14 +1154,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
                         }
                         out.write(barr);
                     }
-                    //write palettes?
-                    if (a[m][NODE_PAL])
-                    {
-                        byte[] pal = new byte[64];
-                        writePalette(pal, 0, photoBorders[m].getSubPal(0));
-                        writePalette(pal, 32, photoBorders[m].getSubPal(1));
-                        out.write(pal);
-                    }
                 }
             }
 
@@ -1236,7 +1180,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
         PhotoBorderImportData[] out = new PhotoBorderImportData[photoBorders.length];
 
         byte version = (byte) in.read();
-        if (version > TNM_VERSION)
+        if (version > PHB_VERSION)
         {
             if (JOptionPane.showConfirmDialog(null,
                 "TNM file version not supported." + "Try to load anyway?",
@@ -1344,8 +1288,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
                 "Tiles", false, true));
             mapNodes[i][NODE_BASE].add(mapNodes[i][NODE_ARR] = new CheckNode(
                 "Arrangement", false, true));
-            mapNodes[i][NODE_BASE].add(mapNodes[i][NODE_PAL] = new CheckNode(
-                "Palettes", false, true));
 
             topNode.add(mapNodes[i][NODE_BASE]);
         }
@@ -1395,10 +1337,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
                     mapNodes[i][NODE_BASE]
                         .add(mapNodes[i][NODE_ARR] = new CheckNode(
                             "Arrangement", false, true));
-                if (in == null || in[i] == null || in[i][NODE_PAL])
-                    mapNodes[i][NODE_BASE]
-                        .add(mapNodes[i][NODE_PAL] = new CheckNode("Palettes",
-                            false, true));
 
                 topNode.add(mapNodes[i][NODE_BASE]);
             }
@@ -1444,7 +1382,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
                 in[i][NODE_BASE] = true;
                 in[i][NODE_TILES] = tmid[i].tiles != null;
                 in[i][NODE_ARR] = tmid[i].arrangement != null;
-                in[i][NODE_PAL] = tmid[i].palette != null;
             }
         }
 
@@ -1466,8 +1403,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
                 targets[m].setSelectedIndex(m);
                 targetMap.add(getLabeledComponent(townMapNames[m] + " ("
                     + (a[m][NODE_TILES] ? "T" : "")
-                    + (a[m][NODE_ARR] ? "A" : "") + (a[m][NODE_PAL] ? "P" : "")
-                    + "): ", targets[m]));
+                    + (a[m][NODE_ARR] ? "A" : "") + "): ", targets[m]));
             }
         }
 
@@ -1557,11 +1493,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
                         photoBorders[n].setTile(i, tmid[m].tiles[i]);
                 if (a[m][NODE_ARR])
                     photoBorders[n].setArrangementArr(tmid[m].arrangement);
-                if (a[m][NODE_PAL])
-                    for (int p = 0; p < PhotoBorder.NUM_PALETTES; p++)
-                        for (int c = 0; c < 16; c++)
-                            photoBorders[n].setPaletteColor(c, p,
-                                tmid[m].palette[p][c]);
             }
         }
 
@@ -1617,15 +1548,6 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
                 .getArrangementArr()))
                 return false;
         }
-        if (tmid.palette != null)
-        {
-            //check palette
-            for (int p = 0; p < tmid.palette.length; p++)
-                for (int c = 0; c < tmid.palette[p].length; c++)
-                    if (!tmid.palette[p][c]
-                        .equals(photoBorders[i].palette[p][c]))
-                        return false;
-        }
 
         //nothing found wrong
         return true;
@@ -1645,7 +1567,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
      * "checking" files with .tnm extensions.
      * 
      * @param b <code>byte[]</code> containing exported data
-     * @param pbe instance of <code>TownMapEditor</code>
+     * @param pbe instance of <code>PhotoBorderEditor</code>
      */
     public static boolean checkData(byte[] b, PhotoBorderEditor pbe)
     {
@@ -1666,7 +1588,7 @@ public class PhotoBorderEditor extends EbHackModule implements ActionListener
      * extensions.
      * 
      * @param b <code>byte[]</code> containing exported data
-     * @param pbe instance of <code>TownMapEditor</code>
+     * @param pbe instance of <code>PhotoBorderEditor</code>
      */
     public static boolean restoreData(byte[] b, PhotoBorderEditor pbe)
     {
