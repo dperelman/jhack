@@ -91,8 +91,8 @@ public class HexEditor extends GeneralHackModule implements ActionListener
     public void show()
     {
         super.show();
-        
-        if(!inited)
+
+        if (!inited)
         {
             JHexEdit t = new JHexEdit(new HexRom(rom));
             mainWindow.getContentPane().remove(hexEdit);
@@ -100,7 +100,7 @@ public class HexEditor extends GeneralHackModule implements ActionListener
             table = t.table;
             inited = true;
         }
-        
+
         mainWindow.setVisible(true);
     }
 
@@ -168,16 +168,17 @@ public class HexEditor extends GeneralHackModule implements ActionListener
     }
 
     private boolean inited = false;
+
     public void reset()
     {
-        inited =false;
+        inited = false;
     }
 
     private void initGotoDialog()
     {
         gotoDialog = new JDialog(mainWindow, "Goto Offset", true);
         gotoDialog.setLocation(gotoDialog.getOwner().getLocation());
-        final JTextField tf = HackModule.createSizedJTextField(6);
+        final JTextField tf = HackModule.createSizedJTextField(6, true, true);
         final JLabel prefix = new JLabel("0x");
         prefix.setHorizontalAlignment(SwingConstants.RIGHT);
         prefix.setPreferredSize(new Dimension(20, 5));
