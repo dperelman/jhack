@@ -1260,11 +1260,18 @@ public class MapEditor extends EbHackModule implements ActionListener,
     
     public void show(Object source)
     {
-    	SeekListener seekSource = (SeekListener) source;
     	show(false);
-    	gfxcontrol.setSeekSource(seekSource);
-    	gfxcontrol.changeMode(4);
-    	gfxcontrol.remoteRepaint();
+    	if (gfxcontrol.getMode() == 4)
+    		JOptionPane.showMessageDialog(mainWindow, 
+    				"Sorry, already seeking something else for the " 
+    				+ gfxcontrol.getSeekSource().getDescription() + ".");
+    	else
+    	{
+    		SeekListener seekSource = (SeekListener) source;
+        	gfxcontrol.setSeekSource(seekSource);
+        	gfxcontrol.changeMode(4);
+        	gfxcontrol.remoteRepaint();
+    	}
     }
 
     public void hide()
@@ -1534,24 +1541,28 @@ public class MapEditor extends EbHackModule implements ActionListener,
 												* MapEditor.tileWidth;
                                 	}
                                 	
-                                	g.drawImage(
-                                			EbMap.getSpriteImage(
-                                					spriteNum,tptEntry.getDirection()),
-                							spriteDrawX + (i * MapEditor.tileWidth),
-        									spriteDrawY + (k * MapEditor.tileHeight),
-											this);
-                                	if (spriteBoxes)
+                                	if (spriteDrawX + (i * MapEditor.tileWidth) <= screenWidth * MapEditor.tileWidth
+                                			&& spriteDrawY + (k * MapEditor.tileHeight) <= screenHeight * MapEditor.tileHeight)
                                 	{
-                                		g2d.setPaint(Color.red);
-                                		g2d.draw(new Rectangle2D.Double(
-                                    			spriteDrawX + (i * MapEditor.tileWidth) - 1,
-    											spriteDrawY + (k * MapEditor.tileHeight) - 1,
-    											EbMap.getSpriteImage(
-    													spriteNum,tptEntry.getDirection())
-    																	.getWidth(this) + 1,
-    											EbMap.getSpriteImage(
-    													spriteNum,tptEntry.getDirection())
-    																	.getHeight(this) + 1));
+                                    	g.drawImage(
+                                    			EbMap.getSpriteImage(
+                                    					spriteNum,tptEntry.getDirection()),
+                    							spriteDrawX + (i * MapEditor.tileWidth),
+            									spriteDrawY + (k * MapEditor.tileHeight),
+    											this);
+                                    	if (spriteBoxes)
+                                    	{
+                                    		g2d.setPaint(Color.red);
+                                    		g2d.draw(new Rectangle2D.Double(
+                                        			spriteDrawX + (i * MapEditor.tileWidth) - 1,
+        											spriteDrawY + (k * MapEditor.tileHeight) - 1,
+        											EbMap.getSpriteImage(
+        													spriteNum,tptEntry.getDirection())
+        																	.getWidth(this) + 1,
+        											EbMap.getSpriteImage(
+        													spriteNum,tptEntry.getDirection())
+        																	.getHeight(this) + 1));
+                                    	}
                                 	}
                                 }
                     		}
@@ -1626,7 +1637,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
             			crossX, 0, crossX, this.getHeight()));
             }
             
-            if ((getModeProps()[7] & 1) == 1)
+            if ((getModeProps()[7] & 1) == 1 && previewBoxX >= 0 && previewBoxY >= 0)
             {
             	g2d.setPaint(Color.magenta);
             	g2d.draw(new Rectangle2D.Double(previewBoxX, previewBoxY, 8, 8));
@@ -1938,7 +1949,13 @@ public class MapEditor extends EbHackModule implements ActionListener,
         public void setPreviewBoxXY(int x, int y)
         {
         	previewBoxX = (x - (this.x * 4)) * 8;
-        	previewBoxY = (y - (this.y * 4)) * 8; 
+        	previewBoxY = (y - (this.y * 4)) * 8;
+        }
+        
+        public void disablePreviewBox()
+        {
+        	previewBoxX = -1;
+        	previewBoxY = -1;
         }
     }
 
