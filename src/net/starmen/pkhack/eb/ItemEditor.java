@@ -321,7 +321,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
         
         recoverType = new AutoSearchBox(new JComboBox(new String[] {
         		"0 HP", "1 PP", "2 HP & PP", "3 Random IQ-Luck", "4 IQ", "5 Guts",
-				"6 Speed", "7 Vitality", "8 Luck", "9 Cold cure", "10 Poison cure"
+				"6 Speed", "7 Vitality", "8 Luck", "9 Cold cure", "10 Poison cure",
+				"11 Nothing"
         }), strength, "Recovery Type", true, false);
         foodAux.add(recoverType);
         
@@ -329,6 +330,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
         
         fixedItem = new AutoSearchBox(createDecItemComboBox(this,this), extraPower, 
         		"Fixed Item", true, false);
+        fixedItem.setNumberIndex(1);
         brokenAux.add(fixedItem);
         
 /*        selectItem = new JButton("Edit this item");

@@ -15,7 +15,7 @@ import javax.swing.event.DocumentListener;
 
 /**
  * A wrapper for a <code>JComboBox</code> that has a text field. 
- * Whenever the text field is changed, the JComboBox is changed to reflect it;
+ * Whenever the text field is changed, the JComboBox is changed to reflect it
  * and vice versa.
  * 
  * @author EBisumaru
@@ -32,6 +32,8 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	private boolean incTf,//include the text field
 		corr = true; //correlate the text box and combo box
 	private int size;
+	private int numberIndex=0; //index of the number to be matched with in the strings
+	//of the combobox
 	/**
 	 * Creates a new AutoSearchBox wrapper for the specified JComboBox.
 	 * 
@@ -157,7 +159,8 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	 */
 	public void actionPerformed(ActionEvent ae)
 	{
-		tf.setText(comboBox.getSelectedItem().toString());	
+		String _ = comboBox.getSelectedItem().toString();
+		tf.setText(_.substring(0,_.indexOf(" ")));	
 	}
 
 	/*
@@ -205,7 +208,7 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 		if(corr)
 		{
 			comboBox.removeActionListener(this);
-			if (!search(tf.getText(), comboBox, true, false))
+			if (!search(tf.getText(), comboBox, true, false, numberIndex))
 			{	
 				comboBox.addItem(tf.getText() + " ???");
 				comboBox.setSelectedItem(tf.getText() + " ???");
@@ -240,7 +243,7 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	 * true is returned. The search starts at the item after the currently
 	 * selected item or the first item if the last item is currently selected.
 	 * If the search <code>String</code> is not found, then an error dialog
-	 * pops-up and the function returns false.
+	 * pops up and the function returns false.
 	 * 
 	 * @param text <code>String</code> to seach for. Can be anywhere inside
 	 *            any item.
@@ -248,10 +251,10 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	 *            search is found.
 	 * @param beginFromStart If true, search starts at first item.
 	 * @param displayError If false, the error dialog will never be displayed
-	 * @return Wether the search <code>String</code> is found.
+	 * @return Whether the search <code>String</code> is found.
 	 */
 	public static boolean search(String text, JComboBox selector,
-			boolean beginFromStart, boolean displayError)
+			boolean beginFromStart, boolean displayError, int numberIndex)
 	{
 		text = text.toLowerCase();
 		for (int i = (selector.getSelectedIndex() + 1 != selector
@@ -259,16 +262,17 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 				&& !beginFromStart ? selector.getSelectedIndex() + 1 : 0); i < selector
 				.getItemCount(); i++)
 		{
-			if (selector.getItemAt(i).toString().toLowerCase().indexOf(text) != -1)
+			if (selector.getItemAt(i).toString().toLowerCase().indexOf(text) 
+					== numberIndex)
 			{
-				if (selector.getSelectedIndex() == -1 && selector.isEditable())
+/*				if (selector.getSelectedIndex() == -1 && selector.isEditable())
 				{
 					selector.setEditable(false);
 					selector.setSelectedIndex(i == 0 ? 1 : 0);
 					selector.setSelectedIndex(i);
 					selector.setEditable(true);
 				}
-				selector.setSelectedIndex(i);
+*/				selector.setSelectedIndex(i);
 				selector.repaint();
 				return true;
 			}
@@ -281,7 +285,7 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 		}
 		else
 		{
-			return search(text, selector, true, displayError);
+			return search(text, selector, true, displayError, numberIndex);
 		}
 	}
 
@@ -302,9 +306,9 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	 * @return Wether the search <code>String</code> is found.
 	 */
 	public static boolean search(String text, JComboBox selector,
-			boolean beginFromStart)
+			boolean beginFromStart, int numberIndex)
 	{
-		return search(text, selector, beginFromStart, true);
+		return search(text, selector, beginFromStart, true, numberIndex);
 	}
 
 	/**
@@ -322,14 +326,16 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	 *            search is found.
 	 * @return Wether the search <code>String</code> is found.
 	 */
-	public static boolean search(String text, JComboBox selector)
+	public static boolean search(String text, JComboBox selector, int numberIndex)
 	{
-		return search(text, selector, false);
+		return search(text, selector, false, numberIndex);
 	}
 	
 	public void setCorr(boolean _) {corr = _;}
 	
 	public boolean getCorr() {return corr;}
+	
+	public void setNumberIndex(int _) {numberIndex = _;}
+	
+	public int getNumberIndex() {return numberIndex;}
 }
-
-
