@@ -253,6 +253,10 @@ public class MapEditor extends EbHackModule implements ActionListener
 				MenuListener.RESET_TILE_IMAGES, 
 				menuListener));
         menu.add(EbHackModule.createJMenuItem(
+        		"Clear Sprite Image Cache", 's', null, 
+				MenuListener.RESET_SPRITE_IMAGES, 
+				menuListener));
+        menu.add(EbHackModule.createJMenuItem(
         		"Reload Music Names", 'm', null, 
 				MenuListener.MUSIC_NAMES, 
 				menuListener));
@@ -485,6 +489,7 @@ public class MapEditor extends EbHackModule implements ActionListener
     	public static final String MODE6 = "mode6";
     	public static final String DEL_ALL_SPRITES = "delAllSprites";
     	public static final String RESET_TILE_IMAGES = "resetTileImages";
+    	public static final String RESET_SPRITE_IMAGES = "resetSpriteImages";
     	public static final String GRIDLINES = "gridLines";
     	public static final String SPRITEBOXES = "spriteBoxes";
     	public static final String COMPATABILITY = "4xCompatability";
@@ -550,6 +555,11 @@ public class MapEditor extends EbHackModule implements ActionListener
 					gfxcontrol.remoteRepaint();
 					gfxcontrol.getTileChooser().remoteRepaint();
 				}
+			}
+			else if (ac.equals(RESET_SPRITE_IMAGES))
+			{
+				EbMap.resetSpriteImages();
+				gfxcontrol.remoteRepaint();
 			}
 			else if (ac.equals(GRIDLINES))
 			{
@@ -1061,8 +1071,8 @@ public class MapEditor extends EbHackModule implements ActionListener
                                 	int spriteNum = tptEntry.getSprite();
                                 	int spriteDrawY = spriteLocs[j][1];
                                 	int spriteDrawX = spriteLocs[j][0];
-                                	//EbMap.loadSpriteImage(hm,
-                                	//		spriteNum, tptEntry.getDirection());
+                                	EbMap.loadSpriteImage(hm,
+                                			spriteNum, tptEntry.getDirection());
                                 	SpriteEditor.SpriteInfoBlock sib =
                                 		SpriteEditor.sib[spriteNum];
                                 	
@@ -1076,9 +1086,9 @@ public class MapEditor extends EbHackModule implements ActionListener
                                 			&& spriteDrawY + (k * MapEditor.tileHeight) <= screenHeight * MapEditor.tileHeight)
                                 	{
                                     	g.drawImage(
-                                    	//		EbMap.getSpriteImage(
-                                    	//				spriteNum,tptEntry.getDirection()),
-                                    		new SpriteEditor.Sprite(sib.getSpriteInfo(tptEntry.getDirection()), hm).getImage(true),
+                                    			EbMap.getSpriteImage(
+                                    					spriteNum,tptEntry.getDirection()),
+                                    		//new SpriteEditor.Sprite(sib.getSpriteInfo(tptEntry.getDirection()), hm).getImage(true),
                     							spriteDrawX + (i * MapEditor.tileWidth),
             									spriteDrawY + (k * MapEditor.tileHeight),
     											this);
@@ -2275,10 +2285,21 @@ public class MapEditor extends EbHackModule implements ActionListener
 	    		String ac = e.getActionCommand();
 	    		if (ac.equals(ADD_SPRITE))
 	    		{
-	    			EbMap.addSprite(areaX, areaY,
-	    					(short) coordX, (short) coordY,
-							(short) 0);
-	    			gfxcontrol.remoteRepaint();
+	    			int sure = JOptionPane.YES_OPTION;
+	    			if (EbMap.getSpritesNum(areaX, areaY) >= 30)
+		        		sure = JOptionPane.showConfirmDialog(
+		        			    gfxcontrol,
+		        			    "By adding this sprite, you exceed the limit of sprites per area (30)."
+								+ "\nDo you still want to add this sprite entry?",
+		        			    "Are you sure?",
+		        			    JOptionPane.YES_NO_OPTION);
+	    			if (sure == JOptionPane.YES_OPTION)
+	    			{
+	    				EbMap.addSprite(areaX, areaY,
+		    					(short) coordX, (short) coordY,
+								(short) 0);
+		    			gfxcontrol.remoteRepaint();
+	    			}
 	    		}
 	    		else if (ac.equals(DEL_SPRITE))
 	    		{
@@ -2784,24 +2805,26 @@ public class MapEditor extends EbHackModule implements ActionListener
        private static ArrayList destsIndexes = new ArrayList();
        private static Image[][][] tileImages =
        	new Image[TILESET_NAMES.length][1024][MapEditor.mapTsetNum];
+       private static Image[][] spriteImages = new Image[SpriteEditor.NUM_ENTRIES][8];
        
        public static void reset()
        {
        // mapAddresses = new int[8];
-       	mapChanges = new ArrayList();
+       	
+       	mapChanges.clear();
            spData =
            	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
            sectorData =
            	new Sector[MapEditor.heightInSectors * MapEditor.widthInSectors];
            drawingTilesets = new int[MapEditor.mapTsetNum];
-           localTilesetChanges = new ArrayList();
+           localTilesetChanges.clear();
            doorData =
             	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
            oldDoorEntryLengths =
             	new int[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-           destData = new ArrayList();
-           destsLoaded = new ArrayList();
-           destsIndexes = new ArrayList();
+           destData.clear();
+           destsLoaded.clear();
+           destsIndexes.clear();
            tileImages =
            	new Image[MapEditor.drawTsetNum][1024][MapEditor.palsNum];
        }
@@ -2820,6 +2843,26 @@ public class MapEditor extends EbHackModule implements ActionListener
         		num = mapAddresses.length - 1;
         	return ((y / (mapAddresses.length - 1)) * 0x100) + mapAddresses[num];
         }*/
+       
+       public static Image getSpriteImage(int spt, int direction)
+       {
+       	return spriteImages[spt][direction];
+       }
+       
+       public static void loadSpriteImage(HackModule hm, int spt, int direction)
+       {
+          	if (spriteImages[spt][direction] == null)
+          	{
+          		SpriteEditor.SpriteInfoBlock sib = SpriteEditor.sib[spt];
+          		spriteImages[spt][direction] = new SpriteEditor.Sprite(sib
+                       .getSpriteInfo(direction), hm).getImage(true);
+          	}
+       }
+       
+       public static void resetSpriteImages()
+       {
+       	spriteImages = new Image[SpriteEditor.NUM_ENTRIES][8];
+       }
         
         public static void loadTileImage(int loadtset, int loadtile, int loadpalette)
         {
