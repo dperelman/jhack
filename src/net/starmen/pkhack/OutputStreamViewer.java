@@ -9,21 +9,32 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.util.Date;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 /**
@@ -41,6 +52,8 @@ public class OutputStreamViewer
     private Thread t;
     private boolean enabled = true;
     private boolean run = true;
+    private boolean error = false, send = false, sendi;
+    private JDialog einfodia;
 
     /**
      * @return Returns the PrintStream.
@@ -156,6 +169,8 @@ public class OutputStreamViewer
                                 if (c == '\n')
                                 {
                                     sb.append(dfi.format(new Date()) + ": ");
+                                    send = error; //send if this is error
+                                    // output
                                     appendToErrArea();
                                 }
                             }
@@ -163,6 +178,8 @@ public class OutputStreamViewer
                             {
                                 if (sb.length() > 0)
                                     appendToErrArea();
+                                if (send)
+                                    sendError();
                                 sleep(2000);
                             }
                         }
@@ -193,6 +210,150 @@ public class OutputStreamViewer
                 "Error Initing Display", JOptionPane.WARNING_MESSAGE);
             e.printStackTrace();
         }
+    }
+
+    private void sendError()
+    {
+        try
+        {
+            URL url = new URL("http://anyoneeb.ath.cx:83/jhack/reporterror");
+            URLConnection connection = url.openConnection();
+            connection.setDoOutput(true);
+
+            PrintWriter out = new PrintWriter(connection.getOutputStream());
+            out.print("version="
+                + URLEncoder.encode(MainGUI.getVersion(), "UTF-8"));
+            out.print("&outlog="
+                + URLEncoder.encode(JHack.out.getText(), "UTF-8"));
+            out.print("&errlog="
+                + URLEncoder.encode(JHack.err.getText(), "UTF-8"));
+            out.close();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                connection.getInputStream()));
+            String inputLine;
+            StringBuffer input = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null)
+                input.append(inputLine).append('\n');
+
+            int il = input.length();
+            if (il > 0)
+                input.deleteCharAt(il - 1);
+            String instr = input.toString();
+
+            in.close();
+
+            try
+            {
+                int id = Integer.parseInt(instr);
+                einfodia = new JDialog(JHack.main.getMainWindow(),
+                    "Error Report", true);
+                JButton sendb = new JButton("Send"), nsendb = new JButton(
+                    "Don't Send");
+                sendi = true;
+                sendb.addActionListener(new ActionListener()
+                {
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        sendi = true;
+                        einfodia.hide();
+                    }
+                });
+                nsendb.addActionListener(new ActionListener()
+                {
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        sendi = false;
+                        einfodia.hide();
+                    }
+                });
+                JTextField usertf = new JTextField();
+                JTextArea comment = new JTextArea();
+
+                einfodia.getContentPane().setLayout(new BorderLayout());
+                einfodia.getContentPane().add(
+                    HackModule.createFlowLayout(new JButton[]{sendb, nsendb}),
+                    BorderLayout.SOUTH);
+
+                Box entry = new Box(BoxLayout.Y_AXIS);
+                entry.add(new JLabel("Please enter your username and any "
+                    + "information related to the error."));
+                entry.add(HackModule.getLabeledComponent("Username: ", usertf));
+                entry.add(HackModule.getLabeledComponent("Comment: ", comment));
+
+                einfodia.getContentPane().add(entry, BorderLayout.CENTER);
+                einfodia.pack();
+                einfodia.show();
+                if (sendi)
+                {
+                    URL urlu = new URL(
+                        "http://anyoneeb.ath.cx:83/jhack/updateerror");
+                    URLConnection connectionu = urlu.openConnection();
+                    connectionu.setDoOutput(true);
+
+                    PrintWriter outu = new PrintWriter(connectionu
+                        .getOutputStream());
+                    outu.print("id="
+                        + URLEncoder.encode(Integer.toString(id), "UTF-8"));
+                    outu.print("&user="
+                        + URLEncoder.encode(usertf.getText(), "UTF-8"));
+                    outu.print("&comment="
+                        + URLEncoder.encode(comment.getText(), "UTF-8"));
+                    outu.close();
+
+                    BufferedReader inu = new BufferedReader(
+                        new InputStreamReader(connectionu.getInputStream()));
+                    input = new StringBuffer();
+
+                    while ((inputLine = inu.readLine()) != null)
+                        input.append(inputLine).append('\n');
+
+                    il = input.length();
+                    if (il > 0)
+                        input.deleteCharAt(il - 1);
+                    String uerrstr = input.toString();
+
+                    inu.close();
+
+                    if (uerrstr.trim().length() > 0)
+                    {
+                        JOptionPane.showMessageDialog(null,
+                            "An error occured while " + "reporting an error:\n"
+                                + uerrstr, "Error Reporting Error",
+                            JOptionPane.WARNING_MESSAGE);
+                    }
+                }
+            }
+            catch (NumberFormatException nfe)
+            {
+                JOptionPane.showMessageDialog(null, "An error occured while "
+                    + "reporting an error:\n" + instr, "Error Reporting Error",
+                    JOptionPane.WARNING_MESSAGE);
+            }
+        }
+        catch (IOException ioe)
+        {
+            JOptionPane.showMessageDialog(null, "An error occured while "
+                + "reporting an error:\n" + ioe.getClass() + ": "
+                + ioe.getMessage(), "Error Reporting Error",
+                JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    public void setError(boolean err)
+    {
+        error = true;
+    }
+
+    public boolean isError()
+    {
+        return error;
+    }
+
+    public String getText()
+    {
+        return errArea.getText();
     }
 
     public void updateUI()
