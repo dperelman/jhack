@@ -39,15 +39,15 @@ Yoshi's Island (1.0U)
 Yoshi's Island (1.1U)
 	*81DB: 01 CD A1 32 5E #<--we want this one
 Yoshi's Island (1.0E)
-	*7FDD: 00 F4 1E 0B E1
+	*81DB: 00 F4 1E 0B E1
 Yoshi's Island (1.1E)
 	*81DB: 01 AB CE 54 31
 Yoshi's Island (1.0J)
-	*7FDD: 00 F1 8C 0E 73
+	*81DB: 00 F1 8C 0E 73
 Yoshi's Island (1.1J)
-	*7FDD: 01 32 BC CD 43
+	*81DB: 01 32 BC CD 43
 Yoshi's Island (1.2J)
-	*7FDD: 02 6D BC 92 43
+	*81DB: 02 6D BC 92 43
 
 Unknown
 	#no tests, if all others fail, all ROMs will pass this
