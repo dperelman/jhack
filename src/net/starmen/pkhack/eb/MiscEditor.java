@@ -15,7 +15,7 @@ import javax.swing.BoxLayout;
 
 import net.starmen.pkhack.CommentedLineNumberReader;
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -30,7 +30,7 @@ public class MiscEditor extends EbHackModule implements ActionListener
      * @param rom
      * @param prefs
      */
-    public MiscEditor(Rom rom, XMLPreferences prefs) {
+    public MiscEditor(AbstractRom rom, XMLPreferences prefs) {
         super(rom, prefs);
     }
     private JComboBox selector;
@@ -213,7 +213,7 @@ public class MiscEditor extends EbHackModule implements ActionListener
 	        		{
 	        			listBox.addItem(musicNames[j]);
 	        		}
-	                mainWindow.resize(298, 100);
+	                mainWindow.setSize(298, 100);
 	        		break;
 	        	case 2:
 	           		listBox.setVisible(true);
@@ -223,23 +223,23 @@ public class MiscEditor extends EbHackModule implements ActionListener
 	        			listBox.addItem(soundEffects[j]);
 	        		}
 //	        		listBox.removeItemAt(0);
-	                mainWindow.resize(400, 100);
+	                mainWindow.setSize(400, 100);
 	        		break;
 	        	case 3:
 	        		textBox.setVisible(true);
-	        		mainWindow.resize(400,100);
+	        		mainWindow.setSize(400,100);
 	        		break;
 	        	case 4: case 6:
 	        		tf.setVisible(true); 
-	        		mainWindow.resize(400, 100);
+	        		mainWindow.setSize(400, 100);
 	        		break;
 	        	case 5:
 	        		actionBox.setVisible(true);
-	                mainWindow.resize(400, 100);
+	                mainWindow.setSize(400, 100);
 	        		break;
 	        	case 7:
 	        		colorBox.setVisible(true);
-	                mainWindow.resize(430, 520);
+	                mainWindow.setSize(430, 520);
 	        		break;
 			}
         }
@@ -305,7 +305,7 @@ public class MiscEditor extends EbHackModule implements ActionListener
             if (this.type > 3)
             	len = 2;
             
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
             
             rom.seek(this.address);
 
@@ -357,7 +357,7 @@ public class MiscEditor extends EbHackModule implements ActionListener
          */
         public void writeInfo()
         {
-            Rom rom = hm.rom;
+            AbstractRom rom = hm.rom;
             
             rom.seek(this.address);
             if (this.type == 7)
