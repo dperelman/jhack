@@ -41,7 +41,6 @@ import net.starmen.pkhack.XMLPreferences;
 public class MapEditor extends EbHackModule implements ActionListener,
     PropertyChangeListener, AdjustmentListener, ItemListener
 {
-
     public MapEditor(AbstractRom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
@@ -59,8 +58,10 @@ public class MapEditor extends EbHackModule implements ActionListener,
     private int music = 0;
     private int sector_width = 8;
     private int sector_height = 4;
-    private int width = (32 * sector_width) - 1;
-    private int height = (81 * sector_height) - 1;
+    private int width_sectors = 32;
+    private int height_sectors = 81;
+    private int width = (width_sectors * sector_width) - 1;
+    private int height = (height_sectors * sector_height) - 1;
     private int tilewidth = 32;
     private int tileheight = 32;
     private int screen_width = 24;
@@ -82,7 +83,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     public static final String[][][] menuNames = {
         {{"File", "f"}, {"Save Changes", "s"}, {"Exit", "q"}},
         {{"Mode", "m"}, {"Map View (Text)", "1"}, {"Map View", "2"},
-            {"Map Edit", "3"}}};
+            {"Map Edit", "3"}, {"Sprite View", "4"}}};
 
     public static final String[] TILESET_NAMES = {"Underworld", "Onett",
         "Twoson", "Threed", "Fourside", "Magicant", "Outdoors", "Summers",
@@ -230,7 +231,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     
     protected void init()
     {
-        mapcontrol = new EbMap(this, width, height, sector_width, sector_height);
+        mapcontrol = new EbMap(this);
         gfxcontrol = new MapGraphics(this, x, y, screen_width, screen_height,
         		tilewidth, tileheight, sector_width, sector_height, 2);
         editbox = new EditBox();
@@ -578,6 +579,10 @@ public class MapEditor extends EbHackModule implements ActionListener,
         }
         gfxcontrol.setMapArray(maparray);
         gfxcontrol.remoteRepaint();
+        mapcontrol.loadSpriteTables();
+        
+        TPTEditor.readFromRom(this);
+        SpriteEditor.readFromRom(rom);
     }
 
     public void hide()
@@ -636,11 +641,13 @@ public class MapEditor extends EbHackModule implements ActionListener,
         // { allow sectors to be selectable with right-click (0 = no, 1 = yes, 2
             // = change sector vars too), draw map (0=no, 1=text tiles, 2=gfx
             // tiles),
-            //   allow map editing}
-            {2, 1, 0}, {2, 2, 0}, {2, 2, 1}};
+            //   allow map editing, draw sprites}
+            {2, 1, 0, 0}, {2, 2, 0, 0}, {2, 2, 1, 0}, {2, 2, 0, 1}};
         // tile_images is sorted by tilset, tile, palette
         public Image[][][] tile_images =
         	new Image[TILESET_NAMES.length][1024][maxpals];
+        public Image[] sprite_images = new Image[SpriteEditor.NUM_ENTRIES];
+        public int[][] spriteLocs;
 
         public MapGraphics(EbHackModule newhm, int newx, int newy,
             int newwidth, int newheight, int newtilewidth, int newtileheight,
@@ -743,40 +750,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
             {
                 g2d.setPaint(Color.yellow);
 
-                /*
-                 * int draw_sector_x, draw_sector_y, draw_sector_w,
-                 * draw_sector_h;
-                 * 
-                 * if (this.sectorx == 0) { draw_sector_x = this.startx;
-                 * draw_sector_w = (this.sector_width - this.x) *
-                 * this.tilewidth; } else { draw_sector_x = this.startx +
-                 * (this.sectorx * this.tilewidth * this.sector_width) -
-                 * (this.tilewidth * this.x); if ((draw_sector_x +
-                 * (this.sector_width * this.tilewidth)) > (this.width *
-                 * this.tilewidth)) { System.out.println("The sector being drawn
-                 * DOES extend horizontally past the border.");
-                 * System.out.println("Expected end of sector: " +
-                 * (draw_sector_x + (this.sector_width * this.tilewidth)) + ";
-                 * Width of screen: " + (this.width * this.tilewidth) + ";");
-                 * draw_sector_w = (this.sector_width * this.tilewidth) -
-                 * ((draw_sector_x + (this.sector_width * this.tilewidth)) -
-                 * (this.width * this.tilewidth)); System.out.println("New width
-                 * of sector: " + draw_sector_w + ";"); } else {
-                 * System.out.println("The sector being drawn DOES NOT extend
-                 * horizontally past the border."); draw_sector_w =
-                 * this.sector_width * this.tilewidth; } }
-                 */
-
-                /*
-                 * g2d.draw(new Rectangle2D.Double(this.startx + (this.sectorx *
-                 * this.tilewidth * this.sector_width), this.starty +
-                 * (this.sectory * this.tileheight * this.sector_height),
-                 * this.tilewidth * sectorDisplayWoH(this.sectorx,
-                 * this.sector_width, this.width), this.tileheight *
-                 * sectorDisplayWoH(this.sectory, this.sector_height,
-                 * this.height)));
-                 */
-
                 int[] draw_sector_xw = sectorDisplayWoH(this.sectorx,
                     this.sector_width, this.width, this.x,
                     this.tilewidth);
@@ -787,10 +760,50 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 g2d.draw(new Rectangle2D.Double(draw_sector_xw[0],
                     draw_sector_yh[0], draw_sector_xw[1], draw_sector_yh[1]));
             }
+            
+            
 
-            if (this.modeprops[this.mode][2] == 1)
+            if (this.modeprops[this.mode][3] == 1)
             {
-                // show TileWindow
+            	int id = 0;
+            	for (int k = 0; k < screen_height; k++)
+            	{
+            		if (((y + k) % (sector_height * 2)) == 0)
+            		{
+            			for (int i = 0; i < screen_width; i++)
+                    	{
+                    		// System.out.println(i + ": " + (x % sector_width));
+                    		if (((x + i) % sector_width) == 0)
+                    		{
+                            	int[] spriteData = mapcontrol.getSpriteData(
+                            			(x + i) / sector_width, (y + k) / sector_height);
+                            	this.spriteLocs = new int[spriteData[0]][5];
+                                for (int j = 0; j < spriteData[0]; j++)
+                                {
+                                	int tptNumber = (spriteData[(j 
+                                			* 4) + 3] * 0x100) + spriteData[(j * 4) + 2];
+                                	TPTEditor.TPTEntry tptEntry = TPTEditor.tptEntries[tptNumber];
+                                	int spriteNum = tptEntry.getSprite();
+                                	int spriteDrawY = spriteData[(j * 4) + 4];
+                                	int spriteDrawX = spriteData[(j * 4) + 5];
+                                	//g2d.drawString(addZeros(Integer
+                                    //        .toHexString(spriteNum), 4), spriteDrawX, spriteDrawY);
+                                	loadSpriteImage(spriteNum, tptEntry.getDirection());
+                                	SpriteEditor.SpriteInfoBlock sib = SpriteEditor.sib[spriteNum];
+                                	g.drawImage(sprite_images[spriteNum],
+                							spriteDrawX + (i * tilewidth),
+        									spriteDrawY + (k * tileheight),
+											this);
+                                	this.spriteLocs[id] = new int[] {
+                                			(x + i) / sector_width, (y + i) / sector_height,
+											spriteDrawX, spriteDrawY
+                                	};
+                                }
+                    		}
+                    	}
+            		}
+            	}
+            	
             }
         }
 
@@ -895,6 +908,16 @@ public class MapEditor extends EbHackModule implements ActionListener,
             }
         }
         
+        public void loadSpriteImage(int spt, int direction)
+        {
+           	if (this.sprite_images[spt] == null)
+           	{
+           		SpriteEditor.SpriteInfoBlock sib = SpriteEditor.sib[spt];
+           		this.sprite_images[spt] = new SpriteEditor.Sprite(sib
+                        .getSpriteInfo(direction), hm).getImage();
+           	}
+        }
+        
         public void resetTileImages()
         {
         	this.tile_images = new Image[TILESET_NAMES.length][1024][59];
@@ -961,16 +984,12 @@ public class MapEditor extends EbHackModule implements ActionListener,
     }
 
     // Represents the whole EarthBound map and map-related data in the rom.
-    public static class EbMap
+    public class EbMap
     {
         private HackModule hm;
-        private int width;
-        private int height;
-        private int sector_width;
-        private int sector_height;
         // this.all_addresses = new int[] { 0x160200, 0x162A00, 0x165200,
         // 0x168200, 0x16AA00, 0x16D200, 0x170200, 0x172A00 };
-        private final static int[] all_addresses = new int[]{
+        private final int[] all_addresses = new int[]{
         // Taken from MrA's Map Editor code. DESPERATELY NEEDS TO BE
             // FORMATTED!!!!!!
             0x160200, // 1
@@ -1336,29 +1355,25 @@ public class MapEditor extends EbHackModule implements ActionListener,
         private final static int tsetpal_address = 0x17AA00;
         private final static int tsettbl_address = 0x2F121B;
         private final static int localtset_address = 0x175200;
+        private int[] spritePlacementPtrs, spritePlacementData;
 
         private AbstractRom rom;
 
-        public EbMap(HackModule hm, int newwidth, int newheight,
-            int newsector_width, int newsector_height)
+        public EbMap(HackModule hm)
         {
             this.hm = hm;
             this.rom = hm.rom;
-            this.width = newwidth;
-            this.height = newheight;
-            this.sector_width = newsector_width;
-            this.sector_height = newsector_height;
         }
         
         public void changeTile(int tilex, int tiley, int tile)
         {
-        	int address = EbMap.all_addresses[tiley] + tilex;
+        	int address = all_addresses[tiley] + tilex;
         	this.rom.write(address, tile);
         }
 
         public int[] getTiles(int row, int start, int length)
         {
-            int address = EbMap.all_addresses[row] + start;
+            int address = all_addresses[row] + start;
             // this.rom.seek(this.address);
 
             int[] output = new int[length];
@@ -1435,7 +1450,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         public int getLocalTileset(int gltx, int glty)
         {
             int address = EbMap.localtset_address
-                + ((glty / 8) * (this.width + 1)) + gltx;
+                + ((glty / 8) * (width + 1)) + gltx;
             if (((glty / 4) % 2) == 1)
                 address += 0x3000;
             int local_tset = (rom.read(address) >>
@@ -1447,7 +1462,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         public void setLocalTileset(int tilex, int tiley, int newltset)
         {
         	int address = EbMap.localtset_address
-			    + ((tiley / 8) * (this.width + 1)) + tilex;
+			    + ((tiley / 8) * (width + 1)) + tilex;
         	if (((tiley / 4) % 2) == 1)
         		address += 0x3000;
         	int newLtsetData = 0;
@@ -1469,6 +1484,51 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	}
         	rom.write(address, newLtsetData);
         }
+        
+        /*
+        public int[] getSpriteData(int sectorx, int sectory)
+        {
+        	int address = 0xf63e7 + (sectory % width_sectors) + sectorx;
+        	int dataAddress = 0xf0200 + rom.read(address) +
+				(rom.read(address + 0x1) * 0x100);
+        	int numSprites = rom.read(dataAddress);
+        	int[] spriteData = rom.read(dataAddress + 2,
+        			4 * numSprites);
+        	return spriteData;
+        }
+        */
+        
+        public void loadSpriteTables()
+        {
+        	this.spritePlacementPtrs = rom.read(0xf63e7,
+        			0xf6de6 - 0xf63e7);
+        	this.spritePlacementData = rom.read(0xf6de7,
+        			0xf8b91 - 0xf6de7);
+        }
+        
+        public int[] getSpriteData(int areaX, int areaY)
+        {
+        	int sectorNum = areaX + ((areaY / 2) * width_sectors);
+        	int address =
+        		this.spritePlacementPtrs[sectorNum * 2];
+        	address += this.spritePlacementPtrs[(sectorNum * 2) + 1]
+												* 0x100;
+        	if (address == 0)
+        	{
+        		return new int[] { 0, 0 };
+        	}
+        	else
+        	{
+            	address -= 0x6be7;
+            	int numEntries = spritePlacementData[address];
+            	int[] data = new int[(numEntries * 4) + 2];
+            	System.arraycopy(this.spritePlacementData, address,
+            			data, 0, data.length);
+            	return data;
+        	}
+        }
+        
+        // public void changeSpriteData(int areaX, int areaY)
     }
 
     public class EditBox extends AbstractButton
