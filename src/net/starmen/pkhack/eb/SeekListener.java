@@ -7,4 +7,5 @@ package net.starmen.pkhack.eb;
  */
 public interface SeekListener {
 	void returnSeek(int x, int y, int tileX, int tileY);
+	String getDescription();
 }
