@@ -74,6 +74,13 @@
 	<ips src = "smnet_nintendo.ips" size = "1711" author = "n42"
 		name = "Starman Logo" sdesc = "Replaces Nintendo logo with starmen.net logo."
 		sshot = "smnet_nintendo.png" sssize = "1167" type = "nintendoscreen" romtype = "Earthbound" />
+	<!-- Jeffman logos -->
+	<ips src = "stickman.lscn" size = "30845" author = "Jeffman" name = "Jeffman Logos 1"
+		sdesc = "Three logos by Jeffman" sshot = "stickman.png" sssize = "2614" type = "logoscreens"
+		romtype = "Earthbound" />
+	<ips src = "pkring.gas" size = "43778" author = "Jeffman" name = "PK Ring"
+		sdesc = "Replaces gas station with PK Hack logo" sshot = "pkring.png" sssize = "1277"
+		type = "gasstation" romtype = "Earthbound" />
 	<!-- Mr. A asm hacks -->
 	<ips src = "eb6c_003.ips" size = "2558" author = "Mr. Accident"
 		name = "Six Character Name" sdesc = "Allows 6-character names. (BETA)"
