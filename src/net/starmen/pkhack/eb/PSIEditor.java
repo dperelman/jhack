@@ -73,7 +73,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
         entry.add(Box.createVerticalStrut(10));
 
         nameSel = new JComboBox();
-        for (int i = 0; i < 17; i++)
+        for (int i = 0; i < 24; i++)
             nameSel.addItem(PSIText[i].getInfo());
         nameSel.setActionCommand("nameSel");
         nameSel.addActionListener(this);
@@ -160,13 +160,14 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
     public static void readFromRom(HackModule hm)
     {
+        int PSINamePtr = hm.rom.readAsmPointer(0x1c623);
         for (int i = 0; i < psis.length; i++)
         {
             psis[i] = new PSI(i, hm);
         }
         for (int i = 0; i < PSIText.length; i++)
         {
-            PSIText[i] = new MiscText(0x158f7a + i * 25, 25, hm);
+            PSIText[i] = new MiscText(PSINamePtr + i * 25, 25, hm);
         }
     }
 
@@ -295,7 +296,8 @@ public class PSIEditor extends EbHackModule implements ActionListener
     public String getCredits()
     {
         return "Written by EBisumaru\n"
-            + "PSI Table discovered and documented by unknown\n";
+            + "PSI Table discovered and documented by unknown\n"
+            + "Mercilessly ...adjusted by BlueAntoid\n";
     }
 
     /**
