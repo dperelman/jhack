@@ -210,6 +210,6 @@
 1F F2 XX XX YY YY,"Apply movement pattern $YYYY to sprite $XXXX";
 1F F3 XX XX YY,"Generate sprite $YY near sprite $XXXX";
 1F F4 XX XX,"Delete 1F F3 sprite near sprite $XXXX";
-15 AA,"Use compressed string $XX from bank 0";
-16 AA,"Use compressed string $XX from bank 1";
-17 AA,"Use compressed string $XX from bank 2";
+15 XX,"Use compressed string $XX from bank 0";
+16 XX,"Use compressed string $XX from bank 1";
+17 XX,"Use compressed string $XX from bank 2";

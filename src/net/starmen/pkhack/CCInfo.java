@@ -726,9 +726,9 @@ public class CCInfo
             }
             if (endcc)
             {
-//                ccs.add(activeNode);
-//                System.out.println("getCCsUsed(): ending, added "
-//                    + activeNode.toString());
+                //                ccs.add(activeNode);
+                //                System.out.println("getCCsUsed(): ending, added "
+                //                    + activeNode.toString());
                 break;
             }
 
@@ -819,7 +819,7 @@ public class CCInfo
                 if (activeNode.endcc)
                 {
                     endcc = true;
-                    if(activeNode.cc == null && activeNode.nodes.size() > 0)
+                    if (activeNode.cc == null && activeNode.nodes.size() > 0)
                         ccs.add(activeNode.nodes.get(0));
                 }
                 //                else if (
@@ -1139,7 +1139,8 @@ public class CCInfo
 
     public boolean isCC(int ch)
     {
-        return ch >= 0 && ch <= 0x1F;
+        return searchNode(ccTable, ch) != -1; //-1 = no find
+        //return ch >= 0 && ch <= 0x1F;
     }
 
     public void addCode(char[] str, int val, int pos)
@@ -1241,8 +1242,14 @@ public class CCInfo
                 nodestr = new int[nodestrtmp.length];
                 for (int i = 0; i < nodestrtmp.length; i++)
                 {
-                    if (nodestrtmp[i].charAt(0) == nodestrtmp[i].charAt(1)
-                        && !Character.isDigit(nodestrtmp[i].charAt(0)))
+                    char fc = nodestrtmp[i].charAt(0); //first char
+                    //check if first and second are both equal and not hex digits
+                    //isDigit() checks if it's a number, isLetter() checks
+                    //if it is a letter and then checks if it's a letter A-F
+                    if (fc == nodestrtmp[i].charAt(1)
+                        && !Character.isDigit(fc)
+                        && !(Character.isLetter(fc) && Character
+                            .toUpperCase(fc) <= 'F'))
                         nodestr[i] = nodestrtmp[i].charAt(0) * -1;
                     else
                         nodestr[i] = (int) Integer.parseInt(nodestrtmp[i], 16);

@@ -1,5 +1,6 @@
-00,"UNKNOWN";
+00,"UNKNOWN -- drop one line? (often [00][02])";
 01,"UNKNOWN -- heading section?";
-/02,"Signal end of block or string";
-03,"UNKNOWN";
-/06,"UNKNOWN -- new grouping?";
+/02,"Signal end of block or string -- drop one line?";
+/03 XX,"UNKNOWN -- drop XX lines?";
+04,"UNKNOWN -- print player's name?";
+/ff,"UNKNOWN -- end sequence?";

@@ -505,7 +505,7 @@ public class TextEditor extends EbHackModule implements ActionListener
             case TEA:
                 return loadSimpText(TEA, CC_TEA, 0x210200, 0x210E79);
             case ECD:
-                return loadSimpText(ECD, CC_CRD, 0x214352, 0x214FE2);
+                return loadSimpText(ECD, CC_CRD, 0x21433F, 0x214FE7);
             default:
                 return -1;
         }
@@ -1068,13 +1068,13 @@ public class TextEditor extends EbHackModule implements ActionListener
         return false;
     }
 
-    private boolean gotoTpt(int target)
+    private boolean gotoList(int list, int target)
     {
-        for (int i = 0; i < textLists[TPT].size(); i++)
+        for (int i = 0; i < textLists[list].size(); i++)
         {
-            if (isOffsetInStr((StrInfo) textLists[TPT].get(i), target))
+            if (isOffsetInStr((StrInfo) textLists[list].get(i), target))
             {
-                showInfo(TPT, i);
+                showInfo(list, i);
                 return true;
             }
         }
@@ -1092,7 +1092,11 @@ public class TextEditor extends EbHackModule implements ActionListener
             || (offset >= 0x8DC31 && offset <= 0x0A012E) || (offset >= 0x2F5020 && offset <= 0x2FA57A))
             && gotoRaw(RAW, offset))
             return true;
-        else if (gotoTpt(offset))
+        else if (offset >= 0x210200 && offset <= 0x210E79)
+            return gotoList(TEA, offset);
+        else if(offset >= 0x21433F && offset <= 0x214FE7)
+            return gotoList(ECD, offset);
+        else if (gotoList(TPT, offset))
             return true;
         return false;
     }

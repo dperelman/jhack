@@ -4,9 +4,11 @@
 package net.starmen.pkhack.eb;
 
 import java.io.EOFException;
+import java.util.Arrays;
 
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.Stopwatch;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -216,7 +218,7 @@ public abstract class EbHackModule extends HackModule
      *         bytes decompressed into buffer otherwise. [1] = number of bytes
      *         read from ROM
      */
-    public int[] decomp(int cdata, byte[] buffer, int maxlen, Rom rom)
+    public static int[] decomp(int cdata, byte[] buffer, int maxlen, Rom rom)
     {
         int start = cdata;
         int bpos = 0, bpos2 = 0;
@@ -245,19 +247,24 @@ public abstract class EbHackModule extends HackModule
             switch (cmdtype)
             {
                 case 0 : //uncompressed ?
-                    for (int i = 0; i < len; i++)
-                    {
-                        buffer[bpos++] = rom.readByte(cdata++);
-                    }
+                    System.arraycopy(rom.readByte(cdata, len), 0, buffer, bpos, len);
+                    bpos += len;
+                    cdata += len;
+//                    for (int i = 0; i < len; i++)
+//                    {
+//                        buffer[bpos++] = rom.readByte(cdata++);
+//                    }
                     break;
                 case 1 : //RLE ?
-                    for (int i = 0; i < len; i++)
-                    {
-                        buffer[bpos++] = rom.readByte(cdata);
-                    }
+                    Arrays.fill(buffer, bpos, bpos + len, rom.readByte(cdata));
+                    bpos += len;
+//                    for (int i = 0; i < len; i++)
+//                    {
+//                        buffer[bpos++] = rom.readByte(cdata);
+//                    }
                     cdata++;
                     break;
-                case 2 : //???
+                case 2 : //??? TODO way to do this with Arrays?
                     if (bpos + 2 * len > maxlen)
                         return new int[] { -3 };
                     while (len-- != 0)
@@ -275,10 +282,12 @@ public abstract class EbHackModule extends HackModule
                 case 4 : //use previous data ?
                     if (bpos2 + len > maxlen)
                         return new int[] { -4 };
-                    for (int i = 0; i < len; i++)
-                    {
-                        buffer[bpos++] = buffer[bpos2 + i];
-                    }
+                    System.arraycopy(buffer, bpos2, buffer, bpos, len);
+                    bpos += len;
+//                    for (int i = 0; i < len; i++)
+//                    {
+//                        buffer[bpos++] = buffer[bpos2 + i];
+//                    }
                     break;
                 case 5 :
                     if (bpos2 + len > maxlen)
@@ -341,7 +350,7 @@ public abstract class EbHackModule extends HackModule
      *         bytes decompressed into buffer otherwise. [1] = number of bytes
      *         read from ROM
      */
-    public int[] decomp(int cdata, byte[] buffer, Rom r)
+    public static int[] decomp(int cdata, byte[] buffer, Rom r)
     {
         return decomp(cdata, buffer, buffer.length, r);
     }
@@ -364,6 +373,18 @@ public abstract class EbHackModule extends HackModule
     }
 
     /* Used internally by comp */
+    private static byte[] bitrevs = null;
+    private static void initBitrevs()
+    {
+        EbHackModule.bitrevs = new byte[256];
+        for (int tmp = 0; tmp < 256; tmp++)
+        {
+            byte x = (byte) tmp;
+            x = (byte) (((x >> 1) & 0x55) | ((x << 1) & 0xAA));
+            x = (byte) (((x >> 2) & 0x33) | ((x << 2) & 0xCC));
+            EbHackModule.bitrevs[tmp] = (byte) (((x >> 4) & 0x0F) | ((x << 4) & 0xF0));
+        }
+    }
     //private static int bpos, pos, buffer[], udata[];
     //returns bpos because it gets changed
     private static int encode(int length, int type, byte[] buffer, int bpos)
@@ -389,16 +410,17 @@ public abstract class EbHackModule extends HackModule
             return bpos;
         bpos = encode(length, 0, buffer, bpos);
         //memcpy(bpos, pos, length);
-        for (int i = 0; i < length; i++)
-        {
-            buffer[bpos + i] = udata[pos + i];
-        }
+        System.arraycopy(udata, pos, buffer, bpos, length);
+//        for (int i = 0; i < length; i++)
+//        {
+//            buffer[bpos + i] = udata[pos + i];
+//        }
         bpos += length;
 
         return bpos;
     }
     //meant to emulate the C function FOR THIS SPECIFIC USE
-    private static int memchr(int st, int needle, int len, byte[] haystack)
+    private static int memchr(int st, byte needle, int len, byte[] haystack)
     {
         for (int i = 0; i < len; i++)
         {
@@ -428,17 +450,20 @@ public abstract class EbHackModule extends HackModule
         //unsigned char *limit = &udata[length]; //udata start = 0, so limit =
         // length
         int limit = length; //probably unneeded, could just use length
-        int pos2, pos3, bitrevs[] = new int[256];
+        int pos2, pos3;
+//        byte bitrevs[] = new byte[256];
         int tmp;
         int bpos = 0; //position in buffer
         int pos = 0; //postition in udata
-        for (tmp = 0; tmp < 256; tmp++)
-        {
-            int x = tmp;
-            x = ((x >> 1) & 0x55) | ((x << 1) & 0xAA);
-            x = ((x >> 2) & 0x33) | ((x << 2) & 0xCC);
-            bitrevs[tmp] = ((x >> 4) & 0x0F) | ((x << 4) & 0xF0);
-        }
+//        for (tmp = 0; tmp < 256; tmp++)
+//        {
+//            byte x = (byte) tmp;
+//            x = (byte) (((x >> 1) & 0x55) | ((x << 1) & 0xAA));
+//            x = (byte) (((x >> 2) & 0x33) | ((x << 2) & 0xCC));
+//            bitrevs[tmp] = (byte) (((x >> 4) & 0x0F) | ((x << 4) & 0xF0));
+//        }
+        if(EbHackModule.bitrevs == null)
+            initBitrevs();
         while (pos < limit)
         {
             /* Look for patterns */
@@ -524,14 +549,14 @@ public abstract class EbHackModule extends HackModule
                     (pos3 =
                         memchr(
                             pos3,
-                            bitrevs[udata[pos2] & 255],
+                            EbHackModule.bitrevs[udata[pos2] & 255],
                             pos2 - pos3,
                             udata))
                         != -1;
                     pos3++)
                 {
                     for (tmp = 0;
-                        udata[pos3 + tmp] == bitrevs[udata[pos2 + tmp] & 255]
+                        udata[pos3 + tmp] == EbHackModule.bitrevs[udata[pos2 + tmp] & 255]
                             && tmp < pos2 - pos3
                             && tmp < 1024;
                         tmp++);
@@ -846,7 +871,6 @@ public abstract class EbHackModule extends HackModule
         creditsChars[90] = 'n';
         creditsChars[75] = 'o';
         creditsChars[91] = 'p';
-        creditsChars[76] = ',';
         creditsChars[122] = 'r';
         creditsChars[107] = 's';
         creditsChars[123] = 't';
@@ -857,9 +881,13 @@ public abstract class EbHackModule extends HackModule
         creditsChars[110] = 'y';
         creditsChars[126] = 'z';
         creditsChars[76] = '<';
-        creditsChars[78] = '.';
-        creditsChars[80] = '_';
+        creditsChars[78] = '>';
+        creditsChars[80] = '_'; //why is this here?
         creditsChars[64] = ' ';
         creditsChars[173] = '.';
+        
+        creditsChars[0x80] = '-';
+        creditsChars[0x47] = '\'';
+        creditsChars[0x6f] = '?';
     }
 }
