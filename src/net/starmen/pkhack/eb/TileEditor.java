@@ -755,6 +755,23 @@ public class TileEditor extends EbHackModule implements ActionListener
         }
 
         /**
+         * Returns an image of the specified tile using the specified palette.
+         * 
+         * @param tile Number tile (0-1023).
+         * @param palette <code>Color[]</code> of special palette to use
+         * @param subPalette Number of the subpalette to use (0-5).
+         * @param hFlip If true, flip output horizontally.
+         * @param vFlip If true, flip output vertically.
+         * @return Image of the tile (8x8).
+         * @see #getTileImage(int, int, int, boolean, boolean, boolean)
+         */
+        public Image getTileImage(int tile, Color[] palette, boolean hFlip,
+            boolean vFlip)
+        {
+            return HackModule.drawImage(getTile(tile), palette, hFlip, vFlip);
+        }
+
+        /**
          * Returns the contents of a tile as a String. Each character is the hex
          * value of the pixel and rows are separated by "\n"'s (newlines).
          * 
@@ -1534,6 +1551,117 @@ public class TileEditor extends EbHackModule implements ActionListener
          * @return Image of the arrangement using the given palette (32x32).
          */
         public Image getArrangementImage(int arrangement, int palette)
+        {
+            return getArrangementImage(arrangement, palette, false);
+        }
+
+        /**
+         * Returns an image of the specified arrangement using the specified
+         * palette. Note that sub-palette is ignored.
+         * 
+         * @param arrangement Which arrangement (0-1023).
+         * @param palette <code>Color[]</code> of specical palette to use.
+         * @param selection <code>int[4][4]</code> where -1 means not selected
+         *            and other values indicate which tile
+         * @param gridLines If true, minitiles are spaced out to put gridlines
+         *            between them
+         * @return Image of the arrangement using the given palette (32x32 or
+         *         35x35).
+         * @see #getArrangementImage(int, int, int[][], float, boolean)
+         */
+        public Image getArrangementImage(int arrangement, Color[] palette,
+            int[][] selection, float zoom, boolean gridLines)
+        {
+            BufferedImage out = new BufferedImage((gridLines ? 3 : 0)
+                + (int) (32 * zoom), (gridLines ? 3 : 0) + (int) (32 * zoom),
+                BufferedImage.TYPE_4BYTE_ABGR_PRE);
+            Graphics g = out.getGraphics();
+            init();
+            for (int x = 0; x < 4; x++)
+            {
+                for (int y = 0; y < 4; y++)
+                {
+                    int tile = (selection[x][y] == -1
+                        ? this.arrangements[arrangement][x][y]
+                        : selection[x][y]);
+                    g.drawImage(getTileImage(tile & 0x01ff, palette,
+                        (tile & 0x4000) != 0, (tile & 0x8000) != 0),
+                        (int) (x * 8 * zoom) + (gridLines ? x : 0),
+                        (int) (y * 8 * zoom) + (gridLines ? y : 0),
+                        (int) (8 * zoom), (int) (8 * zoom), null);
+                    if (selection[x][y] != -1)
+                    {
+                        g.setColor(new Color(255, 255, 0, 128));
+                        g.fillRect((int) (x * 8 * zoom) + (gridLines ? x : 0),
+                            (int) (y * 8 * zoom) + (gridLines ? y : 0),
+                            (int) (8 * zoom), (int) (8 * zoom));
+                    }
+                }
+            }
+            return out;
+        }
+
+        /**
+         * Returns an image of the specified arrangement using the specified
+         * palette. Note that sub-palette is ignored.
+         * 
+         * @param arrangement Which arrangement (0-1023).
+         * @param palette <code>Color[]</code> of specical palette to use.
+         * @param gridLines If true, minitiles are spaced out to put gridlines
+         *            between them
+         * @return Image of the arrangement using the given palette (32x32 or
+         *         35x35).
+         */
+        public Image getArrangementImage(int arrangement, Color[] palette,
+            float zoom, boolean gridLines)
+        {
+            init();
+            BufferedImage out = new BufferedImage((gridLines ? 3 : 0)
+                + (int) (32 * zoom), (gridLines ? 3 : 0) + (int) (32 * zoom),
+                BufferedImage.TYPE_4BYTE_ABGR_PRE);
+            Graphics g = out.getGraphics();
+            for (int x = 0; x < 4; x++)
+            {
+                for (int y = 0; y < 4; y++)
+                {
+                    g.drawImage(getTileImage(
+                        this.arrangements[arrangement][x][y] & 0x01ff, palette,
+                        (this.arrangements[arrangement][x][y] & 0x4000) != 0,
+                        (this.arrangements[arrangement][x][y] & 0x8000) != 0),
+                        (int) (x * 8 * zoom) + (gridLines ? x : 0),
+                        (int) (y * 8 * zoom) + (gridLines ? y : 0),
+                        (int) (8 * zoom), (int) (8 * zoom), null);
+                }
+            }
+            return out;
+        }
+
+        /**
+         * Returns an image of the specified arrangement using the specified
+         * palette. Note that sub-palette is ignored.
+         * 
+         * @param arrangement Which arrangement (0-1023).
+         * @param palette <code>Color[]</code> of specical palette to use.
+         * @param gridLines If true, minitiles are spaced out to put gridlines
+         *            between them
+         * @return Image of the arrangement using the given palette (32x32 or
+         *         35x35).
+         */
+        public Image getArrangementImage(int arrangement, Color[] palette,
+            boolean gridLines)
+        {
+            return getArrangementImage(arrangement, palette, 1, gridLines);
+        }
+
+        /**
+         * Returns an image of the specified arrangement using the specified
+         * palette. Note that sub-palette is ignored.
+         * 
+         * @param arrangement Which arrangement (0-1023).
+         * @param palette <code>Color[]</code> of specical palette to use.
+         * @return Image of the arrangement using the given palette (32x32).
+         */
+        public Image getArrangementImage(int arrangement, Color[] palette)
         {
             return getArrangementImage(arrangement, palette, false);
         }
