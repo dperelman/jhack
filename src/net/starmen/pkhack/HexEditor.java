@@ -212,7 +212,7 @@ public class HexEditor extends GeneralHackModule implements ActionListener
                 {
                     offset = Integer.parseInt(HackModule.killSpaces(tf
                         .getText()), 16);
-                    if (regType.isSelected())
+                    if (snesType.isSelected())
                         offset = HackModule.toRegPointer(offset);
                 }
                 catch (NumberFormatException e)
