@@ -4,17 +4,22 @@
 package net.starmen.pkhack.eb;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
+import net.starmen.pkhack.eb.MapEditor.MapGraphics;
 
 /**
  * Editor for the [1F 21 XX] Teleport Table. More information about the table
@@ -22,7 +27,7 @@ import net.starmen.pkhack.XMLPreferences;
  * 
  * @author AnyoneEB
  */
-public class TeleportTableEditor extends EbHackModule implements ActionListener
+public class TeleportTableEditor extends EbHackModule implements ActionListener, SeekListener
 {
 
 	/**
@@ -224,6 +229,8 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener
 	private JTextField x, y;
 	private JComboBox dir, style;
 	private JTextField[] unknown = new JTextField[2];
+	private JButton mapSet;
+	private MapGraphics preview;
 
 	protected void init()
 	{
@@ -240,6 +247,10 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener
 			HackModule.createJComboBoxFromArray(new Object[ttentries.length]);
 		selector.addActionListener(this);
 		entry.add(HackModule.getLabeledComponent("Entry: ", selector));
+		
+		mapSet = new JButton("Set X & Y using the Map Editor");
+		mapSet.addActionListener(this);
+		entry.add(mapSet);
 
 		entry.add(
 			HackModule.getLabeledComponent(
@@ -249,7 +260,37 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener
 			HackModule.getLabeledComponent(
 				"Y: ",
 				y = HackModule.createSizedJTextField(5, true)));
+		
+		DocumentListener xyListener =
+			new DocumentListener()
+			{
+				public void changedUpdate(DocumentEvent e)
+				{
+					if ((x.getText().length() > 0)
+							&& (y.getText().length() > 0))
+					{
+						int newX = Integer.parseInt(x.getText()),
+							newY = Integer.parseInt(y.getText());
+						preview.setMapXY(newX / 4, newY / 4);
+						preview.setPreviewBoxXY(newX, newY);
+						preview.remoteRepaint();
+					}
+				}
+				
+				public void insertUpdate(DocumentEvent e)
+				{
+					changedUpdate(e);
+				}
 
+				public void removeUpdate(DocumentEvent e)
+				{
+					changedUpdate(e);
+				}
+			};
+		
+		x.getDocument().addDocumentListener(xyListener);
+		y.getDocument().addDocumentListener(xyListener);
+		
 		entry.add(
 			HackModule.getLabeledComponent(
 				"Direction: ",
@@ -274,8 +315,14 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener
 				HackModule.getLabeledComponent(
 					"Unknown #" + i + ": ",
 					unknown[i] = HackModule.createSizedJTextField(3, true)));
+		
+		preview = new MapGraphics(this, 4, 4, 5, false, false, true);
+		preview.setPreferredSize(new Dimension(
+				(MapEditor.tileWidth * preview.getScreenWidth()) + 1,
+				(MapEditor.tileHeight * preview.getScreenHeight()) + 1));
 
 		mainWindow.getContentPane().add(entry, BorderLayout.CENTER);
+		mainWindow.getContentPane().add(preview, BorderLayout.LINE_START);
 		mainWindow.pack();
 	}
 
@@ -310,7 +357,10 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener
 	private void showInfo()
 	{
 		TeleportTableEntry t = ttentries[selector.getSelectedIndex()];
-
+		
+		preview.setMapXY(t.getX() / 4, t.getY() / 4);
+		preview.setPreviewBoxXY(t.getX(), t.getY());
+		preview.remoteRepaint();
 		x.setText(Integer.toString(t.getX()));
 		y.setText(Integer.toString(t.getY()));
 		dir.setSelectedIndex(t.getDirection() - 1);
@@ -340,6 +390,10 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener
 		{
 			showInfo();
 		}
+		else if (ae.getSource().equals(mapSet))
+		{
+			net.starmen.pkhack.JHack.main.showModule(MapEditor.class, this);
+		}
 		else if (ae.getActionCommand().equals("apply"))
 		{
 			saveInfo();
@@ -348,5 +402,16 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener
 		{
 			hide();
 		}
+	}
+	
+	public void returnSeek(int x, int y, int tileX, int tileY)
+	{
+		int newX = ((tileX * MapEditor.tileWidth) / 8) + (x / 8),
+			newY = ((tileY * MapEditor.tileHeight) / 8) + (y / 8);
+		this.x.setText(Integer.toString(newX));
+		this.y.setText(Integer.toString(newY));
+		preview.setMapXY(newX / 4, newY / 4);
+		preview.setPreviewBoxXY(newX, newY);
+		preview.remoteRepaint();
 	}
 }
