@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -15,6 +16,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
 import javax.swing.AbstractButton;
@@ -477,6 +479,16 @@ public class PhotoEditor extends EbHackModule
         return true;
 	}
 	
+	public static Color[] getSubPalette(int palNum, int subPal)
+	{
+		return palettes[palNum][subPal];
+	}
+	
+	public static void setSubPalette(int palNum, int subPal, Color[] colors)
+	{
+		palettes[palNum][subPal] = colors;
+	}
+	
 	public void updateComponents()
 	{
 		muteEvents = true;
@@ -862,6 +874,7 @@ public class PhotoEditor extends EbHackModule
     	private JTextField landX, landY;
     	private JComboBox palette;
     	private Color[][] palColors;
+    	private Image tiles;
     	
     	public PhotoPreview(HackModule hm,
     			JComponent[][] party,
@@ -898,30 +911,9 @@ public class PhotoEditor extends EbHackModule
 
         private void drawMap(Graphics g, Graphics2D g2d)
         {
-        	int tile_set, tile_tile, tile_pal;
-            for (int i = 0; i < mapArray.length; i++)
-            {
-            	int sectorY = (tileY + i) / MapEditor.sectorHeight;
-                for (int j = 0; j < mapArray[i].length; j++)
-                {
-                	int sectorX = (tileX + j) / MapEditor.sectorWidth;
-                	if (! MapEditor.EbMap.isSectorDataLoaded(
-                			sectorX, sectorY))
-                		MapEditor.EbMap.loadSectorData(
-                				rom, sectorX, sectorY);
-                	
-                    tile_set = MapEditor.EbMap.getDrawTileset(
-                    		MapEditor.EbMap.getTset(sectorX, sectorY));
-                    tile_tile = mapArray[i][j]
-                        | (MapEditor.EbMap.getLocalTileset(rom,
-                        		tileX + j,
-								tileY + i) << 8);
-
-                    g.drawImage(TileEditor.tilesets[tile_set].getArrangementImage(tile_tile, palColors),
-                    		j * MapEditor.tileWidth + 1, i * MapEditor.tileHeight + 1,
-							MapEditor.tileWidth, MapEditor.tileHeight, this);
-                }
-            }
+        	if (tiles == null)
+        		tiles = getTilesImage();
+        	g.drawImage(tiles, 1, 1, tiles.getWidth(this), tiles.getHeight(this), this);
             
             for (int k = 0; k < getPreviewHeight(); k++)
         	{
@@ -1118,51 +1110,13 @@ public class PhotoEditor extends EbHackModule
             		}
         		}
         	}
-        	
-        	/*if (movingSprite > -1)
-        	{
-        		int spt;
-        		SpriteEditor.SpriteInfoBlock sib;
-        		if (movingSprite < 6)
-        		{
-        			spt = SpriteCharacterTableEditor.getPlayableSPT(movingSprite,0);
-        			sib = SpriteEditor.sib[spt];
-        			g2d.setPaint(Color.red);
-        		}
-        		else if (movingSprite < 10)
-        		{
-        			spt = ((JComboBox) extra[movingSprite - 6][1]).getSelectedIndex();
-        			sib = SpriteEditor.sib[spt];
-        			g2d.setPaint(Color.green);
-        		}
-        		else
-        		{
-        			spt = 0x8f;
-        			sib = SpriteEditor.sib[movingSprite - 6];
-        			g2d.setPaint(Color.blue);
-            		
-        		}
-        		EbMap.loadSpriteImage(hm,spt,4);
-        		g.drawImage(
-            			EbMap.getSpriteImage(spt,4),
-    					movingSpriteX * 8
-							+ sib.width / 2,
-						movingSpriteY * 8
-							+ sib.height * 3 / 4,this);
-        		g2d.draw(new Rectangle2D.Double(
-        				movingSpriteX * 8
-							+ sib.width / 2 - 1,
-						movingSpriteY * 8
-							+ sib.height * 3 / 4 - 1,
-						sib.width * 8 + 1,
-						sib.height * 8 + 1));
-        	}*/
         }
 
         public void setMapArray(int[][] newMapArray)
         {
             this.knowsMap = true;
             this.mapArray = newMapArray;
+            tiles = null;
         }
         
         public void setXY(int centerX, int centerY)
@@ -1251,6 +1205,40 @@ public class PhotoEditor extends EbHackModule
         public void setPalette(Color[][] palColors)
         {
         	this.palColors = palColors;
+        }
+        
+        public Image getTilesImage()
+        {
+        	BufferedImage out = new BufferedImage(
+        			previewWidth * MapEditor.tileWidth,
+					previewHeight * MapEditor.tileHeight,
+					BufferedImage.TYPE_4BYTE_ABGR_PRE);
+        	Graphics2D g = out.createGraphics();
+        	int tile_set, tile_tile, tile_pal;
+            for (int i = 0; i < mapArray.length; i++)
+            {
+            	int sectorY = (tileY + i) / MapEditor.sectorHeight;
+                for (int j = 0; j < mapArray[i].length; j++)
+                {
+                	int sectorX = (tileX + j) / MapEditor.sectorWidth;
+                	if (! MapEditor.EbMap.isSectorDataLoaded(
+                			sectorX, sectorY))
+                		MapEditor.EbMap.loadSectorData(
+                				rom, sectorX, sectorY);
+                	
+                    tile_set = MapEditor.EbMap.getDrawTileset(
+                    		MapEditor.EbMap.getTset(sectorX, sectorY));
+                    tile_tile = mapArray[i][j]
+                        | (MapEditor.EbMap.getLocalTileset(rom,
+                        		tileX + j,
+								tileY + i) << 8);
+
+                    g.drawImage(TileEditor.tilesets[tile_set].getArrangementImage(tile_tile, palColors),
+                    		j * MapEditor.tileWidth + 1, i * MapEditor.tileHeight + 1,
+							MapEditor.tileWidth, MapEditor.tileHeight, this);
+                }
+            }
+            return out;
         }
         
         public void mouseClicked(MouseEvent e)
