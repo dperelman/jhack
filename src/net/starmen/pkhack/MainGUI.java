@@ -587,8 +587,9 @@ public class MainGUI implements ActionListener, WindowListener
         }
         if (this.getPrefs().getValue("consoleDialog") != null)
         {
-            JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
-                "consoleDialog"));
+            if (JHack.isUseConsole())
+                JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
+                    "consoleDialog"));
         }
         //convert expRomPath and orgRomPath to game specific names
         if (this.getPrefs().hasValue("expRomPath"))
@@ -1173,8 +1174,9 @@ public class MainGUI implements ActionListener, WindowListener
         }
         else if (ae.getActionCommand().equalsIgnoreCase("consoleDialog"))
         {
-            JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
-                "consoleDialog"));
+            if (JHack.isUseConsole())
+                JHack.out.setEnabled(this.getPrefs().getValueAsBoolean(
+                    "consoleDialog"));
         }
         else if (ae.getActionCommand().equalsIgnoreCase("directio"))
         {
