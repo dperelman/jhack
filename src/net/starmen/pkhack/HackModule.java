@@ -1264,15 +1264,14 @@ public abstract class HackModule
      * @param oldLen length of orginal data; that many bytes starting at the old
      *            pointer at pointerLoc will be set to null
      * @param newLen how many bytes to read from <code>data</code>
-     * @param nullifyNow whether old data should be nullified before or after
-     *            searching for empty space
+     * @param mustBeInExpanded whether the data must be written to the expanded area
      * @return true on success, false on failure (no change will be made to the
      *         ROM on failure)
      * @see #findFreeRange(int, int)
      */
 
     public boolean writetoFree(byte[] data, int pointerLoc, int pointerLen,
-        int oldLen, int newLen, boolean nullifyNow)
+        int oldLen, int newLen, boolean mustBeInExpanded)
     {
         //make sure ROM is expanded if needed
         if (newLen > oldLen)
@@ -1280,7 +1279,9 @@ public abstract class HackModule
 
         //store old pointer for use later
         int oldPointer = toRegPointer(rom.readMulti(pointerLoc, pointerLen));
-        if ((newLen <= oldLen) && nullifyNow)
+        if ((newLen <= oldLen)
+        		&& !((mustBeInExpanded || (oldPointer >= 0x300200))
+        				&& !(oldPointer >= 0x300200)))
         {
             //if it fits in the same place, then write there
             nullifyArea(oldPointer, oldLen);
@@ -1294,21 +1295,13 @@ public abstract class HackModule
             byte[] oldData = rom.readByte(oldPointer, oldLen);
             //delete old data from ROM, it may be part of the empty space
             // found
-            if (nullifyNow)
-            {
-                nullifyArea(oldPointer, oldLen);
-            }
+            nullifyArea(oldPointer, oldLen);
             try
             {
                 //look for space...
                 int newPointer = findFreeRange(rom.length(), newLen);
                 //write data there
                 rom.write(newPointer, data, newLen);
-                // nullify if necessary
-                if (!nullifyNow)
-                {
-                    nullifyArea(oldPointer, oldLen);
-                }
                 //change pointer
                 rom.write(pointerLoc, toSnesPointer(newPointer), pointerLen);
                 //success!
@@ -1342,7 +1335,7 @@ public abstract class HackModule
     public boolean writeToFree(byte[] data, int pointerLoc, int oldLen,
         int newLen)
     {
-        return writetoFree(data, pointerLoc, 4, oldLen, newLen, true);
+        return writetoFree(data, pointerLoc, 4, oldLen, newLen, false);
     }
 
     /**
