@@ -3,6 +3,8 @@ NEXT VERSION (after v0.5.2):
 # BUGFIX: Special properties of destinationless doors write correctly
 # Map Editor: can jump to destinations
 # Door Editor: can edit special properties of destinationless doors
+# Logo Screen Editor: BUGFIX: now only writes at/before 0x4001ff
+# Photo Editor: BUGFIX: now displays flags/palettes in their fields correctly
 
 v0.5.2:
 # BUGFIX: FindFreeRange now only finds ranges that are within a single bank.
