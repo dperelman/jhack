@@ -5,6 +5,11 @@ NEXT VERSION (after v0.5.5.2):
 # Added error messages for missing emptyPrefs.xml and preferences.dtd files.
 # Town Map Editor: Fixed bug in import.
 # Text Editor: BUGFIX: toggling codes only does not change modified status (bug reported by GuyInSummers)
+# Hotspot Editor: BUGFIX: All required data is loaded when editor is opened
+# Teleport Destination Editor: BUGFIX: Seeking behaves properly
+# Map Editor: BUGFIX: After saving, doesn't explode
+# Door Editor: BUGFIX: Prevents accessing door entries in out-of-range areas
+# Map Sector Properties Editor: BUGFIX: Prevents accessing sector properties in out-of-range sectors
 
 v0.5.5.2:
 # Updated codelist.txt (thanks EBPlayer1028)
