@@ -370,8 +370,8 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
         for (int i = 0; i < rbs.length; i++)
             if (rbs[i].isSelected())
             {
-                td[i].x = x / 8;
-                td[i].y = y / 8;
+                td[i].x = x / 8 + tileX * MapEditor.tileWidth / 8;
+                td[i].y = y / 8 + tileY * MapEditor.tileHeight / 8;
                 showInfo();
             }
     }
