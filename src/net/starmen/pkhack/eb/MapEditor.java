@@ -30,18 +30,19 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 
 import net.starmen.pkhack.HackModule;
-import net.starmen.pkhack.AbstractRom;
+import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.XMLPreferences;
 
 public class MapEditor extends EbHackModule implements ActionListener,
     PropertyChangeListener, AdjustmentListener, ItemListener
 {
 
-    public MapEditor(AbstractRom rom, XMLPreferences prefs)
+    public MapEditor(Rom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
     }
@@ -56,15 +57,14 @@ public class MapEditor extends EbHackModule implements ActionListener,
     public int scrolly = 0;
     private int palette = 0;
     private int music = 0;
-    // real dimensions are 256 x 320, but I'm starting from 0.
-    private int width = 255;
-    private int height = 323;
+    private int sector_width = 8;
+    private int sector_height = 4;
+    private int width = (32 * sector_width) - 1;
+    private int height = (81 * sector_height) - 1;
     private int tilewidth = 32;
     private int tileheight = 32;
     private int screen_width = 24;
     private int screen_height = 12;
-    private int sector_width = 8;
-    private int sector_height = 4;
     private int editheight = 3;
     private int editwidth = screen_width - 1;
     private static final int draw_tsets = 20;
@@ -173,20 +173,22 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
     public void createGUI()
     {
-        mainWindow = createBaseWindow(this);
+        mainWindow = HackModule.createBaseWindow(this);
         mainWindow.setTitle(getDescription());
 
         // Create and set up the window.
         // mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // mainWindow.setSize(window_width, window_height);
 
-        scrollh = new JScrollBar(JScrollBar.HORIZONTAL, 0, 15, 0, width - 8);
+        scrollh = new JScrollBar(JScrollBar.HORIZONTAL, 0,
+        		15, 0, width - sector_width);
         scrollh.addAdjustmentListener(this);
 
         scrollv = new JScrollBar(JScrollBar.VERTICAL, 0, 15, 0, height);
         scrollv.addAdjustmentListener(this);
         
-        scrollh2 = new JScrollBar(JScrollBar.HORIZONTAL, 0, 15, 0, width);
+        scrollh2 = new JScrollBar(JScrollBar.HORIZONTAL, 0, 15, 0,
+        		width - sector_width);
         scrollh2.addAdjustmentListener(this);
 
         gfxcontrol
@@ -214,12 +216,14 @@ public class MapEditor extends EbHackModule implements ActionListener,
         subpanel.add(editpanel);
         subpanel.add(mapgfxpanel);*/
         
-        mainWindow.getContentPane().setLayout(new BorderLayout());
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        //mainWindow.getContentPane().setLayout(new BorderLayout());
         mainWindow.setJMenuBar(createMenuBar());
-        mainWindow.getContentPane().add(top_buttons, BorderLayout.PAGE_START);
-        mainWindow.getContentPane().add(mapgfxpanel, BorderLayout.CENTER);
-        mainWindow.getContentPane().add(editpanel, BorderLayout.PAGE_END);
-
+        contentPanel.add(top_buttons, BorderLayout.PAGE_START);
+        contentPanel.add(mapgfxpanel, BorderLayout.CENTER);
+        contentPanel.add(editpanel, BorderLayout.PAGE_END);
+        mainWindow.getContentPane().add(contentPanel, BorderLayout.CENTER);
+        
         mainWindow.pack();
     }
     
@@ -239,14 +243,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
          * test_row.length; i++) { System.out.println("Test row tile " + i + ": " +
          * Integer.toHexString(test_row[i])); }
          */
-
-        int[][] maparray = new int[screen_height][screen_width];
-        for (int i = 0; i < screen_height; i++)
-        {
-            maparray[i] = mapcontrol.getTiles(i + y, x, screen_width);
-        }
-        gfxcontrol.setMapArray(maparray);
-        gfxcontrol.remoteRepaint();
     }
 
     public void adjustmentValueChanged(AdjustmentEvent ae)
@@ -361,6 +357,14 @@ public class MapEditor extends EbHackModule implements ActionListener,
         {
             menuAction(name.substring(1, 2), name.substring(2, 3));
         }
+        else if (e.getActionCommand().equals("apply"))
+        {
+        	JOptionPane.showMessageDialog(mainWindow, "Hah! The Map Editor saves live!");
+        }
+        else if (e.getActionCommand().equals("close"))
+        {
+            hide();
+        }
     }
     
     public void itemStateChanged(ItemEvent e)
@@ -395,7 +399,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
     public void menuAction(String n1, String n2)
     {
         // System.out.println("A menu action: " + n1 + n2);
-        if (Integer.parseInt(n1) == 1)
+    	if (Integer.parseInt(n1) == 0)
+		{
+			JOptionPane.showMessageDialog(mainWindow, "Hah! The Map Editor saves live!");
+		}
+        else if (Integer.parseInt(n1) == 1)
         {
         	int newmode = Integer.parseInt(n2) - 1;
             gfxcontrol.changeMode(newmode);
@@ -488,11 +496,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 int mousex = e.getX();
                 int mousey = e.getY();
                 int sectorx = getSectorXorY(getTileXorY(mousex,
-                    tilewidth, screen_width)
-                    + x, sector_width);
+                    tilewidth) + x, sector_width);
                 int sectory = getSectorXorY(getTileXorY(mousey,
-                    tileheight, screen_height)
-                    + y, sector_height);
+                    tileheight) + y, sector_height);
                 
                 int[] tsetpal = mapcontrol.getTsetPal(sectorx, sectory);
                 int[] modeprops = gfxcontrol.getModeProps();
@@ -530,44 +536,28 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
     public int getSectorXorY(int tilexory, int sector_woh)
     {
-        for (int i = 0; i <= width; i++)
-        {
-            if (tilexory < sector_woh)
-            {
-                return i;
-            }
-            else
-            {
-                tilexory = tilexory - sector_woh;
-            }
-        }
-        return -1;
+    	return tilexory / sector_woh;
     }
 
-    public int getTileXorY(int mousexory, int tile_woh, int screen_limit)
+    public int getTileXorY(int mousexory, int tile_woh)
     {
-        for (int i = 0; i <= screen_limit; i++)
-        {
-            if (mousexory < tile_woh)
-            {
-                return i;
-            }
-            else
-            {
-                mousexory = mousexory - tile_woh;
-            }
-        }
-        return -1;
+    	return mousexory / tile_woh;
     }
 
     public void show()
     {
         super.show();
         this.reset();
-        tilesetList.setSelectedIndex(0);
-        tilesetList.updateUI();
         mainWindow.setVisible(true);
         mainWindow.repaint();
+
+        int[][] maparray = new int[screen_height][screen_width];
+        for (int i = 0; i < screen_height; i++)
+        {
+            maparray[i] = mapcontrol.getTiles(i + y, x, screen_width);
+        }
+        gfxcontrol.setMapArray(maparray);
+        gfxcontrol.remoteRepaint();
     }
 
     public void hide()
@@ -1316,7 +1306,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         private final static int tsettbl_address = 0x2F121B;
         private final static int localtset_address = 0x175200;
 
-        private AbstractRom rom;
+        private Rom rom;
 
         public EbMap(HackModule hm, int newwidth, int newheight,
             int newsector_width, int newsector_height)
