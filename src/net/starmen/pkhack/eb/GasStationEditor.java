@@ -15,11 +15,13 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 import javax.swing.AbstractButton;
@@ -41,6 +43,7 @@ import net.starmen.pkhack.CheckRenderer;
 import net.starmen.pkhack.CopyAndPaster;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
+import net.starmen.pkhack.IPSDatabase;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.NodeSelectionListener;
@@ -49,6 +52,7 @@ import net.starmen.pkhack.Rom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
+import net.starmen.pkhack.eb.LogoScreenEditor.LogoScreenImportData;
 
 /**
  * TODO Write javadoc for this class
@@ -62,6 +66,25 @@ public class GasStationEditor extends EbHackModule implements ActionListener
     public GasStationEditor(Rom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
+        
+        try
+        {
+            Class[] c = new Class[]{byte[].class, GasStationEditor.class};
+            IPSDatabase.registerExtension("gas", GasStationEditor.class
+                .getMethod("importData", c), GasStationEditor.class.getMethod(
+                "restoreData", c), GasStationEditor.class.getMethod(
+                "checkData", c), this);
+        }
+        catch (SecurityException e)
+        {
+            // no security model, shouldn't have to worry about this
+            e.printStackTrace();
+        }
+        catch (NoSuchMethodException e)
+        {
+            // spelling mistake, maybe? ^_^;
+            e.printStackTrace();
+        }
     }
 
     public String getVersion()
@@ -123,31 +146,21 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             arngPointer = hm.rom.readRegAsmPointer(arngPointerArray[0]);
         }
 
-        /**
-         * Decompresses information from ROM. allowFailure defaults to true, and
-         * is set to false when "fail" is selected from the abort/retry/fail box
-         * presented to the user when a problem is encountered while reading.
-         * 
-         * @param allowFailure if true, false will not be returned on failure,
-         *            instead the failed item will be set to zeros and reading
-         *            will continue
-         * @return true if everything is read or if allowFailure is true, false
-         *         if any decompression failed and allowFailure is false
-         */
-        public boolean readInfo(boolean allowFailure)
+        private boolean readGraphics(boolean allowFailure, boolean readOrg)
         {
-            if (isInited)
-                return true;
+            Rom r = readOrg
+                ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
+                : hm.rom;
 
             byte[] tileBuffer = new byte[49153];
-            byte[][] palBuffer = new byte[NUM_PALETTES][512];
-            byte[] arngBuffer = new byte[2048];
 
             /** * DECOMPRESS GRAPHICS ** */
             System.out.println("About to attempt decompressing "
                 + tileBuffer.length + " bytes of Gas Station #" + num
                 + " graphics.");
-            int[] tmp = hm.decomp(tilePointer, tileBuffer);
+            int[] tmp = hm.decomp(readOrg ? r
+                .readRegAsmPointer(tilePointerArray[0]) : tilePointer,
+                tileBuffer, r);
             if (tmp[0] < 0)
             {
                 System.err.println("Error " + tmp[0]
@@ -180,13 +193,25 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 }
             }
 
+            return true;
+        }
+
+        private boolean readPalettes(boolean allowFailure, boolean readOrg)
+        {
+            Rom r = readOrg
+                ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
+                : hm.rom;
+
             /** * DECOMPRESS PALETTE ** */
             for (int i = 0; i < NUM_PALETTES; i++)
             {
+                byte[] palBuffer = new byte[512];
                 System.out.println("About to attempt decompressing "
                     + palBuffer.length + " bytes of the Gas Station palette #"
                     + i + ".");
-                tmp = hm.decomp(palPointer[i], palBuffer[i]);
+                int[] tmp = hm.decomp(readOrg ? r
+                    .readRegAsmPointer(palPointerArray[i]) : palPointer[i],
+                    palBuffer, r);
                 if (tmp[0] < 0)
                 {
                     System.err.println("Error " + tmp[0]
@@ -208,15 +233,27 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                         + ": Decompressed " + tmp[0] + " bytes from a "
                         + tmp[1] + " byte compressed block.");
 
-                    HackModule.readPalette(palBuffer[i], 0, palette[i]);
+                    HackModule.readPalette(palBuffer, 0, palette[i]);
                 }
             }
 
+            return true;
+        }
+
+        private boolean readArrangement(boolean allowFailure, boolean readOrg)
+        {
+            Rom r = readOrg
+                ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
+                : hm.rom;
+
+            byte[] arngBuffer = new byte[2048];
             /** * DECOMPRESS ARRANGEMENT ** */
             System.out.println("About to attempt decompressing "
                 + arngBuffer.length + " bytes of Gas Station #" + num
                 + " arrangement.");
-            tmp = hm.decomp(arngPointer, arngBuffer);
+            int[] tmp = hm.decomp(readOrg ? r
+                .readRegAsmPointer(arngPointerArray[0]) : arngPointer,
+                arngBuffer, r);
             if (tmp[0] < 0)
             {
                 System.err.println("Error " + tmp[0]
@@ -249,9 +286,28 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                     for (int x = 0; x < arrangement.length; x++)
                         arrangement[x][y] = arrangementList[j++];
             }
-
-            isInited = true;
             return true;
+        }
+
+        /**
+         * Decompresses information from ROM. allowFailure defaults to true, and
+         * is set to false when "fail" is selected from the abort/retry/fail box
+         * presented to the user when a problem is encountered while reading.
+         * 
+         * @param allowFailure if true, false will not be returned on failure,
+         *            instead the failed item will be set to zeros and reading
+         *            will continue
+         * @return true if everything is read or if allowFailure is true, false
+         *         if any decompression failed and allowFailure is false
+         */
+        public boolean readInfo(boolean allowFailure)
+        {
+            if (isInited)
+                return true;
+            //short curcuit
+            return isInited = readGraphics(allowFailure, false)
+                && readPalettes(allowFailure, false)
+                && readArrangement(allowFailure, false);
         }
 
         public boolean readInfo()
@@ -268,48 +324,46 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         public void initToNull()
         {
             readInfo(true);
-            //            if (isInited) return;
-            //
-            //            //EMPTY PALETTES
-            //            for (int i = 0; i < palette.length; i++)
-            //                for (int j = 0; j < palette[i].length; j++)
-            //                    palette[i][j] = Color.BLACK;
-            //            for (int i = 0; i < palLen.length; i++)
-            //                palLen[i] = 0;
-            //
-            //            //EMPTY ARRANGEMENTS
-            //            for (int i = 0; i < arrangementList.length; i++)
-            //                arrangementList[i] = 0;
-            //            for (int x = 0; x < arrangement.length; x++)
-            //                for (int y = 0; y < arrangement[x].length; y++)
-            //                    arrangement[x][y] = 0;
-            //            arngLen = 0;
-            //
-            //            //EMPTY TILES
-            //            for (int i = 0; i < tiles.length; i++)
-            //                for (int x = 0; x < tiles[i].length; x++)
-            //                    for (int y = 0; y < tiles[i][x].length; y++)
-            //                        tiles[i][x][y] = 0;
-            //            tileLen = 0;
-            //
-            //            isInited = true;
         }
 
-        public boolean writeInfo()
+        private boolean writeGraphics()
         {
-            if (!isInited)
+            byte[] udataTiles = new byte[49153];
+            int tileOff = 0;
+
+            /* COMPRESS TILES */
+            for (int i = 0; i < NUM_TILES; i++)
+            {
+                tileOff += HackModule.write8BPPArea(tiles[i], udataTiles,
+                    tileOff, 0, 0);
+            }
+            System.out.println("Passed loop thingy.");
+            byte[] compTile;
+            int tileCompLen = comp(udataTiles, compTile = new byte[30000]);
+            if (!hm.writeToFreeASMLink(compTile, tilePointerArray[num],
+                tileLen, tileCompLen))
                 return false;
+            System.out.println("Wrote "
+                + (tileLen = tileCompLen)
+                + " bytes of the Gas Station #"
+                + num
+                + " tiles at "
+                + Integer.toHexString(tilePointer = hm.rom
+                    .readRegAsmPointer(tilePointerArray[num])) + " to "
+                + Integer.toHexString(tilePointer + tileCompLen - 1) + ".");
+            return true;
+        }
 
-            byte[] udataTiles = new byte[49153], udataPal[] = new byte[NUM_PALETTES][512], udataArng = new byte[2048];
-            int tileOff = 0, arngOff = 0;
-
-            /* COMPRESS PALETTE */
+        private boolean writePalettes()
+        {
+            /* COMPRESS PALETTES */
             for (int i = 0; i < NUM_PALETTES; i++)
             {
-                HackModule.writePalette(udataPal[i], 0, palette[i]);
+                byte[] udataPal = new byte[512];
+                HackModule.writePalette(udataPal, 0, palette[i]);
 
                 byte[] compPal;
-                int palCompLen = comp(udataPal[i], compPal = new byte[600], 512);
+                int palCompLen = comp(udataPal, compPal = new byte[600], 512);
                 if (!hm.writeToFreeASMLink(compPal, palPointerArray[i],
                     palLen[i], palCompLen))
                     return false;
@@ -324,6 +378,13 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                         + Integer.toHexString(palPointer[i] + palCompLen - 1)
                         + ".");
             }
+            return true;
+        }
+
+        private boolean writeArrangement()
+        {
+            byte[] udataArng = new byte[2048];
+            int arngOff = 0;
 
             /* COMPRESS ARRANGEMENT */
             int j = 0;
@@ -349,29 +410,15 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 + Integer.toHexString(arngPointer = hm.rom
                     .readRegAsmPointer(arngPointerArray[num])) + " to "
                 + Integer.toHexString(arngPointer + arngCompLen - 1) + ".");
-
-            /* COMPRESS TILES */
-            for (int i = 0; i < NUM_TILES; i++)
-            {
-                tileOff += HackModule.write8BPPArea(tiles[i], udataTiles,
-                    tileOff, 0, 0);
-            }
-            System.out.println("Passed loop thingy.");
-            byte[] compTile;
-            int tileCompLen = comp(udataTiles, compTile = new byte[30000]);
-            if (!hm.writeToFreeASMLink(compTile, tilePointerArray[num],
-                tileLen, tileCompLen))
-                return false;
-            System.out.println("Wrote "
-                + (tileLen = tileCompLen)
-                + " bytes of the Gas Station #"
-                + num
-                + " tiles at "
-                + Integer.toHexString(tilePointer = hm.rom
-                    .readRegAsmPointer(tilePointerArray[num])) + " to "
-                + Integer.toHexString(tilePointer + tileCompLen - 1) + ".");
-
             return true;
+        }
+
+        public boolean writeInfo()
+        {
+            if (!isInited)
+                return false;
+
+            return writePalettes() && writeArrangement() && writeGraphics();
         }
 
         /**
@@ -1387,76 +1434,79 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         }
     }
 
+    public static GasImportData[] importData(InputStream in) throws IOException
+    {
+        GasImportData[] out = new GasImportData[gasStations.length];
+
+        byte version = (byte) in.read();
+        if (version > GAS_VERSION)
+        {
+            if (JOptionPane.showConfirmDialog(null,
+                "GAS file version not supported." + "Try to load anyway?",
+                "GAS Version " + version + " Not Supported",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION)
+                return null;
+        }
+        for (int m = 0; m < gasStations.length; m++)
+        {
+            out[m] = new GasImportData();
+            byte whichParts = (byte) in.read();
+            //if tile bit set...
+            if ((whichParts & 1) != 0)
+            {
+                byte[] b = new byte[GasStation.NUM_TILES * 64];
+                in.read(b);
+
+                int offset = 0;
+                out[m].tiles = new byte[GasStation.NUM_TILES][8][8];
+                for (int i = 0; i < GasStation.NUM_TILES; i++)
+                    offset += read8BPPArea(out[m].tiles[i], b, offset, 0, 0);
+            }
+            //if arr bit set...
+            if (((whichParts >> 1) & 1) != 0)
+            {
+                out[m].arrangement = new int[GasStation.NUM_ARRANGEMENTS];
+                byte[] barr = new byte[out[m].arrangement.length * 2];
+                in.read(barr);
+
+                int off = 0;
+                for (int i = 0; i < out[m].arrangement.length; i++)
+                {
+                    out[m].arrangement[i] = (barr[off++] & 0xff);
+                    out[m].arrangement[i] += ((barr[off++] & 0xff) << 8);
+                }
+            }
+            //if pal bit set...
+            if (((whichParts >> 2) & 1) != 0)
+            {
+                out[m].palette = new Color[GasStation.NUM_PALETTES][256];
+                for (int i = 0; i < GasStation.NUM_PALETTES; i++)
+                {
+                    if (version == 1 && i == 2)
+                    {
+                        out[m].palette[i] = out[m].palette[0];
+                    }
+                    else
+                    {
+                        byte[] pal = new byte[256 * 2];
+                        in.read(pal);
+
+                        readPalette(pal, 0, out[m].palette[i]);
+                    }
+                }
+            }
+        }
+
+        in.close();
+
+        return out;
+    }
+
     public static GasImportData[] importData(File f)
     {
         try
         {
-            GasImportData[] out = new GasImportData[gasStations.length];
-
-            FileInputStream in = new FileInputStream(f);
-
-            byte version = (byte) in.read();
-            if (version > GAS_VERSION)
-            {
-                if (JOptionPane.showConfirmDialog(null,
-                    "GAS file version not supported." + "Try to load anyway?",
-                    "GAS Version " + version + " Not Supported",
-                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION)
-                    return null;
-            }
-            for (int m = 0; m < gasStations.length; m++)
-            {
-                out[m] = new GasImportData();
-                byte whichParts = (byte) in.read();
-                //if tile bit set...
-                if ((whichParts & 1) != 0)
-                {
-                    byte[] b = new byte[GasStation.NUM_TILES * 64];
-                    in.read(b);
-
-                    int offset = 0;
-                    out[m].tiles = new byte[GasStation.NUM_TILES][8][8];
-                    for (int i = 0; i < GasStation.NUM_TILES; i++)
-                        offset += read8BPPArea(out[m].tiles[i], b, offset, 0, 0);
-                }
-                //if arr bit set...
-                if (((whichParts >> 1) & 1) != 0)
-                {
-                    out[m].arrangement = new int[GasStation.NUM_ARRANGEMENTS];
-                    byte[] barr = new byte[out[m].arrangement.length * 2];
-                    in.read(barr);
-
-                    int off = 0;
-                    for (int i = 0; i < out[m].arrangement.length; i++)
-                    {
-                        out[m].arrangement[i] = (barr[off++] & 0xff);
-                        out[m].arrangement[i] += ((barr[off++] & 0xff) << 8);
-                    }
-                }
-                //if pal bit set...
-                if (((whichParts >> 2) & 1) != 0)
-                {
-                    out[m].palette = new Color[GasStation.NUM_PALETTES][256];
-                    for (int i = 0; i < GasStation.NUM_PALETTES; i++)
-                    {
-                        if (version == 1 && i == 2)
-                        {
-                            out[m].palette[i] = out[m].palette[0];
-                        }
-                        else
-                        {
-                            byte[] pal = new byte[256 * 2];
-                            in.read(pal);
-
-                            readPalette(pal, 0, out[m].palette[i]);
-                        }
-                    }
-                }
-            }
-
-            in.close();
-
-            return out;
+            return importData(new FileInputStream(f));
         }
         catch (FileNotFoundException e)
         {
@@ -1474,69 +1524,64 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         return null;
     }
 
-    private void exportData()
+    public static GasImportData[] importData(byte[] b)
     {
-        CheckNode[][] mapNodes = new CheckNode[NUM_GAS_STATIONS][4];
-        for (int i = 0; i < mapNodes.length; i++)
+        try
         {
-            mapNodes[i][NODE_BASE] = new CheckNode("Gas Station", true, true);
-            mapNodes[i][NODE_BASE].setSelectionMode(CheckNode.DIG_IN_SELECTION);
-            mapNodes[i][NODE_BASE].add(mapNodes[i][NODE_TILES] = new CheckNode(
-                "Tiles", false, true));
-            mapNodes[i][NODE_BASE].add(mapNodes[i][NODE_ARR] = new CheckNode(
-                "Arrangement", false, true));
-            mapNodes[i][NODE_BASE].add(mapNodes[i][NODE_PAL] = new CheckNode(
-                "Palettes", false, true));
+            return importData(new ByteArrayInputStream(b));
         }
-        JTree checkTree = new JTree(mapNodes[0][NODE_BASE]);
-        checkTree.setCellRenderer(new CheckRenderer());
-        checkTree.getSelectionModel().setSelectionMode(
-            TreeSelectionModel.SINGLE_TREE_SELECTION);
-        checkTree.putClientProperty("JTree.lineStyle", "Angled");
-        checkTree.addMouseListener(new NodeSelectionListener(checkTree));
+        catch (IOException e)
+        {
+            System.err.println("IO error importing Gas Station data from "
+                + "byte array.");
+            e.printStackTrace();
+        }
+        return null;
+    }
 
-        if (JOptionPane.showConfirmDialog(mainWindow, pairComponents(
-            new JLabel("<html>" + "Select which items you wish to export."
-                + "</html>"), new JScrollPane(checkTree), false),
-            "Export What?", JOptionPane.OK_CANCEL_OPTION,
-            JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
-            return;
-
-        boolean[][] a = new boolean[NUM_GAS_STATIONS][4];
-        for (int m = 0; m < NUM_GAS_STATIONS; m++)
-            for (int i = 0; i < 4; i++)
-                a[m][i] = mapNodes[m][i].isSelected();
+    private boolean exportData()
+    {
+        boolean[][] a = showCheckList(null, "<html>"
+            + "Select which items you wish to export." + "</html>",
+            "Export What?");
+        if (a == null)
+            return false;
 
         File f = getFile(true, "gas", "Gas Station");
         if (f != null)
             exportData(f, a);
+        return true;
     }
 
-    private void importData()
+    private static boolean[][] showCheckList(boolean[][] in, String text,
+        String title)
     {
-        File f = getFile(false, "gas", "Gas Station");
-        GasImportData[] tmid;
-        if (f == null || (tmid = importData(f)) == null)
-            return;
-
         CheckNode[][] mapNodes = new CheckNode[NUM_GAS_STATIONS][4];
+        if (in == null)
+        {
+            boolean[] tmp = new boolean[4];
+            Arrays.fill(tmp, true);
+            in = new boolean[NUM_GAS_STATIONS][4];
+            Arrays.fill(in, tmp);
+        }
+
         for (int i = 0; i < mapNodes.length; i++)
         {
-            if (tmid[i] != null)
+            if (in[i][NODE_BASE])
             {
                 mapNodes[i][NODE_BASE] = new CheckNode("Gas Station", true,
                     true);
                 mapNodes[i][NODE_BASE]
                     .setSelectionMode(CheckNode.DIG_IN_SELECTION);
-                if (tmid[i].tiles != null)
+                if (in[i][NODE_TILES])
                     mapNodes[i][NODE_BASE]
                         .add(mapNodes[i][NODE_TILES] = new CheckNode("Tiles",
                             false, true));
-                if (tmid[i].arrangement != null)
+                if (in[i][NODE_ARR])
                     mapNodes[i][NODE_BASE]
                         .add(mapNodes[i][NODE_ARR] = new CheckNode(
                             "Arrangement", false, true));
-                if (tmid[i].palette != null)
+                if (in[i][NODE_PAL])
                     mapNodes[i][NODE_BASE]
                         .add(mapNodes[i][NODE_PAL] = new CheckNode("Palettes",
                             false, true));
@@ -1550,14 +1595,10 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         checkTree.addMouseListener(new NodeSelectionListener(checkTree));
 
         //if user clicked cancel, don't take action
-        if (JOptionPane.showConfirmDialog(mainWindow, pairComponents(
-            new JLabel("<html>" + "Select which items you wish to<br>"
-                + "import. You will have a chance<br>"
-                + "to select which Station you want to<br>"
-                + "actually put the imported data." + "</html>"),
-            new JScrollPane(checkTree), false), "Import What?",
+        if (JOptionPane.showConfirmDialog(null, pairComponents(
+            new JLabel(text), new JScrollPane(checkTree), false), title,
             JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
-            return;
+            return null;
 
         final boolean[][] a = new boolean[NUM_GAS_STATIONS][4];
         for (int m = 0; m < NUM_GAS_STATIONS; m++)
@@ -1565,24 +1606,43 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 a[m][i] = mapNodes[m][i] == null ? false : mapNodes[m][i]
                     .isSelected();
 
-        //        if (JOptionPane
-        //            .showConfirmDialog(mainWindow,
-        //                pairComponents(new JLabel("<html>"
-        //                    + "Select which map you would like<br>"
-        //                    + "the data to be imported into.<br>"
-        //                    + "For example, if you wish to import<br>" + "the "
-        //                    + gasStationNames[0] + " map into the<br>" + gasStationNames[1]
-        //                    + " map, then change the pull-down menu<br>" + "labeled "
-        //                    + gasStationNames[0] + " to " + gasStationNames[1]
-        //                    + ". If you do not<br>"
-        //                    + "wish to make any changes, just click ok.<br>" + "<br>"
-        //                    + "The T, A, and P indictate that you will be<br>"
-        //                    + "importing tiles, arrangements, and palettes<br>"
-        //                    + "respectively from that map." + "</html>"), targetMap,
-        //                    false), "Select import targets",
-        //                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) ==
-        // JOptionPane.CANCEL_OPTION)
-        //            return;
+        return a;
+    }
+
+    private boolean importData()
+    {
+        File f = getFile(false, "gas", "Gas Station");
+        GasImportData[] tmid;
+        if (f == null || (tmid = importData(f)) == null)
+            return false;
+        return importData(tmid);
+    }
+
+    private boolean importData(GasImportData[] tmid)
+    {
+        boolean[][] in = new boolean[NUM_GAS_STATIONS][4];
+
+        for (int i = 0; i < in.length; i++)
+        {
+            if (tmid[i] != null)
+            {
+                in[i][NODE_BASE] = true;
+                if (tmid[i].tiles != null)
+                    in[i][NODE_TILES] = true;
+                if (tmid[i].arrangement != null)
+                    in[i][NODE_ARR] = true;
+                if (tmid[i].palette != null)
+                    in[i][NODE_PAL] = true;
+            }
+        }
+
+        boolean[][] a = showCheckList(in, "<html>"
+            + "Select which items you wish to<br>"
+            + "import. You will have a chance<br>"
+            + "to select which Station you want to<br>"
+            + "actually put the imported data." + "</html>", "Import What?");
+        if (a == null)
+            return false;
 
         for (int m = 0; m < NUM_GAS_STATIONS; m++)
         {
@@ -1601,5 +1661,147 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                                 tmid[m].palette[p][c]);
             }
         }
+        return true;
+    }
+
+    /**
+     * Imports data from the given <code>byte[]</code> based on user input.
+     * User input will always be expected by this method. This method exists to
+     * be called by <code>IPSDatabase</code> for "applying" files with .gas
+     * extensions.
+     * 
+     * @param b <code>byte[]</code> containing exported data
+     * @param gse instance of <code>LogoScreenEditor</code> to call
+     *            <code>importData()</code> on
+     */
+    public static boolean importData(byte[] b, GasStationEditor gse)
+    {
+        boolean out = gse.importData(importData(b));
+        if (out)
+        {
+            if (gse.mainWindow != null)
+            {
+                gse.mainWindow.repaint();
+                gse.updatePaletteDisplay();
+                gse.tileSelector.repaint();
+                gse.arrangementEditor.clearSelection();
+                gse.arrangementEditor.repaint();
+                gse.updateTileEditor();
+            }
+            for (int i = 0; i < gasStations.length; i++)
+                gasStations[i].writeInfo();
+        }
+        return out;
+    }
+
+    private static boolean checkStation(GasImportData gid, int i)
+    {
+        if (gid.tiles != null)
+        {
+            //check tiles
+            for (int t = 0; t < gid.tiles.length; t++)
+                for (int x = 0; x < gid.tiles[t].length; x++)
+                    if (!Arrays.equals(gid.tiles[t][x],
+                        gasStations[i].tiles[t][x]))
+                        return false;
+        }
+        if (gid.arrangement != null)
+        {
+            //check arrangement
+            //TODO does this work?
+            if (!Arrays.equals(gid.arrangement, gasStations[i].arrangementList))
+                ;
+        }
+        if (gid.palette != null)
+        {
+            //check palette
+            for (int p = 0; p < gid.palette.length; p++)
+                for (int c = 0; c < gid.palette[p].length; c++)
+                    if (!gid.palette[p][c].equals(gasStations[i].palette[p][c]))
+                        return false;
+        }
+
+        //nothing found wrong
+        return true;
+    }
+
+    private static boolean checkStation(GasImportData gid)
+    {
+        for (int i = 0; i < NUM_GAS_STATIONS; i++)
+            if (checkStation(gid, i))
+                return true;
+        return false;
+    }
+
+    /**
+     * Checks if data from the given <code>byte[]</code> has been imported.
+     * This method exists to be called by <code>IPSDatabase</code> for
+     * "checking" files with .gas extensions.
+     * 
+     * @param b <code>byte[]</code> containing exported data
+     * @param gse instance of <code>GasStationEditor</code>
+     */
+    public static boolean checkData(byte[] b, GasStationEditor gse)
+    {
+        GasImportData[] gid = importData(b);
+
+        for (int i = 0; i < gid.length; i++)
+            if (gid[i] != null)
+                if (!checkStation(gid[i]))
+                    return false;
+
+        return true;
+    }
+    
+    /**
+     * Restore data from the given <code>byte[]</code> based on user input.
+     * User input will always be expected by this method. This method exists to
+     * be called by <code>IPSDatabase</code> for "unapplying" files with .gas
+     * extensions.
+     * 
+     * @param b <code>byte[]</code> containing exported data
+     * @param gse instance of <code>GasStationEditor</code>
+     */
+    public static boolean restoreData(byte[] b, GasStationEditor gse)
+    {
+        boolean[][] a = showCheckList(null, "<html>Select which items you wish"
+            + "to restore to the orginal EarthBound verions.</html>",
+            "Restore what?");
+        if (a == null)
+            return false;
+
+        for (int i = 0; i < a.length; i++)
+        {
+            if (a[i][NODE_BASE])
+            {
+                if (a[i][NODE_TILES])
+                {
+                    gasStations[i].readGraphics(true, true);
+                    gasStations[i].writeGraphics();
+                }
+                if (a[i][NODE_ARR])
+                {
+                    gasStations[i].readArrangement(true, true);
+                    gasStations[i].writeArrangement();
+                }
+                if (a[i][NODE_PAL])
+                {
+                    gasStations[i].readPalettes(true, true);
+                    gasStations[i].writePalettes();
+                }
+            }
+        }
+
+        if (gse.mainWindow != null)
+        {
+            gse.mainWindow.repaint();
+            gse.updatePaletteDisplay();
+            gse.tileSelector.repaint();
+            gse.arrangementEditor.clearSelection();
+            gse.arrangementEditor.repaint();
+            gse.updateTileEditor();
+        }
+
+        return true;
     }
 }

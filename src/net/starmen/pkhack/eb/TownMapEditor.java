@@ -15,11 +15,13 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 import javax.swing.AbstractButton;
@@ -43,6 +45,7 @@ import net.starmen.pkhack.CheckRenderer;
 import net.starmen.pkhack.CopyAndPaster;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
+import net.starmen.pkhack.IPSDatabase;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.NodeSelectionListener;
@@ -64,6 +67,24 @@ public class TownMapEditor extends EbHackModule implements ActionListener
     public TownMapEditor(Rom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
+
+        try
+        {
+            Class[] c = new Class[]{byte[].class, TownMapEditor.class};
+            IPSDatabase.registerExtension("gas", TownMapEditor.class.getMethod(
+                "importData", c), TownMapEditor.class.getMethod("restoreData",
+                c), TownMapEditor.class.getMethod("checkData", c), this);
+        }
+        catch (SecurityException e)
+        {
+            // no security model, shouldn't have to worry about this
+            e.printStackTrace();
+        }
+        catch (NoSuchMethodException e)
+        {
+            // spelling mistake, maybe? ^_^;
+            e.printStackTrace();
+        }
     }
 
     public String getVersion()
@@ -112,6 +133,70 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             this.num = i;
 
             oldPointer = toRegPointer(hm.rom.readMulti(0x202390 + (i * 4), 4));
+        }
+
+        /**
+         * Reads info from the orginal ROM and remembers specified parts.
+         * 
+         * @param toRead <code>boolean[]</code>:<code>[NODE_TILES]</code>=
+         *            remember tiles, <code>[NODE_ARR]</code>= remember
+         *            arrangement, <code>[NODE_PAL]</code>= remember palettes
+         * @return true on success
+         */
+        private boolean readOrgInfo(boolean[] toRead)
+        {
+            Rom r = JHack.main.getOrginalRomFile(hm.rom.getRomType());
+
+            byte[] buffer = new byte[18496];
+            System.out.println("About to attempt decompressing "
+                + buffer.length + " bytes of town map #" + num + ".");
+            int[] tmp = hm.decomp(oldPointer, buffer, r);
+            if (tmp[0] < 0)
+            {
+                System.err.println("Error " + tmp[0]
+                    + " decompressing town map #" + num + ".");
+                return false;
+            }
+            oldLen = tmp[1];
+            System.out.println("TownMap: Decompressed " + tmp[0]
+                + " bytes from a " + tmp[1] + " byte compressed block.");
+
+            int offset = 0;
+            for (int i = 0; i < NUM_PALETTES; i++)
+            {
+                //make fake target if not to read this
+                Color[] target = toRead[NODE_PAL]
+                    ? palette[i]
+                    : new Color[palette[i].length];
+                HackModule.readPalette(buffer, offset, target);
+                offset += palette[i].length * 2;
+            }
+            if (toRead[NODE_ARR])
+            {
+                for (int i = 0; i < NUM_ARRANGEMENTS; i++)
+                {
+                    arrangementList[i] = (buffer[offset++] & 0xff)
+                        + ((buffer[offset++] & 0xff) << 8);
+                }
+                int j = 0;
+                for (int y = 0; y < arrangement[0].length; y++)
+                    for (int x = 0; x < arrangement.length; x++)
+                        arrangement[x][y] = arrangementList[j++];
+            }
+            else
+            {
+                offset += NUM_ARRANGEMENTS * 2;
+            }
+            if (toRead[NODE_TILES])
+            {
+                for (int i = 0; i < NUM_TILES; i++)
+                {
+                    offset += HackModule.read4BPPArea(tiles[i], buffer, offset,
+                        0, 0);
+                }
+            }
+
+            return true;
         }
 
         public boolean readInfo()
@@ -1229,73 +1314,75 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         }
     }
 
+    public static TownMapImportData[] importData(InputStream in)
+        throws IOException
+    {
+        TownMapImportData[] out = new TownMapImportData[townMaps.length];
+
+        byte version = (byte) in.read();
+        if (version > TNM_VERSION)
+        {
+            if (JOptionPane.showConfirmDialog(null,
+                "TNM file version not supported." + "Try to load anyway?",
+                "TMN Version " + version + " Not Supported",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION)
+                return null;
+        }
+        byte whichMaps = (byte) in.read();
+        for (int m = 0; m < townMaps.length; m++)
+        {
+            //if bit for this map set...
+            if (((whichMaps >> m) & 1) != 0)
+            {
+                out[m] = new TownMapImportData();
+                byte whichParts = (byte) in.read();
+                //if tile bit set...
+                if ((whichParts & 1) != 0)
+                {
+                    byte[] b = new byte[TownMap.NUM_TILES * 32];
+                    in.read(b);
+
+                    int offset = 0;
+                    out[m].tiles = new byte[TownMap.NUM_TILES][8][8];
+                    for (int i = 0; i < TownMap.NUM_TILES; i++)
+                        offset += read4BPPArea(out[m].tiles[i], b, offset, 0, 0);
+                }
+                //if arr bit set...
+                if (((whichParts >> 1) & 1) != 0)
+                {
+                    out[m].arrangement = new int[TownMap.NUM_ARRANGEMENTS];
+                    byte[] barr = new byte[out[m].arrangement.length * 2];
+                    in.read(barr);
+
+                    int off = 0;
+                    for (int i = 0; i < out[m].arrangement.length; i++)
+                    {
+                        out[m].arrangement[i] = (barr[off++] & 0xff);
+                        out[m].arrangement[i] += ((barr[off++] & 0xff) << 8);
+                    }
+                }
+                //if pal bit set...
+                if (((whichParts >> 2) & 1) != 0)
+                {
+                    byte[] pal = new byte[64];
+                    in.read(pal);
+
+                    out[m].palette = new Color[2][16];
+                    readPalette(pal, 0, out[m].palette[0]);
+                    readPalette(pal, 32, out[m].palette[1]);
+                }
+            }
+        }
+        in.close();
+
+        return out;
+    }
+
     public static TownMapImportData[] importData(File f)
     {
         try
         {
-            TownMapImportData[] out = new TownMapImportData[townMaps.length];
-
-            FileInputStream in = new FileInputStream(f);
-
-            byte version = (byte) in.read();
-            if (version > TNM_VERSION)
-            {
-                if (JOptionPane.showConfirmDialog(null,
-                    "TNM file version not supported." + "Try to load anyway?",
-                    "TMN Version " + version + " Not Supported",
-                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION)
-                    return null;
-            }
-            byte whichMaps = (byte) in.read();
-            for (int m = 0; m < townMaps.length; m++)
-            {
-                //if bit for this map set...
-                if (((whichMaps >> m) & 1) != 0)
-                {
-                    out[m] = new TownMapImportData();
-                    byte whichParts = (byte) in.read();
-                    //if tile bit set...
-                    if ((whichParts & 1) != 0)
-                    {
-                        byte[] b = new byte[TownMap.NUM_TILES * 32];
-                        in.read(b);
-
-                        int offset = 0;
-                        out[m].tiles = new byte[TownMap.NUM_TILES][8][8];
-                        for (int i = 0; i < TownMap.NUM_TILES; i++)
-                            offset += read4BPPArea(out[m].tiles[i], b, offset,
-                                0, 0);
-                    }
-                    //if arr bit set...
-                    if (((whichParts >> 1) & 1) != 0)
-                    {
-                        out[m].arrangement = new int[TownMap.NUM_ARRANGEMENTS];
-                        byte[] barr = new byte[out[m].arrangement.length * 2];
-                        in.read(barr);
-
-                        int off = 0;
-                        for (int i = 0; i < out[m].arrangement.length; i++)
-                        {
-                            out[m].arrangement[i] = (barr[off++] & 0xff);
-                            out[m].arrangement[i] += ((barr[off++] & 0xff) << 8);
-                        }
-                    }
-                    //if pal bit set...
-                    if (((whichParts >> 2) & 1) != 0)
-                    {
-                        byte[] pal = new byte[64];
-                        in.read(pal);
-
-                        out[m].palette = new Color[2][16];
-                        readPalette(pal, 0, out[m].palette[0]);
-                        readPalette(pal, 32, out[m].palette[1]);
-                    }
-                }
-            }
-
-            in.close();
-
-            return out;
+            return importData(new FileInputStream(f));
         }
         catch (FileNotFoundException e)
         {
@@ -1308,6 +1395,21 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         {
             System.err.println("IO error importing town map data from "
                 + f.getAbsolutePath() + ".");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static TownMapImportData[] importData(byte[] b)
+    {
+        try
+        {
+            return importData(new ByteArrayInputStream(b));
+        }
+        catch (IOException e)
+        {
+            System.err.println("IO error importing Town Map data from "
+                + "byte array.");
             e.printStackTrace();
         }
         return null;
@@ -1355,33 +1457,29 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             exportData(f, a);
     }
 
-    private void importData()
+    private static boolean[][] showCheckList(boolean[][] in, String text,
+        String title)
     {
-        File f = getFile(false, "tnm", "TowN Map");
-        TownMapImportData[] tmid;
-        if (f == null || (tmid = importData(f)) == null)
-            return;
-
         CheckNode topNode = new CheckNode("Town Maps", true, true);
         topNode.setSelectionMode(CheckNode.DIG_IN_SELECTION);
         CheckNode[][] mapNodes = new CheckNode[NUM_TOWN_MAPS][4];
         for (int i = 0; i < mapNodes.length; i++)
         {
-            if (tmid[i] != null)
+            if (in == null || in[i][NODE_BASE])
             {
-                mapNodes[i][NODE_BASE] = new CheckNode(townMapNames[i], true,
-                    true);
+                mapNodes[i][NODE_BASE] = new CheckNode(logoScreenNames[i],
+                    true, true);
                 mapNodes[i][NODE_BASE]
                     .setSelectionMode(CheckNode.DIG_IN_SELECTION);
-                if (tmid[i].tiles != null)
+                if (in == null || in[i] == null || in[i][NODE_TILES])
                     mapNodes[i][NODE_BASE]
                         .add(mapNodes[i][NODE_TILES] = new CheckNode("Tiles",
                             false, true));
-                if (tmid[i].arrangement != null)
+                if (in == null || in[i] == null || in[i][NODE_ARR])
                     mapNodes[i][NODE_BASE]
                         .add(mapNodes[i][NODE_ARR] = new CheckNode(
                             "Arrangement", false, true));
-                if (tmid[i].palette != null)
+                if (in == null || in[i] == null || in[i][NODE_PAL])
                     mapNodes[i][NODE_BASE]
                         .add(mapNodes[i][NODE_PAL] = new CheckNode("Palettes",
                             false, true));
@@ -1397,20 +1495,50 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         checkTree.addMouseListener(new NodeSelectionListener(checkTree));
 
         //if user clicked cancel, don't take action
-        if (JOptionPane.showConfirmDialog(mainWindow, pairComponents(
-            new JLabel("<html>" + "Select which items you wish to<br>"
-                + "import. You will have a chance<br>"
-                + "to select which map you want to<br>"
-                + "actually put the imported data." + "</html>"),
-            new JScrollPane(checkTree), false), "Import What?",
+        if (JOptionPane.showConfirmDialog(null, pairComponents(
+            new JLabel(text), new JScrollPane(checkTree), false), title,
             JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
-            return;
+            return null;
 
         final boolean[][] a = new boolean[NUM_TOWN_MAPS][4];
         for (int m = 0; m < NUM_TOWN_MAPS; m++)
             for (int i = 0; i < 4; i++)
                 a[m][i] = mapNodes[m][i] == null ? false : mapNodes[m][i]
                     .isSelected();
+
+        return a;
+    }
+
+    private boolean importData()
+    {
+        File f = getFile(false, "tnm", "TowN Map");
+        TownMapImportData[] tmid;
+        if (f == null || (tmid = importData(f)) == null)
+            return false;
+        return importData(tmid);
+    }
+
+    private boolean importData(TownMapImportData[] tmid)
+    {
+        boolean[][] in = new boolean[NUM_TOWN_MAPS][4];
+        for (int i = 0; i < in.length; i++)
+        {
+            if (tmid[i] != null)
+            {
+                in[i][NODE_BASE] = true;
+                in[i][NODE_TILES] = tmid[i].tiles != null;
+                in[i][NODE_ARR] = tmid[i].arrangement != null;
+                in[i][NODE_PAL] = tmid[i].palette != null;
+            }
+        }
+
+        final boolean[][] a = showCheckList(in, "<html>"
+            + "Select which items you wish to<br>"
+            + "import. You will have a chance<br>"
+            + "to select which map you want to<br>"
+            + "actually put the imported data." + "</html>", "Import What?");
+        if (a == null)
+            return false;
 
         Box targetMap = new Box(BoxLayout.Y_AXIS);
         final JComboBox[] targets = new JComboBox[NUM_TOWN_MAPS];
@@ -1424,7 +1552,6 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                     + (a[m][NODE_TILES] ? "T" : "")
                     + (a[m][NODE_ARR] ? "A" : "") + (a[m][NODE_PAL] ? "P" : "")
                     + "): ", targets[m]));
-
             }
         }
 
@@ -1502,26 +1629,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
         targetDialog.setVisible(true);
         if (targetDialog.getTitle().equals("Canceled"))
-            return;
-
-        //        if (JOptionPane
-        //            .showConfirmDialog(mainWindow,
-        //                pairComponents(new JLabel("<html>"
-        //                    + "Select which map you would like<br>"
-        //                    + "the data to be imported into.<br>"
-        //                    + "For example, if you wish to import<br>" + "the "
-        //                    + townMapNames[0] + " map into the<br>" + townMapNames[1]
-        //                    + " map, then change the pull-down menu<br>" + "labeled "
-        //                    + townMapNames[0] + " to " + townMapNames[1]
-        //                    + ". If you do not<br>"
-        //                    + "wish to make any changes, just click ok.<br>" + "<br>"
-        //                    + "The T, A, and P indictate that you will be<br>"
-        //                    + "importing tiles, arrangements, and palettes<br>"
-        //                    + "respectively from that map." + "</html>"), targetMap,
-        //                    false), "Select import targets",
-        //                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) ==
-        // JOptionPane.CANCEL_OPTION)
-        //            return;
+            return false;
 
         for (int m = 0; m < NUM_TOWN_MAPS; m++)
         {
@@ -1540,5 +1648,135 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                                 tmid[m].palette[p][c]);
             }
         }
+
+        return true;
+    }
+
+    /**
+     * Imports data from the given <code>byte[]</code> based on user input.
+     * User input will always be expected by this method. This method exists to
+     * be called by <code>IPSDatabase</code> for "applying" files with .tnm
+     * extensions.
+     * 
+     * @param b <code>byte[]</code> containing exported data
+     * @param tme instance of <code>LogoScreenEditor</code> to call
+     *            <code>importData()</code> on
+     */
+    public static boolean importData(byte[] b, TownMapEditor tme)
+    {
+        boolean out = tme.importData(importData(b));
+        if (out)
+        {
+            if (tme.mainWindow != null)
+            {
+                tme.mainWindow.repaint();
+                tme.updatePaletteDisplay();
+                tme.tileSelector.repaint();
+                tme.arrangementEditor.clearSelection();
+                tme.arrangementEditor.repaint();
+                tme.updateTileEditor();
+            }
+            for (int i = 0; i < townMaps.length; i++)
+                townMaps[i].writeInfo();
+        }
+        return out;
+    }
+
+    private static boolean checkMap(TownMapImportData tmid, int i)
+    {
+        if (tmid.tiles != null)
+        {
+            //check tiles
+            for (int t = 0; t < tmid.tiles.length; t++)
+                for (int x = 0; x < tmid.tiles[t].length; x++)
+                    if (!Arrays.equals(tmid.tiles[t][x],
+                        townMaps[i].tiles[t][x]))
+                        return false;
+        }
+        if (tmid.arrangement != null)
+        {
+            //check arrangement
+            //TODO does this work?
+            if (!Arrays.equals(tmid.arrangement, townMaps[i].arrangementList))
+                ;
+        }
+        if (tmid.palette != null)
+        {
+            //check palette
+            for (int p = 0; p < tmid.palette.length; p++)
+                for (int c = 0; c < tmid.palette[p].length; c++)
+                    if (!tmid.palette[p][c].equals(townMaps[i].palette[p][c]))
+                        return false;
+        }
+
+        //nothing found wrong
+        return true;
+    }
+
+    private static boolean checkMap(TownMapImportData gid)
+    {
+        for (int i = 0; i < NUM_TOWN_MAPS; i++)
+            if (checkMap(gid, i))
+                return true;
+        return false;
+    }
+
+    /**
+     * Checks if data from the given <code>byte[]</code> has been imported.
+     * This method exists to be called by <code>IPSDatabase</code> for
+     * "checking" files with .tnm extensions.
+     * 
+     * @param b <code>byte[]</code> containing exported data
+     * @param tme instance of <code>TownMapEditor</code>
+     */
+    public static boolean checkData(byte[] b, TownMapEditor tme)
+    {
+        TownMapImportData[] tmid = importData(b);
+
+        for (int i = 0; i < tmid.length; i++)
+            if (tmid[i] != null)
+                if (!checkMap(tmid[i]))
+                    return false;
+
+        return true;
+    }
+
+    /**
+     * Restore data from the given <code>byte[]</code> based on user input.
+     * User input will always be expected by this method. This method exists to
+     * be called by <code>IPSDatabase</code> for "unapplying" files with .tnm
+     * extensions.
+     * 
+     * @param b <code>byte[]</code> containing exported data
+     * @param tme instance of <code>TownMapEditor</code>
+     */
+    public static boolean restoreData(byte[] b, TownMapEditor tme)
+    {
+        boolean[][] a = showCheckList(null, "<html>Select which items you wish"
+            + "to restore to the orginal EarthBound verions.</html>",
+            "Restore what?");
+        if (a == null)
+            return false;
+
+        for (int i = 0; i < a.length; i++)
+        {
+            if (a[i][NODE_BASE])
+            {
+                townMaps[i].readOrgInfo(a[i]);
+                townMaps[i].writeInfo();
+            }
+        }
+
+        if (tme.mainWindow != null)
+        {
+            tme.mainWindow.repaint();
+            tme.updatePaletteDisplay();
+            tme.tileSelector.repaint();
+            tme.arrangementEditor.clearSelection();
+            tme.arrangementEditor.repaint();
+            tme.updateTileEditor();
+        }
+
+        return true;
     }
 }

@@ -1852,7 +1852,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
     /**
      * Restore data from the given <code>byte[]</code> based on user input.
      * User input will always be expected by this method. This method exists to
-     * be called by <code>IPSDatabase</code> for "unapplying" files with .wbg
+     * be called by <code>IPSDatabase</code> for "unapplying" files with .lscn
      * extensions.
      * 
      * @param b <code>byte[]</code> containing exported data

@@ -1,5 +1,9 @@
 Next version (after v0.4.7):
-# Add new changes here
+# IPSDatabase extensions:
+	# Gas station editor
+	# Town map editor
+	# ...
+# ...
 
 v0.4.7:
 # Text Editor: raw text range start moved from 0x51D12 to 0x50200.
