@@ -1,6 +1,12 @@
 NEXT VERSION (after v0.5.5.1):
 # Updated codelist.txt (thanks EBPlayer1028)
 # Added image import to gas station editor.
+# Map Editor: Map Editor-related data is not loaded when the ROM is loaded
+# Map Editor: Added Error menu and sprite/door error dialogs (no longer displayed in console)
+# Door Editor: Added link for text pointer to the Text Editor
+# Photo Editor: BUGFIX: Preview's palette changes when palette selection changes
+# Teleport Editor: Added "Go To" button
+# Teleport Table Editor: Added "Go To" button
 
 v0.5.5.1
 # Added "Hide Error Dialog" option
