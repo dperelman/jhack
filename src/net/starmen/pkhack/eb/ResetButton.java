@@ -39,6 +39,7 @@ import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IPSFile;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.Rom;
+import net.starmen.pkhack.Stopwatch;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -178,10 +179,7 @@ public class ResetButton extends EbHackModule implements ActionListener
          */
         public void resetArea()
         {
-            for (int i = 0; i < getLen(); i++)
-            {
-                rom.write(getStart() + i, orgRom.read(getStart() + i));
-            }
+            rom.write(getStart(), orgRom.readByte(getStart(), getLen()));
         }
 
         /**

@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -589,19 +590,21 @@ public class Rom
     public void write(int offset, byte[] arg, int len) //write a [multibyte]
     // string to a place
     {
-        for (int i = 0; i < len; i++)
-        {
-            if (!(offset + i > this.length()))
-            //don't write past the end of the ROM
-            {
-                this.write(offset + i, arg[i]);
-            }
-            else
-            {   /***/
-                //System.out.println("Error: attempted write past end of
-                // ROM.");
-            }
-        }
+        //OK to use this instead of write()?
+        System.arraycopy(arg, 0, rom, offset, len);
+        //        for (int i = 0; i < len; i++)
+        //        {
+        //            if (!(offset + i > this.length()))
+        //            //don't write past the end of the ROM
+        //            {
+        //                this.write(offset + i, arg[i]);
+        //            }
+        //            else
+        //            { /***/
+        //                //System.out.println("Error: attempted write past end of
+        //                // ROM.");
+        //            }
+        //        }
     }
 
     /**
@@ -775,15 +778,25 @@ public class Rom
      * @param length Number of bytes to read.
      * @return <code>byte[]</code> at <code>offset</code> with a length of
      *         <code>length</code>. If
-     *         <code>offset &gt; the rom.length</code> then it is -1.
+     *         <code>offset &gt; the rom.length</code> then it is -1 or null
+     *         may be returned.
      */
     public byte[] readByte(int offset, int length)
     {
         byte[] returnValue = new byte[length];
-        for (int i = 0; i < length; i++)
+        try
         {
-            returnValue[i] = this.readByte(offset + i);
+            //OK to not end up going to read function?
+            System.arraycopy(rom, offset, returnValue, 0, length);
         }
+        catch (IndexOutOfBoundsException e)
+        {
+            return null;
+        }
+        //        for (int i = 0; i < length; i++)
+        //        {
+        //            returnValue[i] = this.readByte(offset + i);
+        //        }
         return returnValue;
     }
 
@@ -1669,6 +1682,24 @@ public class Rom
             out += readSeek() << (i * 8);
         }
         return out;
+    }
+
+    /**
+     * Writes the specified range from an orginal ROM into this ROM.
+     * 
+     * @param offset range to start reseting to orginal
+     * @param len number of bytes to reset to orginal
+     * @param orgRom orginal ROM to read from
+     * @see net.starmen.pkhack.eb.ResetButton
+     */
+    public void resetArea(int offset, int len, Rom orgRom)
+    {
+        //only works if neither is direct file IO
+        if (!this.isDirectFileIO() && !orgRom.isDirectFileIO())
+            System.arraycopy(orgRom.rom, offset, rom, offset, len);
+        //otherwise, use normal methods to read/write
+        else
+            write(offset, orgRom.readByte(offset, len));
     }
 
     /**
