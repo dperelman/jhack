@@ -16,11 +16,13 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 // import java.lang.Math;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
@@ -79,11 +81,23 @@ public class MapEditor extends EbHackModule implements ActionListener,
     private JFormattedTextField musicField;
     private JScrollBar scrollh, scrollv, scrollh2;
     private boolean changingSectors = false;
+    private boolean movingSprite = false;
+    private int[] movingSpriteInfo;
 
     public static final String[][][] menuNames = {
-        {{"File", "f"}, {"Save Changes", "s"}, {"Exit", "q"}},
-        {{"Mode", "m"}, {"Map View (Text)", "1"}, {"Map View", "2"},
-            {"Map Edit", "3"}, {"Sprite View", "4"}}};
+        {
+        	{"File", "f"},
+			{"Save Changes", "s"},
+			{"Exit", "q"}
+		},
+        {
+        	{"Mode", "m"}, 
+//        	{"Map View (Text)", "1"}, 
+//			{"Map View", "2"},
+            {"Map Edit", "1"}, 
+			{"Sprite Edit", "2"}
+            }
+        };
 
     public static final String[] TILESET_NAMES = {"Underworld", "Onett",
         "Twoson", "Threed", "Fourside", "Magicant", "Outdoors", "Summers",
@@ -199,6 +213,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         editbox.setPreferredSize(new Dimension((editwidth + 1) * tilewidth,
         		(editheight + 1) * tileheight));
         gfxcontrol.addMouseListener(new gfxListener());
+        gfxcontrol.addMouseMotionListener(new gfxListener());
         editbox.addMouseListener(new editboxListener());
         
         top_buttons = createTopButtons();
@@ -233,7 +248,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     {
         mapcontrol = new EbMap(this);
         gfxcontrol = new MapGraphics(this, x, y, screen_width, screen_height,
-        		tilewidth, tileheight, sector_width, sector_height, 2);
+        		tilewidth, tileheight, sector_width, sector_height, 0);
         editbox = new EditBox();
 
         // Create the GUI.
@@ -245,6 +260,16 @@ public class MapEditor extends EbHackModule implements ActionListener,
          * test_row.length; i++) { System.out.println("Test row tile " + i + ": " +
          * Integer.toHexString(test_row[i])); }
          */
+    }
+    
+    public void writeToRom()
+    {
+    	JOptionPane.showMessageDialog(mainWindow,
+    			"Map changes save on-the-fly.\n"
+    			+ "This will only save sprite data.");
+    	mapcontrol.writeSprites();
+    	JOptionPane.showMessageDialog(mainWindow,
+    			"Done!");
     }
 
     public void adjustmentValueChanged(AdjustmentEvent ae)
@@ -370,7 +395,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         }
         else if (e.getActionCommand().equals("apply"))
         {
-        	JOptionPane.showMessageDialog(mainWindow, "Hah! The Map Editor saves live!");
+        	writeToRom();
         }
         else if (e.getActionCommand().equals("close"))
         {
@@ -414,8 +439,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		{
     		if (Integer.parseInt(n2) == 1)
     		{
-    			JOptionPane.showMessageDialog(mainWindow,
-    					"Hah! The Map Editor saves live!");
+    			writeToRom();
     		}
     		else if (Integer.parseInt(n2) == 2)
     		{
@@ -458,14 +482,93 @@ public class MapEditor extends EbHackModule implements ActionListener,
             }
         }
 	}
-    
-    class gfxListener implements MouseListener
+
+    class gfxListener implements MouseListener, MouseMotionListener
 	{
+    	public void mouseMoved(MouseEvent e)
+    	{}
+    	
+    	public void mouseDragged(MouseEvent e)
+    	{
+    		if (movingSprite
+    				&& (gfxcontrol.getModeProps()[3] == 1))
+    		{
+    			gfxcontrol.setSprite(
+    					e.getX(), e.getY(),
+						movingSpriteInfo[3], movingSpriteInfo[4]);
+    			gfxcontrol.remoteRepaint();
+    		}
+    	}
+    	
         public void mousePressed(MouseEvent e)
-        {}
+        {
+            if ((e.getButton() == 1)
+            		&& (gfxcontrol.getModeProps()[3] == 1)
+					&& (! movingSprite))
+            {
+        		int mousex = e.getX();
+        		int mousey = e.getY();
+            	int spNum = gfxcontrol.getSpriteNum(
+            			mousex, mousey);
+            	if (spNum != -1)
+            	{
+                	int[] areaXY =
+                		gfxcontrol.getAreaXY(mousex, mousey);
+                	TPTEditor.TPTEntry tpt = 
+                		TPTEditor.tptEntries[mapcontrol.getSpriteTpt(
+							areaXY[0], areaXY[1], spNum)];
+            		movingSpriteInfo = 
+            			new int[] {
+            				areaXY[0], areaXY[1], spNum,
+							tpt.getSprite(), tpt.getDirection()
+            		};
+            		movingSprite = true;
+            	}
+            }
+        }
 
         public void mouseReleased(MouseEvent e)
-        {}
+        {
+        	if ((e.getButton() == 1)
+        			&& (gfxcontrol.getModeProps()[3] == 1)
+					&& movingSprite)
+        	{
+        		int mousex = e.getX();
+        		int mousey = e.getY();
+        		if (mousex < 0)
+        		{
+        			mousex = 0;
+        		}
+        		if (mousey < 0)
+        		{
+        			mousey = 0;
+        		}
+        		if (mousex > tilewidth * screen_width)
+        		{
+        			mousex = tilewidth * screen_width;
+        		}
+        		if (mousey > tileheight * screen_height)
+        		{
+        			mousey = tileheight * screen_height;
+        		}
+        		
+        		short tpt =
+        			mapcontrol.getSpriteTpt(movingSpriteInfo[0],
+        					movingSpriteInfo[1],
+							movingSpriteInfo[2]);
+        		int[] spLocXY =
+        			gfxcontrol.getSpLocXY(mousex, mousey);
+        		mapcontrol.removeSprite(
+        				movingSpriteInfo[0],
+						movingSpriteInfo[1],
+        				movingSpriteInfo[2]);
+        		mapcontrol.addSprite(spLocXY[0], spLocXY[1],
+        				(short) spLocXY[2], (short) spLocXY[3],
+						tpt);
+        		movingSprite = false;
+        		gfxcontrol.remoteRepaint();
+        	}
+        }
 
         public void mouseEntered(MouseEvent e)
         {}
@@ -511,50 +614,126 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	}
             else if (e.getButton() == 3)
             {
-            	changingSectors = true;
-                int mousex = e.getX();
-                int mousey = e.getY();
-                int sectorx = getSectorXorY(getTileXorY(mousex,
-                    tilewidth) + x, sector_width);
-                int sectory = getSectorXorY(getTileXorY(mousey,
-                    tileheight) + y, sector_height);
-                
-                int[] tsetpal = mapcontrol.getTsetPal(sectorx, sectory);
-                int[] modeprops = gfxcontrol.getModeProps();
-                if (modeprops[0] == 2)
-                {
-                    // System.out.println("Sector xy: " + sectorx + "," +
-                    // sectory);
-                    tilesetList.setSelectedIndex(tsetpal[0]);
-                    paletteField.setValue(new Integer(tsetpal[1]));
-                }
-                
-                palette = tsetpal[1];
-                
-                if (modeprops[2] == 1)
-                {
-                	boolean isSame = editbox.setTsetPal(
-                			mapcontrol.getDrawTileset(tsetpal[0]),
-                            TileEditor.tilesets[mapcontrol.getDrawTileset(
-                            		tsetpal[0])].getPaletteNum(tsetpal[0],
-                            				tsetpal[1]));
-                	if (! isSame)
+            	if ((gfxcontrol.getModeProps()[3] == 1)
+            			&& (! movingSprite))
+            	{
+                	int spNum = gfxcontrol.getSpriteNum(
+                			e.getX(), e.getY());
+                	if (spNum != -1)
                 	{
-                		editbox.remoteRepaint();
+                		int sure = JOptionPane.showConfirmDialog(
+                			    mainWindow,
+                			    "Are you sure you want to delete "
+								+ "this sprite entry?\nThis action "
+								+ "cannot be undone.",
+                			    "Are you sure?",
+                			    JOptionPane.YES_NO_OPTION);
+                		if (sure == JOptionPane.YES_OPTION)
+                		{
+                			int[] areaXY = gfxcontrol.getAreaXY(
+                					e.getX(), e.getY());
+                			mapcontrol.removeSprite(areaXY[0],
+                					areaXY[1], spNum);
+                			gfxcontrol.remoteRepaint();
+                		}
                 	}
-                }
+                	else
+                	{
+                		int[] spLoc =
+                			gfxcontrol.getSpLocXY(e.getX(), e.getY());
+            			mapcontrol.addSprite(spLoc[0], spLoc[1],
+            					(short) spLoc[2], (short) spLoc[3],
+								(short) 0);
+            			gfxcontrol.remoteRepaint();
+                	}
+            	}
+            	else
+            	{
+            		changingSectors = true;
+                    int mousex = e.getX();
+                    int mousey = e.getY();
+                    int sectorx = getSectorXorY(getTileXorY(mousex,
+                        tilewidth) + x, sector_width);
+                    int sectory = getSectorXorY(getTileXorY(mousey,
+                        tileheight) + y, sector_height);
+                    
+                    int[] tsetpal = mapcontrol.getTsetPal(sectorx, sectory);
+                    int[] modeprops = gfxcontrol.getModeProps();
+                    if (modeprops[0] == 2)
+                    {
+                        // System.out.println("Sector xy: " + sectorx + "," +
+                        // sectory);
+                        tilesetList.setSelectedIndex(tsetpal[0]);
+                        paletteField.setValue(new Integer(tsetpal[1]));
+                    }
+                    
+                    palette = tsetpal[1];
+                    
+                    if (modeprops[2] == 1)
+                    {
+                    	boolean isSame = editbox.setTsetPal(
+                    			mapcontrol.getDrawTileset(tsetpal[0]),
+                                TileEditor.tilesets[mapcontrol.getDrawTileset(
+                                		tsetpal[0])].getPaletteNum(tsetpal[0],
+                                				tsetpal[1]));
+                    	if (! isSame)
+                    	{
+                    		editbox.remoteRepaint();
+                    	}
+                    }
 
-                // System.out.println("Tile: " + getTileXorY(mousex - screen_x,
-                // tilewidth, screen_width) + "x" + getTileXorY(mousey -
-                // screen_y, tileheight, screen_height));
-                gfxcontrol.setSector(sectorx, sectory);
-                gfxcontrol.remoteRepaint();
-                changingSectors = false;
+                    // System.out.println("Tile: " + getTileXorY(mousex - screen_x,
+                    // tilewidth, screen_width) + "x" + getTileXorY(mousey -
+                    // screen_y, tileheight, screen_height));
+                    gfxcontrol.setSector(sectorx, sectory);
+                    gfxcontrol.remoteRepaint();
+                    changingSectors = false;
+            	}
+            }
+            else if ((e.getButton() == 2)
+            		&& (gfxcontrol.getModeProps()[3] == 1)
+					&& (! movingSprite))
+            {
+        		int mousex = e.getX();
+        		int mousey = e.getY();
+            	int spNum = gfxcontrol.getSpriteNum(mousex, mousey);
+            	if (spNum != -1)
+            	{
+            		int[] spLoc = gfxcontrol.getSpLocXY(mousex, mousey);
+            		short tpt = mapcontrol.getSpriteTpt(
+            				spLoc[0], spLoc[1], spNum);
+            		String input = JOptionPane.showInputDialog(
+                            mainWindow,
+                            "Change which TPT entry this"
+							+ " sprite entry will display,\n"
+							+ "or press Cancel to edit the"
+							+ " TPT entry currently being"
+							+ "used.",
+                            Integer.toString((int) tpt));
+            		if (input == null)
+            		{
+            			net.starmen.pkhack.JHack.main.showModule(
+                    			TPTEditor.class, new Integer (tpt));
+            		}
+            		else
+            		{
+            			short newTpt = (new Short(input)).shortValue();
+            			short[] spriteXY = mapcontrol.getSpriteXY(
+            					spLoc[0], spLoc[1], spNum);
+            			mapcontrol.removeSprite(
+            					spLoc[0], spLoc[1], spNum);
+            			mapcontrol.addSprite(
+            					spLoc[0], spLoc[1],
+								spriteXY[0], spriteXY[1],
+								newTpt);
+            		}
+            		gfxcontrol.remoteRepaint();
+            	}
             }
         }
 	}
-    
 
+    
     public int getSectorXorY(int tilexory, int sector_woh)
     {
     	return tilexory / sector_woh;
@@ -579,10 +758,27 @@ public class MapEditor extends EbHackModule implements ActionListener,
         }
         gfxcontrol.setMapArray(maparray);
         gfxcontrol.remoteRepaint();
-        mapcontrol.loadSpriteTables();
         
         TPTEditor.readFromRom(this);
         SpriteEditor.readFromRom(rom);
+        
+        if (mapcontrol.isDefaultSprites())
+        {
+    		int sure = JOptionPane.showConfirmDialog(
+    			    mainWindow,
+    			    "This rom is storing the sprite"
+					+ " data in the default places.\n"
+					+ "This is fine, but if you let"
+					+ " the Map Editor move them, you"
+					+ " will be able to have more sprite"
+					+ " entries.\nDo you want them moved?",
+					"Now, I ask you...",
+    			    JOptionPane.YES_NO_OPTION);
+    		if (sure == JOptionPane.YES_OPTION)
+    		{
+            	mapcontrol.moveSpriteData();
+    		}
+        }
     }
 
     public void hide()
@@ -602,7 +798,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
     public String getVersion()
     {
-        return "0.2";
+        return "0.3";
     }
 
     public String getCredits()
@@ -641,13 +837,18 @@ public class MapEditor extends EbHackModule implements ActionListener,
         // { allow sectors to be selectable with right-click (0 = no, 1 = yes, 2
             // = change sector vars too), draw map (0=no, 1=text tiles, 2=gfx
             // tiles),
-            //   allow map editing, draw sprites}
-            {2, 1, 0, 0}, {2, 2, 0, 0}, {2, 2, 1, 0}, {2, 2, 0, 1}};
+            //   allow map editing, sprite editing}
+        		
+            // {2, 1, 0, 0},
+			// {2, 2, 0, 0}, 
+			{2, 2, 1, 0}, 
+			{0, 2, 0, 1}
+			};
+        private int[] spriteProps;
         // tile_images is sorted by tilset, tile, palette
         public Image[][][] tile_images =
         	new Image[TILESET_NAMES.length][1024][maxpals];
-        public Image[] sprite_images = new Image[SpriteEditor.NUM_ENTRIES];
-        public int[][] spriteLocs;
+        public Image[][] spriteImages = new Image[SpriteEditor.NUM_ENTRIES][8];
 
         public MapGraphics(EbHackModule newhm, int newx, int newy,
             int newwidth, int newheight, int newtilewidth, int newtileheight,
@@ -682,6 +883,21 @@ public class MapEditor extends EbHackModule implements ActionListener,
             {
                 drawMap(g, g2d);
             }
+    		if (movingSprite
+    				&& (getModeProps()[3] == 1))
+    		{
+    			Image spImage =
+    				getSpriteImage(spriteProps[2], spriteProps[3]);
+    			g.drawImage(
+    					spImage, spriteProps[0], spriteProps[1],
+						this);
+    			g2d.setPaint(Color.red);
+    			g2d.draw(new Rectangle2D.Double(
+            			spriteProps[0] - 1,
+						spriteProps[1] - 1,
+						spImage.getWidth(this) + 1,
+						spImage.getHeight(this) + 1));
+    		}
         }
 
         protected void drawMap(Graphics g, Graphics2D g2d)
@@ -724,9 +940,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
                         tile_set = mapcontrol.getDrawTileset(tsetPal[0]);
                         tile_tile = row2draw[i2]
                             | (mapcontrol.getLocalTileset(i2 + x, i + y) << 8);
-                        // tile_pal = tsetPal[1]; //
-                        // TileEditor.tilesets[mapcontrol.getDrawTileset(tsetPal[0])].getPaletteNum(tsetPal[0],
-                        // tsetPal[1]);
                         tile_pal = TileEditor.tilesets[mapcontrol
                             .getDrawTileset(tsetPal[0])].getPaletteNum(
                             tsetPal[0], tsetPal[1]);
@@ -765,48 +978,159 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
             if (this.modeprops[this.mode][3] == 1)
             {
-            	int id = 0;
+            	// this.spriteLocs = new int[spriteData[0]][5];
             	for (int k = 0; k < screen_height; k++)
             	{
-            		if (((y + k) % (sector_height * 2)) == 0)
+            		if ((((y + k) % (sector_height * 2)) == 0)
+            				|| (k == 0))
             		{
             			for (int i = 0; i < screen_width; i++)
                     	{
                     		// System.out.println(i + ": " + (x % sector_width));
-                    		if (((x + i) % sector_width) == 0)
+                    		if ((((x + i) % sector_width) == 0)
+                    				|| (i == 0))
                     		{
-                            	int[] spriteData = mapcontrol.getSpriteData(
-                            			(x + i) / sector_width, (y + k) / sector_height);
-                            	this.spriteLocs = new int[spriteData[0]][5];
-                                for (int j = 0; j < spriteData[0]; j++)
+                    			if (! mapcontrol.isSpriteDataLoaded(
+                    					(x + i) / sector_width, (y + k) / (sector_height * 2)))
+                    			{
+                    				mapcontrol.loadSpriteData(
+                    						(x + i) / sector_width, (y + k) / (sector_height * 2));
+                    			}
+                    			int spritesNum = mapcontrol.getSpritesNum(
+                    					(x + i) / sector_width, (y + k) / (sector_height * 2));
+                            	short[][] spriteLocs = mapcontrol.getSpriteLocs(
+                            			(x + i) / sector_width, (y + k) / (sector_height * 2));
+                            	short[] spriteTpts = mapcontrol.getSpriteTpts(
+                            			(x + i) / sector_width, (y + k) / (sector_height * 2));
+                            	// this.spriteLocs = new int[spriteData[0]][5];
+                                for (int j = 0; j < spritesNum; j++)
                                 {
-                                	int tptNumber = (spriteData[(j 
-                                			* 4) + 3] * 0x100) + spriteData[(j * 4) + 2];
-                                	TPTEditor.TPTEntry tptEntry = TPTEditor.tptEntries[tptNumber];
+                                	TPTEditor.TPTEntry tptEntry = 
+                                		TPTEditor.tptEntries[spriteTpts[j]];
                                 	int spriteNum = tptEntry.getSprite();
-                                	int spriteDrawY = spriteData[(j * 4) + 4];
-                                	int spriteDrawX = spriteData[(j * 4) + 5];
-                                	//g2d.drawString(addZeros(Integer
-                                    //        .toHexString(spriteNum), 4), spriteDrawX, spriteDrawY);
+                                	int spriteDrawY = spriteLocs[j][1];
+                                	int spriteDrawX = spriteLocs[j][0];
+                                	/*System.out.println("drawing spt " + spriteNum
+                                			+ " x " + (spriteDrawX + (i * tilewidth))
+                                			+ " y " + (spriteDrawY + (k * tileheight)));*/
                                 	loadSpriteImage(spriteNum, tptEntry.getDirection());
                                 	SpriteEditor.SpriteInfoBlock sib = SpriteEditor.sib[spriteNum];
-                                	g.drawImage(sprite_images[spriteNum],
+                                	
+                                	// The sprites seem to be off by a little...?
+                                	//spriteDrawX = spriteDrawX - (tilewidth / 4);
+                                	//spriteDrawY = spriteDrawY - ((tileheight * 3) / 4);
+                                	
+                                	if (((y + k) % (sector_height * 2)) > 0)
+                                	{
+                                		spriteDrawY -= ((y + k) % (sector_height * 2)) *
+												tileheight;
+                                	}
+                                	
+                                	if (((x + i) % sector_width) > 0)
+                                	{
+                                		spriteDrawX -= ((x + i) % sector_width)
+												* tilewidth;
+                                	}
+                                	
+                                	g.drawImage(spriteImages[spriteNum][tptEntry.getDirection()],
                 							spriteDrawX + (i * tilewidth),
         									spriteDrawY + (k * tileheight),
 											this);
-                                	this.spriteLocs[id] = new int[] {
-                                			(x + i) / sector_width, (y + i) / sector_height,
-											spriteDrawX, spriteDrawY
-                                	};
+                                	g2d.setPaint(Color.red);
+                                	g2d.draw(new Rectangle2D.Double(
+                                			spriteDrawX + (i * tilewidth) - 1,
+											spriteDrawY + (k * tileheight) - 1,
+											spriteImages[spriteNum][tptEntry.getDirection()]
+																	.getWidth(this) + 1,
+											spriteImages[spriteNum][tptEntry.getDirection()]
+																	.getHeight(this) + 1));
                                 }
                     		}
                     	}
             		}
             	}
-            	
             }
         }
-
+        
+        public void setSprite(int spriteX, int spriteY,
+        		int spt, int direction)
+        {
+        	this.spriteProps = new int[] {
+        			spriteX, spriteY, spt, direction
+        	};
+        }
+        
+        public int getSpriteNum(int spriteX, int spriteY)
+        {
+        	int[] spLocXY = getSpLocXY(spriteX, spriteY);
+        	
+        	return mapcontrol.findSprite(
+        			spLocXY[0], spLocXY[1],
+					(short) spLocXY[2], (short) spLocXY[3]);
+        }
+        
+        public short getSpriteTpt(int spriteX, int spriteY)
+        {
+        	int[] spLocXY = getSpLocXY(spriteX, spriteY);
+        	
+        	int spriteNum = mapcontrol.findSprite(
+        			spLocXY[0], spLocXY[1],
+					(short) spLocXY[2], (short) spLocXY[3]);
+        	if (spriteNum == -1)
+        	{
+        		return -1;
+        	}
+        	else
+        	{
+        		return mapcontrol.getSpriteTpt(
+        				spLocXY[0], spLocXY[1], spriteNum);
+        	}
+        }
+        
+        public int[] getAreaXY(int spriteX, int spriteY)
+        {
+        	int areaX = 
+        		((spriteX / tilewidth) + this.x) / sector_width;
+        	int areaY = 
+        		((spriteY / tileheight) + this.y) / (sector_height * 2);
+        	return new int[] { areaX, areaY };
+        }
+        
+        public int[] getSpLocXY(int spriteX, int spriteY)
+        {
+        	int areaX = ((spriteX / tilewidth) + this.x) / sector_width;
+        	int areaY = ((spriteY / tileheight) + this.y) / (sector_height * 2);
+        	if ((this.x % sector_width) > 0)
+        	{
+        		if (areaX == 0)
+        		{
+        			spriteX += (this.x % sector_width) * tilewidth;
+        		}
+        		else
+        		{
+            		spriteX -= (sector_width - 
+            				(this.x % sector_width)) * tilewidth;
+        		}
+        	}
+    		spriteX -= (((spriteX / tilewidth) / sector_width)
+    				* sector_width * tilewidth);
+        	if ((this.y % (sector_height * 2)) > 0)
+        	{
+        		if (areaY == 0)
+        		{
+        			spriteY += (this.y % (sector_height * 2)) * tileheight;
+        		}
+        		else
+        		{
+        			spriteY -= ((sector_height * 2) - 
+            				(this.y % (sector_height * 2))) * tileheight;
+        		}
+        	}
+        	spriteY -= (((spriteY / tileheight) / (sector_height * 2))
+        			* (sector_height * 2) * tileheight);
+        	return new int[] { areaX, areaY, spriteX, spriteY };
+        }
+        
         protected int[] sectorDisplayWoH(int sectorxory, int sector_woh,
             int woh, int xory, int tilewoh)
         {
@@ -908,12 +1232,17 @@ public class MapEditor extends EbHackModule implements ActionListener,
             }
         }
         
+        public Image getSpriteImage(int spt, int direction)
+        {
+        	return this.spriteImages[spt][direction];
+        }
+        
         public void loadSpriteImage(int spt, int direction)
         {
-           	if (this.sprite_images[spt] == null)
+           	if (this.spriteImages[spt][direction] == null)
            	{
            		SpriteEditor.SpriteInfoBlock sib = SpriteEditor.sib[spt];
-           		this.sprite_images[spt] = new SpriteEditor.Sprite(sib
+           		this.spriteImages[spt][direction] = new SpriteEditor.Sprite(sib
                         .getSpriteInfo(direction), hm).getImage();
            	}
         }
@@ -986,7 +1315,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
     // Represents the whole EarthBound map and map-related data in the rom.
     public class EbMap
     {
-        private HackModule hm;
+        private EbHackModule hm;
         // this.all_addresses = new int[] { 0x160200, 0x162A00, 0x165200,
         // 0x168200, 0x16AA00, 0x16D200, 0x170200, 0x172A00 };
         private final int[] all_addresses = new int[]{
@@ -1355,14 +1684,32 @@ public class MapEditor extends EbHackModule implements ActionListener,
         private final static int tsetpal_address = 0x17AA00;
         private final static int tsettbl_address = 0x2F121B;
         private final static int localtset_address = 0x175200;
-        private int[] spritePlacementPtrs, spritePlacementData;
+        private int spPtrsAddress;
+        private int spDataAddress = 0xf0200;
+        private int spDataBase;
+        private int spDataEnd = 0xf8b91;
+        private int spAsmPointer = 0x2461;
+        private ArrayList[] spData =
+        	new ArrayList[(height_sectors / 2) * width_sectors];
 
         private AbstractRom rom;
 
-        public EbMap(HackModule hm)
+        public EbMap(EbHackModule hm)
         {
             this.hm = hm;
             this.rom = hm.rom;
+            
+            spPtrsAddress = HackModule.toRegPointer(
+            		rom.readMulti(spAsmPointer, 3));
+            
+            if (spPtrsAddress == 0xF63E7)
+            {
+            	spDataBase = 0x6be7;
+            }
+            else
+            {
+            	spDataBase = 0x61e7;
+            }
         }
         
         public void changeTile(int tilex, int tiley, int tile)
@@ -1441,10 +1788,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 return -1;
             }
             int address = EbMap.tsettbl_address + (mapTset * 2);
-            // System.out.println(Integer.toHexString(this.address));
             int drawTset = rom.read(address);
             return drawTset;
-            //return 0;
         }
 
         public int getLocalTileset(int gltx, int glty)
@@ -1485,50 +1830,315 @@ public class MapEditor extends EbHackModule implements ActionListener,
         	rom.write(address, newLtsetData);
         }
         
-        /*
-        public int[] getSpriteData(int sectorx, int sectory)
+        public boolean isSpriteDataLoaded(int areaX, int areaY)
         {
-        	int address = 0xf63e7 + (sectory % width_sectors) + sectorx;
-        	int dataAddress = 0xf0200 + rom.read(address) +
-				(rom.read(address + 0x1) * 0x100);
-        	int numSprites = rom.read(dataAddress);
-        	int[] spriteData = rom.read(dataAddress + 2,
-        			4 * numSprites);
-        	return spriteData;
-        }
-        */
-        
-        public void loadSpriteTables()
-        {
-        	this.spritePlacementPtrs = rom.read(0xf63e7,
-        			0xf6de6 - 0xf63e7);
-        	this.spritePlacementData = rom.read(0xf6de7,
-        			0xf8b91 - 0xf6de7);
+        	int areaNum = areaX + (areaY * width_sectors);
+        	return (spData[areaNum] != null);
         }
         
-        public int[] getSpriteData(int areaX, int areaY)
+        public void loadSpriteData(int areaX, int areaY)
         {
-        	int sectorNum = areaX + ((areaY / 2) * width_sectors);
-        	int address =
-        		this.spritePlacementPtrs[sectorNum * 2];
-        	address += this.spritePlacementPtrs[(sectorNum * 2) + 1]
-												* 0x100;
-        	if (address == 0)
+        	int areaNum = areaX + (areaY * width_sectors);
+        	int[] ptr = rom.read(spPtrsAddress + (areaNum * 2), 2);
+        	int ptrInt = ptr[0]  + (ptr[1] * 0x100);
+        	this.spData[areaNum] = new ArrayList();
+       		if (ptrInt > 0)
+       		{
+            	int[] data = rom.read(
+            			spDataAddress + ptrInt,
+            			(rom.read(spDataAddress + ptrInt)
+            					* 4) + 2);
+           		for (int j = 0; j < data[0]; j++)
+           		{
+           			short tpt = 
+           				(short) (data[2 + (j * 4)] +
+           						(data[3 + (j * 4)] 
+									  * 0x100));
+                	TPTEditor.TPTEntry tptEntry = 
+                		TPTEditor.tptEntries[tpt];
+                	SpriteEditor.SpriteInfoBlock sib =
+                		SpriteEditor.sib[tptEntry.getSprite()];
+                	short spriteX = 
+                		(short) (data[5 + (j * 4)] - (sib.width * 4));
+                	short spriteY =
+                		(short) (data[4 + (j * 4)] - (sib.height * 6));
+           			this.spData[areaNum].add(new SpriteLocation(
+           					tpt, spriteX, spriteY));
+           		}
+       		}
+       	}
+        
+        public short[][] getSpriteLocs(int areaX, int areaY)
+        {
+        	int areaNum = areaX + (areaY * width_sectors);
+        	
+        	short[][] returnValue = 
+        		new short[this.spData[areaNum].size()][2];
+        	
+        	for (int i = 0; i < this.spData[areaNum].size(); i++)
         	{
-        		return new int[] { 0, 0 };
+        		returnValue[i] = new short[] {
+        				((SpriteLocation) this.spData[areaNum].get(i)).getX(),
+						((SpriteLocation) this.spData[areaNum].get(i)).getY()
+        		};
         	}
-        	else
+        	return returnValue;
+        }
+        
+        public short[] getSpriteTpts(int areaX, int areaY)
+        {
+        	int areaNum = areaX + (areaY * width_sectors);
+        	
+        	short[] returnValue = 
+        		new short[this.spData[areaNum].size()];
+        	
+        	for (int i = 0; i < this.spData[areaNum].size(); i++)
         	{
-            	address -= 0x6be7;
-            	int numEntries = spritePlacementData[address];
-            	int[] data = new int[(numEntries * 4) + 2];
-            	System.arraycopy(this.spritePlacementData, address,
-            			data, 0, data.length);
-            	return data;
+        		returnValue[i] = 
+        			((SpriteLocation) this.spData[areaNum].get(i)).getTpt();
+        	}
+        	return returnValue;
+        }
+        
+        public short[] getSpriteXY(int areaX, int areaY, int spNum)
+        {
+        	int areaNum = areaX + (areaY * width_sectors);
+        	SpriteLocation spLoc = (SpriteLocation) 
+        			this.spData[areaNum].get(spNum);
+        	return new short[] { spLoc.getX(), spLoc.getY() };
+        }
+        
+        public short getSpriteTpt(int areaX, int areaY, int spNum)
+        {
+        	int areaNum = areaX + (areaY * width_sectors);
+        	return ((SpriteLocation) 
+        			this.spData[areaNum].get(spNum)).getTpt();
+        }
+        
+        public int getSpritesNum(int areaX, int areaY)
+        {
+        	int areaNum = areaX + (areaY * width_sectors);
+        	
+        	return this.spData[areaNum].size();
+        }
+        
+        public void removeSprite(int areaX, int areaY, int spNum)
+        {
+        	int areaNum = areaX + (areaY * width_sectors);
+        	this.spData[areaNum].remove(spNum);
+        }
+        
+        public void removeSprite(int areaX, int areaY, short spTpt,
+        		short spX, short spY)
+        {
+        	int areaNum = areaX + (areaY * width_sectors);
+        	this.spData[areaNum].remove(
+        			this.spData[areaNum].indexOf(
+        					new SpriteLocation(spTpt, spX, spY)));
+        }
+        
+        public void addSprite(int areaX, int areaY, short newX,
+        		short newY, short newTpt)
+        {
+        	int areaNum = areaX + (areaY * width_sectors);
+        	this.spData[areaNum].add(
+        			new SpriteLocation(newTpt, newX, newY));
+        }
+        
+        public int findSprite(int areaX, int areaY,
+        		short spriteX, short spriteY)
+        {
+        	int areaNum = areaX + (areaY * width_sectors);
+        	//System.out.println("areaxy " + areaX + " " + areaY +
+        	//		" spritexy " + spriteX + " " + spriteY);
+        	for (int i = 0; i < this.spData[areaNum].size(); i++)
+        	{
+        		SpriteLocation spLoc = 
+        			(SpriteLocation) this.spData[areaNum].get(i);
+            	TPTEditor.TPTEntry tptEntry = 
+            		TPTEditor.tptEntries[spLoc.getTpt()];
+            	SpriteEditor.SpriteInfoBlock sib =
+            		SpriteEditor.sib[tptEntry.getSprite()];
+            	Image image = 
+        			new SpriteEditor.Sprite(
+        					sib.getSpriteInfo(
+        							tptEntry.getDirection()), hm).getImage();
+            	/*System.out.println("search sprite x " + spLoc.getX()
+            			+ " y " + spLoc.getY()); 
+            	System.out.println("search sprite w " + (sib.width * 8)
+            			+ " h " + (sib.height * 8));*/
+        		if (((sib.width * 8) > spriteX - spLoc.getX())
+        			&& (0 < spriteX - spLoc.getX())
+					&& ((sib.height * 8) > spriteY - spLoc.getY())
+					&& (0 < spriteY - spLoc.getY()))
+        		{
+        			// System.out.println("match!");
+        			return i;
+        		}
+        	}
+        	return -1;
+        }
+        
+        public boolean isDefaultSprites()
+        {
+        	return (spPtrsAddress == 0xf63e7);
+        }
+        
+        public void moveSpriteData()
+        {
+        	int oldSpDataBase = spDataBase;
+        	spDataBase = spPtrsAddress - spDataAddress;
+        	int oldSpPtrsAddress = spPtrsAddress;
+        	
+        	byte[] newPointerData = new byte[spData.length * 2];
+        	for (int i = 0; i < spData.length; i++)
+        	{
+                int oldPointer = 
+                	rom.readMulti(oldSpPtrsAddress + (i * 2), 2);
+        		if (oldPointer == 0)
+        		{
+        			newPointerData[i * 2] = 0;
+        			newPointerData[1 + (i * 2)] = 0;
+        		}
+        		else
+        		{
+        			int newPointer = oldPointer - oldSpDataBase + spDataBase;
+
+        			newPointerData[i * 2] =
+        				(byte) (newPointer & 0xFF);
+        			newPointerData[1 + (i * 2)] =
+        				(byte) (newPointer / 0x100);
+        		}
+        	}
+
+        	boolean write = hm.writetoFree(newPointerData,
+        			spAsmPointer, 3,
+        			spData.length * 2,
+        			spData.length * 2,
+					false);
+        	
+        	rom.write(spDataAddress + spDataBase,
+        			rom.read(spDataAddress + oldSpDataBase,
+        					0x1daa));
+        	spPtrsAddress = HackModule.toRegPointer(
+        			rom.readMulti(spAsmPointer, 3));;
+        }
+        
+        public void writeSprites()
+        {
+        	int pointer = spDataBase;
+        	ArrayList spNewData = new ArrayList();
+        	for (int i = 0; i < spData.length; i++)
+        	{
+        		if ((spData[i] == null)
+        				|| (spData[i].size() == 0))
+        		{
+        			int[] oldPtrRaw = 
+        				rom.read(spPtrsAddress + (i * 2), 2);
+        			int oldPtr = oldPtrRaw[0]  + (oldPtrRaw[1] * 0x100);
+        			if (oldPtr > 0)
+        			{
+        				int[] oldData = rom.read(
+            					spDataAddress + oldPtr,
+    							(rom.read(spDataAddress +
+    									oldPtr) * 4) + 2);
+        				int[] data = new int[] {
+        						(pointer & 0xFF),
+    							(pointer / 0x100)
+        				};
+        				rom.write(spPtrsAddress + (i * 2),
+        						data, data.length);
+        				spNewData.add(oldData);
+        				pointer += oldData.length;
+        			}
+        		}
+        		else
+        		{
+    				int[] data = new int[] {
+    						(pointer & 0xFF),
+							(pointer / 0x100)
+    				};
+            		rom.write(spPtrsAddress + (i * 2),
+            				data,data.length);
+            		data = new int[2 + (
+            				spData[i].size() * 4)];
+            		data[0] = spData[i].size();
+            		data[1] = 0;
+            		
+            		for (int j = 0; j < spData[i].size(); j++)
+            		{
+            			SpriteLocation spLoc = 
+            				(SpriteLocation) 
+            						spData[i].get(j);
+                    	TPTEditor.TPTEntry tptEntry = 
+                    		TPTEditor.tptEntries[spLoc.getTpt()];
+                    	SpriteEditor.SpriteInfoBlock sib =
+                    		SpriteEditor.sib[tptEntry.getSprite()];
+            			data[2 + (j * 4)] =
+            				spLoc.getTpt() & 0xFF;
+            			data[3 + (j * 4)] =
+            				spLoc.getTpt() / 0x100;
+            			data[4 + (j * 4)] =
+            				spLoc.getY() + (sib.width * 8);
+            			data[5 + (j * 4)] =
+            				spLoc.getX() + (sib.width * 4);
+            		}
+            		spNewData.add(data);
+            		pointer += data.length;
+        		}
+        	}
+        	
+        	int address = 0;
+        	for (int i = 0; i < spNewData.size(); i++)
+        	{
+        		rom.write(spDataAddress + spDataBase + address,
+        				(int[]) spNewData.get(i));
+        		address += ((int[]) spNewData.get(i)).length;
         	}
         }
         
-        // public void changeSpriteData(int areaX, int areaY)
+        public class SpriteLocation
+		{
+        	private short tpt, x, y;
+        	
+        	public SpriteLocation(short newTpt,
+        			short newX, short newY)
+        	{
+        		this.tpt = newTpt;
+        		this.x = newX;
+        		this.y = newY;
+        	}
+        	
+        	public void setTpt(short newTpt)
+        	{
+        		this.tpt = newTpt;
+        	}
+        	
+        	public short getTpt()
+        	{
+        		return tpt;
+        	}
+        	
+        	public void setX(short newX)
+        	{
+        		this.x = newX;
+        	}
+        	
+        	public void setY(short newY)
+        	{
+        		this.y = newY;
+        	}
+        	
+        	public short getX()
+        	{
+        		return this.x;
+        	}
+        	
+        	public short getY()
+        	{
+        		return this.y;
+        	}
+		}
     }
 
     public class EditBox extends AbstractButton
