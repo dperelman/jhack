@@ -18,14 +18,13 @@ NEXT v0.0.x (minor) RELEASE
 
 LONG TERM
 
-# Door placement, destinations, see 20040826 log for how to edit
 # Gas Station image import/export
 # IPSDatabase extensions?
 # Starting stat editor ( 1DAF1 = Value for Ness' starting stats )
 # Battle Animation editor ( http://pkhack.fobby.net/misc/txt/psi_animation_doc.txt )
 # Title screen editor
 # Death screen editor
-# Credits photo border graphics
+# Credits photo border graphics (Need to find palette)
 	[16:53:42] <Chris_Davis|Away> Oh. BTW, you could add the 21EB4A to 21EC4F = Credits photo border graphics and arrangement (compressed)
 	[16:54:36] <AnyoneEB> what palette does that use?
 	[16:55:03] <Chris_Davis|Away> It's probably an unknown.

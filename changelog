@@ -1,4 +1,6 @@
-NEXT VERSION (after v0.5.1.2):
+NEXT VERSION (after v0.5.2):
+
+v0.5.2:
 # BUGFIX: FindFreeRange now only finds ranges that are within a single bank.
 # Gas Station Editor: BUGFIX: Pasting palette before copying does nothing.
 # Gas Station Editor: BUGFIX: Saves correctly if palette before and after
