@@ -107,8 +107,8 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             addressLabel = new JLabel()));
         entryEast.add(getLabeledComponent("Palette: ",
             palNum = createJComboBoxFromArray(new Object[8])));
-palNum.setActionCommand("palNumChanged");
-palNum.addActionListener(this);
+        palNum.setActionCommand("palNumChanged");
+        palNum.addActionListener(this);
         entryEast.add(HackModule.pairComponents(getLabeledComponent("Zoom: ",
             pairComponents(zoom = new JTextField(4), new JLabel("%"), true)),
             new JLabel(), false));
@@ -117,7 +117,8 @@ palNum.addActionListener(this);
 
         DrawingToolset dt = new DrawingToolset(this);
         entryEast.add(dt);
-        entry.add(pairComponents(entryEast, dt, false, true), BorderLayout.EAST);
+        entry
+            .add(pairComponents(entryEast, dt, false, true), BorderLayout.EAST);
 
         spal = new SpritePalette(16);
         spal.setActionCommand("spal");
@@ -361,9 +362,12 @@ palNum.addActionListener(this);
      */
     public void importImg(File f)
     {
+        if (f == null)
+            return;
         try
         {
-            if (!f.exists()) throw new FileNotFoundException();
+            if (!f.exists())
+                throw new FileNotFoundException();
             Sprite sp = new Sprite(getSpriteInfo(HackModule.getNumberOfString(
                 selector.getSelectedItem().toString(), false)), this);
             sp.setImage(ImageIO.read(f));
@@ -416,6 +420,8 @@ palNum.addActionListener(this);
      */
     public void exportImg(File f)
     {
+        if (f == null)
+            return;
         if (!f.getAbsolutePath().endsWith(".png"))
         {
             f = new File(f.getAbsolutePath() + ".png");
@@ -476,7 +482,8 @@ palNum.addActionListener(this);
 
     private void changePalette(int num)
     {
-        if (num < 0 || num > 7) return;
+        if (num < 0 || num > 7)
+            return;
         SpriteInfo spi = getSpriteInfo(HackModule.getNumberOfString(selector
             .getSelectedItem().toString(), false));
         sib[spi.sptNum].palette = num;
@@ -503,7 +510,7 @@ palNum.addActionListener(this);
         {
             hide();
         }
-        else if(ae.getActionCommand().equals("palNumChanged"))
+        else if (ae.getActionCommand().equals("palNumChanged"))
         {
             changePalette(palNum.getSelectedIndex());
         }
@@ -1063,7 +1070,7 @@ palNum.addActionListener(this);
             this.num = num;
             name = SpriteEditor.sptNames[num].toString();
             //int temp;
-            int offset = 3085635 + (4 * (num-1));
+            int offset = 3085635 + (4 * (num - 1));
 
             pointer = rom.read(offset++);
             pointer += rom.read(offset++) << 8;
@@ -1479,7 +1486,7 @@ palNum.addActionListener(this);
      */
     public static void setSptName(int i, String string)
     {
-        if(i != 0)
+        if (i != 0)
             sptNames[i] = string;
     }
 }
