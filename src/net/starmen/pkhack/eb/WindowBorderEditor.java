@@ -48,6 +48,7 @@ import net.starmen.pkhack.CheckNode;
 import net.starmen.pkhack.CheckRenderer;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
+import net.starmen.pkhack.IPSDatabase;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.MaxLengthDocument;
@@ -90,6 +91,25 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
     public WindowBorderEditor(Rom rom, XMLPreferences prefs)
     {
         super(rom, prefs);
+
+        try
+        {
+            Class[] c = new Class[]{byte[].class, WindowBorderEditor.class};
+            IPSDatabase.registerExtension("wbg", WindowBorderEditor.class
+                .getMethod("importData", c), WindowBorderEditor.class
+                .getMethod("restoreData", c), WindowBorderEditor.class
+                .getMethod("checkData", c), this);
+        }
+        catch (SecurityException e)
+        {
+            // no security model, shouldn't have to worry about this
+            e.printStackTrace();
+        }
+        catch (NoSuchMethodException e)
+        {
+            // spelling mistake, maybe? ^_^;
+            e.printStackTrace();
+        }
     }
     public static byte[][][] graphics;
     public static Color[] tempPal = new Color[]{Color.BLACK, Color.RED,
@@ -117,14 +137,18 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
      *         between abort (negative return value), retry (return value of
      *         trying this method again), fail (return value of 0),
      */
-    private static int readGraphics(int pointerAddress, int num, EbHackModule hm)
+    private static int readGraphics(int pointerAddress, int num,
+        EbHackModule hm, boolean readOrg)
     {
         byte[] buffer = new byte[8192];
         int[] tmp;
-        int address = hm.rom.readRegAsmPointer(pointerAddress);
+        Rom r = readOrg
+            ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
+            : hm.rom;
+        int address = r.readRegAsmPointer(pointerAddress);
         System.out.println("Reading from address: 0x"
             + Integer.toHexString(address) + " (" + address + ")");
-        tmp = hm.decomp(address, buffer);
+        tmp = hm.decomp(address, buffer, r);
         if (tmp[0] < 0)
         {
             System.err.println("Error #" + tmp[0]
@@ -139,7 +163,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             }
             else if (opt.equals("Retry"))
             {
-                return readGraphics(pointerAddress, num, hm);
+                return readGraphics(pointerAddress, num, hm, readOrg);
             }
             else if (opt.equals("Fail"))
             {
@@ -177,20 +201,23 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
     //    public static final int[][] FLAVOR_NAME_LOC = new int[][]{{0x04c34d, 12},
     //        {0x04c35a, 11}, {0x04c366, 18}, {0x04c378, 14}, {0x04c386, 14}};
 
-    private static void readFlavorNames(HackModule hm)
+    private static void readFlavorNames(HackModule hm, boolean readOrg)
     {
         /*
          * 04c34d:12 #19 from JeffMan's list 04c35a:11 #20 from JeffMan's list
          * 04c366:18 #21 from JeffMan's list 04c378:14 #22 from JeffMan's list
          * 04c386:14 #23 from JeffMan's list
          */
+        Rom r = readOrg
+            ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
+            : hm.rom;
         for (int i = 0; i < FLAVOR_NAME_POINTERS.length; i++)
         {
             //            int offset = hm.rom.readRegAsmPointer(FLAVOR_NAME_POINTERS[i]);
             //            System.out
             //                .println("WindowBorderEditor.readFlavorNames(): offset=0x"
             //                    + Integer.toHexString(offset));
-            flavorNames[i] = hm.readRegString(hm.rom
+            flavorNames[i] = hm.readRegString(r
                 .readRegAsmPointer(FLAVOR_NAME_POINTERS[i]));
             flavorLens[i] = flavorNames[i].length() + 1;
         }
@@ -239,35 +266,35 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         }
     }
 
-    public static boolean readFromRom(EbHackModule hm)
+    public static boolean readGraphics(EbHackModule hm, boolean readOrg)
     {
         graphics = new byte[423][8][8];
         rOff = 0;
-        //readGraphics(0x200200);
-        //readGraphics(0x200954);
-        //        int[][] gloc = new int[][] {{0x47E47,416},{0x47EAA,7}};
-        //        String[] name = new String[] {"window border graphics", "flavor
-        // window graphics"};
-        //        for(int i = 0; i < 2; i++)
-        //        {
-        //            oldLens[i] = readGraphics(gloc[i][0], gloc[i][1], hm);
-        //            if(oldLens[i] < 0)
-        //            {
-        //                
-        //            }
-        //        }
-        oldLens[0] = readGraphics(0x47E47, 416, hm); // and B798
+        oldLens[0] = readGraphics(0x47E47, 416, hm, readOrg); // and B798
         if (oldLens[0] < 0)
             return false;
         //oldLens[0] = readGraphics(0xB798);
-        oldLens[1] = readGraphics(0x47EAA, 7, hm);
+        oldLens[1] = readGraphics(0x47EAA, 7, hm, readOrg);
         if (oldLens[1] < 0)
             return false;
-        readPalettes(hm.rom);
+        return true;
+    }
+
+    public static boolean readFromRom(EbHackModule hm, boolean readOrg)
+    {
+        if (!readGraphics(hm, readOrg))
+            return false;
+        readPalettes(readOrg ? JHack.main
+            .getOrginalRomFile(hm.rom.getRomType()) : hm.rom);
         readSubPalNums();
-        readFlavorNames(hm);
+        readFlavorNames(hm, readOrg);
 
         return true;
+    }
+
+    public static boolean readFromRom(EbHackModule hm)
+    {
+        return readFromRom(hm, false);
     }
 
     private boolean readFromRom()
@@ -368,12 +395,17 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         }
     }
 
-    public static void writeInfo(EbHackModule hm)
+    public static void writeGraphics(EbHackModule hm)
     {
         wOff = 0;
         oldLens[0] = writeGraphics(new int[]{0x47E47, 0xB798}, oldLens[0], 416,
             hm);
         oldLens[1] = writeGraphics(new int[]{0x47EAA}, oldLens[1], 7, hm);
+    }
+
+    public static void writeInfo(EbHackModule hm)
+    {
+        writeGraphics(hm);
         writePalettes(hm.rom);
         writeFlavorNames(hm);
         //writeSubPalNums();
@@ -1579,7 +1611,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         return null;
     }
 
-    private class NodeSelectionListener extends MouseAdapter
+    private static class NodeSelectionListener extends MouseAdapter
     {
         JTree tree;
 
@@ -1643,35 +1675,11 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
 
     private void exportData()
     {
-        CheckNode topNode = new CheckNode("Window Border Graphics & Palettes",
-            true, true);
-        topNode.setSelectionMode(CheckNode.DIG_IN_SELECTION);
-        CheckNode[] flavorNodes = new CheckNode[8];
-        for (int i = 0; i < flavorNodes.length; i++)
-        {
-            flavorNodes[i] = new CheckNode(i == 0
-                ? "Graphics"
-                : flavorNames[i - 1], true, true);
-
-            topNode.add(flavorNodes[i]);
-        }
-        JTree checkTree = new JTree(topNode);
-        checkTree.setCellRenderer(new CheckRenderer());
-        checkTree.getSelectionModel().setSelectionMode(
-            TreeSelectionModel.SINGLE_TREE_SELECTION);
-        checkTree.putClientProperty("JTree.lineStyle", "Angled");
-        checkTree.addMouseListener(new NodeSelectionListener(checkTree));
-
-        if (JOptionPane.showConfirmDialog(mainWindow, pairComponents(
-            new JLabel("<html>" + "Select which items you wish to export."
-                + "</html>"), new JScrollPane(checkTree), false),
-            "Export What?", JOptionPane.OK_CANCEL_OPTION,
-            JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
+        boolean[] a = showChecklist(null, "<html>"
+            + "Select which items you wish to export." + "</html>",
+            "Export What?");
+        if (a == null)
             return;
-
-        boolean[] a = new boolean[8];
-        for (int m = 0; m < 8; m++)
-            a[m] = flavorNodes[m].isSelected();
 
         File f = getFile(true, "wbg", "Window Border Graphics & palettes");
         if (f != null)
@@ -1687,7 +1695,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         importData(wbid);
     }
 
-    private void importData(WindowBorderImportData wbid)
+    private static boolean[] showChecklist(boolean[] in, String text,
+        String title)
     {
         CheckNode topNode = new CheckNode("Window Border Graphics & Palettes",
             true, true);
@@ -1695,15 +1704,11 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         CheckNode[] flavorNodes = new CheckNode[8];
         for (int i = 0; i < 8; i++)
         {
-            if (i == 0)
+            if (in == null || in[i])
             {
-                if (wbid.tiles != null)
-                    flavorNodes[i] = new CheckNode("Graphics", true, true);
-                topNode.add(flavorNodes[i]);
-            }
-            else if (wbid.palettes[i - 1] != null)
-            {
-                flavorNodes[i] = new CheckNode(flavorNames[i - 1], true, true);
+                flavorNodes[i] = new CheckNode(i == 0
+                    ? "Graphics"
+                    : flavorNames[i - 1], true, true);
                 topNode.add(flavorNodes[i]);
             }
         }
@@ -1715,18 +1720,41 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         checkTree.addMouseListener(new NodeSelectionListener(checkTree));
 
         //if user clicked cancel, don't take action
-        if (JOptionPane.showConfirmDialog(mainWindow, pairComponents(
-            new JLabel("<html>" + "Select which items you wish to<br>"
-                + "import. You will have a chance<br>"
-                + "to select which screen you want to<br>"
-                + "actually put the imported data." + "</html>"),
-            new JScrollPane(checkTree), false), "Import What?",
+        if (JOptionPane.showConfirmDialog(null, pairComponents(
+            new JLabel(text), new JScrollPane(checkTree), false), title,
             JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
-            return;
+            return null;
 
         final boolean[] a = new boolean[8];
         for (int m = 0; m < a.length; m++)
             a[m] = flavorNodes[m] == null ? false : flavorNodes[m].isSelected();
+
+        return a;
+    }
+
+    private boolean importData(WindowBorderImportData wbid)
+    {
+        boolean[] in = new boolean[8];
+        Arrays.fill(in, false);
+        for (int i = 0; i < 8; i++)
+        {
+            if (i == 0)
+            {
+                if (wbid.tiles != null)
+                    in[i] = true;
+            }
+            else if (wbid.palettes[i - 1] != null)
+            {
+                in[i] = true;
+            }
+        }
+        final boolean[] a = showChecklist(in, "<html>"
+            + "Select which items you wish to<br>"
+            + "import. You will have a chance<br>"
+            + "to select which screen you want to<br>"
+            + "actually put the imported data." + "</html>", "Import What?");
+        if (a == null)
+            return false;
 
         Box targetMap = new Box(BoxLayout.Y_AXIS);
         final JComboBox[] targets = new JComboBox[flavorNames.length];
@@ -1813,7 +1841,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
 
             targetDialog.setVisible(true);
             if (targetDialog.getTitle().equals("Canceled"))
-                return;
+                return false;
         }
 
         //        if (JOptionPane
@@ -1849,7 +1877,9 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                 }
             }
         }
-        mainWindow.repaint();
+        if (mainWindow != null)
+            mainWindow.repaint();
+        return true;
     }
 
     /**
@@ -1862,8 +1892,98 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
      * @param wbe instance of <code>WindowBorderEditor</code> to call
      *            <code>importData()</code> on
      */
-    public static void importData(byte[] b, WindowBorderEditor wbe)
+    public static boolean importData(byte[] b, WindowBorderEditor wbe)
     {
-        wbe.importData(importData(b));
+        return wbe.importData(importData(b));
+    }
+
+    private static boolean checkPal(Color[][] pal, int p)
+    {
+        for (int s = 0; s < pal.length; s++)
+            for (int c = 0; c < pal[s].length; c++)
+                if (!pal[s][c].equals(palettes[p][s][c]))
+                    return false;
+        return true;
+    }
+
+    private static boolean checkPal(Color[][] pal)
+    {
+        //could be applied to any palette, check all
+        for (int p = 0; p < palettes.length; p++)
+            if (checkPal(pal, p))
+                return true;
+        return false;
+    }
+
+    /**
+     * Checks if data from the given <code>byte[]</code> has been imported.
+     * This method exists to be called by <code>IPSDatabase</code> for
+     * "checking" files with .wbg extensions.
+     * 
+     * @param b <code>byte[]</code> containing exported data
+     * @param wbe instance of <code>WindowBorderEditor</code> to call
+     *            <code>importData()</code> on
+     */
+    public static boolean checkData(byte[] b, WindowBorderEditor wbe)
+    {
+        WindowBorderImportData wbid = importData(b);
+
+        //check graphics if included
+        if (wbid.tiles != null)
+        {
+            for (int t = 0; t < wbid.tiles.length; t++)
+                for (int x = 0; x < wbid.tiles[t].length; x++)
+                    if (!Arrays.equals(wbid.tiles[t][x], graphics[t][x]))
+                        return false;
+        }
+        //check palettes
+        for (int p = 0; p < wbid.palettes.length; p++)
+            if (wbid.palettes[p] != null) //make sure pal is there
+                if (!checkPal(wbid.palettes[p]))
+                    return false;
+
+        //didn't find anything missing
+        return true;
+    }
+
+    /**
+     * Restore data from the given <code>byte[]</code> based on user input.
+     * User input will always be expected by this method. This method exists to
+     * be called by <code>IPSDatabase</code> for "unapplying" files with .wbg
+     * extensions.
+     * 
+     * @param b <code>byte[]</code> containing exported data
+     * @param wbe instance of <code>WindowBorderEditor</code> to call
+     *            <code>importData()</code> on
+     */
+    public static void restoreData(byte[] b, WindowBorderEditor wbe)
+    {
+        boolean[] a = showChecklist(null, "<html></html>", "Restore what?");
+        if (a[0])
+        {
+            readGraphics(wbe, true);
+            writeGraphics(wbe);
+        }
+        Rom orgRom = JHack.main.getOrginalRomFile(wbe.rom.getRomType());
+        //restore palettes
+        //each of 7 palettes has 8 subpals of 4 colors each
+        //2 bytes/color = 8*4*2 = 64 bytes/palette
+        //reset areas of selected palettes
+        for (int i = 1; i < a.length; i++)
+            if (a[i])
+                wbe.rom.resetArea(0x2021C8 + (i - 1) * 64, 64, orgRom);
+        //reread palettes
+        readPalettes(wbe.rom);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see net.starmen.pkhack.HackModule#reset()
+     */
+    public void reset()
+    {
+        super.reset();
+        readFromRom();
     }
 }

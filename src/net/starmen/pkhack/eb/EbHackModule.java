@@ -195,11 +195,12 @@ public abstract class EbHackModule extends HackModule
      *            to the right size
      * @param maxlen Maximum decompression length, probably
      *            <code>buffer.length</code>
+     * @param rom <code>Rom</code> to read from
      * @return <code>int[]</code> where [0] = Negitive on error, number of
      *         bytes decompressed into buffer otherwise. [1] = number of bytes
      *         read from ROM
      */
-    public int[] decomp(int cdata, byte[] buffer, int maxlen)
+    public int[] decomp(int cdata, byte[] buffer, int maxlen, Rom rom)
     {
         int start = cdata;
         int bpos = 0, bpos2 = 0;
@@ -290,6 +291,43 @@ public abstract class EbHackModule extends HackModule
             }
         }
         return new int[] { bpos, cdata - start + 1 };
+    }
+    /**
+     * The decompressor function. Takes a pointer to the compressed block, a
+     * pointer to the buffer which it decompresses into, and the maximum length.
+     * Returns the number of bytes uncompressed, or -1 if decompression failed.
+     * Ported by AnyoneEB from Cabbage's tile editor source.
+     * 
+     * @param cdata Address of compressed data
+     * @param buffer byte arrray to put decompressed data into, must be inited
+     *            to the right size
+     * @param maxlen Maximum decompression length, probably
+     *            <code>buffer.length</code>
+     * @return <code>int[]</code> where [0] = Negitive on error, number of
+     *         bytes decompressed into buffer otherwise. [1] = number of bytes
+     *         read from ROM
+     */
+    public int[] decomp(int cdata, byte[] buffer, int maxlen)
+    {
+        return decomp(cdata, buffer, maxlen, rom);
+    }
+    /**
+     * The decompressor function. Takes a pointer to the compressed block and a
+     * pointer to the buffer which it decompresses into sized to the maximum
+     * length. Returns the number of bytes uncompressed, or -1 if decompression
+     * failed. Ported by AnyoneEB from Cabbage's tile editor source.
+     * 
+     * @param cdata Address of compressed data
+     * @param buffer byte arrray to put decompressed data into, must be inited
+     *            to the right size
+     * @param rom <code>Rom</code> to read from
+     * @return <code>int[]</code> where [0] = Negitive on error, number of
+     *         bytes decompressed into buffer otherwise. [1] = number of bytes
+     *         read from ROM
+     */
+    public int[] decomp(int cdata, byte[] buffer, Rom r)
+    {
+        return decomp(cdata, buffer, buffer.length, r);
     }
     /**
      * The decompressor function. Takes a pointer to the compressed block and a

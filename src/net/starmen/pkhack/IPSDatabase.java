@@ -732,7 +732,8 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
      */
     public static boolean applyFile(String filename, byte[] file)
     {
-        return applyFile(filename, file, METHOD_APPLY).equals(Boolean.TRUE);
+        Object out = applyFile(filename, file, METHOD_APPLY);
+        return out != null ? out.equals(Boolean.TRUE) : false;
     }
 
     /**
@@ -756,7 +757,8 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
      */
     public static boolean unapplyFile(String filename, byte[] file)
     {
-        return applyFile(filename, file, METHOD_UNAPPLY).equals(Boolean.TRUE);
+        Object out = applyFile(filename, file, METHOD_UNAPPLY);
+        return out != null ? out.equals(Boolean.TRUE) : false;
     }
 
     /**

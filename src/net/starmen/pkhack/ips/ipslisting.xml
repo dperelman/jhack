@@ -94,12 +94,15 @@
 		name = "EBisumaru's Font" sdesc = "Changes normal font"
 		sshot = "newFontNormal.png" sssize = "3581" type = "regfont" romtype = "Earthbound" />
 	<!-- Window border hacks -->
-	<ips src = "winborderhack_cd.ips" size = "2059" author = "Chris_Davis"
-		name = "Window Border Hack" sdesc = "Changes window border graphics."
+	<ips src = "borderstyle1.wbg" size = "13538" author = "Chris_Davis"
+		name = "Window Border Hack 1" sdesc = "Changes window border graphics."
 		sshot = "winborderhack_cd.png" sssize = "7094" type = "windowborder" romtype = "Earthbound" />
-	<ips src = "winborderhack2_cd.ips" size = "2162" author = "Chris_Davis"
+	<ips src = "borderstyle2.wbg" size = "13538" author = "Chris_Davis"
 		name = "Window Border Hack 2" sdesc = "Changes window border graphics."
 		sshot = "winborderhack2_cd.png" sssize = "6056" type = "windowborder" romtype = "Earthbound" />
+	<ips src = "borderstyleultimate.wbg" size = "13922" author = "Chris_Davis"
+		name = "Window Border Hack Ultimate" sdesc = "Changes window border graphics."
+		type = "windowborder" romtype = "Earthbound" />
 	<!-- even more misc. hacks -->
 	<ips src = "debugtrans.ips" size = "1600" author = "ROFISH"
 		name = "Debug Menu Translation" sdesc = "Translates debug menu to english."
