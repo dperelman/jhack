@@ -659,7 +659,6 @@ public class MapEditor extends EbHackModule implements ActionListener
             
             this.modeMenu = modeMenu;
             setMapXY(0,0);
-            updateComponents();
             reloadMap();
         }
         
@@ -1146,9 +1145,10 @@ public class MapEditor extends EbHackModule implements ActionListener
         		this.y = 0;
         	else
         		this.y = y;
+        	updateComponents();
         }
         
-        public void updateComponents()
+        private void updateComponents()
         {
         	muteEvents = true;
         	if (xField != null) 
@@ -1686,28 +1686,23 @@ public class MapEditor extends EbHackModule implements ActionListener
                         		"Delete door", 'd', null, 
 								PopupListener.DEL_DOOR, 
 								popupListener));
-                		/*popup.add(EbHackModule.createJMenuItem(
-                        		"Cut sprite", 'u', null, 
-								PopupListener.CUT_SPRITE, 
-								popupListener));
-                		popup.add(EbHackModule.createJMenuItem(
-                        		"Copy sprite", 'c', null, 
-								PopupListener.COPY_SPRITE, 
-								popupListener));
-                		if (copyTpt >= 0)
-                			popup.add(EbHackModule.createJMenuItem(
-                            		"Paste sprite", 'p', null, 
-    								PopupListener.PASTE_SPRITE, 
-    								popupListener));*/
-                		String dest = Integer.toString(
-                				EbMap.getDoorLocation(
-                						doorCoords[0], doorCoords[1], num)
-										.getDestIndex());
-                		popup.add(EbHackModule.createJMenuItem(
-                				"Edit entry (Destination #" + dest + ")",
+                		EbMap.DoorLocation doorLocation = EbMap.getDoorLocation(
+                				doorCoords[0], doorCoords[1], num);
+                		String dest;
+                		if (EbMap.getDoorDestType(doorLocation.getType()) >= 0)
+                			dest = "Destination #" + Integer.toString(doorLocation.getDestIndex());
+                		else
+                			dest = "No Destination";
+                   		popup.add(EbHackModule.createJMenuItem(
+                				"Edit entry (" + dest + ")",
 								's', null,
 								PopupListener.EDIT_DEST, 
 								popupListener));
+                		if (EbMap.getDoorDestType(doorLocation.getType()) == 0)
+                			popup.add(EbHackModule.createJMenuItem(
+                    				"Jump to destination", 'j', null,
+    								PopupListener.JUMP_DEST, 
+    								popupListener));
                 	}
                 	else
                 	{
@@ -1718,11 +1713,6 @@ public class MapEditor extends EbHackModule implements ActionListener
                         		"Add door", 'a', null, 
 								PopupListener.ADD_DOOR, 
 								popupListener));
-                		/*if (copyTpt >= 0)
-                			popup.add(EbHackModule.createJMenuItem(
-                            		"Paste sprite", 'p', null, 
-    								PopupListener.PASTE_SPRITE, 
-    								popupListener));*/
                 	}
                     popup.show(this, e.getX(), e.getY());
             	}
@@ -1793,6 +1783,7 @@ public class MapEditor extends EbHackModule implements ActionListener
 	    	public static final String COPY_DOOR = "copyDoor";
 	    	public static final String CUT_DOOR = "cutDoor";
 	    	public static final String PASTE_DOOR = "pasteDoor";
+	    	public static final String JUMP_DEST = "jumpDest";
 	    	
 	    	private int areaX, areaY, coordX, coordY, num, doorType, doorPtr;
 	    	private short copyTpt;
@@ -1914,6 +1905,16 @@ public class MapEditor extends EbHackModule implements ActionListener
 	    		{
 	    			net.starmen.pkhack.JHack.main.showModule(DoorEditor.class, 
 	    					new int[] { areaX, areaY, num });
+	    		}
+	    		else if (ac.equals(JUMP_DEST))
+	    		{
+	    			EbMap.Destination dest = EbMap.getDestination(
+	    					EbMap.getDoorLocation(areaX, areaY, num).getDestIndex());
+	    			gfxcontrol.setMapXY(
+	    					dest.getX() * 8 / MapEditor.tileWidth,
+	    					dest.getY() * 8 / MapEditor.tileHeight);
+	    			gfxcontrol.reloadMap();
+	    			gfxcontrol.remoteRepaint();
 	    		}
 	    	}
 		}
