@@ -123,7 +123,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         }
         tilesetList = new JComboBox(tList_names);
         tilesetList.setActionCommand("TtilesetList");
-        tilesetList.addActionListener(this);
+        tilesetList.addActionListener(new tsetListener());
         panel.add(tilesetList);
 
         panel.add(new JLabel("Palette: "));
@@ -341,7 +341,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
         }
 
     }
-
+    
     public void actionPerformed(ActionEvent e)
     {
         String name = e.getActionCommand();
@@ -355,7 +355,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
             // System.out.println("A top buttons action: " + name.substring(1));
         }
     }
-
+    
     public void menuAction(String n1, String n2)
     {
         // System.out.println("A menu action: " + n1 + n2);
@@ -365,6 +365,19 @@ public class MapEditor extends EbHackModule implements ActionListener,
             gfxcontrol.remoteRepaint();
         }
     }
+
+    class tsetListener implements ActionListener
+	{
+    	public void actionPerformed(ActionEvent e)
+        {
+    		if (gfxcontrol.knowsSector())
+    		{
+    			int[] sectorxy = gfxcontrol.getSectorxy();
+    			System.out.println("sectorxy: " +
+    					sectorxy[0] + " " + sectorxy[1]);
+    		}
+        }
+	}
     
     class editboxListener implements MouseListener
 	{
@@ -811,6 +824,16 @@ public class MapEditor extends EbHackModule implements ActionListener,
                 this.sectorx = newsectorx;
                 this.sectory = newsectory;
             }
+        }
+        
+        public boolean knowsSector()
+        {
+        	return this.knowssector;
+        }
+        
+        public int[] getSectorxy()
+        {
+        	return new int[] { sectorx, sectory };
         }
 
         public void loadTileImage(int loadtset, int loadtile, int loadpalette)
@@ -1377,6 +1400,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
         		System.out.println("newLtset2set #" + i 
         				+ ": " + Integer.toBinaryString(newLtset2set));
         		newLtsetData += newLtset2set << (i * 2);
+        		System.out.println("newLtsetData #" + i 
+        				+ ": " + Integer.toBinaryString(newLtsetData)); 
         	}
         	System.out.println("Old ltset: " + Integer.toBinaryString(local_tset)
         			+ " New ltset: " + Integer.toBinaryString(newLtsetData));
