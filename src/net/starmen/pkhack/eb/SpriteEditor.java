@@ -754,7 +754,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         {
             sprite[x][y] = (byte) pixel;
         }
-
+        
         /**
          * Returns the Color at given coordinate.
          * 
@@ -762,9 +762,32 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          * @param y Coordinate to read
          * @return Color at the given coordinate
          */
+        
         public Color getPixelColor(int x, int y)
         {
-            return this.palette[this.getPixel(x, y)];
+        	return getPixelColor(x, y, false);
+        }
+        
+        /**
+         * Returns the Color at given coordinate.
+         * 
+         * @param x Coordinate to read
+         * @param y Coordinate to read
+         * @param trans Whether color 0 should be transparent
+         * @return Color at the given coordinate
+         */
+        public Color getPixelColor(int x, int y, boolean trans)
+        {
+        	int colorNum = this.getPixel(x,y);
+        	if ((colorNum == 0)
+        			&& trans)
+        	{
+        		return new Color(0,0,0,0);
+        	}
+        	else
+        	{
+        		return this.palette[this.getPixel(x, y)];
+        	}
         }
 
         /**
@@ -841,14 +864,27 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
                 for (int y = 0; y < sprite[0].length; y++)
                     sprite[x][y] = (byte) in[x][y];
         }
-
+        
         /**
          * Returns an image of this Sprite.
          * 
+         * @param trans Whether color 0 should be transparent
          * @return A BufferedImage of what this Sprite looks like.
          * @see #setImage(BufferedImage)
          */
         public BufferedImage getImage()
+        {
+        	return getImage(false);
+        }
+
+        /**
+         * Returns an image of this Sprite.
+         * 
+         * @param trans Whether color 0 should be transparent
+         * @return A BufferedImage of what this Sprite looks like.
+         * @see #setImage(BufferedImage)
+         */
+        public BufferedImage getImage(boolean trans)
         {
             BufferedImage out = new BufferedImage(sprite.length,
                 sprite[0].length, BufferedImage.TYPE_4BYTE_ABGR_PRE);
@@ -860,7 +896,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
                 {
                     g.setColor(this.getPixelColor((si.isHFliped()
                         ? (sprite.length - 1) - x
-                        : x), y));
+                        : x), y, trans));
                     g.drawLine(x, y, x, y); //there's no draw point, WHY?!?
                 }
             }
