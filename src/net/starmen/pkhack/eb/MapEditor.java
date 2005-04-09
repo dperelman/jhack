@@ -57,7 +57,7 @@ import net.starmen.pkhack.XMLPreferences;
  * 
  * @author Mr. Tenda
  */
-public class MapEditor extends EbHackModule implements ActionListener
+public class MapEditor extends EbHackModule implements ActionListener, MapGraphicsListener
 {
     public MapEditor(AbstractRom rom, XMLPreferences prefs)
     {
@@ -77,18 +77,21 @@ public class MapEditor extends EbHackModule implements ActionListener
     public static final int palsNum = 59;
     private static boolean hasLoaded = false;
     private JMenu modeMenu;
-    private JMenuItem sectorProps, findSprite;
+    private JMenuItem sectorProps, findSprite, copySector, pasteSector;
     private boolean oldCompatability = false;
+    
+    private int[][][] copiedSectorTiles = new int[sectorHeight][sectorWidth][2];
+    private EbMap.Sector copiedSector;
     
     private JFrame errorWindow;
     private JLabel errorTitle;
     private JTextArea errorText;
     private JButton errorClose;
 
-    public static final String[] TILESET_NAMES = {"Underworld", "Onett",
+    /*public static final String[] TILESET_NAMES = {"Underworld", "Onett",
         "Twoson", "Threed", "Fourside", "Magicant", "Outdoors", "Summers",
         "Desert", "Dalaam", "Indoors 1", "Indoors 2", "Stores 1", "Caves 1",
-        "Indoors 3", "Stores 2", "Indoors 4", "Winters", "Scaraba", "Caves 2"};
+        "Indoors 3", "Stores 2", "Indoors 4", "Winters", "Scaraba", "Caves 2"};*/
 
     private MapGraphics gfxcontrol;
 
@@ -220,7 +223,26 @@ public class MapEditor extends EbHackModule implements ActionListener
 				MenuListener.EXIT, 
 				menuListener));
         menuBar.add(menu);
+        
+        menu = new JMenu("Edit");
+        copySector = EbHackModule.createJMenuItem(
+        		"Copy Sector", 'c', null, 
+				MenuListener.COPY_SECTOR,
+				menuListener);
+        menu.add(copySector);
+        pasteSector = EbHackModule.createJMenuItem(
+        		"Paste Sector", 'p', null, 
+				MenuListener.PASTE_SECTOR,
+				menuListener);
+        menu.add(pasteSector);
+        sectorProps = EbHackModule.createJMenuItem(
+        		"Edit Sector's Properties", 'r', null, 
+				MenuListener.SECTOR_PROPS,
+				menuListener);
+        menu.add(sectorProps);
+        menuBar.add(menu);
 		
+        modeMenu = new JMenu("Mode");
 		group = new ButtonGroup();
 		radioButton = new JRadioButtonMenuItem("Map Edit");
 		radioButton.setSelected(true);
@@ -249,8 +271,10 @@ public class MapEditor extends EbHackModule implements ActionListener
         menuBar.add(modeMenu);
         
         menu = new JMenu("Tools");
-        findSprite.addActionListener(menuListener);
-        findSprite.setEnabled(false);
+        findSprite = EbHackModule.createJMenuItem(
+        		"Find Sprite Entry", 'f', null, 
+				MenuListener.FIND_SPRITE,
+				menuListener);
         menu.add(findSprite);
         menu.add(EbHackModule.createJMenuItem(
         		"Delete All Sprites", 'd', null, 
@@ -268,9 +292,6 @@ public class MapEditor extends EbHackModule implements ActionListener
         		"Reload Music Names", 'm', null, 
 				MenuListener.MUSIC_NAMES, 
 				menuListener));
-        sectorProps.addActionListener(menuListener);
-        sectorProps.setEnabled(false);
-        menu.add(sectorProps);
         menuBar.add(menu);
         
         menu = new JMenu("Options");
@@ -423,31 +444,26 @@ public class MapEditor extends EbHackModule implements ActionListener
     
     protected void init()
     {
-        modeMenu = new JMenu("Mode");
-        sectorProps = EbHackModule.createJMenuItem(
-        		"Edit Sector's Properties", 'p', null, 
-				MenuListener.SECTOR_PROPS, null);
-        findSprite = EbHackModule.createJMenuItem(
-        		"Find Sprite Entry", 'f', null, 
-				MenuListener.FIND_SPRITE, null);
-    	
-        gfxcontrol = new MapGraphics(this, 24, 12, 0, 
-        		true, true, modeMenu, sectorProps, findSprite);
+        gfxcontrol = new MapGraphics(this, 24, 12, true, true, this);
 
         createGUI();
+        
+        gfxcontrol.changeMode(0);
+        gfxcontrol.setSector(-1,-1);
     }
     
     private void readFromRom()
     {
     	readFromRom(this);
     	gfxcontrol.loadMusicNames();
+    	gfxcontrol.loadTilesetNames();
     }
     
     public static void readFromRom(HackModule hm)
     {
     	if (!hasLoaded)
     	{
-//    		 EbMap.loadMapAddresses(rom);
+    		EbMap.loadMapAddresses(hm.rom);
             EbMap.loadDoorData(hm.rom);
             EbMap.loadDrawTilesets(hm.rom);
             SpriteEditor.readFromRom(hm.rom);
@@ -537,6 +553,8 @@ public class MapEditor extends EbHackModule implements ActionListener
     	public static final String FIND_SPRITE = "findSprite";
     	public static final String DOOR_ERR = "doorErrors";
     	public static final String SPRITE_ERR = "spriteErrors";
+    	public static final String COPY_SECTOR = "copySector";
+    	public static final String PASTE_SECTOR = "pasteSector";
     	
 		public void actionPerformed(ActionEvent e)
 		{
@@ -731,6 +749,42 @@ public class MapEditor extends EbHackModule implements ActionListener
 					}
 				}
 			}
+			else if (ac.equals(COPY_SECTOR))
+			{
+				pasteSector.setEnabled(true);
+				
+				int[] sectorXY = gfxcontrol.getSectorxy();
+				for (int i = 0; i < copiedSectorTiles.length; i++)
+					for (int j = 0; j < copiedSectorTiles[i].length; j++)
+					{
+						copiedSectorTiles[i][j][0] = EbMap.getTile(rom,
+								j + sectorXY[0] * sectorWidth,
+								i + sectorXY[1] * sectorHeight);
+						copiedSectorTiles[i][j][1] = EbMap.getLocalTileset(rom,
+								j + sectorXY[0] * sectorWidth,
+								i + sectorXY[1] * sectorHeight);
+					}
+				copiedSector = EbMap.getSectorData(sectorXY[0], sectorXY[1]);
+			}
+			else if (ac.equals(PASTE_SECTOR))
+			{
+				int[] sectorXY = gfxcontrol.getSectorxy();
+				for (int i = 0; i < copiedSectorTiles.length; i++)
+					for (int j = 0; j < copiedSectorTiles[i].length; j++)
+					{
+						EbMap.changeTile(sectorXY[0] * sectorWidth + j,
+								sectorXY[1] * sectorHeight + i,
+								(byte) (copiedSectorTiles[i][j][0] & 0xff));
+						EbMap.setLocalTileset(rom,
+								sectorXY[0] * sectorWidth + j,
+								sectorXY[1] * sectorHeight + i,
+								copiedSectorTiles[i][j][1]);
+					}
+				EbMap.setSectorData(sectorXY[0], sectorXY[1], copiedSector);
+        		gfxcontrol.reloadMap();
+        		gfxcontrol.repaint();
+        		gfxcontrol.updateComponents();
+			}
 		}
 	}
 
@@ -789,6 +843,8 @@ public class MapEditor extends EbHackModule implements ActionListener
     {
     	EbMap.reset();
     	hasLoaded = false;
+    	
+    	gfxcontrol.updateComponents();
     }
 
     public String getDescription()
@@ -798,7 +854,7 @@ public class MapEditor extends EbHackModule implements ActionListener
 
     public String getVersion()
     {
-        return "0.4.3";
+        return "0.4.4";
     }
 
     public String getCredits()
@@ -808,6 +864,26 @@ public class MapEditor extends EbHackModule implements ActionListener
             + "Very special thanks to AnyoneEB\n"
             + "Additional features by YOURNAMEHERE\n";
     }
+    
+
+	/* (non-Javadoc)
+	 * @see net.starmen.pkhack.eb.ModeChangeListener#changedMode(int, int)
+	 */
+	public void changedMode(int newMode, int oldMode)
+	{
+		findSprite.setEnabled(gfxcontrol.getModeProps()[3] >= 1);
+		modeMenu.setEnabled(gfxcontrol.getModeProps()[6] < 1);
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.starmen.pkhack.eb.MapGraphicsListener#changedSector(boolean, int, int)
+	 */
+	public void changedSector(boolean knowsSector, int sectorX, int sectorY)
+	{
+		sectorProps.setEnabled(knowsSector);
+		copySector.setEnabled(knowsSector);
+		pasteSector.setEnabled(knowsSector && (copiedSector != null));
+	}
 
     // Controls the graphics stuff.
     public static class MapGraphics extends AbstractButton implements DocumentListener, ActionListener,
@@ -824,10 +900,9 @@ public class MapEditor extends EbHackModule implements ActionListener
         private JTextField xField, yField;
         private JComboBox tilesetList, paletteBox, musicBox;
         private JScrollBar xScroll, yScroll;
-        private JMenu modeMenu;
-        private JMenuItem sectorProps, findSprite;
         private boolean grid, spriteBoxes, centered, mapChanges = false, enabled = true;
         private SeekListener seekSource;
+        private MapGraphicsListener mgl;
         private TileChooser editBox;
         private ArrayList visibleHotspots;
         
@@ -919,13 +994,13 @@ public class MapEditor extends EbHackModule implements ActionListener
             addMouseWheelListener(this);
         }
 
-        public MapGraphics(HackModule hm, int screenWidth, int screenHeight, int mode, boolean grid,
-        		boolean spriteBoxes, JMenu modeMenu, JMenuItem sectorProps, JMenuItem findSprite)
+        public MapGraphics(HackModule hm, int screenWidth, int screenHeight, boolean grid,
+        		boolean spriteBoxes, MapGraphicsListener mgl)
         {
         	this.hm = hm;
         	this.screenWidth = screenWidth;
         	this.screenHeight = screenHeight;
-            this.mode = mode;
+            // this.mode = mode;
             this.grid = grid;
             this.spriteBoxes = spriteBoxes;
             
@@ -937,11 +1012,7 @@ public class MapEditor extends EbHackModule implements ActionListener
             yField.setText(Integer.toString(getMapY()));
             yField.setColumns(3);
             yField.getDocument().addDocumentListener(this);
-            String[] tList_names = new String[MapEditor.mapTsetNum];
-            for (int i = 0; i < tList_names.length; i++)
-            	tList_names[i] = i + " - "
-                	+ TILESET_NAMES[EbMap.getDrawTileset(i)];
-            tilesetList = new JComboBox(tList_names);
+            tilesetList = new JComboBox();
             tilesetList.addActionListener(this);
             paletteBox = new JComboBox();
             paletteBox.addActionListener(this);
@@ -960,9 +1031,9 @@ public class MapEditor extends EbHackModule implements ActionListener
             yScroll.addAdjustmentListener(this);
             editBox = new MapEditor.TileChooser(23, 3, getModeProps()[1] < 2);
             
-            this.modeMenu = modeMenu;
-            this.sectorProps = sectorProps;
-            this.findSprite = findSprite;
+            this.mgl = mgl;
+            this.mode = 0;
+            
             setMapXY(0,0);
             updateComponents();
             reloadMap();
@@ -979,9 +1050,17 @@ public class MapEditor extends EbHackModule implements ActionListener
         	musicBox.removeActionListener(this);
         	musicBox.removeAllItems();
           for (int i = 0; i < EventMusicEditor.MUSIC_NUM; i++)
-          		musicBox.addItem(i + " - " 
-          				+ EventMusicEditor.getEventMusicEntry(i).getDefaultName());
+          		musicBox.addItem(getNumberedString(EventMusicEditor.getEventMusicEntry(i).getDefaultName(),i,false));
           musicBox.addActionListener(this);
+        }
+        
+        public void loadTilesetNames()
+        {
+        	tilesetList.removeActionListener(this);
+        	tilesetList.removeAllItems();
+           for (int i = 0; i < MapEditor.mapTsetNum; i++)
+           	tilesetList.addItem(getNumberedString(TileEditor.TILESET_NAMES[EbMap.getDrawTileset(i)],i,false));
+           tilesetList.addActionListener(this);
         }
         
         public void setEnabled(boolean enabled)
@@ -1400,8 +1479,8 @@ public class MapEditor extends EbHackModule implements ActionListener
 
         public void setSector(int sectorx, int sectory)
         {
-            if (knowssector && (this.sectorx == sectorx)
-                && (this.sectory == sectory))
+            if (((sectorx < 0) && (sectory < 0))
+            		|| (knowssector && (this.sectorx == sectorx) && (this.sectory == sectory)))
             	knowssector = false;
             else
             {
@@ -1409,7 +1488,7 @@ public class MapEditor extends EbHackModule implements ActionListener
                 this.sectorx = sectorx;
                 this.sectory = sectory;
             }
-            sectorProps.setEnabled(knowssector);
+            mgl.changedSector(this.knowssector, this.sectorx, this.sectory);
         }
         
         public boolean knowsSector()
@@ -1429,7 +1508,7 @@ public class MapEditor extends EbHackModule implements ActionListener
            if (getModeProps()[0] < 1)
            {
            	knowssector = false;
-           	sectorProps.setEnabled(false);
+           	mgl.changedSector(false, -1, -1);
            	editBox.setEnabled(false);
            	tilesetList.setEnabled(false);
            	tilesetList.removeActionListener(this);
@@ -1445,10 +1524,12 @@ public class MapEditor extends EbHackModule implements ActionListener
            	musicBox.setSelectedIndex(-1);
            	musicBox.addActionListener(this);
            }
-           findSprite.setEnabled(getModeProps()[3] >= 1);
-           modeMenu.setEnabled(getModeProps()[6] < 1);
+           //findSprite.setEnabled(getModeProps()[3] >= 1);
+           //modeMenu.setEnabled(getModeProps()[6] < 1);
            editBox.setEnabled((getModeProps()[2] >= 1) && knowssector);
            editBox.setTextTiles((getModeProps()[1] < 2) && knowssector);
+           
+           mgl.changedMode(oldMode, mode);
         }
 
         public void setMapArray(int[][] newmaparray)
@@ -1560,6 +1641,7 @@ public class MapEditor extends EbHackModule implements ActionListener
         {
         	updateScrollBars();
         	updateFields();
+        	updateSectorComponents();
         }
         
         private void updateScrollBars()
@@ -1588,6 +1670,62 @@ public class MapEditor extends EbHackModule implements ActionListener
         	if (yField != null)
         		yField.setText(Integer.toString(this.y));
         	yField.getDocument().addDocumentListener(this);
+        }
+        
+        private void updateSectorComponents()
+        {
+            tilesetList.setEnabled(knowssector);
+            paletteBox.setEnabled(knowssector);
+            musicBox.setEnabled(knowssector);
+            editBox.setEnabled(knowssector);
+            if (knowssector)
+            {
+                int oldTset = -1;
+                if (tilesetList.isEnabled())
+                	oldTset = tilesetList.getSelectedIndex();
+                EbMap.Sector sector = EbMap.getSectorData(sectorx, sectory);
+                tilesetList.removeActionListener(this);
+                tilesetList.setSelectedIndex(sector.getTileset());
+                tilesetList.addActionListener(this);
+                paletteBox.removeActionListener(this);
+                if (oldTset != sector.getTileset())
+                {
+                	paletteBox.removeAllItems();
+                	TileEditor.Tileset tileset = TileEditor.tilesets[EbMap.getDrawTileset(sector.getTileset())];
+                	for (int i = 0; i < tileset.getPaletteCount(); i++)
+                    	if (tileset.getPalette(i).mtileset == sector.getTileset())
+                    		paletteBox.addItem(Integer.toString(tileset.getPalette(i).mpalette));
+                }
+                paletteBox.setSelectedIndex(sector.getPalette());
+                paletteBox.addActionListener(this);
+                musicBox.removeActionListener(this);
+                musicBox.setSelectedIndex(sector.getMusic());
+                musicBox.addActionListener(this);
+                
+                if (getModeProps()[2] == 1)
+                {
+                	boolean isSame = editBox.setTsetPal(
+                			EbMap.getDrawTileset(sector.getTileset()),
+                            TileEditor.tilesets[EbMap.getDrawTileset(
+                            		sector.getTileset())].getPaletteNum(sector.getTileset(),
+                            				sector.getPalette()));
+                	if (! isSame)
+                		editBox.repaint();
+                }
+            }
+            else
+            {
+            	tilesetList.removeActionListener(this);
+                tilesetList.setSelectedIndex(-1);
+                paletteBox.removeActionListener(this);
+                paletteBox.removeAllItems();
+                paletteBox.setSelectedIndex(-1);
+                musicBox.removeActionListener(this);
+                musicBox.setSelectedIndex(-1);
+            }
+            
+            repaint();
+            editBox.repaint();
         }
         
         public void setMapX(int x)
@@ -2114,7 +2252,8 @@ public class MapEditor extends EbHackModule implements ActionListener
         {
         	if (e.getButton() == 1)
         	{
-        		if (editBox.knowsTsetPal() 
+        		if ((editBox != null)
+        				&& editBox.knowsTsetPal() 
         				&& (getModeProps()[2] == 1))
         		{
             		int mapx = e.getX() / MapEditor.tileWidth;
@@ -2276,62 +2415,11 @@ public class MapEditor extends EbHackModule implements ActionListener
             	}
             	else if (getModeProps()[0] == 2)
             	{
-                    int sectorx = ((e.getX() / MapEditor.tileWidth) + getMapX()) / sectorWidth;
-                    int sectory = ((e.getY() / MapEditor.tileHeight) + getMapY()) / sectorHeight;
-                    
-                    setSector(sectorx, sectory);
-                    tilesetList.setEnabled(knowssector);
-                    paletteBox.setEnabled(knowssector);
-                    musicBox.setEnabled(knowssector);
-                    editBox.setEnabled(knowssector);
-                    if (knowssector)
-                    {
-                        int oldTset = -1;
-                        if (tilesetList.isEnabled())
-                        	oldTset = tilesetList.getSelectedIndex();
-                        EbMap.Sector sector = EbMap.getSectorData(sectorx, sectory);
-                        tilesetList.removeActionListener(this);
-                        tilesetList.setSelectedIndex(sector.getTileset());
-                        tilesetList.addActionListener(this);
-                        paletteBox.removeActionListener(this);
-                        if (oldTset != sector.getTileset())
-                        {
-                        	paletteBox.removeAllItems();
-                        	TileEditor.Tileset tileset = TileEditor.tilesets[EbMap.getDrawTileset(sector.getTileset())];
-                        	for (int i = 0; i < tileset.getPaletteCount(); i++)
-                            	if (tileset.getPalette(i).mtileset == sector.getTileset())
-                            		paletteBox.addItem(Integer.toString(tileset.getPalette(i).mpalette));
-                        }
-                        paletteBox.setSelectedIndex(sector.getPalette());
-                        paletteBox.addActionListener(this);
-                        musicBox.removeActionListener(this);
-                        musicBox.setSelectedIndex(sector.getMusic());
-                        musicBox.addActionListener(this);
-                        
-                        if (getModeProps()[2] == 1)
-                        {
-                        	boolean isSame = editBox.setTsetPal(
-                        			EbMap.getDrawTileset(sector.getTileset()),
-                                    TileEditor.tilesets[EbMap.getDrawTileset(
-                                    		sector.getTileset())].getPaletteNum(sector.getTileset(),
-                                    				sector.getPalette()));
-                        	if (! isSame)
-                        		editBox.repaint();
-                        }
-                    }
-                    else
-                    {
-                    	tilesetList.removeActionListener(this);
-                        tilesetList.setSelectedIndex(-1);
-                        paletteBox.removeActionListener(this);
-                        paletteBox.removeAllItems();
-                        paletteBox.setSelectedIndex(-1);
-                        musicBox.removeActionListener(this);
-                        musicBox.setSelectedIndex(-1);
-                    }
-                    
-                    repaint();
-                    editBox.repaint();
+            		int sectorx = ((e.getX() / MapEditor.tileWidth) + getMapX()) / sectorWidth;
+            		int sectory = ((e.getY() / MapEditor.tileHeight) + getMapY()) / sectorHeight;                    
+            		setSector(sectorx, sectory);
+            		
+            		updateSectorComponents();
             	}
             }
         }
@@ -2517,376 +2605,6 @@ public class MapEditor extends EbHackModule implements ActionListener
     // Represents the whole EarthBound map and map-related data in the rom.
     public static class EbMap
     {
-        private static final int[] mapAddresses = new int[]{
-        // Taken from MrA's Map Editor code. DESPERATELY NEEDS TO BE
-            // FORMATTED!!!!!!
-            0x160200, // 1
-            0x162A00, // 2
-            0x165200, // 3
-            0x168200, // 4
-            0x16AA00, // 5
-            0x16D200, // 6
-            0x170200, // 7
-            0x172A00, // 8
-
-            0x160300, // 9
-            0x162B00, // 10
-            0x165300, // 11
-            0x168300, // 12
-            0x16AB00, // 13
-            0x16D300, // 14
-            0x170300, // 15
-            0x172B00, // 16
-
-            0x160400, // 17
-            0x162C00, // 18
-            0x165400, // 19
-            0x168400, // 20
-            0x16AC00, // 21
-            0x16D400, // 22
-            0x170400, // 23
-            0x172C00, // 24
-
-            0x160500, // 25
-            0x162D00, // 26
-            0x165500, // 27
-            0x168500, // 28
-            0x16AD00, // 29
-            0x16D500, // 30
-            0x170500, // 31
-            0x172D00, // 32
-
-            0x160600, // 33
-            0x162E00, // 34
-            0x165600, // 35
-            0x168600, // 36
-            0x16AE00, // 37
-            0x16D600, // 38
-            0x170600, // 39
-            0x172E00, // 40
-
-            0x160700, // 41
-            0x162F00, // 42
-            0x165700, // 43
-            0x168700, // 44
-            0x16AF00, // 45
-            0x16D700, // 46
-            0x170700, // 47
-            0x172F00, // 48
-
-            0x160800, // 49
-            0x163000, // 50
-            0x165800, // 51
-            0x168800, // 52
-            0x16B000, // 53
-            0x16D800, // 54
-            0x170800, // 55
-            0x173000, // 56
-
-            0x160900, // 57
-            0x163100, // 58
-            0x165900, // 59
-            0x168900, // 60
-            0x16B100, // 61
-            0x16D900, // 62
-            0x170900, // 63
-            0x173100, // 64
-
-            0x160A00, // 65
-            0x163200, // 66
-            0x165A00, // 67
-            0x168A00, // 68
-            0x16B200, // 69
-            0x16DA00, // 70
-            0x170A00, // 71
-            0x173200, // 72
-
-            0x160B00, // 73
-            0x163300, // 74
-            0x165B00, // 75
-            0x168B00, // 76
-            0x16B300, // 77
-            0x16DB00, // 78
-            0x170B00, // 79
-            0x173300, // 80
-
-            0x160C00, // 81
-            0x163400, // 82
-            0x165C00, // 83
-            0x168C00, // 84
-            0x16B400, // 85
-            0x16DC00, // 86
-            0x170C00, // 87
-            0x173400, // 88
-
-            0x160D00, // 89
-            0x163500, // 90
-            0x165D00, // 91
-            0x168D00, // 92
-            0x16B500, // 93
-            0x16DD00, // 94
-            0x170D00, // 95
-            0x173500, // 96
-
-            0x160E00, // 97
-            0x163600, // 98
-            0x165E00, // 99
-            0x168E00, // 100
-            0x16B600, // 101
-            0x16DE00, // 102
-            0x170E00, // 103
-            0x173600, // 104
-
-            0x160F00, // 105
-            0x163700, // 106
-            0x165F00, // 107
-            0x168F00, // 108
-            0x16B700, // 109
-            0x16DF00, // 110
-            0x170F00, // 111
-            0x173700, // 112
-
-            0x161000, // 113
-            0x163800, // 114
-            0x166000, // 115
-            0x169000, // 116
-            0x16B800, // 117
-            0x16E000, // 118
-            0x171000, // 119
-            0x173800, // 120
-
-            0x161100, // 121
-            0x163900, // 122
-            0x166100, // 123
-            0x169100, // 124
-            0x16B900, // 125
-            0x16E100, // 126
-            0x171100, // 127
-            0x173900, // 128
-
-            0x161200, // 129
-            0x163A00, // 130
-            0x166200, // 131
-            0x169200, // 132
-            0x16BA00, // 133
-            0x16E200, // 134
-            0x171200, // 135
-            0x173A00, // 136
-
-            0x161300, // 137
-            0x163B00, // 138
-            0x166300, // 139
-            0x169300, // 140
-            0x16BB00, // 141
-            0x16E300, // 142
-            0x171300, // 143
-            0x173B00, // 144
-
-            0x161400, // 145
-            0x163C00, // 146
-            0x166400, // 147
-            0x169400, // 148
-            0x16BC00, // 149
-            0x16E400, // 150
-            0x171400, // 151
-            0x173C00, // 152
-
-            0x161500, // 153
-            0x163D00, // 154
-            0x166500, // 155
-            0x169500, // 156
-            0x16BD00, // 157
-            0x16E500, // 158
-            0x171500, // 159
-            0x173D00, // 160
-
-            0x161600, // 161
-            0x163E00, // 162
-            0x166600, // 163
-            0x169600, // 164
-            0x16BE00, // 165
-            0x16E600, // 166
-            0x171600, // 167
-            0x173E00, // 168
-
-            0x161700, // 169
-            0x163F00, // 170
-            0x166700, // 171
-            0x169700, // 172
-            0x16BF00, // 173
-            0x16E700, // 174
-            0x171700, // 175
-            0x173F00, // 176
-
-            0x161800, // 177
-            0x164000, // 178
-            0x166800, // 179
-            0x169800, // 180
-            0x16C000, // 181
-            0x16E800, // 182
-            0x171800, // 183
-            0x174000, // 184
-
-            0x161900, // 185
-            0x164100, // 186
-            0x166900, // 187
-            0x169900, // 188
-            0x16C100, // 189
-            0x16E900, // 190
-            0x171900, // 191
-            0x174100, // 192
-
-            0x161A00, // 193
-            0x164200, // 194
-            0x166A00, // 195
-            0x169A00, // 196
-            0x16C200, // 197
-            0x16EA00, // 198
-            0x171A00, // 199
-            0x174200, // 200
-
-            0x161B00, // 201
-            0x164300, // 202
-            0x166B00, // 203
-            0x169B00, // 204
-            0x16C300, // 205
-            0x16EB00, // 206
-            0x171B00, // 207
-            0x174300, // 208
-
-            0x161C00, // 209
-            0x164400, // 210
-            0x166C00, // 211
-            0x169C00, // 212
-            0x16C400, // 213
-            0x16EC00, // 214
-            0x171C00, // 215
-            0x174400, // 216
-
-            0x161D00, // 217
-            0x164500, // 218
-            0x166D00, // 219
-            0x169D00, // 220
-            0x16C500, // 221
-            0x16ED00, // 222
-            0x171D00, // 223
-            0x174500, // 224
-
-            0x161E00, // 225
-            0x164600, // 226
-            0x166E00, // 227
-            0x169E00, // 228
-            0x16C600, // 229
-            0x16EE00, // 230
-            0x171E00, // 231
-            0x174600, // 232
-
-            0x161F00, // 233
-            0x164700, // 234
-            0x166F00, // 235
-            0x169F00, // 236
-            0x16C700, // 237
-            0x16EF00, // 238
-            0x171F00, // 239
-            0x174700, // 240
-
-            0x162000, // 241
-            0x164800, // 242
-            0x167000, // 243
-            0x16A000, // 244
-            0x16C800, // 245
-            0x16F000, // 246
-            0x172000, // 247
-            0x174800, // 248
-
-            0x162100, // 249
-            0x164900, // 250
-            0x167100, // 251
-            0x16A100, // 252
-            0x16C900, // 253
-            0x16F100, // 254
-            0x172100, // 255
-            0x174900, // 256
-
-            0x162200, // 257
-            0x164A00, // 258
-            0x167200, // 259
-            0x16A200, // 260
-            0x16CA00, // 261
-            0x16F200, // 262
-            0x172200, // 263
-            0x174A00, // 264
-
-            0x162300, // 265
-            0x164B00, // 266
-            0x167300, // 267
-            0x16A300, // 268
-            0x16CB00, // 269
-            0x16F300, // 270
-            0x172300, // 271
-            0x174B00, // 272
-
-            0x162400, // 273
-            0x164C00, // 274
-            0x167400, // 275
-            0x16A400, // 276
-            0x16CC00, // 277
-            0x16F400, // 278
-            0x172400, // 279
-            0x174C00, // 280
-
-            0x162500, // 281
-            0x164D00, // 282
-            0x167500, // 283
-            0x16A500, // 284
-            0x16CD00, // 285
-            0x16F500, // 286
-            0x172500, // 287
-            0x174D00, // 288
-
-            0x162600, // 289
-            0x164E00, // 290
-            0x167600, // 291
-            0x16A600, // 292
-            0x16CE00, // 293
-            0x16F600, // 294
-            0x172600, // 295
-            0x174E00, // 296
-
-            0x162700, // 297
-            0x164F00, // 298
-            0x167700, // 299
-            0x16A700, // 300
-            0x16CF00, // 301
-            0x16F700, // 302
-            0x172700, // 303
-            0x174F00, // 304
-
-            0x162800, // 305
-            0x165000, // 306
-            0x167800, // 307
-            0x16A800, // 308
-            0x16D000, // 309
-            0x16F800, // 310
-            0x172800, // 311
-            0x175000, // 312
-
-            0x162900, // 313
-            0x165100, // 314
-            0x167900, // 315
-            0x16A900, // 316
-            0x16D100, // 317
-            0x16F900, // 318
-            0x172900, // 319
-            0x175100, // 320
-        };
-        /*private static final int[][] doorCorrections = {
-        		{49,-1},{81,-1},{97,-1},{98,-1},{140,-1},
-        		{300,-1},{333,-1},{395,-1},{562,-1},
-				{604,-1},{613,-1},{681,-1},{688,-1},
-				{752,-1},{815,-1},{816,-1},{911,-1},
-				{1136,-1},{1073,-2}
-        };*/
     	private static final int[] doorDestTypes = {
     			1, -1, 0, -2, -2, 2, 2
     	};
@@ -2901,7 +2619,7 @@ public class MapEditor extends EbHackModule implements ActionListener
        private static final int spAsmPointer = 0x2461;
        private static final int spDataBase = 0xf0200; // 2 byte ptr + 0xf0200
        private static final int sectorPropsAddress = 0x17b400;
-       // private static int[] mapAddresses;
+       private static int[] mapAddresses;
        private static ArrayList mapChanges;
        private static ArrayList[] spData;
        private static Sector[] sectorData;
@@ -2918,42 +2636,39 @@ public class MapEditor extends EbHackModule implements ActionListener
        
        public static void reset()
        {
-       // mapAddresses = new int[8];
-       	
        	mapChanges = new ArrayList();
-           spData =
-           	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-           sectorData =
+       	spData =
+       		new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
+       	sectorData =
            	new Sector[MapEditor.heightInSectors * MapEditor.widthInSectors];
-           drawingTilesets = new int[MapEditor.mapTsetNum];
-           localTilesetChanges = new ArrayList();
-           doorData =
-            	new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-           oldDoorEntryLengths =
-            	new int[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
-           destData = new ArrayList();
-           destsLoaded = new ArrayList();
-           destsIndexes = new ArrayList();
-           errors = new ArrayList();
-           tileImages =
-           	new Image[MapEditor.drawTsetNum][1024][MapEditor.palsNum];
-           spriteImages = new Image[SpriteEditor.NUM_ENTRIES][8];
+       	drawingTilesets = new int[MapEditor.mapTsetNum];
+       	localTilesetChanges = new ArrayList();
+       	doorData =
+       		new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
+       	oldDoorEntryLengths =
+       		new int[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
+       	destData = new ArrayList();
+       	destsLoaded = new ArrayList();
+       	destsIndexes = new ArrayList();
+       	errors = new ArrayList();
+       	tileImages =
+       		new Image[MapEditor.drawTsetNum][1024][MapEditor.palsNum];
+       	spriteImages = new Image[SpriteEditor.NUM_ENTRIES][8];
+       	mapAddresses = new int[8];
        }
         
-        /*public static void loadMapAddresses(AbstractRom rom)
+        public static void loadMapAddresses(AbstractRom rom)
         {
         	int address = toRegPointer(rom.readMulti(mapAddressesPtr, 3));
         	for (int i = 0; i < mapAddresses.length; i++)
-        		mapAddresses[i] = 0x16012a + (rom.read(1 + address) * 0x100) + rom.read(2 + address);
+        		mapAddresses[i] = toRegPointer(rom.readMulti(address + i * 4, 4));
         }
         
         public static int getMapAddress(int y)
         {
-        	int num = y % (mapAddresses.length - 1);
-        	if (num < 0)
-        		num = mapAddresses.length - 1;
-        	return ((y / (mapAddresses.length - 1)) * 0x100) + mapAddresses[num];
-        }*/
+        	int num = y % mapAddresses.length;
+        	return ((y / mapAddresses.length) * 0x100) + mapAddresses[num];
+        }
        
        public static Image getSpriteImage(int spt, int direction)
        {
@@ -2992,7 +2707,7 @@ public class MapEditor extends EbHackModule implements ActionListener
         public static void resetTileImages()
         {
         	tileImages =
-            	new Image[TILESET_NAMES.length][1024][MapEditor.palsNum];
+            	new Image[TileEditor.TILESET_NAMES.length][1024][MapEditor.palsNum];
         }
         
         public static void changeTile(int x, int y, byte tile)
@@ -3016,7 +2731,7 @@ public class MapEditor extends EbHackModule implements ActionListener
 						| (getLocalTileset(rom, x, y) << 8);
         	}
         	
-        	return rom.read(mapAddresses[y] + x)
+        	return rom.read(getMapAddress(y) + x)
 				| (getLocalTileset(rom, x, y) << 8);
         }
 
@@ -3033,7 +2748,7 @@ public class MapEditor extends EbHackModule implements ActionListener
         	for (int i = 0; i < mapChanges.size(); i++)
         	{
         		MapChange change = (MapChange) mapChanges.get(i);
-        		rom.write(mapAddresses[change.getY()] + change.getX(),
+        		rom.write(getMapAddress(change.getY()) + change.getX(),
         				change.getTile());
         	}
         	mapChanges = new ArrayList();
@@ -3074,6 +2789,11 @@ public class MapEditor extends EbHackModule implements ActionListener
         {
         	return sectorData[sectorX + 
 								(sectorY * MapEditor.widthInSectors)];
+        }
+        
+        public static void setSectorData(int sectorX, int sectorY, Sector sector)
+        {
+        	sectorData[sectorX + (sectorY * MapEditor.widthInSectors)] = sector;
         }
         
         public static void writeSectorData(AbstractRom rom)
@@ -3216,7 +2936,7 @@ public class MapEditor extends EbHackModule implements ActionListener
            				short spriteX = 
            					(short) (data[5 + (j * 4)] - (sib.width * 4));
            				short spriteY =
-           					(short) (data[4 + (j * 4)] - (sib.height * 6));
+           					(short) (data[4 + (j * 4)] - (sib.height * 8) + 8);
            				spData[areaNum].add(new SpriteLocation(
            					tpt, spriteX, spriteY));
            			}
@@ -3870,7 +3590,8 @@ public class MapEditor extends EbHackModule implements ActionListener
 					(byte) (getTpt() / 0x100);
 				byteArray[2] = 
 					(byte) (getY() + 
-							((short) (sib.height * 6)));
+							((short) (sib.height * 8)) - 8);
+				//  - (sib.height * 8) + 8
 				byteArray[3] =
 					(byte) (getX() +
 							((short) (sib.width * 4)));
