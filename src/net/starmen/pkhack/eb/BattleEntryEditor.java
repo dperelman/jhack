@@ -6,14 +6,19 @@ import java.awt.event.ActionListener;
 import java.io.EOFException;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.HackModule;
@@ -37,11 +42,13 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener
 	private static BattleEntry[] battleEntries;
 	private static ArrayList enemyGroups;
 	private static ArrayList oldGroupLengths;
+	private static boolean useGameOrder;
 	
 	private JTextField flag;
 	private JComboBox selector, groupSelector, boxSize, flagEffect;
 	private JButton addGroup, delGroup, addEnemy;
 	private JPanel groupEditPanel;
+	private JRadioButton ordGame, ordReg;
 	
 	private JComboBox[] enemies = new JComboBox[0];
 	private JTextField[] amounts = new JTextField[0];
@@ -55,6 +62,16 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener
 	{
 		mainWindow = createBaseWindow(this);
 		mainWindow.setTitle(getDescription());
+		
+		ButtonGroup ordBG = new ButtonGroup();
+		ordGame = new JRadioButton("Game Order");
+       ordGame.setSelected(useGameOrder);
+       ordGame.addActionListener(this);
+       ordBG.add(ordGame);
+       ordReg = new JRadioButton("ROM Order");
+       ordReg.setSelected(! useGameOrder);
+       ordReg.addActionListener(this);
+       ordBG.add(ordReg);
 		
 		selector = new JComboBox();
 		selector.addActionListener(this);
@@ -95,6 +112,7 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener
 		topPanel.add(groupSelector);
 		topPanel.add(HackModule.pairComponents(addGroup, delGroup, true));
 		topPanel.add(new JLabel("Enemy Group contents:"));
+		topPanel.add(createFlowLayout(new JRadioButton[]{ordGame, ordReg}));
 		topPanel.add(groupEditPanel);
 		topPanel.add(addEnemy);
 		
@@ -103,13 +121,94 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener
 		
 		mainWindow.pack();
 	}
+	
+    public static SimpleComboBoxModel createEnemyComboBoxModel()
+    {
+        SimpleComboBoxModel out = new SimpleComboBoxModel()
+        {
+            public int getSize()
+            {
+                return EnemyEditor.enemies.length;
+            }
+
+            public Object getElementAt(int i)
+            {
+                String out;
+                int j = useGameOrder ? EnemyEditor.gameOrder[i] : i;
+                try
+                {
+                    out = EnemyEditor.enemies[j].toString();
+                }
+                catch (NullPointerException e)
+                {
+                    out = "Null";
+                }
+                catch (ArrayIndexOutOfBoundsException e)
+                {
+                    return getElementAt(0);
+                }
+                return HackModule.getNumberedString(out, j);
+            }            
+        };
+        addEnemyDataListener(out);
+        //out.setOffset(zeroBased ? 0 : 1);
+
+        return out;
+    }
+    
+    private static ArrayList enemyListeners = new ArrayList();
+
+    protected static void addEnemyDataListener(ListDataListener ldl)
+    {
+        enemyListeners.add(ldl);
+    }
+
+    protected static void removeEnemyDataListener(ListDataListener ldl)
+    {
+        enemyListeners.remove(ldl);
+    }
+
+    protected static void notifyEnemyDataListeners(ListDataEvent lde)
+    {
+        for (Iterator i = enemyListeners.iterator(); i.hasNext();)
+        {
+            ((ListDataListener) i.next()).contentsChanged(lde);
+        }
+    }
+
+    public static JComboBox createEnemyComboBox(final ActionListener al)
+    {
+        SimpleComboBoxModel model = createEnemyComboBoxModel();
+        final JComboBox out = new JComboBox(model);
+        out.addActionListener(al);
+        model.addListDataListener(new ListDataListener()
+        {
+            public void contentsChanged(ListDataEvent lde)
+            {
+                if (out.getSelectedIndex() == -1)
+                {
+                    out.removeActionListener(al);
+                    out.setSelectedIndex(lde.getIndex0());
+                    out.addActionListener(al);
+                }
+            }
+
+            public void intervalAdded(ListDataEvent arg0)
+            {}
+
+            public void intervalRemoved(ListDataEvent arg0)
+            {}
+        });
+
+        return out;
+    }
 
 	/* (non-Javadoc)
 	 * @see net.starmen.pkhack.HackModule#getVersion()
 	 */
 	public String getVersion()
 	{
-		return "0.1";
+		return "0.2";
 	}
 
 	/* (non-Javadoc)
@@ -155,8 +254,8 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener
 			selected = 0;
 		selector.removeAllItems();
 		for (int i = 0; i < NUM_ENTRIES; i++)
-			selector.addItem("0x" + i + " - " + 
-				getGroupName(battleEntries[i].getEnemyGroup()));
+			selector.addItem(getNumberedString(
+					getGroupName(battleEntries[i].getEnemyGroup()),i));
 		selector.setSelectedIndex(selected);
 		selector.addActionListener(this);
 	}
@@ -167,7 +266,7 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener
 		int selected = groupSelector.getSelectedIndex();
 		groupSelector.removeAllItems();
 		for (int i = 0; i < enemyGroups.size(); i++)
-			groupSelector.addItem(getGroupName(i));
+			groupSelector.addItem(getNumberedString(getGroupName(i),i));
 		groupSelector.setSelectedIndex(selected);
 		groupSelector.addActionListener(this);
 	}
@@ -207,9 +306,9 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener
 			JComboBox[] enemies = new JComboBox[group.size() + addedEnemies.size()];
 			JTextField[] amounts = new JTextField[group.size() + addedEnemies.size()];
 			
-			String[] enemyNames = new String[EnemyEditor.enemies.length];
+			/*String[] enemyNames = new String[EnemyEditor.enemies.length];
 			for (int i = 0; i < enemyNames.length; i++)
-				enemyNames[i] = EnemyEditor.enemies[i].getName();
+				enemyNames[i] = EnemyEditor.enemies[i].getName();*/
 			for (int i = 0; i < group.size() + addedEnemies.size(); i++)
 			{
 				boolean real = i < group.size();
@@ -224,25 +323,21 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener
 					delButton.setActionCommand(DEL_ENEMY_COMMAND + Integer.toString(i));
 					delButton.addActionListener(this);
 					
-					int oldEnemy;
-					String amountText;
+					enemies[i] = createEnemyComboBox(this);
+					amounts[i] = HackModule.createSizedJTextField(3, true, false);
 					if ((i < this.enemies.length) && (i < this.amounts.length))
 					{
-						oldEnemy = this.enemies[i].getSelectedIndex();
-						amountText = this.amounts[i].getText();
+						enemies[i].setSelectedIndex(this.enemies[i].getSelectedIndex());
+						amounts[i].setText(this.amounts[i].getText());
 					}
 					else
 					{
-						oldEnemy = enemy.getEnemy();
-						amountText = Integer.toString(enemy.getAmount() & 0xff);
+						if (!search(getNumberedString("", enemy.getEnemy()), enemies[i]))
+			                enemies[i].setSelectedIndex(0);
+						//enemies[i].setSelectedIndex(useGameOrder ?
+						//		EnemyEditor.gameOrder[enemy.getEnemy()] : enemy.getEnemy());
+						amounts[i].setText(Integer.toString(enemy.getAmount() & 0xff));
 					}
-					
-					enemies[i] = new JComboBox(enemyNames);
-					enemies[i].setSelectedIndex(oldEnemy);
-					enemies[i].addActionListener(this);
-					
-					amounts[i] = HackModule.createSizedJTextField(3, true, false);
-					amounts[i].setText(amountText);
 					
 					JPanel row = new JPanel();
 					row.add(delButton);
@@ -402,7 +497,10 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener
 			for (int i = 0; i < enemies.length; i++)
 				group.add(new EnemyEntry(
 						(byte) Integer.parseInt(amounts[i].getText()),
-						(short) enemies[i].getSelectedIndex()));
+						useGameOrder ? 
+								EnemyEditor.gameOrder[enemies[i].getSelectedIndex()] 
+													  : (short) enemies[i].getSelectedIndex()));
+						//(short) enemies[i].getSelectedIndex()));
 			enemyGroups.set(groupSelector.getSelectedIndex(), group);
 			updateComponents();
 			reloadEntryNames();
@@ -499,6 +597,18 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener
 			this.amounts = amounts;
 			updateGroupDisplay(false);
 		}
+		else if (e.getSource().equals(ordGame))
+        {
+            useGameOrder = true;
+            notifyEnemyDataListeners(new ListDataEvent(this,
+                ListDataEvent.CONTENTS_CHANGED, 0, EnemyEditor.NUM_ENEMIES));
+        }
+        else if (e.getSource().equals(ordReg))
+        {
+            useGameOrder = false;
+            notifyEnemyDataListeners(new ListDataEvent(this,
+                ListDataEvent.CONTENTS_CHANGED, 0, EnemyEditor.NUM_ENEMIES));
+        }
 	}
 	
 	public static class BattleEntry
