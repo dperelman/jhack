@@ -1,4 +1,12 @@
 NEXT VERSION (after v0.5.6.1):
+# Map Editor: BUGFIX: Sprite positions are not slightly off
+# Map Editor: BUGFIX: Tileset names are correct
+# Map Editor: Added copy/paste sector feature
+# Map Editor: Uses map data pointer table
+# Editors with Map Previews: BUGFIX: Clicking on preview doesn't cause an error
+# Event-Based Map Changes Editor: BUGFIX: Non-numerical input is ignored when deleting tile changes
+   (except for "all" or "none")
+# Battle Entry Editor: Added game order view like Enemy Editor
 
 v0.5.6.1
 # AbstractRom: BUGFIX: Forced ROM types to not be "".
