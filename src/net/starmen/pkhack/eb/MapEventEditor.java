@@ -76,7 +76,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		
 		String[] tsetNames = new String[MapEditor.drawTsetNum];
 		for (int i = 0; i < tsetNames.length; i++)
-			tsetNames[i] = i + " - " + TileEditor.TILESET_NAMES[i];
+			tsetNames[i] = getNumberedString(TileEditor.TILESET_NAMES[i],i,false);
 		tileset = new JComboBox(tsetNames);
 		tileset.addActionListener(this);
 		
@@ -225,7 +225,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 			flagGroup.removeActionListener(this);
 			flagGroup.removeAllItems();
 			for (int i = 0; i < entries[tileset.getSelectedIndex()].size(); i++)
-				flagGroup.addItem("Group #" + i);
+				flagGroup.addItem(getNumberedString("Group #" + i,i,false));
 			flagGroup.setEnabled(entries[tileset.getSelectedIndex()].size() > 0);
 			if (entries[tileset.getSelectedIndex()].size() > 0)
 				flagGroup.setSelectedIndex(0);
@@ -254,15 +254,6 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		{
 			TilesetChange entry = (TilesetChange) entries[tileset.getSelectedIndex()].get(
 					flagGroup.getSelectedIndex());
-			if (changingTileset)
-			{
-				flagGroup.removeActionListener(this);
-				flagGroup.removeAllItems();
-				for (int i = 0; i < entries[tileset.getSelectedIndex()].size(); i++)
-					flagGroup.addItem("Group #" + i);
-				flagGroup.setSelectedIndex(0);
-				flagGroup.addActionListener(this);
-			}
 			
 			flag.setText(Integer.toHexString(entry.getFlag() & 0xffff));
 			reverse.setSelected(entry.isFlagReversed());
@@ -528,21 +519,39 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
                     Integer.toString(1));
         	if ((input != null) && (input.length() > 0))
         	{
-        		int num = Integer.parseInt(input) - 1;
         		TilesetChange entry = (TilesetChange) entries[tileset.getSelectedIndex()].get(
             			flagGroup.getSelectedIndex());
-        		if ((num >= 0) && (num <= entry.size()))
-        		{
-        			if (selected / 2 == num)
-        				selected = -1;
-        			entry.removeTileChange(num);
-        			updateComponents(false, true, false);
+        		try
+				{
+            		int num = Integer.parseInt(input) - 1;
+            		if ((num >= 0) && (num <= entry.size()))
+            		{
+            			if (selected / 2 == num)
+            				selected = -1;
+            			entry.removeTileChange(num);
+            			updateComponents(false, true, false);
+            		}
+            		else
+            			JOptionPane.showMessageDialog(mainWindow,
+                    		    "ERROR: No change with number " + (num + 1) + "!",
+                    		    "Error deleting!",
+                    		    JOptionPane.ERROR_MESSAGE);
         		}
-        		else
-        			JOptionPane.showMessageDialog(mainWindow,
-                		    "ERROR: No change with number " + (num + 1) + "!",
-                		    "Error deleting!",
-                		    JOptionPane.ERROR_MESSAGE);
+        		catch (java.lang.NumberFormatException nfe)
+				{
+        			if (input.toLowerCase().equals("all"))
+        			{
+        				selected = -1;
+        				while (entry.size() > 0)
+        					entry.removeTileChange(0);
+        				updateComponents(false, true, false);
+        			}
+        			else if (!input.toLowerCase().equals("none"))
+            			JOptionPane.showMessageDialog(mainWindow,
+                    		    "ERROR: \"" + input + "\" is not a valid number.",
+                    		    "Error deleting!",
+                    		    JOptionPane.ERROR_MESSAGE);
+				}
         	}
         }
         else if ((e.getSource().equals(tileChooser)) && (selected != -1))
