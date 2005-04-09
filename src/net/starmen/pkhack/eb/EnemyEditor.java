@@ -60,7 +60,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
      * @see #readFromRom(HackModule)
      */
     public static Enemy[] enemies = new Enemy[NUM_ENEMIES]; //data
-    private static short[] gameOrder = new short[NUM_ENEMIES];
+    public static short[] gameOrder = new short[NUM_ENEMIES];
     private static boolean useGameOrder = false;
 
     private static Icon fobbyIcon = initIcon();
@@ -917,6 +917,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
         return out;
     }
+    
     private static ArrayList enemyListeners = new ArrayList();
 
     protected static void addEnemyDataListener(ListDataListener ldl)
