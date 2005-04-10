@@ -181,7 +181,7 @@
 180-Magic cake lady
 181-Tony
 182-Tony in bed
-183-Georgeous dancing
+183-Gorgeous dancing
 184-Runaway Five drummer
 185-Runaway Five bass player
 186-Runaway Five sax player
@@ -237,7 +237,7 @@
 238-Cross gravestone
 239-Broken phase distorter
 240-Garbage
-241-Star Masters Poof Cloud
+241-Star Master's Poof Cloud
 242-Runaway 5 bus
 243-Submarine
 244-Submarine periscope
@@ -252,7 +252,7 @@
 254-Guy in cool red car
 255-Flame?
 256-Fountain of Healing (mini)
-257-Shiny Enamy Outside
+257-Shiny Enemy Outside
 258-ATM machine
 259-Talking stone
 260-Ship
@@ -261,7 +261,7 @@
 263-Mini-ghost
 264-Pencil statue
 265-Tree in pot
-266-Pryamid door
+266-Pyramid door
 267-Li'l talking stone
 268-Star (Onett sky?)
 269-Weird Junk
@@ -309,7 +309,7 @@
 311-Chomposaur
 312-Gigantic Ant
 313-Arachnid!
-314-Slimy Little Pile
+314-Slimey Little Pile
 315-Black Antoid
 316-Mobile Sprout
 317-No Good Fly
@@ -339,7 +339,7 @@
 341-Surprised Poo angel?
 342-Diamondized surprised?
 343-Small shadow
-344-Teddy Bear (surpirsed/in cabin cell)
+344-Teddy Bear (surprised/in cabin cell)
 345-Runaway 5 pianist
 346-Fly
 347-Water Ring (in the water)
@@ -360,7 +360,7 @@
 363-Zombie Dog
 364-Mu ghost
 365-Flag of the Extinct Happy People?
-366-Leaves (vefore/during Tessie rises)
+366-Leaves (before/during Tessie rises)
 367-Tessie water ripples (top)
 368-Tessie water ripples (bottom)
 369-Giygas to Ness Transform
@@ -374,7 +374,7 @@
 379-Teddy Bear
 381-Picky sitting
 382-Ness Sleeping With Hat
-383-zzz's
+383-Zzzs
 384-Pay phone
 385-Cop
 386-Crooked Cop
@@ -416,7 +416,7 @@
 422-Ornaments on Poo's Temple
 423-Helicopter back
 424-Rich Pokey's head
-425-Bad Pallette Fountain
+425-Bad Palette Fountain
 426-Li'l Toucan Phone
 427-ATM Guy Underwater
 428-Instant Revitalizing Device
@@ -427,7 +427,7 @@
 433-Lucky (Runaway 5 member)
 434-Ness with messed palette
 435-Exit mouse
-436-Ness in PJ's
+436-Ness in PJs
 437-Zombie lying down
 441-Hotel sign
 442-Camel
@@ -437,12 +437,12 @@
 446-Saturn Valley ATM
 447-Runaway 5 member's head
 448-Photographer's camera
-449-Bad Pallette Guy (Onett Night)
+449-Bad Palette Guy (Onett Night)
 450-Exit Mouse (no sign)
 451-Slots
 452-Ness resting
 453-Paula resting
-454-Dept. Store Spook
+454-Dept. Store Mook
 456-Lying down robot Ness
 457-Heavily Armed Pokey
 458-Red truck
