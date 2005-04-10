@@ -183,12 +183,9 @@ public class HotspotEditor extends EbHackModule implements ActionListener, SeekL
 	
 	public void readFromRom()
 	{
-		readFromRom(this);
+		//readFromRom(this);
 		
-		EbMap.loadDrawTilesets(rom);
-		TPTEditor.readFromRom(this);
-		SpriteEditor.readFromRom(rom);
-		EbMap.loadSpriteData(rom);
+		EbMap.loadData(this, true, false, true);
 	}
 	
 	public static void readFromRom(HackModule hm)

@@ -243,10 +243,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
     {
         readFromRom(this);
         
-        EbMap.loadDrawTilesets(rom);
-        TPTEditor.readFromRom(this);
-        SpriteEditor.readFromRom(rom);
-        EbMap.loadSpriteData(rom);
+        EbMap.loadData(this, true, false, false);
     }
 
     private void showInfo()

@@ -124,11 +124,7 @@ public class DoorEditor extends EbHackModule
 	
 	public void readFromRom()
 	{
-		EbMap.loadDrawTilesets(rom);
-		TPTEditor.readFromRom(this);
-		SpriteEditor.readFromRom(rom);
-		EbMap.loadSpriteData(rom);
-		EbMap.loadDoorData(rom);
+		EbMap.loadData(this, true, true, false);
 	}
 
 	public void createGUI()

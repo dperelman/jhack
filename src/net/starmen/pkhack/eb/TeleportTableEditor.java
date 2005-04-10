@@ -210,11 +210,7 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener,
 	{
 	    readFromRom(rom);
 	    
-	    EbMap.loadDrawTilesets(rom);
-	    TPTEditor.readFromRom(this);
-	    SpriteEditor.readFromRom(rom);
-	    EbMap.loadSpriteData(rom);
-	    EbMap.loadDoorData(rom);
+	    EbMap.loadData(this, true, true, false);
 	}
 
 	/** Array of Strings describing the different warp styles. */
