@@ -8,6 +8,8 @@ NEXT VERSION (after v0.5.6.1):
    (except for "all" or "none")
 # Battle Entry Editor: Added game order view like Enemy Editor
 # Made some spelling corrections in sptNames.txt (thanks NLA)
+# Photo Editor: BUGFIX: Only shows normal sprite entries that will actually appear in photo
+   (if the TPT entry's event flag is 0)
 
 v0.5.6.1
 # AbstractRom: BUGFIX: Forced ROM types to not be "".
