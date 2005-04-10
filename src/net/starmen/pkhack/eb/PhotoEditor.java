@@ -326,7 +326,7 @@ public class PhotoEditor extends EbHackModule
 		
 		AbstractRom rom = hm.rom;
 		
-		EbMap.loadDrawTilesets(rom);
+		EbMap.loadData(hm, false, false, false);
 		
 		entries = new PhotoEntry[NUM_PHOTOS];
 		for (int i = 0; i < entries.length; i++)
@@ -942,45 +942,35 @@ public class PhotoEditor extends EbHackModule
                             {
                             	TPTEditor.TPTEntry tptEntry = 
                             		TPTEditor.tptEntries[spriteTpts[j]];
-                            	int spriteNum = tptEntry.getSprite();
-                            	int spriteDrawY = spriteLocs[j][1];
-                            	int spriteDrawX = spriteLocs[j][0];
-                            	EbMap.loadSpriteImage(hm,
-                            			spriteNum, tptEntry.getDirection());
-                            	SpriteEditor.SpriteInfoBlock sib =
-                            		SpriteEditor.sib[spriteNum];
-                            	
-                            	if (((tileY + k) % (MapEditor.sectorHeight * 2)) > 0)
+                            	if (tptEntry.getEventFlag() == 0)
                             	{
-                            		spriteDrawY -= ((tileY + k) % (MapEditor.sectorHeight * 2)) *
-											MapEditor.tileHeight;
+                                	int spriteNum = tptEntry.getSprite();
+                                	int spriteDrawY = spriteLocs[j][1];
+                                	int spriteDrawX = spriteLocs[j][0];
+                                	EbMap.loadSpriteImage(hm,
+                                			spriteNum, tptEntry.getDirection());
+                                	SpriteEditor.SpriteInfoBlock sib =
+                                		SpriteEditor.sib[spriteNum];
+                                	
+                                	if (((tileY + k) % (MapEditor.sectorHeight * 2)) > 0)
+                                	{
+                                		spriteDrawY -= ((tileY + k) % (MapEditor.sectorHeight * 2)) *
+    											MapEditor.tileHeight;
+                                	}
+                                	
+                                	if (((tileX + i) % MapEditor.sectorWidth) > 0)
+                                	{
+                                		spriteDrawX -= ((tileX + i) % MapEditor.sectorWidth)
+    											* MapEditor.tileWidth;
+                                	}
+                                	
+                                	g.drawImage(
+                                			EbMap.getSpriteImage(
+                                					spriteNum,tptEntry.getDirection()),
+                							spriteDrawX + (i * MapEditor.tileWidth),
+        									spriteDrawY + (k * MapEditor.tileHeight),
+    										this);
                             	}
-                            	
-                            	if (((tileX + i) % MapEditor.sectorWidth) > 0)
-                            	{
-                            		spriteDrawX -= ((tileX + i) % MapEditor.sectorWidth)
-											* MapEditor.tileWidth;
-                            	}
-                            	
-                            	g.drawImage(
-                            			EbMap.getSpriteImage(
-                            					spriteNum,tptEntry.getDirection()),
-            							spriteDrawX + (i * MapEditor.tileWidth),
-    									spriteDrawY + (k * MapEditor.tileHeight),
-										this);
-                            	/*if (spriteBoxes)
-                            	{
-                            		g2d.setPaint(Color.red);
-                            		g2d.draw(new Rectangle2D.Double(
-                                			spriteDrawX + (i * MapEditor.tileWidth) - 1,
-											spriteDrawY + (k * MapEditor.tileHeight) - 1,
-											EbMap.getSpriteImage(
-													spriteNum,tptEntry.getDirection())
-																	.getWidth(this) + 1,
-											EbMap.getSpriteImage(
-													spriteNum,tptEntry.getDirection())
-																	.getHeight(this) + 1));
-                            	}*/
                             }
                 		}
                 	}
