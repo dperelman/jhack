@@ -10,6 +10,7 @@ package net.starmen.pkhack;
  * =====================================================================
  */
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +74,14 @@ public class HexTableModel implements TableModel
         }
         if (col == max)
         {
-            return new String(data.getRow(row));
+            try
+            {
+                return new String(data.getRow(row), "US-ASCII");
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                return new String("Bytes to String error.");
+            }
         }
         //    if (row == (data.getRowCount() - 1) &&
         //      col >= data.getLastRowSize())
