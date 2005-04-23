@@ -10,6 +10,8 @@ NEXT VERSION (after v0.5.6.1):
 # Made some spelling corrections in sptNames.txt (thanks NLA)
 # Photo Editor: BUGFIX: Only shows normal sprite entries that will actually appear in photo
    (if the TPT entry's event flag is 0)
+# HexEditor: BUGFIX: Works no matter what the default charset is set to.
+# Item Editor: BUGFIX: Values containing 0's or 9's work.
 
 v0.5.6.1
 # AbstractRom: BUGFIX: Forced ROM types to not be "".

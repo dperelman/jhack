@@ -13,6 +13,8 @@ NEXT v0.0.x (minor) RELEASE
 # Text Editor: Preview of next text block (optional) (in separate window?)
 # Font table: http://pkhax.elpenguino.info/03F254.txt
 # SPT Editor: Provide an easy way to reallocate addresses for resized entries
+# Sprite Editor: load/save with h-flip
+# Sprite Editor: Image import, match to palette
 
 LONG TERM
 

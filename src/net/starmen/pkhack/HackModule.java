@@ -3554,7 +3554,7 @@ public abstract class HackModule
         //remove preceding spaces
         for (int i = 0; i < in.length(); i++)
         {
-            if ((in.charAt(i) < '9') && (in.charAt(i) > '0'))
+            if ((in.charAt(i) <= '9') && (in.charAt(i) >= '0'))
             {
                 in = in.substring(i);
                 break;
@@ -3563,7 +3563,7 @@ public abstract class HackModule
         //get number
         for (int i = 0; i < in.length(); i++)
         {
-            if (!((in.charAt(i) < '9') && (in.charAt(i) > '0')))
+            if (!((in.charAt(i) <= '9') && (in.charAt(i) >= '0')))
             {
                 if (i == 0)
                 {
