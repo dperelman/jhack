@@ -69,8 +69,6 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 	 */
 	protected void init()
 	{
-		readFromRom(this.rom);
-		
 		mainWindow = createBaseWindow(this);
 		mainWindow.setTitle(getDescription());
 		
@@ -184,6 +182,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 	public void show()
 	{
 		super.show();
+		readFromRom(rom);
 		mainWindow.setVisible(true);
 		
 		if (tileset.getSelectedIndex() < 0)
@@ -199,11 +198,6 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		
 		if (obj instanceof Integer)
 			tileset.setSelectedIndex(((Integer) obj).intValue());
-	}
-	
-	public void reset()
-	{
-		readFromRom(rom);
 	}
 	
 	private void updateComponents(boolean changingTileset, boolean updatePage, boolean ignorePalette)
