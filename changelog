@@ -12,6 +12,9 @@ NEXT VERSION (after v0.5.6.1):
    (if the TPT entry's event flag is 0)
 # HexEditor: BUGFIX: Works no matter what the default charset is set to.
 # Item Editor: BUGFIX: Values containing 0's or 9's work.
+# Map Sector Properties Editor: BUGFIX: Saving works correctly
+# Map Sector Properties Editor: Added map preview of sector
+# Music/Flags Correlations Editor: BUGFIX: Fixed saving issue
 
 v0.5.6.1
 # AbstractRom: BUGFIX: Forced ROM types to not be "".
