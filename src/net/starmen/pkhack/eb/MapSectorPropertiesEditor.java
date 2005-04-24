@@ -16,6 +16,7 @@ import javax.swing.event.DocumentListener;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.XMLPreferences;
+import net.starmen.pkhack.eb.MapEditor.MapGraphics;
 import net.starmen.pkhack.eb.MapEditor.EbMap;
 
 /**
@@ -32,6 +33,7 @@ public class MapSectorPropertiesEditor extends EbHackModule implements ActionLis
 	private JTextField sectorX, sectorY;
 	private JCheckBox cantTeleport, unknown; 
 	private JComboBox townMap, misc, item;
+	private MapGraphics preview;
 	
 	private static final String[] miscEffects = new String[] {
 		"No special settings",
@@ -51,6 +53,9 @@ public class MapSectorPropertiesEditor extends EbHackModule implements ActionLis
 	{
 		mainWindow = createBaseWindow(this);
 		mainWindow.setTitle(getDescription());
+		
+		preview = new MapGraphics(this, MapEditor.sectorWidth, MapEditor.sectorHeight,
+				5, false, false, false);
 		
 		sectorX = HackModule.createSizedJTextField(2, true, false);
 		sectorX.getDocument().addDocumentListener(this);
@@ -84,6 +89,7 @@ public class MapSectorPropertiesEditor extends EbHackModule implements ActionLis
 		
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+		mainPanel.add(HackModule.createFlowLayout(preview));
 		mainPanel.add(topPanel);
 		mainPanel.add(middlePanel);
 		mainPanel.add(HackModule.getLabeledComponent("Type-58 Usable Item:", item));
@@ -127,6 +133,7 @@ public class MapSectorPropertiesEditor extends EbHackModule implements ActionLis
 	public void show()
 	{
 		super.show();
+		readFromRom();
 		updateComponents();
 		mainWindow.setVisible(true);
 	}
@@ -141,6 +148,11 @@ public class MapSectorPropertiesEditor extends EbHackModule implements ActionLis
 		}
 		updateComponents();
 		mainWindow.setVisible(true);
+	}
+	
+	public void readFromRom()
+	{
+		EbMap.loadData(this, true, false, false);
 	}
 	
 	private void setSectorXY(int x, int y)
@@ -165,8 +177,17 @@ public class MapSectorPropertiesEditor extends EbHackModule implements ActionLis
 		misc.setEnabled(ok);
 		item.setEnabled(ok);
 		
-		if (ok && (! EbMap.isSectorDataLoaded(sectorX, sectorY)))
-			EbMap.loadSectorData(rom, sectorX, sectorY);
+		preview.setEnabled(ok);
+		if (ok)
+		{
+			if (! EbMap.isSectorDataLoaded(sectorX, sectorY))
+				EbMap.loadSectorData(rom, sectorX, sectorY);
+			preview.setMapXY(sectorX * MapEditor.sectorWidth,
+					sectorY * MapEditor.sectorHeight);
+			preview.reloadMap();
+		}
+		preview.repaint();
+		
 		EbMap.Sector sector = (ok ? EbMap.getSectorData(sectorX, sectorY) : null);
 		cantTeleport.setSelected(ok ? sector.cantTeleport() : false);
 		unknown.setSelected(ok ? sector.isUnknownEnabled() : false);
