@@ -35,7 +35,6 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 	protected void init()
 	{
 		initMusicNames(rom.getPath());
-		readFromRom(rom);
 		
 		mainWindow = createBaseWindow(this);
 		mainWindow.setTitle(this.getDescription());
@@ -44,10 +43,7 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 		panel.setLayout(
 				new BoxLayout(panel, BoxLayout.Y_AXIS));
 		
-		String[] entryNames = new String[entries.length];
-		for (int i = 0; i < entryNames.length; i++)
-			entryNames[i] = "#" + i + " (" + entries[i].getDefaultName() + ")";
-		entryChooser = new JComboBox(entryNames);
+		entryChooser = new JComboBox();
 		entryChooser.addActionListener(this);
 		panel.add(HackModule.getLabeledComponent(
 				"Entry: ", entryChooser));
@@ -80,7 +76,9 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 		panel.add(HackModule.getLabeledComponent(
 				"Reverse Flag?: ", reverseCheck));
 		
-		musicChooser = new JComboBox(musicNames);
+		musicChooser = new JComboBox();
+		for (int i = 0; i < musicNames.length; i++)
+			musicChooser.addItem(getNumberedString(musicNames[i], i, true));
 		panel.add(HackModule.getLabeledComponent(
 				"Music: ", musicChooser));
 		
@@ -114,8 +112,8 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 		super.show();
 		
 		readFromRom(rom);
+		updateEntryChooser();
 		updateCorrelationChooser();
-		updateComponents();
 		
 		mainWindow.setVisible(true);
 	}
@@ -192,9 +190,10 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 			updatingEntries = true;
 			entryChooser.removeAllItems();
 			for (int i = 0; i < entries.length; i++)
-				entryChooser.addItem("#" + i + " (" + entries[i].getDefaultName() + ")");
+				entryChooser.addItem(getNumberedString(entries[i].getDefaultName(), i, true));
 			updatingEntries = false;
 		}
+		updateEntryChooser();
 		updateCorrelationChooser();
 	}
 	
@@ -219,15 +218,24 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 		}
 	}
 	
-	public void updateCorrelationChooser()
+	private void updateEntryChooser()
+	{
+		entryChooser.removeActionListener(this);
+		entryChooser.removeAll();
+		for (int i = 0; i < entries.length; i++)
+			entryChooser.addItem(getNumberedString(entries[i].getDefaultName(), i, true));
+		entryChooser.addActionListener(this);
+	}
+	
+	private void updateCorrelationChooser()
 	{
 		int selected = corrChooser.getSelectedIndex();
 		updatingCoors = true;
 		EventMusicEntry entry = entries[entryChooser.getSelectedIndex()];
 		corrChooser.removeAllItems();
 		for (int i = 0; i < entry.size(); i++)
-			corrChooser.addItem("#" + i + " (" + entry.getCorrelation(i).getMusicName() + ")");
-		corrChooser.addItem("Default (" + entry.getDefaultName() + ")");
+			corrChooser.addItem(getNumberedString(entry.getCorrelation(i).getMusicName(), i, true));
+		corrChooser.addItem(getNumberedString(entry.getDefaultName(), entry.size(), true));
 		if ((selected >= 0) && (selected <= entry.size()))
 			corrChooser.setSelectedIndex(selected);
 		else
@@ -237,7 +245,7 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 		updateComponents();
 	}
 	
-	public void updateComponents()
+	private void updateComponents()
 	{
 		EventMusicEntry entry =
 			entries[entryChooser.getSelectedIndex()];
