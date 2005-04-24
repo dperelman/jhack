@@ -964,7 +964,7 @@ public class MapEditor extends EbHackModule implements ActionListener, MapGraphi
 			}
 			
 			setPreferredSize(new Dimension(
-					screenWidth * MapEditor.tileWidth + 2, screenHeight * MapEditor.tileHeight + 2));
+					screenWidth * MapEditor.tileWidth , screenHeight * MapEditor.tileHeight));
 			addMouseListener(this);
 			addMouseMotionListener(this);
 			addMouseWheelListener(this);
@@ -2840,8 +2840,8 @@ public class MapEditor extends EbHackModule implements ActionListener, MapGraphi
 							+ sectorData[i].getPalette());
 					rom.write(musicAddress + i,
 							sectorData[i].getMusic() + 1);
-					rom.write(sectorPropsAddress + i, sectorData[i].getPropsByte1());
-					rom.write(sectorPropsAddress + i + 1, sectorData[i].getItem());
+					rom.write(sectorPropsAddress + 2 * i, sectorData[i].getPropsByte1());
+					rom.write(sectorPropsAddress + 2 * i + 1, sectorData[i].getItem());
 				}
 			}
 		}
