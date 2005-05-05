@@ -39,11 +39,10 @@ public class PSIEditor extends EbHackModule implements ActionListener
     private static MiscText[] PSIText = new MiscText[17];
 
     //GUI components
-    private JComboBox PSISel, nameSel, letterSel, typeSel, animSel, hPosSel,
-            vPosSel;
+    private JComboBox PSISel, nameSel, letterSel, typeSel, animSel, hPosSel;
     private AutoSearchBox letterBox, hPosBox;
     private JTextField nessLevelBox, paulaLevelBox, pooLevelBox, nameBox,
-            titleBox;
+            titleBox, vPosBox;
     private JButton updateButton;
     private TextEditor.TextOffsetEntry helpToe;
     private ActionEditor.ActionEntry actionAe;
@@ -84,14 +83,14 @@ public class PSIEditor extends EbHackModule implements ActionListener
             nameBox, true, true, "Name Selector", "Name Box"));
 
         letterSel = new JComboBox();
-        letterSel.addItem("001 \u03B1 (Alpha)");
-        letterSel.addItem("002 \u03B2 (Beta)");
-        letterSel.addItem("003 \u03B3 (Gamma)");
-        letterSel.addItem("004 \u03A3 (Sigma)");
-        letterSel.addItem("005 \u03A9 (Omega)");
+        letterSel.addItem("1 \u03B1 (Alpha)");
+        letterSel.addItem("2 \u03B2 (Beta)");
+        letterSel.addItem("3 \u03B3 (Gamma)");
+        letterSel.addItem("4 \u03A3 (Sigma)");
+        letterSel.addItem("5 \u03A9 (Omega)");
         //		letterSel.setActionCommand("letterSel");
         //		letterSel.addActionListener(this);
-        letterBox = new AutoSearchBox(letterSel, "Power:", 3, false);
+        letterBox = new AutoSearchBox(letterSel, "Power:", 3, false, true);
         entry.add(letterBox);
 
         typeSel = new JComboBox();
@@ -108,18 +107,17 @@ public class PSIEditor extends EbHackModule implements ActionListener
         entry.add(getLabeledComponent("Animation:", animSel));
 
         hPosSel = new JComboBox();
-        hPosSel.addItem("09 First");
+        hPosSel.addItem("9 First");
         hPosSel.addItem("11 Second");
         hPosSel.addItem("13 Third");
         hPosSel.addItem("15 Fourth");
-        hPosBox = new AutoSearchBox(hPosSel, "Horizontal Position:", 2, false);
+        JTextField hPos = createSizedJTextField(2, true);
+        hPosBox = new AutoSearchBox(hPosSel, hPos, "Horizontal Position:", false, true,
+        		true);
         entry.add(hPosBox);
 
-        vPosSel = new JComboBox();
-        vPosSel.addItem("Top");
-        vPosSel.addItem("Middle");
-        vPosSel.addItem("Bottom");
-        entry.add(getLabeledComponent("Vertical Position:", vPosSel));
+        vPosBox = createSizedJTextField(2, true);
+        entry.add(getLabeledComponent("Vertical Position (00 is top):", vPosBox));
 
         nessLevelBox = new JTextField(3);
         entry.add(getLabeledComponent("Ness Level", nessLevelBox));
@@ -237,7 +235,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
         psis[i].setPaulaLevel(Integer.parseInt(paulaLevelBox.getText()));
         psis[i].setPooLevel(Integer.parseInt(pooLevelBox.getText()));
         psis[i].setHPos(Integer.parseInt(hPosBox.getText()));
-        psis[i].setVPos(vPosSel.getSelectedIndex());
+        psis[i].setVPos(Integer.parseInt(vPosBox.getText()));
         psis[i].setHelpAdd(helpToe.getOffset());
 
         psis[i].writeInfo();
@@ -276,7 +274,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
         paulaLevelBox.setText(Integer.toString(psis[i].getPaulaLevel()));
         pooLevelBox.setText(Integer.toString(psis[i].getPooLevel()));
         hPosBox.setText(Integer.toString(psis[i].getHPos()));
-        vPosSel.setSelectedIndex(psis[i].getVPos());
+        vPosBox.setText(Integer.toString(psis[i].getVPos()));
         helpToe.setOffset(psis[i].getHelpAdd());
         titleBox.setText(psiNames[i]);
     }

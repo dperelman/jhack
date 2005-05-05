@@ -1,4 +1,9 @@
 NEXT VERSION (after v0.5.7):
+# PSI Editor: Row selector changed to text field so any row may be chosen
+# AutoSearchBox: Exact find option added, applied to Item and PSI Editors
+# Item Editor: See above
+# PSI Editor: See above above
+# LevelUpEditor: Dump button added
 
 v0.5.7:
 # Map Editor: BUGFIX: Sprite positions are not slightly off

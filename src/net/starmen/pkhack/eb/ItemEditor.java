@@ -239,7 +239,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
         typeSel = new JComboBox(itemTypes);
 
         lowerLeft.add(this.type = new AutoSearchBox(typeSel,
-            createSizedJTextField(3, true), "Type", true, true));
+            createSizedJTextField(3, true), "Type", true, true, true));
         this.type.getTF().getDocument().addDocumentListener(
             new DocumentListener()
             {
@@ -322,7 +322,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
         recoverType = new AutoSearchBox(new JComboBox(new String[]{"0 HP",
             "1 PP", "2 HP & PP", "3 Random IQ-Luck", "4 IQ", "5 Guts",
             "6 Speed", "7 Vitality", "8 Luck", "9 Cold cure", "10 Poison cure",
-            "11 Nothing"}), strength, "Recovery Type", true, false);
+            "11 Nothing"}), strength, "Recovery Type", true, false, true);
         foodAux.add(recoverType);
 
         brokenAux = new JPanel();

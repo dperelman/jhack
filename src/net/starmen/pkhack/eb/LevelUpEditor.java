@@ -4,8 +4,14 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -30,6 +36,7 @@ public class LevelUpEditor extends EbHackModule implements ActionListener
     }
     private JComboBox charSelector, levelSelector;
     private JTextField exp;
+    private JButton dump;
     private boolean initing = true;
 
     protected void init()
@@ -64,6 +71,11 @@ public class LevelUpEditor extends EbHackModule implements ActionListener
         exp = createSizedJTextField(10, true);
         entry.add(getLabeledComponent("Experience points:", exp));
 
+        dump = new JButton("Dump stuff");
+        dump.setActionCommand("dump");
+        dump.addActionListener(this);
+        entry.add(dump);
+        
         mainWindow.getContentPane().add(entry, BorderLayout.CENTER);
         mainWindow.pack();
     }
@@ -175,6 +187,49 @@ public class LevelUpEditor extends EbHackModule implements ActionListener
         {
             hide();
         }
+        else if (ae.getActionCommand().equals("dump"))
+        {
+        	dump();
+        }
     }
 
+    public void dump()
+    {
+    	int c;
+    	String[] dump = new String[4*98];
+    	for(int i = 0; i < 4*98; i++)
+    	{
+    		c = i/98;
+    		dump[i] = (c > 1 ? c == 3 ? "Poo" : "Jeff" : c==1 ? "Paula" : "Ness")
+				+ " " + (i%98 + 2 < 10 ? "0" : "") +
+				(i%98 + 2) + " " + (readExp(c, i%98 + 2, rom));
+    	}
+    	File file = getFile(true, "txt", "Text file");
+        String output = new String();
+        String[] in = dump;
+        boolean hexNum = false;
+        for (int i = 0; i < in.length; i++)
+        {
+            output += (in[i] + "\n");
+        }
+
+        try
+        {
+            FileWriter out = new FileWriter(file);
+            out.write(output);
+            out.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            System.out.println("Error: File not saved: File not found.");
+            e.printStackTrace();
+            return;
+        }
+        catch (IOException e)
+        {
+            System.out.println("Error: File not saved: Could write file.");
+            e.printStackTrace();
+            return;
+        }
+   }
 }

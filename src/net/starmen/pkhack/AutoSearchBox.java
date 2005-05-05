@@ -30,7 +30,8 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	private JTextField tf;
 	private JLabel label;
 	private boolean incTf,//include the text field
-		corr = true; //correlate the text box and combo box
+		corr = true, //correlate the text box and combo box
+		findOnlyExact; //if true, 11 will not be returned for a search for 1
 	private int size;
 	private int numberIndex=0; //index of the number to be matched with in the strings
 	//of the combobox
@@ -71,6 +72,7 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	
 	/**
 	 * Creates a new AutoSearchBox wrapper for the specified JComboBox.
+	 * Will find 11 on a search for 1.
 	 * 
 	 * @param jcb The JComboBox this is a wrapper for.
 	 * @param text Text to label the JComboBox with.
@@ -79,8 +81,24 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	 */
 	public AutoSearchBox(JComboBox jcb, String text, int searchSize, boolean searchLeft)
 	{
+		this(jcb,text,searchSize,searchLeft,false);
+	}
+	/**
+	 * Creates a new AutoSearchBox wrapper for the specified JComboBox.
+	 * 
+	 * @param jcb The JComboBox this is a wrapper for.
+	 * @param text Text to label the JComboBox with.
+	 * @param searchSize The size of the search text field
+	 * @param searchLeft If true, search box is left of combo box
+	 * @param findOnlyExact If true, searches will only find exact numbers
+	 *   rather than ones that start with the search
+	 */
+	public AutoSearchBox(JComboBox jcb, String text, int searchSize, boolean searchLeft,
+			boolean findOnlyExact)
+	{
 		super();
 		this.comboBox = jcb;
+		this.findOnlyExact = findOnlyExact;
 		comboBox.setActionCommand("effectSel");
 		comboBox.addActionListener(this);
 		size = searchSize;
@@ -103,7 +121,21 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 		this.label = new JLabel(text);
 		this.initGraphics(searchLeft);
 	}
-
+	/**
+	 * Makes the specified JTextField a new AutoSearchBox wrapper for the 
+	 * specified JComboBox. Will find 11 on a search for 1.
+	 * 
+	 * @param jcb The JComboBox this is a wrapper for.
+	 * @param text Text to label the JComboBox with.
+	 * @param searchSize The size of the search text field
+	 * @param searchLeft If true, search box is left of combo box
+	 * @param incTf Whether to include text field in display
+	 */
+	public AutoSearchBox(JComboBox jcb, JTextField jtf, String text, 
+		boolean searchLeft, boolean incTf)
+	{
+		this(jcb,jtf,text,searchLeft,incTf,false);
+	}
 	/**
 	 * Makes the specified JTextField a new AutoSearchBox wrapper for the 
 	 * specified JComboBox.
@@ -112,11 +144,15 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	 * @param text Text to label the JComboBox with.
 	 * @param searchSize The size of the search text field
 	 * @param searchLeft If true, search box is left of combo box
+	 * @param incTf Whether to include text field in display
+	 * @param findOnlyExact If true, searches will only find exact numbers
+	 *   rather than ones that start with the search
 	 */
 	public AutoSearchBox(JComboBox jcb, JTextField jtf, String text, 
-		boolean searchLeft, boolean incTf)
+		boolean searchLeft, boolean incTf, boolean findOnlyExact)
 	{
 		super();
+		this.findOnlyExact = findOnlyExact;
 		this.comboBox = jcb;
 		comboBox.setActionCommand("effectSel");
 		comboBox.addActionListener(this);
@@ -212,7 +248,8 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 		if(corr)
 		{
 			comboBox.removeActionListener(this);
-			if (!search(tf.getText(), comboBox, true, false, numberIndex))
+			if (!search(tf.getText(), comboBox, true, false, numberIndex, 
+					findOnlyExact))
 			{	
 				comboBox.addItem(tf.getText() + " ???");
 				comboBox.setSelectedItem(tf.getText() + " ???");
@@ -255,10 +292,12 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	 *            search is found.
 	 * @param beginFromStart If true, search starts at first item.
 	 * @param displayError If false, the error dialog will never be displayed
+	 * @param findOnlyExact Find only values of exact size
 	 * @return Whether the search <code>String</code> is found.
 	 */
 	public static boolean search(String text, JComboBox selector,
-			boolean beginFromStart, boolean displayError, int numberIndex)
+			boolean beginFromStart, boolean displayError, int numberIndex, 
+			boolean findOnlyExact)
 	{
 		text = text.toLowerCase();
 		for (int i = (selector.getSelectedIndex() + 1 != selector
@@ -266,8 +305,8 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 				&& !beginFromStart ? selector.getSelectedIndex() + 1 : 0); i < selector
 				.getItemCount(); i++)
 		{
-			if (selector.getItemAt(i).toString().toLowerCase().indexOf(text) 
-					== numberIndex)
+			String field = selector.getItemAt(i).toString().toLowerCase();
+			if (field.indexOf(text) == numberIndex)
 			{
 /*				if (selector.getSelectedIndex() == -1 && selector.isEditable())
 				{
@@ -276,9 +315,22 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 					selector.setSelectedIndex(i);
 					selector.setEditable(true);
 				}
-*/				selector.setSelectedIndex(i);
-				selector.repaint();
-				return true;
+*/				if(findOnlyExact)
+				{
+					if(field.indexOf(" ", numberIndex) == numberIndex + text.length())
+					{
+						selector.setSelectedIndex(i);
+						selector.repaint();
+						return true;
+					}
+					else;
+				}
+				else
+				{
+					selector.setSelectedIndex(i);
+					selector.repaint();
+					return true;
+				}
 			}
 		}
 
@@ -289,7 +341,8 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 		}
 		else
 		{
-			return search(text, selector, true, displayError, numberIndex);
+			return search(text, selector, true, displayError, numberIndex,
+					findOnlyExact);
 		}
 	}
 
@@ -310,9 +363,9 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	 * @return Wether the search <code>String</code> is found.
 	 */
 	public static boolean search(String text, JComboBox selector,
-			boolean beginFromStart, int numberIndex)
+			boolean beginFromStart, int numberIndex, boolean findOnlyExact)
 	{
-		return search(text, selector, beginFromStart, true, numberIndex);
+		return search(text, selector, beginFromStart, true, numberIndex, findOnlyExact);
 	}
 
 	/**
@@ -330,9 +383,10 @@ public class AutoSearchBox extends JComponent implements ActionListener, KeyList
 	 *            search is found.
 	 * @return Wether the search <code>String</code> is found.
 	 */
-	public static boolean search(String text, JComboBox selector, int numberIndex)
+	public static boolean search(String text, JComboBox selector, int numberIndex,
+			boolean findOnlyExact)
 	{
-		return search(text, selector, false, numberIndex);
+		return search(text, selector, false, numberIndex, findOnlyExact);
 	}
 	
 	public void setCorr(boolean _) {corr = _;}
