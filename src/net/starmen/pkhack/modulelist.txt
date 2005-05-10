@@ -71,3 +71,4 @@ eb.HotspotEditor	#Edits hotspots (places on the map that trigger text
 					#when you walk over them)
 eb.MapEventEditor	#Edits changes on the map that happen based on flags
 eb.MapSectorPropertiesEditor	#Edits map sector properties
+eb.EnemyPlacementGroupsEditor	#Edits enemy placement groups
