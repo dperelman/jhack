@@ -127,8 +127,7 @@ public class OutputStreamViewer
             errDia.pack();
             
             //force init
-            errDia.show();
-            errDia.hide();
+            errArea.updateUI();
 
             t = new Thread()
             {
