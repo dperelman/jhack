@@ -1438,8 +1438,9 @@ public abstract class HackModule
             oldPointer = toRegPointer(rom.readMulti(pointerLoc[0], pointerLen)
                 + pointerBase);
         //do not bother with shielding before 0x300200.
-        if (((!(mustBeInExpanded && (oldPointer < 0x300200)) && (orgNewLen <= oldLen)) || (newLen <= oldLen))
-            && (oldPointer + oldLen <= beginAt))
+        if ((orgNewLen <= oldLen)
+        		&& !(mustBeInExpanded && (oldPointer < 0x300200))
+				&& (oldPointer + oldLen <= beginAt))
         {
             //if it fits in the same place, then write there
             nullifyArea(oldPointer, oldLen);
