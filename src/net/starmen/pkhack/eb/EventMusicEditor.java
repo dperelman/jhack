@@ -31,7 +31,6 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
     private JTextField flagField;
     private JCheckBox reverseCheck;
     private JButton add, del, inc, dec;
-    private boolean updatingCoors = false;
     
 	protected void init()
 	{
@@ -184,8 +183,13 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 		}
 		else
 		{
+			int selected = entryChooser.getSelectedIndex();
 			entry.setDefaultMusic((byte) musicChooser.getSelectedIndex());
+			entryChooser.removeActionListener(this);
+			HackModule.notifyDataListeners(entries, entryChooser, selected);
+			entryChooser.addActionListener(this);
 		}
+		entryChooser.repaint();
 		updateCorrelationChooser();
 		mainWindow.pack();
 	}
@@ -214,8 +218,8 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 	private void updateCorrelationChooser()
 	{
 		int selected = corrChooser.getSelectedIndex();
-		updatingCoors = true;
 		EventMusicEntry entry = entries[entryChooser.getSelectedIndex()];
+		corrChooser.removeActionListener(this);
 		corrChooser.removeAllItems();
 		for (int i = 0; i < entry.size(); i++)
 			corrChooser.addItem(getNumberedString(entry.getCorrelation(i).getMusicName(), i, true));
@@ -224,7 +228,7 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 			corrChooser.setSelectedIndex(selected);
 		else
 			corrChooser.setSelectedIndex(0);
-		updatingCoors = false;
+		corrChooser.addActionListener(this);
 		updateComponents();
 	}
 	
@@ -274,7 +278,7 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 			updateCorrelationChooser();
 			mainWindow.pack();
 		}
-		else if (ae.getSource().equals(corrChooser) && !updatingCoors)
+		else if (ae.getSource().equals(corrChooser))
 			updateComponents();
 		else if (ae.getSource().equals(add))
 		{
