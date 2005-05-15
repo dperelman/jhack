@@ -352,6 +352,14 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 
 		mainWindow.pack();
 	}
+	
+	public static ArrayList getGroup(int groupNum) {
+		return (ArrayList) enemyGroups.get(groupNum);
+	}
+	
+	public static BattleEntry getBattleEntry(int beNum) {
+		return battleEntries[beNum];
+	}
 
 	public static String getGroupName(int groupNum) {
 		ArrayList group = (ArrayList) enemyGroups.get(groupNum);
