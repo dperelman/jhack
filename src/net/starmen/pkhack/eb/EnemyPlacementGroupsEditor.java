@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -233,6 +234,11 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 					}
 				}
 		}
+	}
+	
+	public static EnemyPlGroup getEnemyPlGroup(int num)
+	{
+		return enemyPlGroups[num];
 	}
 
 	public static void writeToRom(HackModule hm, JFrame mainWindow) {
@@ -540,9 +546,15 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 		 */
 		public void mouseClicked(MouseEvent e) {
 			if (e.getButton() == MouseEvent.BUTTON1)
-				changeStatus(1);
+				if (e.isControlDown())
+					changeStatus(-1);
+				else
+					changeStatus(1);
 			else if (e.getButton() == MouseEvent.BUTTON3)
-				changeStatus(-1);
+				if (e.isControlDown())
+					changeStatus(1);
+				else
+					changeStatus(-1);
 			else
 				return;
 			this.fireActionPerformed(new ActionEvent(this,
@@ -684,6 +696,11 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 
 			public void setEnemy(short enemy) {
 				this.enemy = enemy;
+			}
+			
+			public ArrayList getGroupEntry() {
+				return BattleEntryEditor.getGroup(
+						BattleEntryEditor.getBattleEntry(enemy).getEnemyGroup());
 			}
 		}
 	}
