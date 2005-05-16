@@ -1,4 +1,8 @@
 NEXT VERSION (after v0.5.8):
+# Enemy Placement Groups Editor: Made ctrl-click have the opposite effect on meters
+# Map Editor: Added enemy previewing using sprites and options to enable it and colors
+# Map Editor: BUGFIX: Enabling the showing of map changes and using Enemy Mode works
+# Editors with Map Previews: BUGFIX: Error is not produced when preview is shown
 
 v0.5.8
 # PSI Editor: Row selector changed to text field so any row may be chosen
