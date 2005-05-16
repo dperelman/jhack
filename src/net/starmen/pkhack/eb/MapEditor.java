@@ -23,6 +23,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.EOFException;
 import java.lang.Math;
 import java.util.ArrayList;
@@ -306,19 +307,31 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		checkBox.addActionListener(menuListener);
 		//menu.add(checkBox); // This feature doesn't work, and NOBODY KNOWS
 		// WHY :O!!
-		checkBox = new JCheckBoxMenuItem("Show grid");
+		checkBox = new JCheckBoxMenuItem("Show Grid");
 		checkBox.setMnemonic('g');
 		checkBox.setSelected(true);
 		checkBox.setActionCommand(MenuListener.GRIDLINES);
 		checkBox.addActionListener(menuListener);
 		menu.add(checkBox);
-		checkBox = new JCheckBoxMenuItem("Show sprite boxes");
+		checkBox = new JCheckBoxMenuItem("Show Sprite Boxes");
 		checkBox.setMnemonic('b');
 		checkBox.setSelected(true);
 		checkBox.setActionCommand(MenuListener.SPRITEBOXES);
 		checkBox.addActionListener(menuListener);
 		menu.add(checkBox);
-		checkBox = new JCheckBoxMenuItem("Show map changes");
+		checkBox = new JCheckBoxMenuItem("Show Enemy Sprites");
+		checkBox.setMnemonic('e');
+		checkBox.setSelected(true);
+		checkBox.setActionCommand(MenuListener.ENEMY_SPRITES);
+		checkBox.addActionListener(menuListener);
+		menu.add(checkBox);
+		checkBox = new JCheckBoxMenuItem("Show Enemy Colors");
+		checkBox.setMnemonic('l');
+		checkBox.setSelected(true);
+		checkBox.setActionCommand(MenuListener.ENEMY_COLORS);
+		checkBox.addActionListener(menuListener);
+		menu.add(checkBox);
+		checkBox = new JCheckBoxMenuItem("Show Map Changes");
 		checkBox.setMnemonic('c');
 		checkBox.setSelected(false);
 		checkBox.setActionCommand(MenuListener.MAPCHANGES);
@@ -449,7 +462,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 	}
 
 	protected void init() {
-		gfxcontrol = new MapGraphics(this, 24, 12, true, true, this);
+		gfxcontrol = new MapGraphics(this, 24, 12, true, true, true, true, this);
 
 		createGUI();
 
@@ -465,8 +478,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
 	public static void readFromRom(HackModule hm) {
 		if (!hasLoaded) {
-			EbMap.loadData(hm, true, true, true);
-			MapEventEditor.readFromRom(hm.rom);
+			EbMap.loadData(hm, true, true, true, true, true);
 			EventMusicEditor.readFromRom(hm.rom);
 			hasLoaded = true;
 		}
@@ -559,6 +571,10 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		public static final String COPY_SECTOR = "copySector";
 
 		public static final String PASTE_SECTOR = "pasteSector";
+		
+		public static final String ENEMY_SPRITES = "enemySprites";
+		
+		public static final String ENEMY_COLORS = "enemyColors";
 
 		public void actionPerformed(ActionEvent e) {
 			String ac = e.getActionCommand();
@@ -754,6 +770,12 @@ public class MapEditor extends EbHackModule implements ActionListener,
 				gfxcontrol.reloadMap();
 				gfxcontrol.repaint();
 				gfxcontrol.updateComponents();
+			} else if (ac.equals(ENEMY_SPRITES)) {
+				gfxcontrol.toggleEnemySprites();
+				gfxcontrol.repaint();
+			} else if (ac.equals(ENEMY_COLORS)) {
+				gfxcontrol.toggleEnemyColors();
+				gfxcontrol.repaint();
 			}
 		}
 	}
@@ -872,7 +894,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		private JScrollBar xScroll, yScroll;
 
 		private boolean grid, spriteBoxes, centered, mapChanges = false,
-				enabled = true;
+				enabled = true, enemySprites, enemyColors;
 
 		private SeekListener seekSource;
 
@@ -882,8 +904,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
 		private ArrayList visibleHotspots;
 
-		//private Color[] enemyColors = new
-		// Color[EnemyPlacementGroupsEditor.ENEMY_GROUPS_COUNT];
+		private static final Color noEnemyColor = new Color(0x444444);
 
 		/*
 		 * Moving data organization: 0 - moving types: -1 = no, 0 = sprite, 1 =
@@ -971,13 +992,16 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		}
 
 		public MapGraphics(HackModule hm, int screenWidth, int screenHeight,
-				boolean grid, boolean spriteBoxes, MapGraphicsListener mgl) {
+				boolean grid, boolean spriteBoxes, boolean enemySprites, boolean enemyColors,
+				MapGraphicsListener mgl) {
 			this.hm = hm;
 			this.screenWidth = screenWidth;
 			this.screenHeight = screenHeight;
 			// this.mode = mode;
 			this.grid = grid;
 			this.spriteBoxes = spriteBoxes;
+			this.enemySprites = enemySprites;
+			this.enemyColors = enemyColors;
 
 			xField = new JTextField();
 			xField.setText(Integer.toString(getMapX()));
@@ -1359,35 +1383,60 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
 			if (getModeProps()[9] >= 1) {
 				int group, incX = 2, incY = 2;
-				Rectangle2D.Double rect;
-				g2d.setComposite(AlphaComposite.getInstance(
-						AlphaComposite.SRC_OVER, 0.5F));
-				//g2d.setFont(new Font("Arial", Font.PLAIN, 12));
+				Rectangle2D rect;
+				g2d.setFont(new Font("Arial", Font.PLAIN, 12));
+				String message;
 				for (int i = 0; i < screenHeight; i += incY)
 					for (int j = 0; j < screenWidth; j += incX) {
 						group = EbMap.getEnemyLoc(hm.rom, (tileX + j) / 2,
 								(tileY + i) / 2);
-						g2d
-								.setPaint(new Color(
+						incX = 2 - (tileX + j) % 2;
+						incY = 2 - (tileY + i) % 2;
+						if (enemyColors) {
+							g2d.setComposite(AlphaComposite.getInstance(
+									AlphaComposite.SRC_OVER, 0.5F));
+							
+							if (group > 0)
+								g2d.setPaint(new Color(
 										((int) (Math.E * 0x100000 * group)) & 0xffffff));
-						g2d.fill(new Rectangle2D.Double(
-								j * MapEditor.tileWidth, i
-										* MapEditor.tileHeight,
-								MapEditor.tileWidth
-										* (incX = (2 - (tileX + j) % 2)),
-								MapEditor.tileHeight
-										* (incY = (2 - (tileY + i) % 2))));
-
-						/*
-						 * g2d.setPaint(Color.black);
-						 * g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
-						 * 1.0F)); g2d.drawString(
-						 * addZeros(Integer.toHexString(group), 2), (j + 1) *
-						 * MapEditor.tileWidth, (i + 1) * MapEditor.tileHeight);
-						 */
+							else
+								g2d.setPaint(noEnemyColor);
+									
+							g2d.fill(new Rectangle2D.Double(
+									j * MapEditor.tileWidth, i
+											* MapEditor.tileHeight,
+									MapEditor.tileWidth * incX,
+									MapEditor.tileHeight * incY));
+						}
+						
+						if (group > 0) {
+							g2d.setComposite(AlphaComposite.getInstance(
+									AlphaComposite.SRC_OVER, 1.0F));
+							g2d.setPaint(Color.black);
+							message = addZeros(Integer.toHexString(group), 2);
+							rect = g2d.getFontMetrics().getStringBounds(message,g2d);
+							rect.setRect(
+									(j + 2) * MapEditor.tileWidth - rect.getWidth(),
+									(i + 2) * MapEditor.tileHeight - rect.getHeight(),
+									rect.getWidth(),
+									rect.getHeight());
+							g2d.fill(rect);
+							g2d.setPaint(Color.white);
+							g2d.drawString(
+									message,
+									(float) ((j + 2) * MapEditor.tileWidth - rect.getWidth()),
+									(float) ((i + 2) * MapEditor.tileHeight));
+							if (enemySprites)
+								g2d.drawImage(
+										getEnemyImage(
+												group,
+												MapEditor.tileWidth * 2,
+												MapEditor.tileHeight * 2),
+										j * MapEditor.tileWidth,
+										i * MapEditor.tileHeight,
+										this);
+						}
 					}
-				g2d.setComposite(AlphaComposite.getInstance(
-						AlphaComposite.SRC_OVER, 1.0F));
 			}
 
 			if (grid) {
@@ -1423,6 +1472,56 @@ public class MapEditor extends EbHackModule implements ActionListener,
 				g2d.draw(new Rectangle2D.Double(drawSectorX, drawSectorY,
 						drawSectorW, drawSectorH));
 			}
+		}
+		
+		public Image getEnemyImage(int num, int w, int h)
+		{
+			BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR_PRE);
+			Graphics2D g = (Graphics2D) out.getGraphics();
+			ArrayList enemies = new ArrayList(), group;
+			EnemyEditor.Enemy enemy;
+			SpriteEditor.SpriteInfoBlock sib;
+			EnemyPlacementGroupsEditor.EnemyPlGroup plGroup = 
+				EnemyPlacementGroupsEditor.getEnemyPlGroup(num);
+			
+			int x = 0, y = 0, j, k, largestHeight = 0;
+			
+			for (int i = 0; i < 2; i++) // for each subgroup
+			{
+				j = 0;
+				if (plGroup.getEncounterRate(i) > 0)
+					while ((x < w) && (j < 8))
+					{
+						if ((plGroup.getEntry(i,j).getProbability() > 0)
+								&& (plGroup.getEntry(i,j).getEnemy() > 0)) {
+							group = plGroup.getEntry(i,j).getGroupEntry();
+							k = 0;
+							while ((x < w) && (k < group.size()))
+							{
+								enemy = EnemyEditor.enemies
+									[((BattleEntryEditor.EnemyEntry) group.get(k)).getEnemy()];
+								if ((! enemies.contains(enemy))
+										&& (x + (sib = SpriteEditor.sib[enemy.getOutsidePic()]).width * 8  <= w)) {
+									EbMap.loadSpriteImage(hm, enemy.getOutsidePic(), 5);
+									g.drawImage(
+											MapEditor.EbMap.getSpriteImage(enemy.getOutsidePic(), 5),
+											x, y, sib.width * 8, sib.height * 8, this);
+									//(MapEditor.EbMap.getSpriteImage(enemyPic.intValue(), 5), x, y, out);
+									x += sib.width * 8;
+									enemies.add(enemy);
+									if (sib.height > largestHeight)
+										largestHeight = sib.height;
+								}
+								k++;
+							}
+						}
+						j++;
+					}
+				x = 0;
+				y += largestHeight * 8;
+			}			
+						
+			return out;
 		}
 
 		public int getSpriteNum(int spriteX, int spriteY) {
@@ -1586,6 +1685,14 @@ public class MapEditor extends EbHackModule implements ActionListener,
 			editBox.toggleMapChanges();
 			editBox.repaint();
 		}
+		
+		public void toggleEnemySprites() {
+			enemySprites = !enemySprites;
+		}
+		
+		public void toggleEnemyColors() {
+			enemyColors = !enemyColors;
+		}
 
 		public void setCrosshairs(int crossX, int crossY) {
 			this.crossX = crossX;
@@ -1715,7 +1822,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
 					musicBox.removeActionListener(this);
 					musicBox.setSelectedIndex(-1);
 				}
-				editBox.setTsetPal(-1, -1);
+				if (editBox != null)
+					editBox.setTsetPal(-1, -1);
 			}
 
 			repaint();
@@ -2566,7 +2674,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
 		// A shortcut for other modules to use.
 		public static void loadData(HackModule hm, boolean sprites,
-				boolean doors, boolean hotspots) {
+				boolean doors, boolean hotspots, boolean enemies, boolean mapChanges) {
 			loadMapAddresses(hm.rom);
 			loadDrawTilesets(hm.rom);
 			if (sprites) {
@@ -2578,6 +2686,23 @@ public class MapEditor extends EbHackModule implements ActionListener,
 				loadDoorData(hm.rom);
 			if (hotspots)
 				HotspotEditor.readFromRom(hm);
+			if (enemies) {
+				EnemyPlacementGroupsEditor.readFromRom(hm.rom);
+				BattleEntryEditor.readFromRom(hm.rom);
+				EnemyEditor.readFromRom(hm);
+			}
+			if (mapChanges)
+				MapEventEditor.readFromRom(hm.rom);
+		}
+		
+		public static void loadData(HackModule hm, boolean sprites,
+				boolean doors, boolean hotspots, boolean enemies) {
+			loadData(hm, sprites, doors, hotspots, false, false);
+		}
+		
+		public static void loadData(HackModule hm, boolean sprites,
+				boolean doors, boolean hotspots) {
+			loadData(hm, sprites, doors, hotspots, false);
 		}
 
 		public static void loadMapAddresses(AbstractRom rom) {
@@ -3879,7 +4004,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 				for (int j = 0; j <= height; j++) {
 					int tile = ((scroll.getValue() + i) * (height + 1)) + j;
 					boolean changed = false;
-					if (mapChanges)
+					if ((mapChanges) && ((mode == 1) || (mode == 2)))
 						for (int k = 0; k < MapEventEditor.countGroups(tset); k++) {
 							for (int l = 0; l < MapEventEditor
 									.countTileChanges(tset, k); l++)
