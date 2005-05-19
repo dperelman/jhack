@@ -3769,6 +3769,16 @@ public class TileEditor extends EbHackModule implements ActionListener
             tileSelector.validate();
             tileSelector.repaint();
             mainWindow.getContentPane().validate();
+            if(cbdia != null)
+            {
+                cbdia.invalidate();
+                cbsel.invalidate();
+                cbsel.resetPreferredSize();
+                cbsel.validate();
+                cbsel.repaint();
+                cbdia.validate();
+                cbdia.pack();
+            }
         }
         else if (ae.getActionCommand().equals("arrEdGridLines"))
         {

@@ -3,6 +3,8 @@ NEXT VERSION (after v0.5.8):
 # Map Editor: Added enemy previewing using sprites and options to enable it and colors
 # Map Editor: BUGFIX: Enabling the showing of map changes and using Enemy Mode works
 # Editors with Map Previews: BUGFIX: Error is not produced when preview is shown
+# Tile Editor: Changing tile selector grid lines preference correctly redraws 
+	multi-clipboard (thanks BlueAntoid)
 
 v0.5.8
 # PSI Editor: Row selector changed to text field so any row may be chosen
