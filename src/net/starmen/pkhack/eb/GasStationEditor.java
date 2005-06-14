@@ -1015,7 +1015,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         {
             public int getTilesWide()
             {
-                return 34;
+                return 36;
             }
 
             public int getTilesHigh()
