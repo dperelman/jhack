@@ -56,7 +56,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 	private JCheckBox reverse;
 	private JTextField flag, limit;
 	private TileChooser tileChooser;
-	private static ArrayList[] entries;
+	private static ArrayList[] entries = new ArrayList[MapEditor.drawTsetNum];
 	private int selected = -1;
 	private static final int end = 0x101a80;
 	private static final String[] errorMessages = new String[] {
@@ -327,7 +327,6 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 	
 	public static void readFromRom(AbstractRom rom)
 	{
-		entries = new ArrayList[MapEditor.drawTsetNum];
 		for (int i = 0; i < entries.length; i++)
 		{
 			entries[i] = new ArrayList();
