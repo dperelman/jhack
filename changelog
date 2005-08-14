@@ -6,6 +6,10 @@ NEXT VERSION (after v0.5.8):
 # Tile Editor: BUGFIX: Changing tile selector grid lines preference correctly redraws 
 	multi-clipboard (thanks BlueAntoid)
 # Gas Station Editor: BUGFIX: Tile selector shows last 20 tiles.
+# Map Editor: BUGFIX: Shift-clicking on tile palette in Enemy Mode doesn't open Tile Editor
+# Map Editor: BUGFIX: Cannot select 0xcb in tile palette in Enemy Mode
+# Music/Flags Correlations Editor: BUGFIX: Event flag fields allow for hex number entry
+# Music/Flags Correlations Editor: BUGFIX: Writes pointer table correctly
 
 v0.5.8
 # PSI Editor: Row selector changed to text field so any row may be chosen
