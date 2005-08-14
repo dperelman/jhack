@@ -65,7 +65,7 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 		tmp.add(dec);
 		panel.add(tmp);
 		
-		flagField = HackModule.createSizedJTextField(3, true);
+		flagField = HackModule.createSizedJTextField(3, true, true);
 		panel.add(HackModule.getLabeledComponent(
 				"Event Flag: ", flagField));
 		
@@ -198,18 +198,18 @@ public class EventMusicEditor extends EbHackModule implements ActionListener
 	{
 		byte[] pointersData = rom.readByte(
 				toRegPointer(rom.readMulti(asmPointer, 3)),
-				(entries.length + 1) * 2);
-		boolean a = writeToFreeASMLink(pointersData, asmPointer, 3,
+				(entries.length + 1) * 2), data;
+		boolean a = writetoFree(pointersData, asmPointer, 3,
 				pointersData.length, pointersData.length, true);
 		int pointersLoc = toRegPointer(rom.readMulti(asmPointer, 3)),
-			address = 0x58ef;
+			address = 0x58ef, pointerLoc, oldPointer;
 		for (int i = 0; i < entries.length; i++)
 		{
-			int pointerLoc = pointersLoc + ((i + 1) * 2);
-			int oldPointer = 0xf0200 + rom.readMulti(pointerLoc, 2);
+			pointerLoc = pointersLoc + ((i + 1) * 2);
+			oldPointer = 0xf0200 + rom.readMulti(pointerLoc, 2);
 			nullifyArea(oldPointer, entries[i].getOldLength());
 			rom.write(pointerLoc, address, 2);
-			byte[] data = entries[i].toByteArray();
+			data = entries[i].toByteArray();
 			rom.write(0xf0200 + address, data);
 			address += data.length;
 		}
