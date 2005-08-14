@@ -337,6 +337,12 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		checkBox.setActionCommand(MenuListener.MAPCHANGES);
 		checkBox.addActionListener(menuListener);
 		menu.add(checkBox);
+		checkBox = new JCheckBoxMenuItem("Use Event Palette");
+		checkBox.setMnemonic('v');
+		checkBox.setSelected(false);
+		checkBox.setActionCommand(MenuListener.EVENTPAL);
+		checkBox.addActionListener(menuListener);
+		menu.add(checkBox);
 		menuBar.add(menu);
 
 		menu = new JMenu("Errors");
@@ -575,6 +581,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		public static final String ENEMY_SPRITES = "enemySprites";
 		
 		public static final String ENEMY_COLORS = "enemyColors";
+		
+		public static final String EVENTPAL = "eventPal";
 
 		public void actionPerformed(ActionEvent e) {
 			String ac = e.getActionCommand();
@@ -776,6 +784,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
 			} else if (ac.equals(ENEMY_COLORS)) {
 				gfxcontrol.toggleEnemyColors();
 				gfxcontrol.repaint();
+			} else if (ac.equals(EVENTPAL)) {
+				gfxcontrol.toggleEventPalette();
+				gfxcontrol.repaint();
 			}
 		}
 	}
@@ -894,7 +905,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		private JScrollBar xScroll, yScroll;
 
 		private boolean grid, spriteBoxes, centered, mapChanges = false,
-				enabled = true, enemySprites, enemyColors;
+				enabled = true, enemySprites, enemyColors, eventPalette = false;
 
 		private SeekListener seekSource;
 
@@ -1176,12 +1187,23 @@ public class MapEditor extends EbHackModule implements ActionListener,
 						tile_pal = TileEditor.tilesets[tile_set].getPaletteNum(
 								sector.getTileset(), sector.getPalette());
 						EbMap.loadTileImage(tile_set, tile, tile_pal);
-
-						g.drawImage(EbMap
-								.getTileImage(tile_set, tile, tile_pal), j
-								* MapEditor.tileWidth,
-								i * MapEditor.tileHeight, MapEditor.tileWidth,
-								MapEditor.tileHeight, this);
+						
+						if (!eventPalette)
+							g.drawImage(EbMap
+									.getTileImage(tile_set, tile, tile_pal), j
+									* MapEditor.tileWidth,
+									i * MapEditor.tileHeight, MapEditor.tileWidth,
+									MapEditor.tileHeight, this);
+						else
+							g.drawImage(TileEditor
+									.tilesets[tile_set].getArrangementImage(tile,
+											PaletteEventEditor.getPalette(tile_set)),
+											j * MapEditor.tileWidth,
+											i * MapEditor.tileHeight,
+											MapEditor.tileWidth,
+											MapEditor.tileHeight,
+											this);
+						
 						if (changed) {
 							Rectangle2D.Double rect = new Rectangle2D.Double(
 									(j * MapEditor.tileWidth),
@@ -1692,6 +1714,10 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		
 		public void toggleEnemyColors() {
 			enemyColors = !enemyColors;
+		}
+		
+		public void toggleEventPalette() {
+			eventPalette = !eventPalette;
 		}
 
 		public void setCrosshairs(int crossX, int crossY) {
@@ -4018,7 +4044,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
 							if (changed)
 								break;
 						}
-					if (mode == 3) {
+					if ((mode == 3) 
+							&& (tile < EnemyPlacementGroupsEditor.ENEMY_GROUPS_COUNT)) {
 						g2d.setPaint(new Color(
 								((int) (Math.E * 0x100000 * tile)) & 0xffffff));
 						g2d.fill(new Rectangle2D.Double(
@@ -4114,16 +4141,20 @@ public class MapEditor extends EbHackModule implements ActionListener,
 
 		public void mouseClicked(MouseEvent e) {
 			if ((e.getButton() == 1) && isEnabled()) {
-				if (e.getModifiers() == 18) {
-					int tile = ((e.getX() / MapEditor.tileWidth) + scroll
-							.getValue())
-							* (height + 1) + (e.getY() / MapEditor.tileHeight);
-					net.starmen.pkhack.JHack.main.showModule(TileEditor.class,
-							new int[] { getTset(), getPal(), tile });
-				} else {
-					int mousex = e.getX();
-					int mousey = e.getY();
-					setSelected(mousex, mousey);
+				int tile = ((e.getX() / MapEditor.tileWidth) + scroll
+						.getValue())
+						* (height + 1) + (e.getY() / MapEditor.tileHeight);
+				if (e.isShiftDown())
+					if (mode == 3)
+						net.starmen.pkhack.JHack.main.showModule(
+								EnemyPlacementGroupsEditor.class,
+								new Integer(tile));
+					else
+						net.starmen.pkhack.JHack.main.showModule(TileEditor.class,
+								new int[] { getTset(), getPal(), tile });
+				else if ((mode != 3) 
+						|| (tile < EnemyPlacementGroupsEditor.ENEMY_GROUPS_COUNT)) {
+					setSelected(e.getX(), e.getY());
 					repaint();
 					this.fireActionPerformed(new ActionEvent(this,
 					//        ActionEvent.ACTION_PERFORMED, this.getActionCommand()));
