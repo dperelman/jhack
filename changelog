@@ -1,4 +1,6 @@
-NEXT VERSION (after v0.5.8):
+NEXT VERSION (after v0.5.9):
+
+v0.5.9
 # Enemy Placement Groups Editor: Made ctrl-click have the opposite effect on meters
 # Map Editor: Added enemy previewing using sprites and options to enable it and colors
 # Map Editor: BUGFIX: Enabling the showing of map changes and using Enemy Mode works
