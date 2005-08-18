@@ -337,12 +337,12 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		checkBox.setActionCommand(MenuListener.MAPCHANGES);
 		checkBox.addActionListener(menuListener);
 		menu.add(checkBox);
-		checkBox = new JCheckBoxMenuItem("Use Event Palette");
+		/*checkBox = new JCheckBoxMenuItem("Use Event Palette");
 		checkBox.setMnemonic('v');
 		checkBox.setSelected(false);
 		checkBox.setActionCommand(MenuListener.EVENTPAL);
 		checkBox.addActionListener(menuListener);
-		menu.add(checkBox);
+		menu.add(checkBox);*/
 		menuBar.add(menu);
 
 		menu = new JMenu("Errors");
@@ -1194,7 +1194,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 									* MapEditor.tileWidth,
 									i * MapEditor.tileHeight, MapEditor.tileWidth,
 									MapEditor.tileHeight, this);
-						else
+						/*else
 							g.drawImage(TileEditor
 									.tilesets[tile_set].getArrangementImage(tile,
 											PaletteEventEditor.getPalette(tile_set)),
@@ -1202,7 +1202,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 											i * MapEditor.tileHeight,
 											MapEditor.tileWidth,
 											MapEditor.tileHeight,
-											this);
+											this);*/
 						
 						if (changed) {
 							Rectangle2D.Double rect = new Rectangle2D.Double(
