@@ -36,6 +36,7 @@ import javax.swing.filechooser.FileFilter;
 
 import net.starmen.pkhack.CommentedLineNumberReader;
 import net.starmen.pkhack.HackModule;
+import net.starmen.pkhack.IPSFile;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.RomMem;
@@ -187,10 +188,10 @@ public class ResetButton extends EbHackModule implements ActionListener
          */
         public void makeIPS()
         {
-            String ips = rom.createIPS(orgRom, getStart(),
-                getStart() + getLen() - 1).toString();
+            IPSFile ips = rom.createIPS(orgRom, getStart(), getStart()
+                + getLen() - 1);
 
-            if (ips.length() <= 8) //"PATCH" and "EOF" total 8 bytes
+            if (ips.getRecordCount() == 0) //no changes
             {
                 JOptionPane.showMessageDialog(null,
                     "Cannot create patch. ROMs are identical.", "Error!",
@@ -218,28 +219,7 @@ public class ResetButton extends EbHackModule implements ActionListener
                 });
                 if (jfc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
                 {
-                    try
-                    {
-                        FileOutputStream out = new FileOutputStream(jfc
-                            .getSelectedFile());
-                        for (int i = 0; i < ips.length(); i++)
-                        {
-                            out.write(ips.charAt(i));
-                        }
-                        out.close();
-                    }
-                    catch (FileNotFoundException e)
-                    {
-                        System.out
-                            .println("Error: File not saved: File not found.");
-                        e.printStackTrace();
-                    }
-                    catch (IOException e)
-                    {
-                        System.out
-                            .println("Error: File not saved: Could write file.");
-                        e.printStackTrace();
-                    }
+                    ips.saveIPSFile(jfc.getSelectedFile());
                 }
             }
         }
