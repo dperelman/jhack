@@ -668,8 +668,6 @@ public class ItemEditor extends EbHackModule implements ActionListener
         //            items[i].name[j] = (j < tfName.length ? tfName[j] : (char) 0);
         //        }
         items[i].name = this.name.getText();
-        ItemEditor.notifyItemDataListeners(new ListDataEvent(this,
-            ListDataEvent.CONTENTS_CHANGED, i, i));
 
         items[i].effect = this.effectSelector.getSelectedIndex() & 0xffff;
         items[i].cost = numberize(this.cost.getText()) & 0xffff;
@@ -691,6 +689,9 @@ public class ItemEditor extends EbHackModule implements ActionListener
         items[i].ownership += (!this.infinite.isSelected() ? 1 : 0) << 7;
 
         items[i].writeInfo();
+        
+        ItemEditor.notifyItemDataListeners(new ListDataEvent(this,
+            ListDataEvent.CONTENTS_CHANGED, i, i));
     }
 
     private void showItemInfo(int i)

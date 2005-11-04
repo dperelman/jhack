@@ -1,4 +1,5 @@
 NEXT VERSION (after v0.5.9):
+# Item Editor: BUGFIX: Workaround for bug where extra power would get set to the item number.
 
 v0.5.9
 # Enemy Placement Groups Editor: Made ctrl-click have the opposite effect on meters
