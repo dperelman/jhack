@@ -67,7 +67,8 @@ public class RomFileIO extends AbstractRom
         catch (IOException e)
         {
             e.printStackTrace();
-            return null;
+            /* AbstractROM's is slower, but will handle errors. */
+            return super.readByte(offset, length);
         }
     }
 
@@ -82,7 +83,8 @@ public class RomFileIO extends AbstractRom
         catch (IOException e)
         {
             e.printStackTrace();
-            return null;
+            /* AbstractROM's is slower, but will handle errors. */
+            return super.readByteSeek(length);
         }
     }
 

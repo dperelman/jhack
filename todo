@@ -17,6 +17,16 @@ NEXT v0.0.x (minor) RELEASE
 # Sprite Editor: load/save with h-flip
 # Sprite Editor: Image import, match to palette
 # Reset Button: support any rom type, comp/decomp only appear for EB
+# Tile Editor: event flag based palette changes:
+	Those colors (the first color entry in each 16-color subpalette) 
+	contain additional data about the map palette as a whole. 
+	The first transparent color in a 6-subpalette group contains the event flag 
+	that controls whether that palette is used or not. The second transparent color 
+	is a two-byte pointer to the map palette to be used if the event flag is set. 
+	Somehow or other, when the Tile Editor imported the tileset data, it changed 
+	this pointer from $8067 to $0067. That's why garbage data was being read for 
+	the nighttime palette. Perhaps this is something to look into, Mr. Tenda? :B
+	  - Mr. Accident in a forum post
 
 LONG TERM
 
