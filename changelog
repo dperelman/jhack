@@ -1,6 +1,8 @@
 NEXT VERSION (after v0.5.9):
 # Item Editor: BUGFIX: Workaround for bug where extra power would get set to the item number.
 # ROM File IO: BUGFIX: array reading can no longer return null; caused problems with decomp
+# Text Editor: BUGFIX: Special characters (including line breaks) are converted to spaces before
+	attempting to save
 
 v0.5.9
 # Enemy Placement Groups Editor: Made ctrl-click have the opposite effect on meters

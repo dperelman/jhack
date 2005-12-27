@@ -1021,6 +1021,12 @@ public class CCInfo
         // This function takes a visually formatted string (like the user
         // input into the text editing box) and converts it into a string
         // that is ready to be written directly to the ROM.
+        
+        /* Convert all control characters to spaces. */
+        for(char i = 0; i < 0x20; i++)
+        {
+            str = str.replace(i, ' ');
+        }
 
         StringBuffer buffer = new StringBuffer(str.length());
 

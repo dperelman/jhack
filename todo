@@ -4,9 +4,18 @@ NEXT v0.0.0.x (bugfix) RELEASE
 # Look into threading of error console GUI building (ERROR#65895)
 # Look into use of JOptionPane.showOptionDialog() for abort/retry/fail.
 # Battle Sprite Editor: check size of imported sprites
+# [15:08:05] <Radiation> Dear AnyoneEB: JHack is loading the names of the
+	 previous hack's items in its memory for the Enemy Editor, but the 
+	 Item Editor is a-okay. It's bugging me. D:
+# Only revert to as big a ROM as needed.
+# <Radiation> You know "IQ" in the enemy editor?
+	<Radiation> Who the heck named that?
+	<Radiation> It's not IQ.
+	<Radiation> It's Luck.
 
 NEXT v0.0.x (minor) RELEASE
 
+# Partial decomp() for "fail" on abort, retry, fail
 # AbstractRom: React to loadRom() returning false, at least in MainGUI
 # TextEditor: Routine Map
 # [12:38:45] <JeffMan> oh and you should add the mother 2 font 
