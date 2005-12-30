@@ -35,7 +35,6 @@ import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
-import net.starmen.pkhack.eb.MapEditor.EbMap;
 
 /**
  * @author Mr. Tenda
@@ -949,8 +948,6 @@ public class PhotoEditor extends EbHackModule
                                 	int spriteDrawX = spriteLocs[j][0];
                                 	EbMap.loadSpriteImage(hm,
                                 			spriteNum, tptEntry.getDirection());
-                                	SpriteEditor.SpriteInfoBlock sib =
-                                		SpriteEditor.sib[spriteNum];
                                 	
                                 	if (((tileY + k) % (MapEditor.sectorHeight * 2)) > 0)
                                 	{
@@ -1124,7 +1121,7 @@ public class PhotoEditor extends EbHackModule
 					- (previewHeight / 2);
                 if (y2 < 0)
                 	y2 = 0;
-                maparray[i] = MapEditor.EbMap.getTiles(rom,
+                maparray[i] = EbMap.getTiles(rom,
                 		y2, tileX,
 						previewWidth);
             }
@@ -1196,22 +1193,20 @@ public class PhotoEditor extends EbHackModule
 					previewHeight * MapEditor.tileHeight,
 					BufferedImage.TYPE_4BYTE_ABGR_PRE);
         	Graphics2D g = out.createGraphics();
-        	int tile_set, tile_tile, tile_pal;
+        	int tile_set, tile_tile;
             for (int i = 0; i < mapArray.length; i++)
             {
             	int sectorY = (tileY + i) / MapEditor.sectorHeight;
                 for (int j = 0; j < mapArray[i].length; j++)
                 {
                 	int sectorX = (tileX + j) / MapEditor.sectorWidth;
-                	if (! MapEditor.EbMap.isSectorDataLoaded(
-                			sectorX, sectorY))
-                		MapEditor.EbMap.loadSectorData(
-                				rom, sectorX, sectorY);
+                	if (! EbMap.isSectorDataLoaded(sectorX, sectorY))
+                		EbMap.loadSectorData(rom, sectorX, sectorY);
                 	EbMap.Sector sector = EbMap.getSectorData(sectorX, sectorY);
                 	
-                    tile_set = MapEditor.EbMap.getDrawTileset(sector.getTileset());
+                    tile_set = EbMap.getDrawTileset(sector.getTileset());
                     tile_tile = mapArray[i][j]
-                        | (MapEditor.EbMap.getLocalTileset(rom,
+                        | (EbMap.getLocalTileset(rom,
                         		tileX + j,
 								tileY + i) << 8);
 
@@ -1289,7 +1284,6 @@ public class PhotoEditor extends EbHackModule
             if ((e.getButton() == 1)
 					&& (movingSprite == -1))
             {
-        		int mousex = e.getX(), mousey = e.getY();
         		spOrigX = e.getX();
     			spOrigY = e.getY();
             	for (int i = 0; i < party.length; i++)

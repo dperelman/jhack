@@ -17,7 +17,6 @@ import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.XMLPreferences;
 import net.starmen.pkhack.eb.MapEditor.MapGraphics;
-import net.starmen.pkhack.eb.MapEditor.EbMap;
 
 /**
  * @author Mr. Tenda

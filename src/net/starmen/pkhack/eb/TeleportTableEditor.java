@@ -19,7 +19,6 @@ import javax.swing.event.DocumentListener;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.XMLPreferences;
-import net.starmen.pkhack.eb.MapEditor.EbMap;
 import net.starmen.pkhack.eb.MapEditor.MapGraphics;
 
 /**
