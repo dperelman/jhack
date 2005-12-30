@@ -66,7 +66,7 @@ public class MiscEditor extends EbHackModule implements ActionListener
         selector.addActionListener(this);
         entry.add(selector);
         
-        tf = HackModule.createSizedJTextField(3, true);
+        tf = HackModule.createSizedJTextField(5, true);
         entry.add(tf);
         
         listBox = new JComboBox();
