@@ -14,7 +14,6 @@ import java.util.ArrayList;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -49,11 +48,9 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 
 	private static EnemyPlGroup[] enemyPlGroups = new EnemyPlGroup[ENEMY_GROUPS_COUNT];
 
-	private JComboBox entryChooser, battleGroupChooser1, battleGroupChooser2;
+	private JComboBox entryChooser;
 
 	private JTextField flag;
-
-	private JButton add1, add2;
 
 	private EnemyPlGroupPanel group1, group2;
 
@@ -62,6 +59,8 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 	private static int oldStartAddress, oldLength;
 
 	private static int[][] oldEntryLocs = new int[ENEMY_GROUPS_COUNT][2];
+	
+	private int tmp = 0;
 
 	/*
 	 * (non-Javadoc)
@@ -197,7 +196,7 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 			mainWindow.pack();
 		}
 	}
-
+	
 	public static void readFromRom(AbstractRom rom) {
 		int sum, k, addr = 0, newAddr;
 		wasWrittenContiguously = true;
@@ -391,9 +390,9 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 		public class EnemyPlGroupEntryPanel {
 			private EnemyPlGroupPanel parent;
 
-			private int groupNum;
+			// private int groupNum;
 
-			private EnemyPlGroup.EnemyPlGroupEntry entry;
+			// private EnemyPlGroup.EnemyPlGroupEntry entry;
 
 			private JComboBox enemy = new JComboBox();
 
@@ -401,7 +400,7 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 
 			public EnemyPlGroupEntryPanel(EnemyPlGroupPanel parent, int groupNum) {
 				this.parent = parent;
-				this.groupNum = groupNum;
+				// this.groupNum = groupNum;
 				enemy.addActionListener(parent);
 				enemy.setActionCommand("E" + Integer.toString(groupNum));
 				probMeter.addActionListener(parent);
@@ -410,14 +409,14 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 			}
 
 			public void unsetEntry() {
-				this.entry = null;
+				// this.entry = null;
 				enemy.setSelectedIndex(0);
 				enemy.setEnabled(false);
 				probMeter.setStatus(0);
 			}
 
 			public void setEntry(EnemyPlGroup.EnemyPlGroupEntry entry) {
-				this.entry = entry;
+				// this.entry = entry;
 				enemy.removeActionListener(parent);
 				enemy.setSelectedIndex(entry.getEnemy() & 0xffff);
 				enemy.addActionListener(parent);
@@ -502,6 +501,7 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 
 		public void setStatus(int status) {
 			this.status = status;
+			repaint();
 		}
 
 		public void paintComponent(Graphics g) {
