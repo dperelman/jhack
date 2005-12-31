@@ -65,7 +65,7 @@ public class EbMap {
 	private static ArrayList enemyLocChanges;
 
 	public static void reset() {
-		mapChanges = new ArrayList();
+		/*mapChanges = new ArrayList();
 		spData = new ArrayList[(MapEditor.heightInSectors / 2)
 				* MapEditor.widthInSectors];
 		sectorData = new Sector[MapEditor.heightInSectors
@@ -87,31 +87,73 @@ public class EbMap {
 		mapAddresses = new int[8];
 		for (int i = 0; i < mapAddresses.length; i++)
 			mapAddresses[i] = -1;
-		enemyLocChanges = new ArrayList();
+		enemyLocChanges = new ArrayList();*/
+		mapChanges = null;
+		spData = null;
+		sectorData = null;
+		drawingTilesets = null;
+		localTilesetChanges = null;
+		doorData = null;
+		oldDoorEntryLengths = null;
+		destData = null;
+		destsLoaded = null;
+		destsIndexes = null;
+		errors = null;
+		tileImages = null;
+		spriteImages = null;
+		mapAddresses = null;
+		enemyLocChanges = null;
 	}
 
 	// A shortcut for other modules to use.
 	public static void loadData(HackModule hm, boolean sprites,
 			boolean doors, boolean hotspots, boolean enemies,
-			boolean mapChanges) {
+			boolean loadMapChanges) {
+		mapChanges = new ArrayList();
+		sectorData = new Sector[MapEditor.heightInSectors
+				* MapEditor.widthInSectors];
+		drawingTilesets = new int[MapEditor.mapTsetNum];
+		for (int i = 0; i < drawingTilesets.length; i++)
+			drawingTilesets[i] = -1;
+		localTilesetChanges = new ArrayList();
+		errors = new ArrayList();
+		spriteImages = new Image[SpriteEditor.NUM_ENTRIES][8];
+		mapAddresses = new int[8];
+		for (int i = 0; i < mapAddresses.length; i++)
+			mapAddresses[i] = -1;
+		
 		loadMapAddresses(hm.rom);
 		loadDrawTilesets(hm.rom);
 		if (sprites) {
+			spData = new ArrayList[(MapEditor.heightInSectors / 2)
+			       				* MapEditor.widthInSectors];
+			
 			TPTEditor.readFromRom(hm);
 			SpriteEditor.readFromRom(hm.rom);
 			loadSpriteData(hm.rom);
 		}
-		if (doors)
+		if (doors) {
+			doorData = new ArrayList[(MapEditor.heightInSectors / 2)
+			         				* MapEditor.widthInSectors];
+			oldDoorEntryLengths = new int[(MapEditor.heightInSectors / 2)
+			                              * MapEditor.widthInSectors];
+			destData = new ArrayList();
+			destsLoaded = new ArrayList();
+			destsIndexes = new ArrayList();
+			         		
 			loadDoorData(hm.rom);
+		}
 		if (hotspots)
 			HotspotEditor.readFromRom(hm);
 		if (enemies) {
+			enemyLocChanges = new ArrayList();
 			EnemyPlacementGroupsEditor.readFromRom(hm.rom);
 			BattleEntryEditor.readFromRom(hm.rom);
 			EnemyEditor.readFromRom(hm);
 		}
-		if (mapChanges)
+		if (loadMapChanges) {
 			MapEventEditor.readFromRom(hm.rom);
+		}
 	}
 
 	public static void loadData(HackModule hm, boolean sprites,
@@ -155,6 +197,9 @@ public class EbMap {
 
 	public static void loadTileImage(int loadtset, int loadtile,
 			int loadpalette) {
+		if (tileImages == null)
+			tileImages = new Image[MapEditor.drawTsetNum][1024][MapEditor.palsNum];
+		
 		if (tileImages[loadtset][loadtile][loadpalette] == null) {
 			tileImages[loadtset][loadtile][loadpalette] = TileEditor.tilesets[loadtset]
 					.getArrangementImage(loadtile, loadpalette);
@@ -495,6 +540,25 @@ public class EbMap {
 		}
 		return -1;
 	}
+	
+	public static SpriteLocation findSpriteLocation(HackModule hm, int areaX, int areaY,
+			short spriteX, short spriteY) {
+		int areaNum = areaX + (areaY * MapEditor.widthInSectors);
+		for (int i = 0; i < spData[areaNum].size(); i++) {
+			SpriteLocation spLoc = (SpriteLocation) spData[areaNum].get(i);
+			TPTEditor.TPTEntry tptEntry = TPTEditor.tptEntries[spLoc
+					.getTpt()];
+			SpriteEditor.SpriteInfoBlock sib = SpriteEditor.sib[tptEntry
+					.getSprite()];
+			if (((sib.width * 8) > spriteX - spLoc.getX())
+					&& (0 < spriteX - spLoc.getX())
+					&& ((sib.height * 8) > spriteY - spLoc.getY())
+					&& (0 < spriteY - spLoc.getY())) {
+				return spLoc;
+			}
+		}
+		return null;
+	}
 
 	public static boolean writeSprites(HackModule hm) {
 		AbstractRom rom = hm.rom;
@@ -575,8 +639,9 @@ public class EbMap {
 				errors += loadDoorData(rom, i);
 		if (errors > 0)
 			System.out.println(errors + " door entry error"
-					+ (errors > 1 ? "s" : "") + " found, see Errors menu "
-					+ "in Map Editor for details.");
+					+ (errors > 1 ? "s" : "") + " found"
+					+ (errors == 9 ? " (this is normal for clean ROMs)"
+							: ", see Errors menu in Map Editor for details."));
 	}
 
 	// returns how many errors were encountered
