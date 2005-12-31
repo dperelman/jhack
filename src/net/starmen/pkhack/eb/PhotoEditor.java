@@ -325,22 +325,27 @@ public class PhotoEditor extends EbHackModule
 		
 		AbstractRom rom = hm.rom;
 		
-		EbMap.loadData(hm, false, false, false);
+		EbMap.loadData(hm, true, false, false);
 		
 		entries = new PhotoEntry[NUM_PHOTOS];
+		int address, palNum;
+		short flag, centerX, centerY, landX, landY;
+		byte direction, distance;
+		short[][] partyXY;
+		short[][] extraSprites;
 		for (int i = 0; i < entries.length; i++)
 		{
-			int address = 0x21318A + (i * 62);
-			short flag = (short) rom.readMulti(address, 2);
-			short centerX = (short) rom.readMulti(address + 2, 2);
-			short centerY = (short) rom.readMulti(address + 4, 2);
-			int palNum = rom.readMulti(address + 6, 2) / (32 * 6); // 32 * 6 = size of a full pal
-			byte direction = (byte) (rom.readByte(address + 8) / 0x8);
-			byte distance = rom.readByte(address + 9);
-			short landX = (short) rom.readMulti(address + 10, 2);
-			short landY = (short) rom.readMulti(address + 12, 2);
+			address = 0x21318A + (i * 62);
+			flag = (short) rom.readMulti(address, 2);
+			centerX = (short) rom.readMulti(address + 2, 2);
+			centerY = (short) rom.readMulti(address + 4, 2);
+			palNum = rom.readMulti(address + 6, 2) / (32 * 6); // 32 * 6 = size of a full pal
+			direction = (byte) (rom.readByte(address + 8) / 0x8);
+			distance = rom.readByte(address + 9);
+			landX = (short) rom.readMulti(address + 10, 2);
+			landY = (short) rom.readMulti(address + 12, 2);
 			
-			short[][] partyXY = new short[6][2];
+			partyXY = new short[6][2];
 			for (int j = 0; j < partyXY.length; j++)
 			{
 				partyXY[j][0] = (short) 
@@ -348,7 +353,7 @@ public class PhotoEditor extends EbHackModule
 				partyXY[j][1] = (short) 
 					rom.readMulti(address + 16 + (j * 4), 2);
 			}
-			short[][] extraSprites = new short[4][3];
+			extraSprites = new short[4][3];
 			for (int j = 0; j < extraSprites.length; j++)
 			{
 				extraSprites[j][0] = (short)

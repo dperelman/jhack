@@ -357,8 +357,7 @@ public class TeleportTableEditor extends EbHackModule implements ActionListener,
 		
 		TPTEditor.readFromRom(this);
 		SpriteEditor.readFromRom(rom);
-		EbMap.loadSpriteData(rom);
-		EbMap.loadDoorData(rom);
+		EbMap.loadData(this, true, true, false);
 
 		readFromRom();
 		selector.setSelectedIndex(0);
