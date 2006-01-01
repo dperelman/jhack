@@ -52,5 +52,8 @@ Yoshi's Island (1.1J)
 Yoshi's Island (1.2J)
 	*81DB: 02 6D BC 92 43
 
+Wheel of Fortune (NES)
+	*6DE: A9 22 85 14 A9 C6 85 15
+
 Unknown
 	#no tests, if all others fail, all ROMs will pass this
