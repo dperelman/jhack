@@ -71,7 +71,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
     //stats tab stuff
     private JTextField name, hp, pp, exp, money, speed, offense, defense,
-            level, guts, iq;
+            level, guts, luck;
     private JCheckBox theFlag, runFlag, bossFlag;
     private JComboBox gender, itemFreq, status;
     private ItemEditor.ItemEntry item;
@@ -173,8 +173,8 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             (level = createSizedJTextField(3, true))));
         statsTabLeft.add(getLabeledComponent("Guts: ",
             (guts = createSizedJTextField(3, true))));
-        statsTabLeft.add(getLabeledComponent("IQ: ",
-            (iq = createSizedJTextField(3, true))));
+        statsTabLeft.add(getLabeledComponent("Luck: ",
+            (luck = createSizedJTextField(3, true))));
         statsTab.add(pairComponents(statsTabLeft, new JLabel(), false),
             BorderLayout.WEST);
 
@@ -586,7 +586,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         status.setSelectedIndex(enemies[i].getStatus());
         level.setText(Integer.toString(enemies[i].getLevel()));
         guts.setText(Integer.toString(enemies[i].getGuts()));
-        iq.setText(Integer.toString(enemies[i].getIq()));
+        luck.setText(Integer.toString(enemies[i].getLuck()));
         //stats tab - right side
         theFlag.setSelected(enemies[i].getTheFlag());
         runFlag.setSelected((enemies[i].getRunFlag() & 1) == 1);
@@ -708,7 +708,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             enemies[i].setStatus(status.getSelectedIndex());
             enemies[i].setLevel(Integer.parseInt(level.getText()));
             enemies[i].setGuts(Integer.parseInt(guts.getText()));
-            enemies[i].setIq(Integer.parseInt(iq.getText()));
+            enemies[i].setLuck(Integer.parseInt(luck.getText()));
             //stats tab - right side
             enemies[i].setTheFlag(theFlag.isSelected());
             enemies[i].setRunFlag((enemies[i].getRunFlag() & 0xfe)
@@ -997,7 +997,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         //see http://pkhack.starmen.net/old/misc/unknown4.txt
         private int speed;
         private int guts;
-        private int iq;
+        private int luck;
         private int weakness[] = new int[5];
         /*
          * private int unknownb; private int unknownc; private int unknownd;
@@ -1083,7 +1083,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
             this.guts = rom.readSeek();
 
-            this.iq = rom.readSeek();
+            this.luck = rom.readSeek();
 
             this.weakness = rom.readSeek(5);
 
@@ -1174,7 +1174,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
             rom.writeSeek(this.guts);
 
-            rom.writeSeek(this.iq);
+            rom.writeSeek(this.luck);
 
             rom.writeSeek(weakness);
 
@@ -1349,9 +1349,9 @@ public class EnemyEditor extends EbHackModule implements ActionListener
          * 
          * @return int
          */
-        public int getIq()
+        public int getLuck()
         {
-            return iq;
+            return luck;
         }
 
         /**
@@ -1822,11 +1822,11 @@ public class EnemyEditor extends EbHackModule implements ActionListener
          * Sets the iq.
          * 
          * @param iq The iq to set
-         * @see #getIq()
+         * @see #getLuck()
          */
-        public void setIq(int iq)
+        public void setLuck(int iq)
         {
-            this.iq = iq;
+            this.luck = iq;
         }
 
         /**
