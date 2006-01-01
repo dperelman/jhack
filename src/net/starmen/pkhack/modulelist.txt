@@ -62,6 +62,7 @@ eb.GasStationEditor		#Edits the gas station screen at the start of the game
 ----------------------Maps-----------------------------------------------------
 eb.TileEditor		#Edits map tiles, tile arrangements, and collision info,
 					#map tile palette editing may be added
+eb.PaletteEventEditor #edits event based palette changes; used by eb.TileEditor
 #eb.ItemDumper		#Dumps the item info for walkthru
 eb.MapEditor		#Edits the map
 eb.DoorEditor		#Edits doors
