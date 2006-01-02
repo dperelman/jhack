@@ -80,13 +80,14 @@ public class TileEditor extends EbHackModule implements ActionListener
     }
 
     //Static stuff
+    public static final int NUM_TILESETS = 20;
     /**
      * All information about the 20 tilesets: graphics, arrangements, collision
      * data.
      * 
      * @see TileEditor.Tileset
      */
-    public static Tileset[] tilesets = new Tileset[20];
+    public static Tileset[] tilesets = new Tileset[NUM_TILESETS];
     private static boolean paletteIsInited = false;
     /** The names of 20 tilesets. */
     public static final String[] TILESET_NAMES = {"Underworld", "Onett",
@@ -200,8 +201,8 @@ public class TileEditor extends EbHackModule implements ActionListener
             {
                 System.out.println("Error bad compressed data on tileset #"
                     + num + " tiles. (" + tmp[0] + ")");
-                if (tmp[0] < 0)
-                    return false;
+//                if (tmp[0] < 0)
+//                    return false;
             }
             tileOldCompLen = tmp[1];
 
@@ -262,7 +263,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             {
                 System.out.println("Error bad compressed data on tileset #"
                     + num + " arrangments. (" + tmp + ")");
-                return false;
+//                return false;
             }
             arrOldCompLen = tmp[1];
 
@@ -283,7 +284,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             }
             catch (ArrayIndexOutOfBoundsException e)
             {}
-            return true;
+            return tmp[0] > 0;
         }
 
         private void readCollision()
@@ -408,7 +409,7 @@ public class TileEditor extends EbHackModule implements ActionListener
          * Sets the specified color in the specified palette to the given new
          * color.
          * 
-         * @param c Number of the color (0-15).
+         * @param c Number of the color (1-15).
          * @param palette Number of the palette to use (0-59). Note that there
          *            probably are not 60 palettes.
          * @param subPalette Number of the subpalette to use (0-5).
@@ -417,6 +418,11 @@ public class TileEditor extends EbHackModule implements ActionListener
         public void setPaletteColor(int c, int palette, int subPalette,
             Color col)
         {
+            if(c < 1 || c > 15)
+            {
+                return;
+            }
+            
             int bgrBlock;
             bgrBlock = (col.getRed() >> 3) & 0x1f;
             bgrBlock += ((col.getGreen() >> 3) & 0x1f) << 5;
@@ -2295,7 +2301,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                 - rom.readMulti(0x2F12FB + (i * 4), 4);
             if (i == 31)
                 k = 0xDAFAA7 - rom.readMulti(0x2F12FB + (i * 4), 4);
-            if (t < 0 || k < 0)
+            if (t < 0 || t >= NUM_TILESETS || k < 0)
             {
                 JOptionPane
                     .showMessageDialog(null,
@@ -3769,7 +3775,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             tileSelector.validate();
             tileSelector.repaint();
             mainWindow.getContentPane().validate();
-            if(cbdia != null)
+            if (cbdia != null)
             {
                 cbdia.invalidate();
                 cbsel.invalidate();
