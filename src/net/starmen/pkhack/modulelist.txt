@@ -30,6 +30,7 @@ eb.PhoneListEditor	#Edits phone list
 eb.FlyoverEditor	#Edits flyover sequence
 eb.TPTEditor		#Edits Text Pointer Table
 eb.TextEditor		#Edits Text
+wof.TextEditor		#Edits Text from Wheel of Fortune (NES)
 ----------------------Stats----------------------------------------------------
 eb.StartingStatsEditor 
 					#Edits starting stats for each of the chosen 4:
@@ -62,7 +63,7 @@ eb.GasStationEditor		#Edits the gas station screen at the start of the game
 ----------------------Maps-----------------------------------------------------
 eb.TileEditor		#Edits map tiles, tile arrangements, and collision info,
 					#map tile palette editing may be added
-eb.PaletteEventEditor #edits event based palette changes; used by eb.TileEditor
+#eb.PaletteEventEditor #edits event based palette changes; used by eb.TileEditor
 #eb.ItemDumper		#Dumps the item info for walkthru
 eb.MapEditor		#Edits the map
 eb.DoorEditor		#Edits doors
