@@ -5,8 +5,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.PixelGrabber;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -1439,8 +1441,8 @@ public abstract class HackModule
                 + pointerBase);
         //do not bother with shielding before 0x300200.
         if ((orgNewLen <= oldLen)
-        		&& !(mustBeInExpanded && (oldPointer < 0x300200))
-				&& (oldPointer + oldLen <= beginAt))
+            && !(mustBeInExpanded && (oldPointer < 0x300200))
+            && (oldPointer + oldLen <= beginAt))
         {
             //if it fits in the same place, then write there
             nullifyArea(oldPointer, oldLen);
@@ -3577,5 +3579,92 @@ public abstract class HackModule
             return 0;
         else
             return Integer.parseInt(in);
+    }
+
+    /**
+     * Returns an integer representing how different two colors are. Zero
+     * indicates the same color. 195075 would be the difference between black
+     * and white. The calculation is to sum the squares of the differences of
+     * the color components (red, green, and blue).
+     * 
+     * @param a a Color
+     * @param b another Color, order does not matter
+     * @return a number representing how different the two input colors are;
+     *         higher means more different
+     */
+    public static int getColorDiff(Color a, Color b)
+    {
+        int r = a.getRed() - b.getRed(); //Red delta
+        int g = a.getGreen() - b.getGreen(); //Green delta
+        int u = a.getBlue() - b.getBlue(); //blUe delta
+
+        return r * r + g * g + u * u;
+    }
+
+    /**
+     * Returns in the color in a palette which is the least different from a
+     * color. {@link #getColorDiff(Color, Color)}is used to determine how
+     * different two colors are.
+     * 
+     * @param pal palette to look through for a close color
+     * @param c color to find best match in palette for
+     * @return index in <code>pal</code> of best match for <code>c</code>
+     */
+    public static byte getNearestColorIndex(Color[] pal, Color c)
+    {
+        int m = Integer.MAX_VALUE; //min difference
+        byte mi = -1; //index
+        for (byte i = 0; i < pal.length; i++)
+        {
+            int tmp;
+            if ((tmp = getColorDiff(c, pal[i])) < m)
+            {
+                m = tmp;
+                mi = i;
+            }
+        }
+        return mi;
+    }
+
+    /**
+     * Converts an <code>Image</code> into a <code>byte[][]</code> using the
+     * given palette. For each pixel of the image, the corresponding element,
+     * <code>out[x][y]</code> will be set to the index of the closest color in
+     * the palette.
+     * 
+     * @param in image to convert. Any data outside the size of <code>out</code>
+     *            will be discarded.
+     * @param out <code>byte[][]</code> to write palette indexed image into.
+     *            This must be a rectangular array no bigger than the image.
+     * @param pal palette to use for converting colors to palette indexes
+     */
+    public static void convertImage(Image in, byte[][] out, Color[] pal)
+    {
+        int w = out.length;
+        int h = out[0].length;
+
+        int[] pixels = new int[w * h];
+
+        PixelGrabber pg = new PixelGrabber(in, 0, 0, w, h, pixels, 0, w);
+        try
+        {
+            pg.grabPixels();
+        }
+        catch (InterruptedException e)
+        {
+            System.out
+                .println("Interrupted waiting for pixels in HackModule.convertImage()!");
+            e.printStackTrace(System.out);
+            return;
+        }
+
+        for (int i = 0; i < w; i++)
+        {
+            for (int j = 0; j < h; j++)
+            {
+                out[i][j] = getNearestColorIndex(pal, new Color(pixels[(j * w)
+                    + i] & 0xf8f8f8));
+            }
+        }
     }
 }

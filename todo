@@ -2,7 +2,6 @@ DONE? (CHANGES TO CONFIRM/DEBUG)
 # BattleSpriteEditor: "fail" will show whatever incomplete/corrupted image decomp() returns
 # TownMapEditor: same as above
 # TileEditor: same as above
-# Sprite Editor: load/save with h-flip
 
 NEXT v0.0.0.x (bugfix) RELEASE
 # Look into threading of error console GUI building (ERROR#65895)

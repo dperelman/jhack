@@ -1,4 +1,6 @@
-NEXT VERSION (after v0.5.9):
+NEXT VERSION (after v0.5.10):
+
+v0.5.10:
 # Item Editor: BUGFIX: Workaround for bug where extra power would get set to the item number.
 # ROM File IO: BUGFIX: array reading can no longer return null; caused problems with decomp
 # Text Editor: BUGFIX: Special characters (including line breaks) are converted to spaces before
@@ -10,8 +12,11 @@ NEXT VERSION (after v0.5.9):
 # Door Entry/Destination Editor: Comboboxes for entry and destination selection instead of
 	text boxes
 # Added Text Editor (for Wheel of Fortune for the NES)
+# Sprite Editor v0.10: BUGFIX: h-flip flag handled correctly
+# Sprite Editor v0.10: BUGFIX: Export sprite now always exports what you see
+# Sprite Editor v0.10: will import images with off-palette colors to closest colors
 
-v0.5.9
+v0.5.9:
 # Enemy Placement Groups Editor: Made ctrl-click have the opposite effect on meters
 # Map Editor: Added enemy previewing using sprites and options to enable it and colors
 # Map Editor: BUGFIX: Enabling the showing of map changes and using Enemy Mode works
@@ -24,7 +29,7 @@ v0.5.9
 # Music/Flags Correlations Editor: BUGFIX: Event flag fields allow for hex number entry
 # Music/Flags Correlations Editor: BUGFIX: Writes pointer table correctly
 
-v0.5.8
+v0.5.8:
 # PSI Editor: Row selector changed to text field so any row may be chosen
 # AutoSearchBox: Exact find option added, applied to Item and PSI Editors
 # Item Editor: See above

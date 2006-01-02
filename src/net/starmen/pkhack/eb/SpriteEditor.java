@@ -8,7 +8,6 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.PixelGrabber;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -34,12 +33,12 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
 
@@ -230,7 +229,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
      */
     public String getVersion()
     {
-        return "0.9.1";
+        return "0.10";
     }
 
     /**
@@ -430,27 +429,6 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
      */
     public void importImg()
     {
-        //        //choose file
-        //        JFileChooser jfc = new JFileChooser();
-        //        jfc.setFileFilter(new FileFilter()
-        //        {
-        //            public boolean accept(File f)
-        //            {
-        //                if ((f.getAbsolutePath().toLowerCase().endsWith(".png") || f
-        //                    .isDirectory())
-        //                    && f.exists()) { return true; }
-        //                return false;
-        //            }
-        //
-        //            public String getDescription()
-        //            {
-        //                return "PNG Image (*.png)";
-        //            }
-        //        });
-        //        if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
-        //        {
-        //            importImg(jfc.getSelectedFile());
-        //        }
         importImg(getFile(false, "png", "Portable Network Graphics"));
     }
 
@@ -469,9 +447,8 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         }
         try
         {
-            Sprite sp = new Sprite(getSpriteInfo(HackModule.getNumberOfString(
-                selector.getSelectedItem().toString(), false)), this);
-            ImageIO.write(sp.getImage(), "png", f);
+            ImageIO.write((BufferedImage) spriteDrawingArea.getImage(), "png",
+                f);
         }
         catch (IOException e)
         {
@@ -487,26 +464,6 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
      */
     public void exportImg()
     {
-        //        //choose file
-        //        JFileChooser jfc = new JFileChooser();
-        //        jfc.setFileFilter(new FileFilter()
-        //        {
-        //            public boolean accept(File f)
-        //            {
-        //                if (f.getAbsolutePath().toLowerCase().endsWith(".png")
-        //                    || f.isDirectory()) { return true; }
-        //                return false;
-        //            }
-        //
-        //            public String getDescription()
-        //            {
-        //                return "PNG Image (*.png)";
-        //            }
-        //        });
-        //        if (jfc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
-        //        {
-        //            exportImg(jfc.getSelectedFile());
-        //        }
         exportImg(getFile(true, "png", "Portable Network Graphics"));
     }
 
@@ -751,6 +708,24 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
                     offset += 32;
                 }
             }
+            if (si.isHFliped())
+            {
+                hFlip();
+            }
+        }
+
+        private void hFlip()
+        {
+            byte[] tmp;
+            int opp; //opposite
+            int max = si.width * 8;
+            for (int x = 0; x < max / 2; x++)
+            {
+                opp = max - x - 1;
+                tmp = sprite[x];
+                sprite[x] = sprite[opp];
+                sprite[opp] = tmp;
+            }
         }
 
         /**
@@ -758,6 +733,11 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          */
         public void writeInfo()
         {
+            if (si.isHFliped())
+            {
+                hFlip();
+            }
+
             int offset = 0;
             for (int a = 0; a < si.height; a++)
             {
@@ -1028,28 +1008,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         public void setImage(BufferedImage in)
         {
             sprite = new byte[sprite.length][sprite[0].length];
-            BufferedImage img = (BufferedImage) in;
-
-            int[] pixels = new int[img.getWidth() * img.getHeight()];
-            int w = img.getWidth(), h = img.getHeight();
-            PixelGrabber pg = new PixelGrabber(img, 0, 0, w, h, pixels, 0, w);
-            try
-            {
-                pg.grabPixels();
-            }
-            catch (InterruptedException e)
-            {
-                System.err.println("Interrupted waiting for pixels!");
-                return;
-            }
-            for (int j = 0; j < h; j++)
-            {
-                for (int i = 0; i < w; i++)
-                {
-                    this.setPixelColor((si.isHFliped() ? (w - 1) - i : i), j,
-                        pixels[j * w + i]);
-                }
-            }
+            convertImage(in, sprite, palette);
         }
 
         /**
