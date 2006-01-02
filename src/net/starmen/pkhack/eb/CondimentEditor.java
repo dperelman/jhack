@@ -33,7 +33,7 @@ public class CondimentEditor extends EbHackModule implements ActionListener
         super(rom, prefs);
     }
 
-    public static int NUM_ENTRIES = 45;
+    public static int NUM_ENTRIES = 44;
     public static CondimentEntry[] entries = new CondimentEntry[NUM_ENTRIES];
     public static String[] condimentEffects = {"Restore HP", "Restore PP",
         "Restore HP/PP", "Like rock candy (random stat + 1)", "Increase IQ",
@@ -57,7 +57,7 @@ public class CondimentEditor extends EbHackModule implements ActionListener
         {
             this.rom = rom;
             this.num = num;
-            this.address = 0x15EC5B + (num * 7) + 28;
+            this.address = 0x15EC77 + (num * 7);
             rom.seek(address);
 
             this.item = rom.readSeek();

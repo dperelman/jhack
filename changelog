@@ -15,6 +15,7 @@ v0.5.10:
 # Sprite Editor v0.10: BUGFIX: h-flip flag handled correctly
 # Sprite Editor v0.10: BUGFIX: Export sprite now always exports what you see
 # Sprite Editor v0.10: will import images with off-palette colors to closest colors
+# Condiment Editor: BUGFIX: There are 44, not 45, entries in the table.
 
 v0.5.9:
 # Enemy Placement Groups Editor: Made ctrl-click have the opposite effect on meters
