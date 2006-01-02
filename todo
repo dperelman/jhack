@@ -1,7 +1,4 @@
 DONE? (CHANGES TO CONFIRM/DEBUG)
-# BattleSpriteEditor: "fail" will show whatever incomplete/corrupted image decomp() returns
-# TownMapEditor: same as above
-# TileEditor: same as above
 
 NEXT v0.0.0.x (bugfix) RELEASE
 # Look into threading of error console GUI building (ERROR#65895)
@@ -24,8 +21,6 @@ NEXT v0.0.x (minor) RELEASE
 # Text Editor: Preview of next text block (optional) (in separate window?)
 # Font table: http://pkhax.elpenguino.info/03F254.txt
 # SPT Editor: Provide an easy way to reallocate addresses for resized entries
-# Sprite Editor: Image import, match to palette
-# Reset Button: support any rom type, comp/decomp only appear for EB
 # Tile Editor: event flag based palette changes:
 	Those colors (the first color entry in each 16-color subpalette) 
 	contain additional data about the map palette as a whole. 

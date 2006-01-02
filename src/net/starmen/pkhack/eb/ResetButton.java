@@ -72,10 +72,17 @@ public class ResetButton extends EbHackModule implements ActionListener
     {
         super(rom, prefs);
     }
+
+    public boolean isRomSupported()
+    {
+        // All ROMs supported, just special features for EarthBound
+        return true;
+    }
     private JSlider start, end;
     private JLabel path;
     private JTextField startTF, endTF, lenTF;
     private JComboBox rangeSelector, subrangeSelector;
+    private JButton decomp, comp;
     private boolean isCustom = true; //false = preset range
     private boolean changingTF = false, changingSlider = false;
 
@@ -408,7 +415,6 @@ public class ResetButton extends EbHackModule implements ActionListener
      */
     protected void init()
     {
-        initResetRanges();
         mainWindow = new JFrame(this.getDescription());
         mainWindow.setLocationRelativeTo(JHack.main.getMainWindow());
         mainWindow.setSize(620, 210);
@@ -431,12 +437,12 @@ public class ResetButton extends EbHackModule implements ActionListener
 
         buttons.add(new JSeparator());
 
-        JButton decomp = new JButton("Decomp...");
+        decomp = new JButton("Decomp...");
         decomp.setActionCommand("decomp");
         decomp.addActionListener(this);
         buttons.add(decomp);
 
-        JButton comp = new JButton("Comp...");
+        comp = new JButton("Comp...");
         comp.setActionCommand("comp");
         comp.addActionListener(this);
         buttons.add(comp);
@@ -582,42 +588,6 @@ public class ResetButton extends EbHackModule implements ActionListener
         lenTF.setEnabled(false);
         entry.add(end = new JSlider(0, rom.length() - 1, rom.length() - 1));
 
-        //        start.addChangeListener(new ChangeListener()
-        //        {
-        //            public void stateChanged(ChangeEvent arg0)
-        //            {
-        //                isCustom = true;
-        //                try
-        //                {
-        //                    startTF.setText(addZeros(Integer.toString(start.getValue(),
-        //                        16), 6));
-        //                    lenTF.setText(Integer.toString(end.getValue()
-        //                        - start.getValue() + 1, 16));
-        //                }
-        //                catch (IllegalStateException e)
-        //                {
-        //                    //e.printStackTrace();
-        //                }
-        //            }
-        //        });
-        //        end.addChangeListener(new ChangeListener()
-        //        {
-        //            public void stateChanged(ChangeEvent arg0)
-        //            {
-        //                isCustom = false;
-        //                try
-        //                {
-        //                    endTF.setText(addZeros(
-        //                        Integer.toString(end.getValue(), 16), 6));
-        //                    lenTF.setText(Integer.toString(end.getValue()
-        //                        - start.getValue() + 1, 16));
-        //                }
-        //                catch (IllegalStateException e)
-        //                {
-        //                    //e.printStackTrace();
-        //                }
-        //            }
-        //        });
         start.addChangeListener(scl);
         end.addChangeListener(scl);
         startTF.getDocument().addDocumentListener(tdl);
@@ -644,12 +614,21 @@ public class ResetButton extends EbHackModule implements ActionListener
         mainWindow.pack();
     }
 
+    private void loadOrgRom()
+    {
+        orgRom = JHack.main.getOrginalRomFile(rom.getRomType());
+        if (path != null)
+        {
+            path.setText(orgRom.getPath());
+        }
+    }
+
     /**
      * @see net.starmen.pkhack.HackModule#getVersion()
      */
     public String getVersion()
     {
-        return "0.5";
+        return "0.6";
     }
 
     /**
@@ -862,10 +841,39 @@ public class ResetButton extends EbHackModule implements ActionListener
      */
     public void show()
     {
+        boolean isEb = rom.getRomType().equalsIgnoreCase("earthbound");
+        ranges.clear();
+        if (isEb)
+        {
+            initResetRanges();
+        }
+        else
+        {
+            ranges.add(new ResetRange(0, rom.length(), "Whole ROM"));
+        }
+
         super.show();
+
+        rangeSelector.setModel(HackModule.createComboBoxModel(ranges.toArray(),
+            null));
+        rangeSelector.setSelectedIndex(0);
+        comp.setEnabled(isEb);
+        decomp.setEnabled(isEb);
+        rangeSelector.setEnabled(isEb);
+        subrangeSelector.setEnabled(isEb);
+
         mainWindow.setVisible(true);
 
         //IPSInfo.main(this);
     }
 
+    public void reset()
+    {
+        loadOrgRom();
+        if (start != null && end != null)
+        {
+            start.setMaximum(rom.length() - 1);
+            end.setMaximum(rom.length() - 1);
+        }
+    }
 }
