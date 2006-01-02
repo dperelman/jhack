@@ -109,22 +109,31 @@ public class EbMap {
 	public static void loadData(HackModule hm, boolean sprites,
 			boolean doors, boolean hotspots, boolean enemies,
 			boolean loadMapChanges) {
-		mapChanges = new ArrayList();
-		sectorData = new Sector[MapEditor.heightInSectors
-				* MapEditor.widthInSectors];
-		drawingTilesets = new int[MapEditor.mapTsetNum];
-		for (int i = 0; i < drawingTilesets.length; i++)
-			drawingTilesets[i] = -1;
-		localTilesetChanges = new ArrayList();
-		errors = new ArrayList();
-		spriteImages = new Image[SpriteEditor.NUM_ENTRIES][8];
-		mapAddresses = new int[8];
-		for (int i = 0; i < mapAddresses.length; i++)
-			mapAddresses[i] = -1;
+		if (mapChanges == null)
+			mapChanges = new ArrayList();
+		if (sectorData == null)
+			sectorData = new Sector[MapEditor.heightInSectors
+			        				* MapEditor.widthInSectors];
+		if (drawingTilesets == null) {
+			drawingTilesets = new int[MapEditor.mapTsetNum];
+			for (int i = 0; i < drawingTilesets.length; i++)
+				drawingTilesets[i] = -1;
+			loadDrawTilesets(hm.rom);
+		}
+		if (localTilesetChanges == null)
+			localTilesetChanges = new ArrayList();
+		if (errors == null)
+			errors = new ArrayList();
+		if (spriteImages == null)
+			spriteImages = new Image[SpriteEditor.NUM_ENTRIES][8];
+		if (mapAddresses == null) {
+			mapAddresses = new int[8];
+			for (int i = 0; i < mapAddresses.length; i++)
+				mapAddresses[i] = -1;
+			loadMapAddresses(hm.rom);
+		}
 		
-		loadMapAddresses(hm.rom);
-		loadDrawTilesets(hm.rom);
-		if (sprites) {
+		if (sprites && (spData == null)) {
 			spData = new ArrayList[(MapEditor.heightInSectors / 2)
 			       				* MapEditor.widthInSectors];
 			
@@ -132,7 +141,7 @@ public class EbMap {
 			SpriteEditor.readFromRom(hm.rom);
 			loadSpriteData(hm.rom);
 		}
-		if (doors) {
+		if (doors && (doorData == null)) {
 			doorData = new ArrayList[(MapEditor.heightInSectors / 2)
 			         				* MapEditor.widthInSectors];
 			oldDoorEntryLengths = new int[(MapEditor.heightInSectors / 2)
@@ -145,15 +154,14 @@ public class EbMap {
 		}
 		if (hotspots)
 			HotspotEditor.readFromRom(hm);
-		if (enemies) {
+		if (enemies && (enemyLocChanges == null)) {
 			enemyLocChanges = new ArrayList();
 			EnemyPlacementGroupsEditor.readFromRom(hm.rom);
 			BattleEntryEditor.readFromRom(hm.rom);
 			EnemyEditor.readFromRom(hm);
 		}
-		if (loadMapChanges) {
+		if (loadMapChanges)
 			MapEventEditor.readFromRom(hm.rom);
-		}
 	}
 
 	public static void loadData(HackModule hm, boolean sprites,
