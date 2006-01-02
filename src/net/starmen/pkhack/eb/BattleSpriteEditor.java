@@ -252,6 +252,17 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         }
 
         /**
+         * Sets the sprite from an image using the specified palette.
+         * 
+         * @param img image to read sprite from
+         * @param pal palette to read image with
+         */
+        public void setSprite(Image img, Color[] pal)
+        {
+            HackModule.convertImage(img, sprite, pal);
+        }
+
+        /**
          * @return Returns the num.
          */
         public int getNum()
@@ -299,7 +310,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
     public String getVersion()
     {
-        return "0.1";
+        return "0.2";
     }
 
     public String getDescription()
@@ -445,6 +456,11 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
         fileMenu.add(HackModule.createJMenuItem("Apply Changes", 'a', null,
             "apply", this));
+        fileMenu.add(new JSeparator());
+        fileMenu.add(HackModule.createJMenuItem("Import sprite from image...",
+            'm', null, "importImgReal", this));
+        fileMenu.add(HackModule.createJMenuItem("Export sprite as image...",
+            'x', null, "exportImgReal", this));
         fileMenu.add(new JSeparator());
         fileMenu.add(HackModule.createJMenuItem("Import sprite...", 'i', null,
             "importImg", this));
@@ -734,6 +750,14 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
                     "Error, Unable to Edit Palette", JOptionPane.ERROR_MESSAGE);
             }
         }
+        else if (ae.getActionCommand().equals("importImgReal"))
+        {
+            importSprFromImg();
+        }
+        else if (ae.getActionCommand().equals("exportImgReal"))
+        {
+            exportSprAsImg();
+        }
         else if (ae.getActionCommand().equals("importImg"))
         {
             importImg();
@@ -824,16 +848,107 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
     {
         for (int i = 0; i < BITMAP_PAL.length; i++)
         {
-            //            System.out.println("Bitmap palette color #" + i + " = ("
-            //                + BITMAP_PAL[i].getRed() + ", " + BITMAP_PAL[i].getGreen()
-            //                + ", " + BITMAP_PAL[i].getBlue() + ")");
             BITMAP_REV_PAL.put(new Integer(BITMAP_PAL[i].getRGB()), new Byte(
                 (byte) i));
         }
     }
 
     /**
-     * Sets the current Sprite to the image in the specified file.
+     * Writes the current Sprite to a user-specified file as a normal image
+     * using the current palette.
+     * 
+     * @see #exportSprAsImg(File)
+     */
+    private void exportSprAsImg()
+    {
+        exportSprAsImg(getFile(true, "png", "Portable Network Graphics"));
+    }
+
+    /**
+     * Writes the current Sprite to a file as a normal image using the current
+     * palette.
+     * 
+     * @param f File to export image to.
+     */
+    public void exportSprAsImg(File f)
+    {
+        if (f == null)
+            return;
+        if (!f.getAbsolutePath().endsWith(".png"))
+        {
+            f = new File(f.getAbsolutePath() + ".png");
+        }
+        try
+        {
+            byte[][] img = getSelectedSprite().getSprite();
+            ImageIO.write((BufferedImage) da.getImage(), "png", f);
+        }
+        catch (IOException e)
+        {
+            System.out.println("Unable to write image: " + f.toString());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Sets the current Sprite to the image in a user-specified file. This trys
+     * to match the colors in the image to the closest colors in the current
+     * palette.
+     * 
+     * @see #importSprFromImg(File)
+     */
+    private void importSprFromImg()
+    {
+        importSprFromImg(getFile(false, "png", "Portable Network Graphics"));
+    }
+
+    /**
+     * Sets the current Sprite to the image in a file. This trys to match the
+     * colors in the image to the closest colors in the current palette.
+     * 
+     * @param f File to import image from.
+     */
+    public void importSprFromImg(File f)
+    {
+        try
+        {
+            if (f == null)
+                return;
+            if (!f.exists())
+                throw new FileNotFoundException();
+            BattleSprite sp = getSelectedSprite();
+            BufferedImage img = ImageIO.read(f);
+            if (img == null)
+            {
+                System.out.println("Unknown error loading image in "
+                    + "BattleSpriteEditor.importSprFromImg(File).");
+                return;
+            }
+            int w = img.getWidth(), h = img.getHeight();
+            if (!BATTLE_SPRITE_SIZES[sp.getSize()].equals(new Dimension(w, h)))
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Invalid image size (" + w + ", " + h + ").\n"
+                        + "Make sure the image size matches the\n"
+                        + "sprite size you have selected.", "Bad Image Size",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            sp.setSprite(img, getCurrentPal());
+            da.setImage(sp.getSprite());
+            da.repaint();
+        }
+        catch (IOException e)
+        {
+            System.out.println("Unable to read image: " + f.toString());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Sets the current Sprite to the image in the specified file. This uses the
+     * default palette of a 16-color bitmap to store color indexes as colors.
      * 
      * @param f File to import image from.
      */
@@ -849,13 +964,25 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
             BufferedImage img = ImageIO.read(f);
 
             if (img == null)
+            {
                 System.out
                     .println("How can img be null here!? battle sprite editor");
+                return;
+            }
 
-            byte[][] sprite = new byte[img.getWidth()][img.getHeight()];
-
-            int[] pixels = new int[img.getWidth() * img.getHeight()];
             int w = img.getWidth(), h = img.getHeight();
+            if (!BATTLE_SPRITE_SIZES[sp.getSize()].equals(new Dimension(w, h)))
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Invalid image size (" + w + ", " + h + ").\n"
+                        + "Make sure the image size matches the\n"
+                        + "sprite size you have selected.", "Bad Image Size",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            int[] pixels = new int[w * h];
+            byte[][] sprite = new byte[w][h];
             PixelGrabber pg = new PixelGrabber(img, 0, 0, w, h, pixels, 0, w);
             try
             {
@@ -888,13 +1015,16 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         {
             JOptionPane.showMessageDialog(mainWindow,
                 "Invalid colors in image. Image may only contain "
-                    + "colors existing in a 16-color non-paletted BMP.",
+                    + "colors existing in a 16-color non-paletted BMP.\n"
+                    + "Try the \"Import sprite from image...\" menu option.",
                 "Error Reading Image", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     /**
-     * Sets the current Sprite to the image in a user-specified file.
+     * Sets the current Sprite to the image in a user-specified file. This uses
+     * the default palette of a 16-color bitmap to store color indexes as
+     * colors.
      * 
      * @see #importImg(File)
      */
@@ -904,7 +1034,8 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
     }
 
     /**
-     * Sets the current Sprite to the image in the specified file.
+     * Sets the current Sprite to the image in the specified file. This uses the
+     * default palette of a 16-color bitmap to store color indexes as colors.
      * 
      * @param f File to import image from.
      */
@@ -919,12 +1050,23 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
             BattleSprite sp = getSelectedSprite();
             FileInputStream in = new FileInputStream(f);
             Image img = mainWindow.createImage(BMPReader.getBMPImage(in));
-            in.close();
-            int w = img.getWidth(mainWindow), h = img.getHeight(mainWindow);
-
             if (img == null)
+            {
                 System.out
                     .println("How can img be null here!? battle sprite editor");
+                return;
+            }
+            in.close();
+            int w = img.getWidth(mainWindow), h = img.getHeight(mainWindow);
+            if (!BATTLE_SPRITE_SIZES[sp.getSize()].equals(new Dimension(w, h)))
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Invalid image size (" + w + ", " + h + ").\n"
+                        + "Make sure the image size matches the\n"
+                        + "sprite size you have selected.", "Bad Image Size",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
             byte[][] sprite = new byte[w][h];
 
@@ -967,7 +1109,9 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
     }
 
     /**
-     * Sets the current Sprite to the image in a user-specified file.
+     * Sets the current Sprite to the image in a user-specified file. This uses
+     * the default palette of a 16-color bitmap to store color indexes as
+     * colors.
      * 
      * @see #importImg(File)
      */
@@ -977,7 +1121,8 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
     }
 
     /**
-     * Writes the current Sprite to the specified file.
+     * Writes the current Sprite to the specified file. This uses the default
+     * palette of a 16-color bitmap to store color indexes as colors.
      * 
      * @param f File to export image to.
      */
@@ -1004,7 +1149,8 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
     }
 
     /**
-     * Writes the current Sprite to a user-specified file.
+     * Writes the current Sprite to a user-specified file. This uses the default
+     * palette of a 16-color bitmap to store color indexes as colors.
      * 
      * @see #exportImg(File)
      */

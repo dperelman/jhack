@@ -14,6 +14,9 @@ v0.5.10:
 # Sprite Editor v0.10: BUGFIX: h-flip flag handled correctly
 # Sprite Editor v0.10: BUGFIX: Export sprite now always exports what you see
 # Sprite Editor v0.10: will import images with off-palette colors to closest colors
+# Battle Sprite Editor v0.2: will import images with off-palette colors to closest colors
+	by current palette
+# Battle Sprite Editor v0.2: BUGFIX: Import image sizes are checked.
 # Condiment Editor: BUGFIX: There are 44, not 45, entries in the table.
 # EbHackModule: decomp() always returns the number of bytes read to allow for partial decomp;
 	libcomp major version must now be 3 (not 2) for native decomp to be used
