@@ -214,7 +214,7 @@ public abstract class EbHackModule extends HackModule
     
     private static final int nativeComp, nativeCompMinor;
     private static final int LIBCOMP_COMP_VER = 1;
-    private static final int LIBCOMP_DECOMP_VER = 2;
+    private static final int LIBCOMP_DECOMP_VER = 3;
     static
     {
         int compver = -1, minor = -1;
@@ -320,13 +320,13 @@ public abstract class EbHackModule extends HackModule
                 cdata++;
             }
             if (bpos + len > maxlen || bpos + len < 0)
-                return new int[] { -1 };
+                return new int[] { -1, cdata - start + 1 };
             cdata++;
             if (cmdtype >= 4)
             {
                 bpos2 = (rom.read(cdata) << 8) + rom.read(cdata + 1);
                 if (bpos2 >= maxlen || bpos2 < 0)
-                    return new int[] { -2 };
+                    return new int[] { -2, cdata - start + 1 };
                 cdata += 2;
             }
 
@@ -352,7 +352,7 @@ public abstract class EbHackModule extends HackModule
                     break;
                 case 2 : //??? TODO way to do this with Arrays?
                     if (bpos + 2 * len > maxlen || bpos < 0)
-                        return new int[] { -3 };
+                        return new int[] { -3, cdata - start + 1 };
                     while (len-- != 0)
                     {
                         buffer[bpos++] = rom.readByte(cdata);
@@ -367,7 +367,7 @@ public abstract class EbHackModule extends HackModule
                     break;
                 case 4 : //use previous data ?
                     if (bpos2 + len > maxlen || bpos2 < 0)
-                        return new int[] { -4 };
+                        return new int[] { -4, cdata - start + 1 };
                     System.arraycopy(buffer, bpos2, buffer, bpos, len);
                     bpos += len;
 //                    for (int i = 0; i < len; i++)
@@ -377,7 +377,7 @@ public abstract class EbHackModule extends HackModule
                     break;
                 case 5 :
                     if (bpos2 + len > maxlen || bpos2 < 0)
-                        return new int[] { -5 };
+                        return new int[] { -5, cdata - start + 1 };
                     while (len-- != 0)
                     {
 //                        tmp = buffer[bpos2++];
@@ -394,12 +394,12 @@ public abstract class EbHackModule extends HackModule
                     break;
                 case 6 :
                     if (bpos2 - len + 1 < 0)
-                        return new int[] { -6 };
+                        return new int[] { -6, cdata - start + 1 };
                     while (len-- != 0)
                         buffer[bpos++] = buffer[bpos2--];
                     break;
                 case 7 :
-                    return new int[] { -7 };
+                    return new int[] { -7, cdata - start + 1 };
             }
         }
         return new int[] { bpos, cdata - start + 1 };

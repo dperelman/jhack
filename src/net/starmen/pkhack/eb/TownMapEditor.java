@@ -199,7 +199,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             return true;
         }
 
-        public boolean readInfo()
+        public boolean readInfo(boolean allowFailure)
         {
             if (isInited)
                 return true;
@@ -210,10 +210,13 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             int[] tmp = hm.decomp(oldPointer, buffer);
             if (tmp[0] < 0)
             {
-                String err = "Error " + tmp[0]
-                    + " decompressing town map #" + num + ".";
+                String err = "Error " + tmp[0] + " decompressing town map #"
+                    + num + ".";
                 System.out.println(err);
-                return false;
+                if (!allowFailure)
+                {
+                    return false;
+                }
             }
             oldLen = tmp[1];
             System.out.println("TownMap: Decompressed " + tmp[0]
@@ -241,7 +244,12 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             }
 
             isInited = true;
-            return true;
+            return tmp[0] >= 0;
+        }
+
+        public boolean readInfo()
+        {
+            return readInfo(true); //XXX should this be false?
         }
 
         /**
@@ -1032,15 +1040,16 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
     private void doMapSelectAction()
     {
-        if (!getSelectedMap().readInfo())
+        if (!getSelectedMap().readInfo(false))
         {
             guiInited = false;
-            Object opt = JOptionPane.showInputDialog(mainWindow,
+            int opt = JOptionPane.showOptionDialog(mainWindow,
                 "Error decompressing the " + townMapNames[getCurrentMap()]
                     + " town map (#" + getCurrentMap() + ").",
-                "Decompression Error", JOptionPane.ERROR_MESSAGE, null,
+                "Decompression Error", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE, null,
                 new String[]{"Abort", "Retry", "Fail"}, "Retry");
-            if (opt == null || opt.equals("Abort"))
+            if (opt == JOptionPane.CLOSED_OPTION
+                    || opt == JOptionPane.YES_OPTION)
             {
                 mapSelector
                     .setSelectedIndex((mapSelector.getSelectedIndex() + 1)
@@ -1048,15 +1057,15 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                 doMapSelectAction();
                 return;
             }
-            else if (opt.equals("Retry"))
+            else if (opt == JOptionPane.NO_OPTION)
             {
                 //                mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
                 doMapSelectAction();
                 return;
             }
-            else if (opt.equals("Fail"))
+            else if (opt == JOptionPane.CANCEL_OPTION)
             {
-                getSelectedMap().initToNull();
+                getSelectedMap().readInfo(true);
             }
         }
         guiInited = true;
@@ -1468,8 +1477,8 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         {
             if (in == null || in[i][NODE_BASE])
             {
-                mapNodes[i][NODE_BASE] = new CheckNode(townMapNames[i],
-                    true, true);
+                mapNodes[i][NODE_BASE] = new CheckNode(townMapNames[i], true,
+                    true);
                 mapNodes[i][NODE_BASE]
                     .setSelectionMode(CheckNode.DIG_IN_SELECTION);
                 if (in == null || in[i] == null || in[i][NODE_TILES])
@@ -1685,7 +1694,8 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
     private static boolean checkMap(TownMapImportData tmid, int i)
     {
-        townMaps[i].readInfo();
+        if (!townMaps[i].readInfo(false))
+            return false;
         if (tmid.tiles != null)
         {
             //check tiles
@@ -1698,7 +1708,8 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         if (tmid.arrangement != null)
         {
             //check arrangement
-            if (!Arrays.equals(tmid.arrangement, townMaps[i].getArrangementArr()))
+            if (!Arrays.equals(tmid.arrangement, townMaps[i]
+                .getArrangementArr()))
                 return false;
         }
         if (tmid.palette != null)

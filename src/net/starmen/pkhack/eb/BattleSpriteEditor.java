@@ -100,10 +100,11 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
          * Negitive return value indicates failure. Non-negitive indicates
          * success.
          * 
+         * @param allowFailure if true, will try to load even if decomp() fails
          * @return 0 on success or negitive error code from
          *         {@link EbHackModule#decomp(int, byte[])}on failure
          */
-        public int readInfo()
+        public int readInfo(boolean allowFailure)
         {
             if (isInited)
                 return 0;
@@ -119,34 +120,41 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
             int[] tmp = hm.decomp(orgPointer, buffer);
             if (tmp[0] < 0)
             {
-                System.err.println("Error #" + tmp[0]
+                System.out.println("Error #" + tmp[0]
                     + " decompressing battle sprite " + num + " ("
                     + EbHackModule.battleSpriteNames[num] + ")");
+                if (!allowFailure)
+                {
+                    return tmp[0];
+                }
+            }
+            //                System.out.println("Finished decompressing battle sprite #"
+            //                    + num);
+            orgCompLen = tmp[1];
+            int offset = 0;
+            for (int q = 0; q < (d.height / 32); q++)
+            {
+                for (int r = 0; r < (d.width / 32); r++)
+                {
+                    for (int a = 0; a < 4; a++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            read4BPPArea(sprite, buffer, offset,
+                                (j + r * 4) * 8, (a + q * 4) * 8);
+                            offset += 32;
+                        }
+                    }
+                }
+            }
+            isInited = true;
+            //                System.out.println("Finished reading battle sprite #" + num);
+            if (tmp[0] < 0)
+            {
                 return tmp[0];
             }
             else
             {
-                //                System.out.println("Finished decompressing battle sprite #"
-                //                    + num);
-                orgCompLen = tmp[1];
-                int offset = 0;
-                for (int q = 0; q < (d.height / 32); q++)
-                {
-                    for (int r = 0; r < (d.width / 32); r++)
-                    {
-                        for (int a = 0; a < 4; a++)
-                        {
-                            for (int j = 0; j < 4; j++)
-                            {
-                                read4BPPArea(sprite, buffer, offset,
-                                    (j + r * 4) * 8, (a + q * 4) * 8);
-                                offset += 32;
-                            }
-                        }
-                    }
-                }
-                isInited = true;
-                //                System.out.println("Finished reading battle sprite #" + num);
                 return 0;
             }
         }
@@ -214,7 +222,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
          */
         public byte[][] getSprite()
         {
-            readInfo();
+            readInfo(true);
 
             byte[][] out = new byte[sprite.length][sprite[0].length];
             for (int x = 0; x < sprite.length; x++)
@@ -228,7 +236,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
          */
         public void setSprite(byte[][] sprite)
         {
-            readInfo();
+            readInfo(true);
 
             //resize to incoming sprite
             for (int i = 1; i < BATTLE_SPRITE_SIZES.length; i++)
@@ -268,7 +276,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
          */
         public void setSize(int size)
         {
-            readInfo();
+            readInfo(true);
 
             this.size = size;
 
@@ -524,16 +532,17 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         //don't even try if selector is -1
         if (getCurrentSprite() == -1)
             return;
-        int err = getSelectedSprite().readInfo();
+        int err = getSelectedSprite().readInfo(false);
         if (err < 0)
         {
-            Object opt = JOptionPane.showInputDialog(mainWindow, "Error #"
-                + err + " decompressing the "
-                + battleSpriteNames[getCurrentSprite()] + " sprite (#"
-                + getCurrentSprite() + ").", "Decompression Error",
+            int opt = JOptionPane.showOptionDialog(mainWindow, "Error #" + err
+                + " decompressing the " + battleSpriteNames[getCurrentSprite()]
+                + " sprite (#" + getCurrentSprite() + ").",
+                "Decompression Error", JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.ERROR_MESSAGE, null, new String[]{"Abort", "Retry",
                     "Fail"}, "Retry");
-            if (opt == null || opt.equals("Abort"))
+            if (opt == JOptionPane.CLOSED_OPTION
+                || opt == JOptionPane.YES_OPTION)
             {
                 spriteSelector.setSelectedIndex((spriteSelector
                     .getSelectedIndex() + 1)
@@ -541,16 +550,16 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
                 doSpriteSelectAction();
                 return;
             }
-            else if (opt.equals("Retry"))
+            else if (opt == JOptionPane.NO_OPTION)
             {
                 spriteSelector.setSelectedIndex(spriteSelector
                     .getSelectedIndex());
                 doSpriteSelectAction();
                 return;
             }
-            else if (opt.equals("Fail"))
+            else if (opt == JOptionPane.CANCEL_OPTION)
             {
-                getSelectedSprite().initToNull();
+                getSelectedSprite().readInfo(true);
             }
         }
         da.setImage(getSelectedSprite().getSprite());

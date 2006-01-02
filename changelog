@@ -5,7 +5,6 @@ v0.5.10:
 # ROM File IO: BUGFIX: array reading can no longer return null; caused problems with decomp
 # Text Editor: BUGFIX: Special characters (including line breaks) are converted to spaces before
 	attempting to save
-# BattleSpriteEditor: "fail" will show whatever incomplete/corrupted image decomp() returns
 # Enemy Editor: "IQ" changed to "Luck"
 # Misc. Crap Editor: BUGFIX: Text field's maximum length increased to 5
 # Map Editor: BUGFIX: Dragging sprites, doors, and hotspots is fixed
@@ -16,6 +15,10 @@ v0.5.10:
 # Sprite Editor v0.10: BUGFIX: Export sprite now always exports what you see
 # Sprite Editor v0.10: will import images with off-palette colors to closest colors
 # Condiment Editor: BUGFIX: There are 44, not 45, entries in the table.
+# EbHackModule: decomp() always returns the number of bytes read to allow for partial decomp;
+	libcomp major version must now be 3 (not 2) for native decomp to be used
+# "Partial decomp" now attempted by the following editors when they encountered corrupted
+	compressed data: Tile Editor, Battle Sprite Editor, Town Map Editor
 
 v0.5.9:
 # Enemy Placement Groups Editor: Made ctrl-click have the opposite effect on meters

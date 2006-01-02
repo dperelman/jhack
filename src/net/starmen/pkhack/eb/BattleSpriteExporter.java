@@ -89,7 +89,7 @@ public class BattleSpriteExporter extends EbHackModule
                 .getInsidePic() - 1];
 
             /* Try to read battle sprite from ROM, if it works, continue... */
-            if (bs.readInfo() == 0)
+            if (bs.readInfo(false) == 0)
             {
                 /*
                  * Store reference to battle spite "image" (array of color
