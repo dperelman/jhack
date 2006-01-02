@@ -37,7 +37,6 @@ public class HotspotEditor extends EbHackModule implements ActionListener, SeekL
 	public static final int HOTSPOTS_ADDR = 0x15f4f3 + 8;
 	public static final int NUM_HOTSPOTS = 55;
 	private static Hotspot[] entries;
-	private static boolean alreadyRead = false;
 	
 	private JComboBox entryChooser;
 	private JButton seek1, seek2, goto1, goto2;
@@ -177,7 +176,7 @@ public class HotspotEditor extends EbHackModule implements ActionListener, SeekL
 	
 	public void reset()
 	{
-		alreadyRead = false;
+		entries = null;
 	}
 	
 	public void readFromRom()
@@ -189,9 +188,8 @@ public class HotspotEditor extends EbHackModule implements ActionListener, SeekL
 	
 	public static void readFromRom(HackModule hm)
 	{	
-		if (!alreadyRead)
+		if (entries == null)
 		{
-			alreadyRead = true;
 			entries = new Hotspot[NUM_HOTSPOTS];
 			for (int i = 0; i < entries.length; i++)
 			{

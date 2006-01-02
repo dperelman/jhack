@@ -55,7 +55,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 	private JCheckBox reverse;
 	private JTextField flag, limit;
 	private TileChooser tileChooser;
-	private static ArrayList[] entries = new ArrayList[MapEditor.drawTsetNum];
+	private static ArrayList[] entries;
 	private int selected = -1;
 	private static final int end = 0x101a80;
 	private static final String[] errorMessages = new String[] {
@@ -199,6 +199,10 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 			tileset.setSelectedIndex(((Integer) obj).intValue());
 	}
 	
+	public void reset() {
+		entries = null;
+	}
+	
 	private void updateComponents(boolean changingTileset, boolean updatePage, boolean ignorePalette)
 	{
 		if (changingTileset)
@@ -326,29 +330,32 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 	
 	public static void readFromRom(AbstractRom rom)
 	{
-		for (int i = 0; i < entries.length; i++)
-		{
-			entries[i] = new ArrayList();
-			int address = 0x100200 + rom.readMulti(toRegPointer(rom.readMulti(asmPointer,3)) + (i * 2), 2);
-			while (rom.readMulti(address, 2) != 0)
+		if (entries == null) {
+			entries = new ArrayList[MapEditor.drawTsetNum];
+			for (int i = 0; i < entries.length; i++)
 			{
-				boolean reverse = false;
-				int flag = rom.readMulti(address,2);
-				if (flag >= 0x8000)
+				entries[i] = new ArrayList();
+				int address = 0x100200 + rom.readMulti(toRegPointer(rom.readMulti(asmPointer,3)) + (i * 2), 2);
+				while (rom.readMulti(address, 2) != 0)
 				{
-					reverse = true;
-					flag -= 0x8000;
+					boolean reverse = false;
+					int flag = rom.readMulti(address,2);
+					if (flag >= 0x8000)
+					{
+						reverse = true;
+						flag -= 0x8000;
+					}
+					TilesetChange tilesetChange = new TilesetChange((short) flag, reverse);
+					int num = rom.readMulti(address + 2, 2);
+					for (int j = 0; j < num; j++)
+						tilesetChange.addTileChange(new TilesetChange.TileChange(
+								rom.readByte(address + ((j + 1) * 4)),
+								rom.readByte(address + ((j + 1) * 4) + 1),
+								rom.readByte(address + ((j + 1) * 4) + 2),
+								rom.readByte(address + ((j + 1) * 4) + 3)));
+					entries[i].add(tilesetChange);
+					address += (num + 1) * 4;
 				}
-				TilesetChange tilesetChange = new TilesetChange((short) flag, reverse);
-				int num = rom.readMulti(address + 2, 2);
-				for (int j = 0; j < num; j++)
-					tilesetChange.addTileChange(new TilesetChange.TileChange(
-							rom.readByte(address + ((j + 1) * 4)),
-							rom.readByte(address + ((j + 1) * 4) + 1),
-							rom.readByte(address + ((j + 1) * 4) + 2),
-							rom.readByte(address + ((j + 1) * 4) + 3)));
-				entries[i].add(tilesetChange);
-				address += (num + 1) * 4;
 			}
 		}
 	}
