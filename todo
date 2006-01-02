@@ -4,9 +4,6 @@ NEXT v0.0.0.x (bugfix) RELEASE
 # Look into threading of error console GUI building (ERROR#65895)
 # Look into use of JOptionPane.showOptionDialog() for abort/retry/fail.
 	# In progress; better way?
-# [15:08:05] <Radiation> Dear AnyoneEB: JHack is loading the names of the
-	 previous hack's items in its memory for the Enemy Editor, but the 
-	 Item Editor is a-okay. It's bugging me. D:
 # Only revert to as big a ROM as needed.
 
 NEXT v0.0.x (minor) RELEASE
@@ -14,11 +11,6 @@ NEXT v0.0.x (minor) RELEASE
 # Partial decomp() for "fail" on abort, retry, fail
 	# In progress; better way?
 # AbstractRom: React to loadRom() returning false, at least in MainGUI
-# TextEditor: Routine Map
-# [12:38:45] <JeffMan> oh and you should add the mother 2 font 
-	and the debug menu font to jhack's font editor if you can
-# Text Editor: Preview of next text block (optional) (in separate window?)
-# Font table: http://pkhax.elpenguino.info/03F254.txt
 # Tile Editor: event flag based palette changes:
 	Those colors (the first color entry in each 16-color subpalette) 
 	contain additional data about the map palette as a whole. 
@@ -34,6 +26,11 @@ NEXT v0.0.x (minor) RELEASE
 
 LONG TERM
 
+# TextEditor: Routine Map
+# [12:38:45] <JeffMan> oh and you should add the mother 2 font 
+	and the debug menu font to jhack's font editor if you can
+# Text Editor: Preview of next text block (optional) (in separate window?)
+# Font table: http://pkhax.elpenguino.info/03F254.txt
 # Other image import/export
 # IPSDatabase extensions?
 # Starting stat editor ( 1DAF1 = Value for Ness' starting stats )

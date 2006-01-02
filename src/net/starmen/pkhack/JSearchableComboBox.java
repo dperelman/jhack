@@ -92,7 +92,8 @@ public class JSearchableComboBox extends JComponent implements ActionListener,
                 public void actionPerformed(ActionEvent ae)
                 {
                     if (jcb.getSelectedIndex() == -1)
-                        HackModule.search((String) jcb.getSelectedItem(), jcb);
+                        HackModule
+                            .search(jcb.getSelectedItem().toString(), jcb);
                 }
             });
         }

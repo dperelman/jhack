@@ -52,12 +52,14 @@ public class ItemEditor extends EbHackModule implements ActionListener
     {
         super(rom, prefs);
     }
+    /** Number of items. */
+    public static final int NUM_ITEMS = 254;
     /**
      * Array holding all the items.
      * 
      * @see #readFromRom(HackModule)
      */
-    public static Item[] items = new Item[254];
+    public static Item[] items = new Item[NUM_ITEMS];
     private static Icon closedPresentIcon = initIcon();
 
     //GUI components
@@ -621,7 +623,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
              * return HackModule.getNumberedString( new
              * String(this.name).trim(),
              */
-            return new String(this.name).trim();
+            return getNumberedString(new String(this.name).trim(), number);
         }
 
         /**
@@ -689,7 +691,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
         items[i].ownership += (!this.infinite.isSelected() ? 1 : 0) << 7;
 
         items[i].writeInfo();
-        
+
         ItemEditor.notifyItemDataListeners(new ListDataEvent(this,
             ListDataEvent.CONTENTS_CHANGED, i, i));
     }
@@ -815,11 +817,11 @@ public class ItemEditor extends EbHackModule implements ActionListener
             {
                 try
                 {
-                    return HackModule.getNumberedString(items[i].toString(), i);
+                    return items[i];
                 }
                 catch (NullPointerException e)
                 {
-                    return HackModule.getNumberedString("Null", 0);
+                    return getElementAt(0);
                 }
                 catch (ArrayIndexOutOfBoundsException e)
                 {
@@ -893,7 +895,6 @@ public class ItemEditor extends EbHackModule implements ActionListener
             out.addActionListener(al);
         model.addListDataListener(new ListDataListener()
         {
-
             public void contentsChanged(ListDataEvent lde)
             {
                 if (out.getSelectedIndex() == -1)
@@ -1502,5 +1503,13 @@ public class ItemEditor extends EbHackModule implements ActionListener
         special.getDocument().removeDocumentListener(protectSetter);
         special.setText("" + j);
         special.getDocument().addDocumentListener(protectSetter);
+    }
+
+    public void reset()
+    {
+        super.reset();
+        items = new Item[NUM_ITEMS];
+        notifyItemDataListeners(new ListDataEvent(this,
+            ListDataEvent.CONTENTS_CHANGED, 0, NUM_ITEMS));
     }
 }
