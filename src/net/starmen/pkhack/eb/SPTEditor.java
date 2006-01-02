@@ -8,6 +8,10 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.EOFException;
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -18,7 +22,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
 import net.starmen.pkhack.AbstractRom;
@@ -27,6 +33,7 @@ import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.JSearchableComboBox;
 import net.starmen.pkhack.XMLPreferences;
+import net.starmen.pkhack.eb.SpriteEditor.SpriteInfoBlock;
 
 /**
  * GUI for editing SPT entries. Uses {@link SpriteEditor.SpriteInfoBlock}.
@@ -35,56 +42,6 @@ import net.starmen.pkhack.XMLPreferences;
  */
 public class SPTEditor extends EbHackModule implements ActionListener
 {
-    /*
-     * private class TileSelector extends AbstractButton implements
-     * MouseListener, MouseMotionListener { //TODO 110200 to 1547BF = Sprite
-     * data //TODO make int[][] getSprites() in SpriteEditor.Sprite private int
-     * currentTile = 0, sprites[][]; private static final int TILES_WIDE = 175,
-     * TILES_HIGH = 50, TILE_SIZE = 16; public int getCurrentTile() { return
-     * currentTile; } public void setCurrentTile(int newTile) { //only fire
-     * ActionPerformed if new tile if (currentTile != newTile) {
-     * reHighlight(currentTile, newTile); currentTile = newTile;
-     * this.fireActionPerformed( new ActionEvent( this,
-     * ActionEvent.ACTION_PERFORMED, this.getActionCommand())); } } private void
-     * setCurrentTile(int x, int y) { setCurrentTile(((y / TILE_SIZE) *
-     * TILES_WIDE) + (x / TILE_SIZE)); }
-     * 
-     * private void reHighlight(int oldTile, int newTile) { Graphics g =
-     * this.getGraphics(); g.drawImage(
-     * tilesets[getCurrentTileset()].getTileImage( oldTile, getCurrentPalette(),
-     * getCurrentSubPalette()), (oldTile % TILES_WIDE) * TILE_SIZE, (oldTile /
-     * TILES_WIDE) * TILE_SIZE, 16, 16, null); g.setColor(new Color(255, 255, 0,
-     * 128)); g.fillRect((newTile % TILES_WIDE) * TILE_SIZE, (newTile /
-     * TILES_WIDE) * TILE_SIZE, TILE_SIZE, TILE_SIZE); }
-     * 
-     * public void paint(Graphics g) { if
-     * (tilesets[getCurrentTileset()].isInited()) { if (paletteIsInited &&
-     * guiInited) g.drawImage( tilesets[getCurrentTileset()] .getTilesetImage(
-     * getCurrentPalette(), getCurrentSubPalette(), getCurrentTile())
-     * .getScaledInstance(TILES_WIDE * TILE_SIZE, TILES_HIGH * TILE_SIZE, 0), 0,
-     * 0, null); } }
-     * 
-     * public void mouseClicked(MouseEvent me) { setCurrentTile(me.getX(),
-     * me.getY()); } public void mousePressed(MouseEvent me) {
-     * setCurrentTile(me.getX(), me.getY()); } public void
-     * mouseReleased(MouseEvent me) { setCurrentTile(me.getX(), me.getY()); }
-     * public void mouseEntered(MouseEvent arg0) {} public void
-     * mouseExited(MouseEvent arg0) {}
-     * 
-     * public void mouseDragged(MouseEvent me) { if (!(me.getX() < 0 ||
-     * me.getY() < 0 || me.getX() > TILES_WIDE * TILE_SIZE - 1 || me.getY() >
-     * TILES_HIGH * TILE_SIZE - 1)) setCurrentTile(me.getX(), me.getY()); }
-     * public void mouseMoved(MouseEvent arg0) {}
-     * 
-     * private String actionCommand = new String(); public String
-     * getActionCommand() { return this.actionCommand; } public void
-     * setActionCommand(String arg0) { this.actionCommand = arg0; }
-     * 
-     * public TileSelector() { setPreferredSize(new Dimension(TILES_WIDE *
-     * TILE_SIZE, TILES_HIGH * TILE_SIZE)); this.addMouseListener(this);
-     * this.addMouseMotionListener(this); } }
-     */
-
     /**
      * @param rom
      * @param prefs
@@ -99,18 +56,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
     private JComboBox selector, palette, tileset, tilesetPal;
     private Box tilesetBox;
     private JTextField name, width, height, bank,
-            address[] = new JTextField[16],
-            //		wa,
-            //		ws,
-            //		ha,
-            //		hs,
-            //		pa,
-            //		ps,
-            //		ba,
-            //		bs,
-            //		aa,
-            //		as,
-            search;
+            address[] = new JTextField[16], search;
     private JButton[] pics = new JButton[16];
     private JTextField[] unknown = new JTextField[5];
     private JLabel pointer, diff;
@@ -170,6 +116,12 @@ public class SPTEditor extends EbHackModule implements ActionListener
         }
         JPanel buttons = new JPanel(new FlowLayout());
 
+        JButton reallocateb = new JButton("Reallocate Addresses");
+        reallocateb.addActionListener(this);
+        buttons.add(reallocateb);
+
+        buttons.add(new JSeparator());
+
         JButton testb = new JButton("Test Entry");
         testb.addActionListener(this);
         buttons.add(testb);
@@ -178,6 +130,8 @@ public class SPTEditor extends EbHackModule implements ActionListener
         saveb.addActionListener(this);
         buttons.add(saveb);
 
+        buttons.add(new JSeparator());
+
         JButton copyb = new JButton("Copy");
         copyb.addActionListener(this);
         buttons.add(copyb);
@@ -185,6 +139,8 @@ public class SPTEditor extends EbHackModule implements ActionListener
         JButton pasteb = new JButton("Paste");
         pasteb.addActionListener(this);
         buttons.add(pasteb);
+
+        buttons.add(new JSeparator());
 
         JButton closeb = new JButton("Close");
         closeb.setActionCommand("close");
@@ -238,7 +194,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
      */
     public String getVersion()
     {
-        return "0.5";
+        return "0.6";
     }
 
     /**
@@ -264,16 +220,6 @@ public class SPTEditor extends EbHackModule implements ActionListener
     {
         super.show();
         selector.setSelectedIndex(Math.max(selector.getSelectedIndex(), 0));
-        //		ws.setText(Integer.toString(SpriteEditor.SpriteInfoBlock.ws));
-        //		hs.setText(Integer.toString(SpriteEditor.SpriteInfoBlock.hs));
-        //		ps.setText(Integer.toString(SpriteEditor.SpriteInfoBlock.ps));
-        //		bs.setText(Integer.toString(SpriteEditor.SpriteInfoBlock.bs));
-        //		as.setText(Integer.toString(SpriteEditor.SpriteInfoBlock.as));
-        //		wa.setText(Integer.toString(SpriteEditor.SpriteInfoBlock.wa, 16));
-        //		ha.setText(Integer.toString(SpriteEditor.SpriteInfoBlock.ha, 16));
-        //		pa.setText(Integer.toString(SpriteEditor.SpriteInfoBlock.pa, 16));
-        //		ba.setText(Integer.toString(SpriteEditor.SpriteInfoBlock.ba, 16));
-        //		aa.setText(Integer.toString(SpriteEditor.SpriteInfoBlock.aa, 16));
         SpriteEditor.Sprite.reloadPal();
         mainWindow.setVisible(true);
     }
@@ -308,7 +254,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
                 {
                     pal = sp.getPalette();
                 }
-                BufferedImage img = drawImage(spb, pal, si.isHFliped(), false);
+                BufferedImage img = drawImage(spb, pal);
                 pics[i].setIcon(new ImageIcon(zoomImage(img, 2)));
                 pics[i].setEnabled(true);
             }
@@ -384,7 +330,7 @@ public class SPTEditor extends EbHackModule implements ActionListener
         updateImages();
     }
 
-    //TODO test palete combo box
+    //TODO test palette combo box
     private void testEntry()
     {
         sib.name = name.getText();
@@ -407,37 +353,10 @@ public class SPTEditor extends EbHackModule implements ActionListener
         SpriteEditor.setSptName(sib.num, sib.name);
         notifyDataListeners(sptNames, this, sib.num);
         //TODO what's the right way to refresh a model
-        //		selector.removeActionListener(this);
-        //		selector.setSelectedIndex(sib.num);
-        //		selector.addActionListener(this);
-        //selector.setSelectedIndex(selector.getSelectedIndex());
         SpriteEditor.writeSptNames(rom.getPath());
         for (int i = 0; i < unknown.length; i++)
             sib.unknown[i] = Integer.parseInt(unknown[i].getText().trim(), 16);
         sib.writeInfo();
-        //		int temp = selector.getSelectedIndex();
-        //		selector =
-        //			HackModule.createJComboBoxFromArray(
-        //				SpriteEditor.sptNames,
-        //				selector,
-        //				false);
-        //		selector.setSelectedIndex(temp);
-        //		selector.updateUI();
-
-        //		int numSptNames = 0;
-        //		for (int i = 0; i < SpriteEditor.sptNames.length; i++)
-        //		{
-        //			if (SpriteEditor.sptNames[i].length() > 0)
-        //				numSptNames++;
-        //		}
-        //		System.out.println(
-        //			"Known SPT Names: "
-        //				+ numSptNames
-        //				+ "/"
-        //				+ SpriteEditor.sptNames.length
-        //				+ " = "
-        //				+ (((float)numSptNames / (float)SpriteEditor.sptNames.length) * 100)
-        //				+ "%");
     }
 
     public void actionPerformed(ActionEvent ae)
@@ -449,6 +368,10 @@ public class SPTEditor extends EbHackModule implements ActionListener
         else if (ae.getActionCommand().equals("close"))
         {
             hide();
+        }
+        else if (ae.getActionCommand().equals("Reallocate Addresses"))
+        {
+            reallocateAddresses();
         }
         else if (ae.getActionCommand().equals("Test Entry"))
         {
@@ -563,9 +486,6 @@ public class SPTEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().startsWith("pics"))
         {
-            //            System.out.println(sib.getSpriteInfo(
-            //                Integer.parseInt(ae.getActionCommand().substring(4), 16))
-            //                .toString());
             JHack.main.showModule(SpriteEditor.class, sib.getSpriteInfo(Integer
                 .parseInt(ae.getActionCommand().substring(4), 16)));
         }
@@ -573,6 +493,119 @@ public class SPTEditor extends EbHackModule implements ActionListener
         {
             System.out.println("SPTEditor: actionPerformed(): "
                 + "uncaught action command: " + ae.getActionCommand());
+        }
+    }
+
+    /**
+     * Finds space in the expanded meg for sprites.
+     */
+    private void reallocateAddresses()
+    {
+        if (sib.numSprites == 0)
+        {
+            return;
+        }
+        TreeSet s = new TreeSet();
+        for (int i = 0; i < sib.numSprites; i++)
+        {
+            s.add(new Integer(sib.address[i] & SpriteInfoBlock.aa));
+        }
+
+        int ans = JOptionPane
+            .showOptionDialog(
+                mainWindow,
+                "<html>"
+                    + "<p>You have chosen to find a new place for this entry "
+                    + "to point.<br>Your current sprite data <em>will be lost</em>.<br>"
+                    + "You should only use this when you wish to make larger "
+                    + "sprites.</p><br>"
+                    + "<p>Some sprites are simply mirrors of other sprites,<br>"
+                    + "and therefore their graphics data "
+                    + "is not stored separately.<br>"
+                    + "Instead their addresses are set some address with the<br>0x0001 "
+                    + "bit set, which indicates a horizontal flip.</p><br>"
+                    + "<p>Do you wish to allocate space for only previously "
+                    + "unique sprites,<br>or do you wish for all sprites to have "
+                    + "unique graphics space allocated?</p>" + "</html>",
+                "Allocate how many sprites?", JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, new String[]{
+                    "Allocate " + s.size() + " sprite(s)",
+                    "Allocate " + sib.numSprites + " sprites", "Cancel"},
+                "Cancel");
+        if (ans == JOptionPane.CANCEL_OPTION)
+        {
+            return;
+        }
+        int allocSpr = (ans == JOptionPane.YES_OPTION
+            ? s.size()
+            : sib.numSprites);
+        int spriteSize = 32 * numberize(width.getText())
+            * numberize(height.getText());
+        /*
+         * The +2 is because we need a 0xFF shield on either side. The expanded
+         * meg is a dangerous place. The +3 is to make sure there is space to
+         * adjust the address because the lowest two bits cannot be used (they
+         * are read as flags, not part of the address).
+         */
+        int bytes = allocSpr * spriteSize + 2 + 3;
+        /*
+         * "Null" with 0xFF's so it does not accidently get overwritten.
+         */
+        byte[] nulls = new byte[bytes];
+        Arrays.fill(nulls, (byte) 0xff);
+        try
+        {
+            int baseAddress = findFreeRange(bytes);
+            /*
+             * Adjust to make sure the lowest two bits of the address are zeros.
+             */
+            while (((baseAddress + 1) & 3) != 0)
+            {
+                baseAddress++;
+                bytes--;
+            }
+            rom.write(baseAddress, nulls, bytes);
+            baseAddress = toSnesPointer(baseAddress);
+
+            int block = baseAddress >> 16;
+            int[] newAddr = new int[16];
+            int addr = ((baseAddress + 1) & 0xffff) - spriteSize;
+            if (allocSpr == sib.numSprites)
+            {
+                for (int i = 0; i < allocSpr; i++)
+                {
+                    addr += spriteSize;
+                    newAddr[i] = addr;
+                }
+            }
+            else
+            {
+                Hashtable ht = new Hashtable();
+                for (Iterator i = s.iterator(); i.hasNext(); ht.put(i.next(),
+                    new Integer(addr += spriteSize)))
+                    ;
+                for (int i = 0; i < sib.numSprites; i++)
+                {
+                    int flags = (0xffff - SpriteInfoBlock.aa) & sib.address[i];
+                    newAddr[i] = ((Integer) ht.get(new Integer(sib.address[i]
+                        & SpriteInfoBlock.aa))).intValue()
+                        | flags;
+                }
+            }
+
+            this.bank.setText(Integer.toHexString(block));
+            for (int i = 0; i < sib.numSprites; i++)
+            {
+                this.address[i].setText(Integer.toHexString(newAddr[i]));
+            }
+            testEntry();
+        }
+        catch (EOFException e)
+        {
+            JOptionPane.showMessageDialog(mainWindow, "No space left in ROM.\n"
+                + "Try expanding your ROM.", "No space",
+                JOptionPane.ERROR_MESSAGE);
+            return;
         }
     }
 

@@ -1179,7 +1179,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          * by. On aa, the value cut off by the and is used as
          * {@link SpriteEditor.SpriteInfo#flags}.
          */
-        public static int hs = 0, ha = 0xff, ws = 4, wa = 0xff, ps = 1,
+        public static final int hs = 0, ha = 0xff, ws = 4, wa = 0xff, ps = 1,
                 pa = 0x07, bs = 0, ba = 0xff, as = 0, aa = 0xfffffc;
         /**
          * Number of sprites this SPT entry points to. Currently found by

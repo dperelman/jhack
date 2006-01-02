@@ -1362,6 +1362,22 @@ public abstract class HackModule
         throws EOFException;
 
     /**
+     * Simple spacefinder function. Finds the highest occurrence of a data-free
+     * block of size [length]. Checks for normal expanded area data (i.e., 255
+     * [00]s, one [02], and so on). If it finds an interrupt in the pattern, it
+     * will skip that area and search just beyond it, thus leaving any
+     * user-modified data intact (hopefully).
+     * 
+     * @param length length of safe area to find.
+     * @return offset of free area at least <code>length</code> bytes long
+     * @throws EOFException if entire ROM has been searched and nothing found
+     */
+    public int findFreeRange(int length) throws EOFException
+    {
+        return findFreeRange(rom.length(), length);
+    }
+
+    /**
      * Sets the specifed range in the ROM to null. In the expanded meg null may
      * be [00] or [02] otherwise it is always [00].
      * 
