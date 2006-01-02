@@ -1,21 +1,23 @@
 DONE? (CHANGES TO CONFIRM/DEBUG)
+# BattleSpriteEditor: "fail" will show whatever incomplete/corrupted image decomp() returns
+# TownMapEditor: same as above
+# TileEditor: same as above
+# Sprite Editor: load/save with h-flip
 
 NEXT v0.0.0.x (bugfix) RELEASE
 # Look into threading of error console GUI building (ERROR#65895)
 # Look into use of JOptionPane.showOptionDialog() for abort/retry/fail.
+	# In progress; better way?
 # Battle Sprite Editor: check size of imported sprites
 # [15:08:05] <Radiation> Dear AnyoneEB: JHack is loading the names of the
 	 previous hack's items in its memory for the Enemy Editor, but the 
 	 Item Editor is a-okay. It's bugging me. D:
 # Only revert to as big a ROM as needed.
-# <Radiation> You know "IQ" in the enemy editor?
-	<Radiation> Who the heck named that?
-	<Radiation> It's not IQ.
-	<Radiation> It's Luck.
 
 NEXT v0.0.x (minor) RELEASE
 
 # Partial decomp() for "fail" on abort, retry, fail
+	# In progress; better way?
 # AbstractRom: React to loadRom() returning false, at least in MainGUI
 # TextEditor: Routine Map
 # [12:38:45] <JeffMan> oh and you should add the mother 2 font 
@@ -23,7 +25,6 @@ NEXT v0.0.x (minor) RELEASE
 # Text Editor: Preview of next text block (optional) (in separate window?)
 # Font table: http://pkhax.elpenguino.info/03F254.txt
 # SPT Editor: Provide an easy way to reallocate addresses for resized entries
-# Sprite Editor: load/save with h-flip
 # Sprite Editor: Image import, match to palette
 # Reset Button: support any rom type, comp/decomp only appear for EB
 # Tile Editor: event flag based palette changes:
@@ -36,6 +37,8 @@ NEXT v0.0.x (minor) RELEASE
 	this pointer from $8067 to $0067. That's why garbage data was being read for 
 	the nighttime palette. Perhaps this is something to look into, Mr. Tenda? :B
 	  - Mr. Accident in a forum post
+	i.e., subpal 0's transparent color and subpal 1's transparent color are the
+	event flag and pointer, respectively
 
 LONG TERM
 

@@ -3,6 +3,8 @@ NEXT VERSION (after v0.5.9):
 # ROM File IO: BUGFIX: array reading can no longer return null; caused problems with decomp
 # Text Editor: BUGFIX: Special characters (including line breaks) are converted to spaces before
 	attempting to save
+# BattleSpriteEditor: "fail" will show whatever incomplete/corrupted image decomp() returns
+# Enemy Editor: "IQ" changed to "Luck"
 # Misc. Crap Editor: BUGFIX: Text field's maximum length increased to 5
 # Map Editor: BUGFIX: Dragging sprites, doors, and hotspots is fixed
 # Door Entry/Destination Editor: Comboboxes for entry and destination selection instead of
