@@ -39,19 +39,20 @@ public class JHack
 
     public static void main(String[] args)
     {
-    	boolean justPatching = false;
-    	String rom = null, patch = null;
-    	int size = 0;
+        boolean justPatching = false;
+        String rom = null, patch = null;
+        int size = 0;
         for (int i = 0; i < args.length; i++)
             if (args[i].equals("-c") || args[i].equals("--console"))
                 useConsole = true;
-            else if ((args[i].equals("-p") || args[i].equals("--patch")) && (args.length >= i + 3))
+            else if ((args[i].equals("-p") || args[i].equals("--patch"))
+                && (args.length >= i + 3))
             {
-            	justPatching = true;
-            	useConsole = true;
-            	patch = args[i + 1];
-            	rom = args[i + 2];
-            	size = Integer.parseInt(args[i + 3]);
+                justPatching = true;
+                useConsole = true;
+                patch = args[i + 1];
+                rom = args[i + 2];
+                size = Integer.parseInt(args[i + 3]);
             }
         String date = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         out = new OutputStreamViewer("JHack Console", date, "out");
@@ -79,27 +80,30 @@ public class JHack
                 while (!errlog.delete())
                     ;
         }
-        
+
         main = new MainGUI(!justPatching);
-        
+
         if (justPatching)
         {
-        	AbstractRom r = new RomMem();
-        	r.loadRom(new File(rom));
-        	if (size == 32)
-        		r.expand();
-        	else if (size == 48)
-        		r.expandEx();
-        	r.apply(IPSFile.loadIPSFile(new File(patch)));
-        	r.saveRom();
-        	System.exit(0);
+            AbstractRom r = new RomMem();
+            if (!r.loadRom(new File(rom)))
+            {
+                System.exit(-1);
+            }
+            if (size == 32)
+                r.expand();
+            else if (size == 48)
+                r.expandEx();
+            r.apply(IPSFile.loadIPSFile(new File(patch)));
+            r.saveRom();
+            System.exit(0);
         }
         else
         {
-        	
-        	if (!main.getPrefs().hasValue("autoLoad")
-                    || main.getPrefs().getValueAsBoolean("autoLoad"))
-                    main.loadLastRom();
+
+            if (!main.getPrefs().hasValue("autoLoad")
+                || main.getPrefs().getValueAsBoolean("autoLoad"))
+                main.loadLastRom();
         }
     }
 }

@@ -25,6 +25,7 @@ v0.5.10:
 # Reset Button v0.6: Allows loading of ROMs other than EarthBound
 # SPT Editor v0.6: Can allocate an area for new sprites. Useful for making sprites bigger.
 # Item Editor/others: BUGFIX: Item combo boxes always show the right item name (thanks Radiation)
+# Reverting only results in as big a ROM as needed.
 
 v0.5.9:
 # Enemy Placement Groups Editor: Made ctrl-click have the opposite effect on meters

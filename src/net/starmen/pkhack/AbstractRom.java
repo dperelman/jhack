@@ -346,6 +346,35 @@ public abstract class AbstractRom
     }
 
     /**
+     * Truncates to a ROM to a new length.
+     * 
+     * @param newLen target length for the ROM; must be less than or equal to
+     *            the current length
+     * @return true on success, false on failure
+     */
+    public boolean truncate(int newLen)
+    {
+        if (newLen < length())
+        {
+            return _truncate(newLen);
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    /**
+     * Truncates to a ROM to a new length. Override this method, not
+     * {@see #truncate(int)}.
+     * 
+     * @param newLen target length for the ROM; will be less than the current
+     *            length
+     * @return true on success, false on failure
+     */
+    public abstract boolean _truncate(int newLen);
+
+    /**
      * Writes <code>arg</code> at <code>offset</code> in the rom. This does
      * not actually write to the filesystem. {@link #saveRom(File)}writes to
      * the filesystem.

@@ -174,6 +174,14 @@ public class RomMem extends AbstractRom
         return true;
     }
 
+    public boolean _truncate(int newLen)
+    {
+        byte[] newRom = new byte[newLen];
+        System.arraycopy(rom, 0, newRom, 0, newLen);
+        rom = newRom;
+        return true;
+    }
+    
     public int length()
     {
         return rom.length;

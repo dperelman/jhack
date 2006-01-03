@@ -26,6 +26,7 @@ import javax.swing.JOptionPane;
 public class IPSFile
 {
     private List records = new ArrayList();
+    private int lastOffset = 0;
 
     /**
      * Creates an <code>IPSFile</code> that doesn't change anything.
@@ -354,17 +355,7 @@ public class IPSFile
 
     private void addRecord(IPSRecord record)
     {
-        //		System.out.println("Debug: adding IPSRecord #" + (records.length + 1)
-        // +
-        //			": offset: " + record.offset +
-        //			" size: " + record.size +
-        //			" data: " + record.info);
-        /*
-         * IPSRecord[] newRecords = new IPSRecord[this.getRecordCount() + 1];
-         * for (int i = 0; i < this.getRecordCount(); i++) { newRecords[i] =
-         * records[i]; } newRecords[this.records.length] = record; this.records =
-         * newRecords;
-         */
+        lastOffset = Math.max(lastOffset, record.getEndOffset());
         this.records.add(record);
     }
 
@@ -1066,24 +1057,57 @@ public class IPSFile
             return infoBB;
         }
 
+        /**
+         * Returns the offset of the start of the change stored by this record.
+         * 
+         * @return teh offset of the start of this change
+         */
         public int getOffset()
         {
             return offset;
         }
 
+        /**
+         * The size of the change stored by this record if it is RLE. This record is 
+         * RLE if and only if {@see #getSize()} is 0.
+         * 
+         * @return the RLE size of this record
+         * @see #getRleInfo()
+         */
         public int getRleSize()
         {
             return rleSize;
         }
 
+        /**
+         * The size of the change stored by this record or 0 if this is an RLE record.
+         * 
+         * @return 0 for RLE or the size of this record
+         * @see #getRleSize()
+         */
         public int getSize()
         {
             return size;
         }
 
+        /**
+         * If this is RLE (Run Length Encoding) then this returns the repeated byte.
+         * 
+         * @return the RLE byte
+         */
         public byte getRleInfo()
         {
             return rleInfo;
+        }
+
+        /**
+         * Returns the offset of the end of the change stored by this record.
+         * 
+         * @return teh offset of the end of this change
+         */
+        public int getEndOffset()
+        {
+            return offset + (size == 0 ? rleSize : size) - 1;
         }
 
     }
@@ -1096,5 +1120,15 @@ public class IPSFile
     public int getRecordCount()
     {
         return records.size();
+    }
+    
+    /**
+     * Returns the last offset this IPS file modifies.
+     * 
+     * @return the last offset this IPS file modifies
+     */
+    public int getLastOffset()
+    {
+        return lastOffset;
     }
 }

@@ -1005,14 +1005,36 @@ public class MainGUI implements ActionListener, WindowListener
                 File backupFile = new File(backupDir.toString()
                     + File.separator + rom.getFilePath().getName() + "." + date
                     + ".bak.ips");
-                //backup current rom path
+                /* backup current rom path */
                 File romPath = rom.getFilePath();
-                //load orginal ROM and patch it
+                /* load original ROM and patch it */
                 rom.loadRom(getOrginalRomFile(rom.getRomType()).path);
                 if (rom.isDirectFileIO())
                     rom.saveRom(romPath);
-                rom.apply(IPSFile.loadIPSFile(backupFile));
-                //change path back so it saves in the right place
+                IPSFile ips = IPSFile.loadIPSFile(backupFile);
+                rom.apply(ips);
+                /* truncate ROM so it is no bigger than it has to be */
+                int truncateTo = rom.length();
+                if (ips.getLastOffset() < 0x300200)
+                {
+                    truncateTo = 0x300200;
+                }
+                else if (ips.getLastOffset() < 0x400200)
+                {
+                    truncateTo = 0x400200;
+                }
+                if (!rom.truncate(truncateTo))
+                {
+                    JOptionPane.showMessageDialog(mainWindow,
+                        "Sorry, PK Hack was unable to\n"
+                            + "truncate your ROM to the proper size.\n"
+                            + "No data was lost, but your ROM is\n" + "0x"
+                            + Integer.toHexString(rom.length())
+                            + " bytes long instead of\n" + "0x"
+                            + Integer.toHexString(truncateTo) + " bytes.",
+                        "Truncation failed", JOptionPane.WARNING_MESSAGE);
+                }
+                /* change path back so it saves in the right place */
                 rom.path = romPath;
                 AbstractRom.setDefaultDir(romPath.getParent());
                 resetModules();

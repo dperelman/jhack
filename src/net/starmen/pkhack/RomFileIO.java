@@ -277,6 +277,20 @@ public class RomFileIO extends AbstractRom
         return true;
     }
 
+    public boolean _truncate(int newLen)
+    {
+        try
+        {
+            rom.setLength(newLen);
+            return true;
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace(System.out);
+            return false;
+        }
+    }
+    
     /*
      * (non-Javadoc)
      * 
