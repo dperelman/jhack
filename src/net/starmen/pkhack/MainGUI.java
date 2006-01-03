@@ -502,7 +502,7 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public static String getVersion()
     {
-        return "0.5.9";
+        return "0.5.10";
     }
 
     /**
