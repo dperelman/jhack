@@ -1,4 +1,5 @@
 NEXT VERSION (after v0.5.10):
+# Flyover Editor: BUGFIX: 6MB ROM problem
 
 v0.5.10:
 # Item Editor: BUGFIX: Workaround for bug where extra power would get set to the item number.
