@@ -1,5 +1,7 @@
 NEXT VERSION (after v0.5.10):
-# Flyover Editor: BUGFIX: 6MB ROM problem
+# Flyover Editor v0.2: BUGFIX: 6MB ROM problem
+# Flyover Editor v0.2: BUGFIX: Text areas scroll when text is too long
+# Flyover Editor v0.2: Now uses Text Editor's text parsing
 
 v0.5.10:
 # Item Editor: BUGFIX: Workaround for bug where extra power would get set to the item number.

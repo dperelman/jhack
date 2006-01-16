@@ -147,8 +147,7 @@ public class CCInfo
         // Reads a string fHackModule.rom ROM at address.
         // Returns a struct containing a pointer to the string and
         // the string's length. This function does not do any formatting
-        // or decompression. If the string is greater than 8192 characters
-        // long, it will be truncated at that point.
+        // or decompression.
 
         //        char[] buffer = new char[8192];
         //        char[] headBuff = new char[100];
@@ -256,10 +255,10 @@ public class CCInfo
                 // xx]"))
                 if (activeNode.endcc && activeNode.cc != null)
                 {
-//                    if (ch == 10)
-//                    {
-//                        System.out.println();
-//                    }
+                    //                    if (ch == 10)
+                    //                    {
+                    //                        System.out.println();
+                    //                    }
                     endcc = true;
                 }
                 //                else if (
@@ -863,6 +862,14 @@ public class CCInfo
         return (CCNode[]) ccs.toArray(new CCNode[0]);
     }
 
+    /**
+     * Gets the length of a string, using compression if it is available and
+     * requested.
+     * 
+     * @param str String to get the length of
+     * @param comp If true, compression is used if it is available
+     * @return Length of string <code>str</code> or -1 on error
+     */
     public int getStringLength(String str, boolean comp)
     {
         // This is similar to DeparseString (below);
@@ -965,6 +972,17 @@ public class CCInfo
     }
 
     /**
+     * Gets the length of a string, using compression if it is available.
+     * 
+     * @param str String to get the length of
+     * @return Length of string <code>str</code> or -1 on error
+     */
+    public int getStringLength(String str)
+    {
+        return getStringLength(str, this.allowComp);
+    }
+
+    /**
      * Gets the length of a substring. Uses
      * <code>String.substring(start,end)</code>.
      * 
@@ -973,7 +991,7 @@ public class CCInfo
      * @param start start offset as used by <code>String.substring()</code>
      * @param end end offset as used by <code>String.substring()</code>
      * @return Length of string between <code>start</code> and
-     *         <code>end</code>
+     *         <code>end</code> or -1 on error
      * @see #getStringLength(String, boolean)
      */
     public int getStringLength(String str, boolean comp, int start, int end)
@@ -1021,9 +1039,9 @@ public class CCInfo
         // This function takes a visually formatted string (like the user
         // input into the text editing box) and converts it into a string
         // that is ready to be written directly to the ROM.
-        
+
         /* Convert all control characters to spaces. */
-        for(char i = 0; i < 0x20; i++)
+        for (char i = 0; i < 0x20; i++)
         {
             str = str.replace(i, ' ');
         }
