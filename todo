@@ -9,6 +9,34 @@ NEXT v0.0.x (minor) RELEASE
 
 # Partial decomp() for "fail" on abort, retry, fail
 	# In progress; better way?
+# NLA's Flyover Editor problems:
+	[23:38:20] <NLA> Well, I think that first, the 3rd flyover scene is
+		clipping the text to size 80, for some reason.
+	[23:38:42] <EBisumaru> we should just have it link to the text editor
+	[23:38:50] <NLA> Well, that is to say, once you've changed the pointer
+		to another location and started typing from there.
+	[23:39:06] <NLA> Probably.
+	[23:39:46] <NLA> Next, text that exceeds the size of the FE text box
+		removes the "Update From Text Pointer" option, or whatever it is.
+	[23:40:23] <NLA> A simple fix there would be a scrolling option, but
+		its pretty bad that the Update Text button would correspond to
+		the size of the text.
+	[23:41:29] <NLA> I guess that whoever designed it first didn't quite
+		anticipate people having larger text than the original, which is
+		odd, since there seems to have always been the text pointer
+		option there.
+	[23:42:18] <NLA> Easy as that, I believe. Find out why its clipping it,
+		and fix the text viewing window.
+	[23:44:14] <NLA> I could find no other problems, but I'd like to suggest
+		that BA's flyover tutorial and possibly whoever else's tutorial
+		is linked to (as "My Simply/Quick Tutorial" or something of that
+		nature) should just be files inside of PK Hack, which are simply
+		executed from the option rather than require an internet connection
+		to be active to quickly seize the data and put it in a miniature
+		window. Just a suggestion though.
+	[23:45:15] <NLA> Now, I must be off to sleep, I am very tired. I trust
+		that either you, MrTenda, or AEB can look at the problem and attempt
+		to fix it whenever you find the time. No rush, as always.
 
 LONG TERM
 
