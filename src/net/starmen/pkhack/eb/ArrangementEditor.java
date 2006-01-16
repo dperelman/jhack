@@ -162,7 +162,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
      * @param y y-coordinate of point
      * @return arrangement data at (x, y) of current arrangement
      */
-    protected abstract int getArrangementData(int x, int y);
+    protected abstract short getArrangementData(int x, int y);
 
     /**
      * Returns the arrangement data for the entire arrangement. Important, note
@@ -171,7 +171,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
      * 
      * @return arrangement data of entire current arrangement
      */
-    protected abstract int[][] getArrangementData();
+    protected abstract short[][] getArrangementData();
 
     /**
      * Sets the arrangement data at the specified point. Note that point does
@@ -185,7 +185,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
      * @param data arrangement data to set at (x, y) of current arrangement
      * @see #makeArrangementNumber(int, int, boolean, boolean)
      */
-    protected abstract void setArrangementData(int x, int y, int data);
+    protected abstract void setArrangementData(int x, int y, short data);
 
     /**
      * Sets the arrangement data for the entire arrangement. Important, note
@@ -195,7 +195,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
      * @param data arrangement data of entire current arrangement to set
      * @see #makeArrangementNumber(int, int, boolean, boolean)
      */
-    protected abstract void setArrangementData(int[][] data);
+    protected abstract void setArrangementData(short[][] data);
 
     /**
      * Returns an image of the current arrangement. Note that this may need to
@@ -234,9 +234,9 @@ public abstract class ArrangementEditor extends AbstractButton implements
      * -1 are arrangement values that indicate there is a selection at that
      * point.
      */
-    private int[][] selection = new int[getTilesWide()][getTilesHigh()];
+    private short[][] selection = new short[getTilesWide()][getTilesHigh()];
     /** Selection used for last draw. */
-    private int[][] drawnSelection = new int[getTilesWide()][getTilesHigh()];
+    private short[][] drawnSelection = new short[getTilesWide()][getTilesHigh()];
 
     /**
      * Returns an arrangement number based on the input. Note that is does not
@@ -258,11 +258,11 @@ public abstract class ArrangementEditor extends AbstractButton implements
      * @param vFlip If true, tile is flipped vertically in arrangement.
      * @return Number to be stored in arrangement with given information.
      */
-    public int makeArrangementNumber(int tile, int subPalette, boolean hFlip,
+    public short makeArrangementNumber(int tile, int subPalette, boolean hFlip,
         boolean vFlip)
     {
-        return (tile & 0x03ff) | (((subPalette + 2) & 7) << 10)
-            | (hFlip ? 0x4000 : 0) | (vFlip ? 0x8000 : 0);
+        return (short)((tile & 0x03ff) | (((subPalette + 2) & 7) << 10)
+            | (hFlip ? 0x4000 : 0) | (vFlip ? 0x8000 : 0));
     }
 
     public int getTileOfArr(int arr)
@@ -285,9 +285,9 @@ public abstract class ArrangementEditor extends AbstractButton implements
         return (arr & 0x8000) != 0;
     }
 
-    public int rotateArr(int arr)
+    public short rotateArr(short arr)
     {
-        return (arr + 0x4000) & 0xffff;
+        return (short) ((arr + 0x4000) & 0xffff);
     }
 
     private boolean isTile(int x, int y)
@@ -416,9 +416,10 @@ public abstract class ArrangementEditor extends AbstractButton implements
         }
     }
 
-    private int[][] createNewSelection(int nx, int ny)
+    private short[][] createNewSelection(int nx, int ny)
     {
-        int cx = nx - asx, cy = ny - asy, newsel[][] = new int[getTilesWide()][getTilesHigh()];
+        int cx = nx - asx, cy = ny - asy;
+        short[][] newsel = new short[getTilesWide()][getTilesHigh()];
 
         for (int x = 0; x < getTilesWide(); x++)
             for (int y = 0; y < getTilesHigh(); y++)
@@ -472,7 +473,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
         {
             if (isGuiInited())
             {
-                int[][] newSel = createNewSelection(x, y);
+                short[][] newSel = createNewSelection(x, y);
                 //draw x, draw y
                 for (int dx = 0; dx < getTilesWide(); dx++)
                     for (int dy = 0; dy < getTilesHigh(); dy++)
@@ -647,7 +648,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
     {
         if (undoList.size() > 0)
         {
-            setArrangementData((int[][]) undoList.get(undoList.size() - 1));
+            setArrangementData((short[][]) undoList.get(undoList.size() - 1));
             undoList.remove(undoList.size() - 1);
             repaint();
             this.fireActionPerformed(new ActionEvent(this,
@@ -661,7 +662,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
     }
 
     //clipboard stuff
-    private int[][] cb = null;
+    private short[][] cb = null;
 
     private boolean isSelectionNull()
     {
@@ -715,7 +716,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
         if (isSelectionNull())
             cb = getArrangementData();
         else
-            cb = IntArrDrawingArea.getNewImage(selection);
+            cb = IntArrDrawingArea.getNewShortImage(selection);
     }
 
     public void paste()
@@ -724,7 +725,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
         {
             addUndo();
             if (isCbSelection())
-                selection = IntArrDrawingArea.getNewImage(cb);
+                selection = IntArrDrawingArea.getNewShortImage(cb);
             else
                 setArrangementData(cb);
         }
@@ -736,7 +737,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
     public void delete()
     {
         addUndo();
-        int tmp = makeArrangementNumber(0, 0, false, false);
+        short tmp = makeArrangementNumber(0, 0, false, false);
         if (isSelectionNull())
         {
             for (int x = 0; x < getTilesWide(); x++)

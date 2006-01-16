@@ -29,10 +29,10 @@ public class TileRef
         return subpal;
     }
 
-    public int getArrangementData()
+    public short getArrangementData()
     {
-        return (tile & 0x03ff) | ((subpal & 7) << 10) | (hFlip ? 0x4000 : 0)
-            | (vFlip ? 0x8000 : 0);
+        return (short) ((tile & 0x03ff) | ((subpal & 7) << 10)
+            | (hFlip ? 0x4000 : 0) | (vFlip ? 0x8000 : 0));
     }
 
     public TileRef(int tile, boolean hFlip, boolean vFlip, int subpal)

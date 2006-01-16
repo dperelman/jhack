@@ -136,9 +136,9 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         /** The <code>Color<code>'s of each 16 color palette. */
         private Color[][] palette = new Color[NUM_PALETTES][4];
         /** List of all arrangements. */
-        private int[] arrangementList = new int[NUM_ARRANGEMENTS];
+        private short[] arrangementList = new short[NUM_ARRANGEMENTS];
         /** Two-dimentional array of arrangements used. */
-        private int[][] arrangement = new int[32][28];
+        private short[][] arrangement = new short[32][28];
         /** All tiles stored as pixels being found at [tile_num][x][y]. */
         private byte[][][] tiles = new byte[NUM_TILES][8][8];
 
@@ -154,9 +154,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         private boolean readGraphics(boolean allowFailure, boolean readOrg)
         {
-            AbstractRom r = readOrg
-                ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
-                : hm.rom;
+            AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(hm.rom
+                .getRomType()) : hm.rom;
 
             byte[] tileBuffer = new byte[4096];
 
@@ -204,9 +203,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         private boolean readPalette(boolean allowFailure, boolean readOrg)
         {
-            AbstractRom r = readOrg
-                ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
-                : hm.rom;
+            AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(hm.rom
+                .getRomType()) : hm.rom;
 
             byte[] palBuffer = new byte[512];
             /** * DECOMPRESS PALETTE ** */
@@ -249,9 +247,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         private boolean readArrangement(boolean allowFailure, boolean readOrg)
         {
-            AbstractRom r = readOrg
-                ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
-                : hm.rom;
+            AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(hm.rom
+                .getRomType()) : hm.rom;
 
             byte[] arngBuffer = new byte[2048];
 
@@ -268,9 +265,9 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                     + " decompressing logo screen #" + num + " arrangement.");
                 if (allowFailure)
                 { //EMPTY ARRANGEMENTS
-                    Arrays.fill(arrangementList, 0);
+                    Arrays.fill(arrangementList, (short) 0);
                     for (int x = 0; x < arrangement.length; x++)
-                        Arrays.fill(arrangement[x], 0);
+                        Arrays.fill(arrangement[x], (short) 0);
                     arngLen = 0;
                 }
                 else
@@ -288,8 +285,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 int arngOffset = 0;
                 for (int i = 0; i < NUM_ARRANGEMENTS; i++)
                 {
-                    arrangementList[i] = (arngBuffer[arngOffset++] & 0xff)
-                        + ((arngBuffer[arngOffset++] & 0xff) << 8);
+                    arrangementList[i] = (short) ((arngBuffer[arngOffset++] & 0xff) + ((arngBuffer[arngOffset++] & 0xff) << 8));
                 }
                 int j = 0;
                 for (int y = 0; y < arrangement[0].length; y++)
@@ -465,7 +461,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
          * @param y
          * @param data
          */
-        public void setArrangementData(int x, int y, int data)
+        public void setArrangementData(int x, int y, short data)
         {
             readInfo();
             arrangement[x][y] = data;
@@ -478,7 +474,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
          * @param y
          * @return
          */
-        public int getArrangementData(int x, int y)
+        public short getArrangementData(int x, int y)
         {
             readInfo();
             return arrangement[x][y];
@@ -489,20 +485,21 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
          * 
          * @return
          */
-        public int[][] getArrangementData()
+        public short[][] getArrangementData()
         {
             readInfo();
-            int[][] out = new int[arrangement.length][arrangement[0].length];
+            short[][] out = new short[arrangement.length][arrangement[0].length];
             for (int x = 0; x < out.length; x++)
                 for (int y = 0; y < out[0].length; y++)
                     out[x][y] = arrangement[x][y];
             return out;
         }
 
-        public int[] getArrangementArr()
+        public short[] getArrangementArr()
         {
             readInfo();
-            int j = 0, out[] = new int[NUM_ARRANGEMENTS];
+            int j = 0;
+            short out[] = new short[NUM_ARRANGEMENTS];
             for (int y = 0; y < arrangement[0].length; y++)
                 for (int x = 0; x < arrangement.length; x++)
                     out[j++] = arrangement[x][y];
@@ -511,7 +508,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             return out;
         }
 
-        public void setArrangementArr(int[] arr)
+        public void setArrangementArr(short[] arr)
         {
             readInfo();
             int j = 0;
@@ -527,7 +524,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
          * 
          * @param data
          */
-        public void setArrangementData(int[][] data)
+        public void setArrangementData(short[][] data)
         {
             readInfo();
             for (int x = 0; x < data.length; x++)
@@ -793,13 +790,13 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 * (getTileSize() * getZoom())));
         }
 
-        public int makeArrangementNumber(int tile, int subPalette,
+        public short makeArrangementNumber(int tile, int subPalette,
             boolean hFlip, boolean vFlip)
         {
             return super.makeArrangementNumber(tile, subPalette - 2, hFlip,
                 vFlip);
         }
-        
+
         public int getTileOfArr(int arr)
         {
             return arr & 0x00ff;
@@ -864,22 +861,22 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             return LogoScreenEditor.this.getCurrentSubPalette();
         }
 
-        protected int getArrangementData(int x, int y)
+        protected short getArrangementData(int x, int y)
         {
             return getSelectedScreen().getArrangementData(x, y);
         }
 
-        protected int[][] getArrangementData()
+        protected short[][] getArrangementData()
         {
             return getSelectedScreen().getArrangementData();
         }
 
-        protected void setArrangementData(int x, int y, int data)
+        protected void setArrangementData(int x, int y, short data)
         {
             getSelectedScreen().setArrangementData(x, y, data);
         }
 
-        protected void setArrangementData(int[][] data)
+        protected void setArrangementData(short[][] data)
         {
             getSelectedScreen().setArrangementData(data);
         }
@@ -1372,7 +1369,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
     public static class LogoScreenImportData
     {
         public byte[][][] tiles;
-        public int[] arrangement;
+        public short[] arrangement;
         public Color[][] palette;
     }
 
@@ -1415,7 +1412,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                     //write arrangements?
                     if (a[m][NODE_ARR])
                     {
-                        int[] arr = logoScreens[m].getArrangementArr();
+                        short[] arr = logoScreens[m].getArrangementArr();
                         byte[] barr = new byte[arr.length * 2];
                         int off = 0;
                         for (int i = 0; i < arr.length; i++)
@@ -1490,15 +1487,14 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 //if arr bit set...
                 if (((whichParts >> 1) & 1) != 0)
                 {
-                    out[m].arrangement = new int[LogoScreen.NUM_ARRANGEMENTS];
+                    out[m].arrangement = new short[LogoScreen.NUM_ARRANGEMENTS];
                     byte[] barr = new byte[out[m].arrangement.length * 2];
                     in.read(barr);
 
                     int off = 0;
                     for (int i = 0; i < out[m].arrangement.length; i++)
                     {
-                        out[m].arrangement[i] = (barr[off++] & 0xff);
-                        out[m].arrangement[i] += ((barr[off++] & 0xff) << 8);
+                        out[m].arrangement[i] = (short) ((barr[off++] & 0xff) + ((barr[off++] & 0xff) << 8));
                     }
                 }
                 //if pal bit set...
@@ -1809,8 +1805,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         if (lsid.arrangement != null)
         {
             //check arrangement
-            if (!Arrays
-                .equals(lsid.arrangement, logoScreens[i].getArrangementArr()))
+            if (!Arrays.equals(lsid.arrangement, logoScreens[i]
+                .getArrangementArr()))
                 return false;
         }
         if (lsid.palette != null)
@@ -1906,7 +1902,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         return true;
     }
-    
+
     public void importImg()
     {
         importImg(getFile(false, new String[]{"bmp", "gif", "png"},
@@ -2060,18 +2056,18 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             }
         }
 
-//        for (int i = 0; i < gasStations[0].palette.length; i++)
-//            gasStations[0].palette[i] = pal;
-//        for (int t = 0; t < tnum; t++)
-//        {
-//            for (int x = 0; x < 8; x++)
-//                for (int y = 0; y < 8; y++)
-//                    gasStations[0].tiles[t][x][y] = tiles[t][(y * 8) + x];
-//        }
-//        for (int t = tnum; t < gasStations[0].tiles.length; t++)
-//        {
-//            gasStations[0].tiles[t] = new byte[8][8];
-//        }
-//        gasStations[0].arrangement = arrangement;
+        //        for (int i = 0; i < gasStations[0].palette.length; i++)
+        //            gasStations[0].palette[i] = pal;
+        //        for (int t = 0; t < tnum; t++)
+        //        {
+        //            for (int x = 0; x < 8; x++)
+        //                for (int y = 0; y < 8; y++)
+        //                    gasStations[0].tiles[t][x][y] = tiles[t][(y * 8) + x];
+        //        }
+        //        for (int t = tnum; t < gasStations[0].tiles.length; t++)
+        //        {
+        //            gasStations[0].tiles[t] = new byte[8][8];
+        //        }
+        //        gasStations[0].arrangement = arrangement;
     }
 }

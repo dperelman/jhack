@@ -133,9 +133,9 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         /** The <code>Color<code>'s of each 256 color palette. */
         private Color[][] palette = new Color[NUM_PALETTES][256];
         /** List of all arrangements. */
-        private int[] arrangementList = new int[NUM_ARRANGEMENTS];
+        private short[] arrangementList = new short[NUM_ARRANGEMENTS];
         /** Two-dimentional array of arrangements used. */
-        private int[][] arrangement = new int[32][28];
+        private short[][] arrangement = new short[32][28];
         /** All tiles stored as pixels being found at [tile_num][x][y]. */
         private byte[][][] tiles = new byte[NUM_TILES][8][8];
 
@@ -263,9 +263,9 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                     + " decompressing Gas Station #" + num + " palette.");
                 if (allowFailure)
                 { //EMPTY ARRANGEMENTS
-                    Arrays.fill(arrangementList, 0);
+                    Arrays.fill(arrangementList, (short) 0);
                     for (int x = 0; x < arrangement.length; x++)
-                        Arrays.fill(arrangement[x], 0);
+                        Arrays.fill(arrangement[x], (short) 0);
                     arngLen = 0;
                 }
                 else
@@ -281,8 +281,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                     + " byte compressed block.");
 
                 for (int i = 0; i < NUM_ARRANGEMENTS; i++)
-                    arrangementList[i] = (arngBuffer[i * 2] & 0xff)
-                        + ((arngBuffer[i * 2 + 1] & 0xff) << 8);
+                    arrangementList[i] = (short) ((arngBuffer[i * 2] & 0xff) + ((arngBuffer[i * 2 + 1] & 0xff) << 8));
 
                 int j = 0;
                 for (int y = 0; y < arrangement[0].length; y++)
@@ -442,7 +441,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
          * @param y
          * @param data
          */
-        public void setArrangementData(int x, int y, int data)
+        public void setArrangementData(int x, int y, short data)
         {
             readInfo();
             arrangement[x][y] = data;
@@ -455,7 +454,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
          * @param y
          * @return
          */
-        public int getArrangementData(int x, int y)
+        public short getArrangementData(int x, int y)
         {
             readInfo();
             return arrangement[x][y];
@@ -466,20 +465,21 @@ public class GasStationEditor extends EbHackModule implements ActionListener
          * 
          * @return
          */
-        public int[][] getArrangementData()
+        public short[][] getArrangementData()
         {
             readInfo();
-            int[][] out = new int[arrangement.length][arrangement[0].length];
+            short[][] out = new short[arrangement.length][arrangement[0].length];
             for (int x = 0; x < out.length; x++)
                 for (int y = 0; y < out[0].length; y++)
                     out[x][y] = arrangement[x][y];
             return out;
         }
 
-        public int[] getArrangementArr()
+        public short[] getArrangementArr()
         {
             readInfo();
-            int j = 0, out[] = new int[NUM_ARRANGEMENTS];
+            int j = 0;
+            short[] out = new short[NUM_ARRANGEMENTS];
             for (int y = 0; y < arrangement[0].length; y++)
                 for (int x = 0; x < arrangement.length; x++)
                     out[j++] = arrangement[x][y];
@@ -488,7 +488,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             return out;
         }
 
-        public void setArrangementArr(int[] arr)
+        public void setArrangementArr(short[] arr)
         {
             readInfo();
             int j = 0;
@@ -504,7 +504,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
          * 
          * @param data
          */
-        public void setArrangementData(int[][] data)
+        public void setArrangementData(short[][] data)
         {
             readInfo();
             for (int x = 0; x < data.length; x++)
@@ -828,22 +828,22 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             return 0;
         }
 
-        protected int getArrangementData(int x, int y)
+        protected short getArrangementData(int x, int y)
         {
             return getSelectedStation().getArrangementData(x, y);
         }
 
-        protected int[][] getArrangementData()
+        protected short[][] getArrangementData()
         {
             return getSelectedStation().getArrangementData();
         }
 
-        protected void setArrangementData(int x, int y, int data)
+        protected void setArrangementData(int x, int y, short data)
         {
             getSelectedStation().setArrangementData(x, y, data);
         }
 
-        protected void setArrangementData(int[][] data)
+        protected void setArrangementData(short[][] data)
         {
             getSelectedStation().setArrangementData(data);
         }
@@ -1376,7 +1376,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
     public static class GasImportData
     {
         public byte[][][] tiles;
-        public int[] arrangement;
+        public short[] arrangement;
         public Color[][] palette;
     }
 
@@ -1418,7 +1418,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                     //write arrangements?
                     if (a[m][NODE_ARR])
                     {
-                        int[] arr = gasStations[m].getArrangementArr();
+                        short[] arr = gasStations[m].getArrangementArr();
                         byte[] barr = new byte[arr.length * 2];
                         int off = 0;
                         for (int i = 0; i < arr.length; i++)
@@ -1489,15 +1489,14 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             //if arr bit set...
             if (((whichParts >> 1) & 1) != 0)
             {
-                out[m].arrangement = new int[GasStation.NUM_ARRANGEMENTS];
+                out[m].arrangement = new short[GasStation.NUM_ARRANGEMENTS];
                 byte[] barr = new byte[out[m].arrangement.length * 2];
                 in.read(barr);
 
                 int off = 0;
                 for (int i = 0; i < out[m].arrangement.length; i++)
                 {
-                    out[m].arrangement[i] = (barr[off++] & 0xff);
-                    out[m].arrangement[i] += ((barr[off++] & 0xff) << 8);
+                    out[m].arrangement[i] = (short) ((barr[off++] & 0xff) + ((barr[off++] & 0xff) << 8));
                 }
             }
             //if pal bit set...
@@ -1901,7 +1900,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             System.err.println("Interrupted waiting for pixels!");
             return;
         }
-        int[][] arrangement = new int[32][28];
+        short[][] arrangement = new short[32][28];
         byte[][] tiles = new byte[632][64];
         Color[] pal = new Color[256];
         Arrays.fill(pal, new Color(0, 0, 0));

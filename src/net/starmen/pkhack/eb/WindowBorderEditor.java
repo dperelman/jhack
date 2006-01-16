@@ -505,7 +505,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
     private class WindowGraphicPrevArrangementViewer extends ArrangementEditor
     {
         private boolean arrInited = false;
-        private int[][] arrangement = new int[getTilesWide()][getTilesHigh()];
+        private short[][] arrangement = new short[getTilesWide()][getTilesHigh()];
 
         private void initArr()
         {
@@ -518,7 +518,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                         + "windowPrevArr.dat")));
                 for (int x = 0; x < arrangement.length; x++)
                     for (int y = 0; y < arrangement[0].length; y++)
-                        arrangement[x][y] = ((int) in.readShort()) & 0xffff;
+                        arrangement[x][y] = in.readShort();
                 arrInited = true;
                 in.close();
             }
@@ -580,28 +580,28 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             return WindowBorderEditor.this.getCurrentSubPal();
         }
 
-        protected int getArrangementData(int x, int y)
+        protected short getArrangementData(int x, int y)
         {
             initArr();
             return arrangement[x][y];
         }
 
-        protected int[][] getArrangementData()
+        protected short[][] getArrangementData()
         {
             initArr();
-            int[][] a = new int[getTilesWide()][getTilesHigh()];
+            short[][] a = new short[getTilesWide()][getTilesHigh()];
             for (int i = 0; i < a.length; i++)
                 for (int j = 0; j < a[0].length; j++)
                     a[i][j] = getArrangementData(i, j);
             return a;
         }
 
-        protected void setArrangementData(int x, int y, int data)
+        protected void setArrangementData(int x, int y, short data)
         {
             arrangement[x][y] = data;
         }
 
-        protected void setArrangementData(int[][] data)
+        protected void setArrangementData(short[][] data)
         {
             for (int i = 0; i < data.length; i++)
                 for (int j = 0; j < data[0].length; j++)

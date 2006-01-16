@@ -825,6 +825,24 @@ public class IntArrDrawingArea extends ImageDrawingArea
 
         return newImg;
     }
+    
+    public static short[][] getNewShortImage(short[][] img, int x, int y, int w, int h)
+    {
+        //make sure height and width aren't out of range
+        w = Math.min(w, img.length - x);
+        h = Math.min(h, img[0].length - y);
+        short[][] newImg = new short[w][h];
+
+        for (int j = 0; j < h; j++)
+        {
+            for (int i = 0; i < w; i++)
+            {
+                newImg[i][j] = img[i + x][j + y];
+            }
+        }
+
+        return newImg;
+    }
 
     public static byte[][] getNewByteImage(int[][] img, int x, int y, int w,
         int h)
@@ -882,6 +900,11 @@ public class IntArrDrawingArea extends ImageDrawingArea
     public static int[][] getNewImage(int[][] img)
     {
         return getNewImage(img, 0, 0, img.length, img[0].length);
+    }
+    
+    public static short[][] getNewShortImage(short[][] img)
+    {
+        return getNewShortImage(img, 0, 0, img.length, img[0].length);
     }
 
     public static byte[][] getNewByteImage(int[][] img)
