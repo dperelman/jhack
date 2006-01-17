@@ -429,8 +429,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
         for (int i = 0; i < items.length; i++)
         {
             if (items[i].type == type)
-                out.addItem(HackModule
-                    .getNumberedString(items[i].toString(), i));
+                out.addItem(items[i]);
         }
         return out;
     }
