@@ -366,15 +366,13 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         String[] weaknessNames = new String[]{"PSI Fire", "PSI Freeze",
             "PSI Flash", "Paralysis", "Hypnosis/Brainshock"}, weaknessCat = new String[]{
             "100% effective", "75% effective", "50% effective",
-            "25% effective", "1% effective"}, ffWeaknessCat = new String[]{
-            "200% effective", "150% effective", "100% effective",
-            "50% effective", "1% effective"};
+            "25% effective", "1% effective"};
         for (int i = 0; i < weaknessNames.length; i++)
         {
-            weaknessTab.add(getLabeledComponent(weaknessNames[i],
-                weakness[i] = HackModule.createJComboBoxFromArray(i < 2
-                    ? ffWeaknessCat
-                    : weaknessCat)));
+            weaknessTab
+                .add(getLabeledComponent(weaknessNames[i],
+                    weakness[i] = HackModule
+                        .createJComboBoxFromArray(weaknessCat)));
         }
         weaknessTab.add(getLabeledComponent("Mirror success rate: ",
             pairComponents(mirrorRate = HackModule.createSizedJTextField(3,
@@ -917,7 +915,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
 
         return out;
     }
-    
+
     private static ArrayList enemyListeners = new ArrayList();
 
     protected static void addEnemyDataListener(ListDataListener ldl)

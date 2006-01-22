@@ -3,6 +3,7 @@ NEXT VERSION (after v0.5.10):
 # Flyover Editor v0.2: BUGFIX: Text areas scroll when text is too long
 # Flyover Editor v0.2: Now uses Text Editor's text parsing
 # Condiment Editor: BUGFIX: Actually opens.
+# Enemy Editor: Corrected weakness for damage PSI to max at 100%, not 200% (thanks Radiation)
 
 v0.5.10:
 # Item Editor: BUGFIX: Workaround for bug where extra power would get set to the item number.
