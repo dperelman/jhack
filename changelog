@@ -4,6 +4,8 @@ NEXT VERSION (after v0.5.10):
 # Flyover Editor v0.2: Now uses Text Editor's text parsing
 # Condiment Editor: BUGFIX: Actually opens.
 # Enemy Editor: Corrected weakness for damage PSI to max at 100%, not 200% (thanks Radiation)
+# BUGFIX: writeToFree will not overwrite other data or write outside of ROM because of
+    unexpected size of data because of FF shielding
 
 v0.5.10:
 # Item Editor: BUGFIX: Workaround for bug where extra power would get set to the item number.
