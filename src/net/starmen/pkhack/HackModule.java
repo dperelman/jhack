@@ -1406,7 +1406,13 @@ public abstract class HackModule
      *         ROM on failure)
      * @see #findFreeRange(int, int)
      */
-
+    
+    /* 
+     * TODO This method should look to see that, if it is rewriting something that is FF shielded,
+     * that the old data is not already FF shielded, so that we can just ignore it. Right now,
+     * repeatedly using this method could scatter FF bytes around the expanded area, effectively
+     * filling it up, if it were used repeately. -MrTenda
+     */
     public boolean writetoFree(byte[] rawData, int[] pointerLoc,
         int pointerBase, int pointerLen, int oldLen, int newLen, int beginAt,
         boolean mustBeInExpanded)
@@ -1456,7 +1462,7 @@ public abstract class HackModule
             oldPointer = toRegPointer(rom.readMulti(pointerLoc[0], pointerLen)
                 + pointerBase);
         //do not bother with shielding before 0x300200.
-        if ((orgNewLen <= oldLen)
+        if ((newLen <= oldLen)
             && !(mustBeInExpanded && (oldPointer < 0x300200))
             && (oldPointer + oldLen <= beginAt))
         {
