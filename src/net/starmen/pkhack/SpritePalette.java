@@ -193,7 +193,8 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
             if (newCol < pal.length)
             {
                 this.setSelectedColorIndex(newCol);
-                if (editable && me.getButton() == 3
+                if (editable && ((me.getButton() == 3) ||
+                		((me.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) == MouseEvent.CTRL_DOWN_MASK))
                     && (this.getSelectedColorIndex() != 0 || zeroEditable))
                 {
                     //if right mouse button clicked
