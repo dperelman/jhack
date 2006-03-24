@@ -224,7 +224,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		JMenu menu;
 
 		menu = new JMenu("File");
-		menu.add(EbHackModule.createJMenuItem("Save Changes", 's', null,
+		menu.add(EbHackModule.createJMenuItem("Apply Changes", 's', null,
 				MenuListener.SAVE, menuListener));
 		menu.add(EbHackModule.createJMenuItem("Exit", 'x', null,
 				MenuListener.EXIT, menuListener));
@@ -486,7 +486,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 	public void writeToRom() {
 		if (rom.length() == AbstractRom.EB_ROM_SIZE_REGULAR) {
 			int sure = JOptionPane.showConfirmDialog(mainWindow,
-					"You need to expand your ROM to save in the Map Editor.\n"
+					"You need to expand your ROM to apply changes in the Map Editor.\n"
 							+ "Do you want to?", "This ROM is not expanded",
 					JOptionPane.YES_NO_OPTION);
 			if (sure == JOptionPane.YES_OPTION) {
@@ -494,7 +494,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 				writeToRom();
 			} else
 				JOptionPane.showMessageDialog(mainWindow,
-						"Changes were not saved.");
+						"Changes were not applied.");
 		} else {
 			EbMap.writeMapChanges(rom);
 			EbMap.writeLocalTilesetChanges(rom);
@@ -515,7 +515,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 								+ "the sprite data?\nThis shouldn't happen...");
 			if (doorWrite && spWrite)
 				JOptionPane
-						.showMessageDialog(mainWindow, "Saved successfully!");
+						.showMessageDialog(mainWindow, "Applied changes successfully!");
 		}
 	}
 
@@ -622,8 +622,17 @@ public class MapEditor extends EbHackModule implements ActionListener,
 				String tpt = JOptionPane.showInputDialog(mainWindow,
 						"Enter TPT entry to search for.", Integer
 								.toHexString(0));
+				int tptNum, yesno;
+				try {
+					tptNum = Integer.parseInt(tpt, 16);
+				} catch (NumberFormatException nfe) {
+					JOptionPane.showMessageDialog(mainWindow,
+							"\"" + tpt + "\" is not a valid hexidecimal number.\n"
+							+ "Search was aborted.",
+							"Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 				if (tpt != null) {
-					int tptNum = Integer.parseInt(tpt, 16);
 					for (int i = 0; i < (MapEditor.heightInSectors / 2)
 							* MapEditor.widthInSectors; i++) {
 						ArrayList sprites = EbMap.getSpritesData(i);
@@ -642,7 +651,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 								gfxcontrol.reloadMap();
 								gfxcontrol.updateComponents();
 								gfxcontrol.repaint();
-								int yesno = JOptionPane
+								yesno = JOptionPane
 										.showConfirmDialog(
 												mainWindow,
 												"I found a sprite with that TPT entry. Do you want to find another?",
@@ -1836,10 +1845,10 @@ public class MapEditor extends EbHackModule implements ActionListener,
 					TileEditor.Tileset tileset = TileEditor.tilesets[EbMap
 							.getDrawTileset(sector.getTileset())];
 					for (int i = 0; i < tileset.getPaletteCount(); i++)
-						if (tileset.getPalette(i).mtileset == sector
+						if (tileset.getPalette(i).getMapTileset() == sector
 								.getTileset())
 							paletteBox.addItem(Integer.toString(tileset
-									.getPalette(i).mpalette));
+									.getPalette(i).getMapPalette()));
 				}
 				paletteBox.setSelectedIndex(sector.getPalette());
 				paletteBox.addActionListener(this);
@@ -1969,9 +1978,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
 							.getDocument().equals(yField.getDocument()))
 					&& (yField.getText().length() > 0)
 					&& (xField.getText().length() > 0)) {
-				int newx = Integer.parseInt(xField.getText());
-				int newy = Integer.parseInt(yField.getText());
-				setMapXY(newx, newy);
+				try {
+					setMapXY(Integer.parseInt(xField.getText()), Integer.parseInt(yField.getText()));
+				} catch (NumberFormatException nfe) {
+					// Do nothing
+				}
 				updateScrollBars();
 				reloadMap();
 				repaint();
@@ -2000,15 +2011,15 @@ public class MapEditor extends EbHackModule implements ActionListener,
 						.getDrawTileset(sector.getTileset())];
 				boolean couldSetOldPalette = false;
 				for (int i = 0; i < tileset.getPaletteCount(); i++)
-					if (tileset.getPalette(i).mtileset == sector.getTileset()) {
+					if (tileset.getPalette(i).getMapTileset() == sector.getTileset()) {
 						paletteBox.addItem(Integer.toString(tileset
-								.getPalette(i).mpalette));
+								.getPalette(i).getMapPalette()));
 						if (!couldSetOldPalette
-								&& (tileset.getPalette(i).mpalette == sector
+								&& (tileset.getPalette(i).getMapPalette() == sector
 										.getPalette())) {
 							couldSetOldPalette = true;
 							paletteBox
-									.setSelectedIndex(tileset.getPalette(i).mpalette);
+									.setSelectedIndex(tileset.getPalette(i).getMapPalette());
 						}
 					}
 				if (!couldSetOldPalette)
