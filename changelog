@@ -9,6 +9,7 @@ v0.5.11:
 # Gas Station Editor: BUGFIX: palettes can be changed separately after image load (thanks BlueStone)
 # BUGFIX: writeToFree will not overwrite other data or write outside of ROM because of
     unexpected size of data because of FF shielding (thanks BlueStone)
+# Ctrl-click can be used instead of right-click on palettes to change colors (thanks Weldar)
 
 v0.5.10:
 # Item Editor: BUGFIX: Workaround for bug where extra power would get set to the item number.
