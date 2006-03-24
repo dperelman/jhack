@@ -1,11 +1,14 @@
-NEXT VERSION (after v0.5.10):
+NEXT VERSION (after v0.5.11):
+
+v0.5.11:
 # Flyover Editor v0.2: BUGFIX: 6MB ROM problem
 # Flyover Editor v0.2: BUGFIX: Text areas scroll when text is too long
 # Flyover Editor v0.2: Now uses Text Editor's text parsing
 # Condiment Editor: BUGFIX: Actually opens.
 # Enemy Editor: Corrected weakness for damage PSI to max at 100%, not 200% (thanks Radiation)
+# Gas Station Editor: BUGFIX: palettes can be changed separately after image load (thanks BlueStone)
 # BUGFIX: writeToFree will not overwrite other data or write outside of ROM because of
-    unexpected size of data because of FF shielding
+    unexpected size of data because of FF shielding (thanks BlueStone)
 
 v0.5.10:
 # Item Editor: BUGFIX: Workaround for bug where extra power would get set to the item number.
