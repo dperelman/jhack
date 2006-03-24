@@ -229,8 +229,12 @@ public abstract class EbHackModule extends HackModule
         }
         catch (Throwable e)
         {
-            System.out.println("Error loading Earthbound compression library " +
-                System.mapLibraryName("comp") + ".");
+            System.out.println("Unable to load Earthbound compression library " +
+                System.mapLibraryName("comp") + ".\n" + 
+                		"This is normal if you do not have " +
+                		"the native compression library,\n" +
+                		"which makes saving faster in " +
+                		"compressed graphics editors, installed.");
             e.printStackTrace(System.out);
         }
         nativeComp = compver;
@@ -507,6 +511,7 @@ public abstract class EbHackModule extends HackModule
         return bpos;
     }
     //meant to emulate the C function FOR THIS SPECIFIC USE
+    /* Use st as the counter instead of i? */
     private static int memchr(int st, byte needle, int len, byte[] haystack)
     {
         len += st;

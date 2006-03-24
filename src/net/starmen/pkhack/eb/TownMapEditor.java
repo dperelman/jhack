@@ -119,13 +119,13 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         public static final int NUM_TILES = 512;
 
         /** The <code>Color<code>'s of each 16 color palette. */
-        private Color[][] palette = new Color[NUM_PALETTES][16];
+        private Color[][] palette;
         /** List of all arrangements. */
-        private short[] arrangementList = new short[NUM_ARRANGEMENTS];
+        private short[] arrangementList;
         /** Two-dimentional array of arrangements used. */
-        private short[][] arrangement = new short[32][28];
+        private short[][] arrangement;
         /** All tiles stored as pixels being found at [tile_num][x][y]. */
-        private byte[][][] tiles = new byte[NUM_TILES][8][8];
+        private byte[][][] tiles;
 
         public TownMap(int i, EbHackModule hm)
         {
@@ -162,17 +162,24 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                 + " bytes from a " + tmp[1] + " byte compressed block.");
 
             int offset = 0;
-            for (int i = 0; i < NUM_PALETTES; i++)
+            if (toRead[NODE_PAL])
             {
-                //make fake target if not to read this
-                Color[] target = toRead[NODE_PAL]
-                    ? palette[i]
-                    : new Color[palette[i].length];
-                HackModule.readPalette(buffer, offset, target);
-                offset += palette[i].length * 2;
+                palette = new Color[NUM_PALETTES][16];
+                for (int i = 0; i < NUM_PALETTES; i++)
+                {
+                    Color[] target = palette[i];
+                    HackModule.readPalette(buffer, offset, target);
+                    offset += palette[i].length * 2;
+                }
+            }
+            else
+            {
+                offset += NUM_PALETTES * 16 * 2;
             }
             if (toRead[NODE_ARR])
             {
+                arrangementList = new short[NUM_ARRANGEMENTS];
+                arrangement = new short[32][28];
                 for (int i = 0; i < NUM_ARRANGEMENTS; i++)
                 {
                     arrangementList[i] = (short) ((buffer[offset++] & 0xff) + ((buffer[offset++] & 0xff) << 8));
@@ -188,6 +195,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             }
             if (toRead[NODE_TILES])
             {
+                tiles = new byte[NUM_TILES][8][8];
                 for (int i = 0; i < NUM_TILES; i++)
                 {
                     offset += HackModule.read4BPPArea(tiles[i], buffer, offset,
@@ -222,11 +230,14 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                 + " bytes from a " + tmp[1] + " byte compressed block.");
 
             int offset = 0;
+            palette = new Color[NUM_PALETTES][16];
             for (int i = 0; i < NUM_PALETTES; i++)
             {
                 HackModule.readPalette(buffer, offset, palette[i]);
                 offset += palette[i].length * 2;
             }
+            arrangementList = new short[NUM_ARRANGEMENTS];
+            arrangement = new short[32][28];
             for (int i = 0; i < NUM_ARRANGEMENTS; i++)
             {
                 arrangementList[i] = (short) ((buffer[offset++] & 0xff) + ((buffer[offset++] & 0xff) << 8));
@@ -235,6 +246,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             for (int y = 0; y < arrangement[0].length; y++)
                 for (int x = 0; x < arrangement.length; x++)
                     arrangement[x][y] = arrangementList[j++];
+            tiles = new byte[NUM_TILES][8][8];
             for (int i = 0; i < NUM_TILES; i++)
             {
                 offset += HackModule.read4BPPArea(tiles[i], buffer, offset, 0,

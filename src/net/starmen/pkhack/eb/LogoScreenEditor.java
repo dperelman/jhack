@@ -134,13 +134,13 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             0x0F113, 0x0F16A};
 
         /** The <code>Color<code>'s of each 16 color palette. */
-        private Color[][] palette = new Color[NUM_PALETTES][4];
+        private Color[][] palette;
         /** List of all arrangements. */
-        private short[] arrangementList = new short[NUM_ARRANGEMENTS];
+        private short[] arrangementList;
         /** Two-dimentional array of arrangements used. */
-        private short[][] arrangement = new short[32][28];
+        private short[][] arrangement;
         /** All tiles stored as pixels being found at [tile_num][x][y]. */
-        private byte[][][] tiles = new byte[NUM_TILES][8][8];
+        private byte[][][] tiles;
 
         public LogoScreen(int i, EbHackModule hm)
         {
@@ -166,6 +166,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             int[] tmp = EbHackModule.decomp(readOrg ? r
                 .readRegAsmPointer(tilePointerArray[num]) : tilePointer,
                 tileBuffer, r);
+            tiles = new byte[NUM_TILES][8][8];
             if (tmp[0] < 0)
             {
                 System.out.println("Error " + tmp[0]
@@ -214,6 +215,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             int[] tmp = EbHackModule.decomp(readOrg ? r
                 .readRegAsmPointer(palPointerArray[num]) : palPointer,
                 palBuffer, r);
+            palette = new Color[NUM_PALETTES][4];
             if (tmp[0] < 0)
             {
                 System.out.println("Error " + tmp[0]
@@ -259,6 +261,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             int[] tmp = EbHackModule.decomp(readOrg ? r
                 .readRegAsmPointer(arngPointerArray[num]) : arngPointer,
                 arngBuffer, r);
+            arrangementList = new short[NUM_ARRANGEMENTS];
+            arrangement = new short[32][28];
             if (tmp[0] < 0)
             {
                 System.out.println("Error " + tmp[0]

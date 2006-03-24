@@ -106,11 +106,10 @@ public class TileEditor extends EbHackModule implements ActionListener
     public static class Tileset
     {
         private EbHackModule hm;
-        private byte[][][] tiles = new byte[1024][8][8]; //deinterlaced tiles
-        private short[][][] arrangements = new short[1024][4][4]; //arrangements
-        private byte[][][] collision = new byte[1024][4][4]; //collision data
-        private Palette[] palettes = new Palette[60];
-        private int numPalettes = 0;
+        private byte[][][] tiles; //deinterlaced tiles
+        private short[][][] arrangements; //arrangements
+        private byte[][][] collision; //collision data
+        private ArrayList palettes;
         private int tileAddress;
         private int arrangmentsAddress;
         private int collisionAddress;
@@ -134,6 +133,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             this.hm = hm;
             this.num = num;
             this.name = name;
+            this.palettes = new ArrayList();
         }
 
         /**
@@ -206,6 +206,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             }
             tileOldCompLen = tmp[1];
 
+            tiles = new byte[1024][8][8];
             byte[] tile = new byte[32];
             int i = 0;
             tileloop: for (int t = 0; t < 1024; t++)
@@ -248,6 +249,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             }
             arrOldCompLen = tmp[1];
 
+            arrangements = new short[1024][4][4];
             int a = 0;
             try
             {
@@ -277,6 +279,7 @@ public class TileEditor extends EbHackModule implements ActionListener
              * arrangement are listed. Look at the code for a better
              * explaination.
              */
+            collision = new byte[1024][4][4];
             this.collisionAddress = HackModule.toRegPointer(hm.rom.readMulti(
                 0x2F137B + (num * 4), 4));
             for (int j = 0; j < 1024; j++)
@@ -298,7 +301,129 @@ public class TileEditor extends EbHackModule implements ActionListener
          */
         public static class Palette
         {
-            int mtileset, mpalette, start;
+            private int mtileset, mpalette, start;
+
+            /**
+             * Creates a map palette information object.
+             * 
+             * @param mtileset the map tileset this palette is associated with
+             * @param mpalette the map palette this palette is associated with
+             * @param start the starting address of this palette as a regular
+             *            (not SNES) pointer
+             */
+            public Palette(int mtileset, int mpalette, int start)
+            {
+                this.mtileset = mtileset;
+                this.mpalette = mpalette;
+                this.start = start;
+            }
+
+            /**
+             * Returns a String containing the map tileset and palette. For
+             * example, "2/4" means map tileset 2, palette 4.
+             * 
+             * @return a String containing the map tileset, a slash, and then
+             *         the map palette
+             */
+            public String toString()
+            {
+                return mtileset + "/" + mpalette;
+            }
+
+            /**
+             * Checks if this has a specific map tileset and palette.
+             * 
+             * @param mtileset map tileset
+             * @param mpalette map palette
+             * @return true if this has the same map tileset and palette as the
+             *         inputs
+             */
+            public boolean equals(int mtileset, int mpalette)
+            {
+                return this.mtileset == mtileset && this.mpalette == mpalette;
+            }
+
+            /**
+             * Checks if this has the same map tileset and palette as another
+             * <code>Palette</code>.
+             * 
+             * @param other other palette to compare this one to
+             * @return true if this has the same map tileset and palette as the
+             *         inputted <code>Palette</code>
+             */
+            public boolean equals(Palette other)
+            {
+                return equals(other.mtileset, other.mpalette);
+            }
+
+            /**
+             * Returns false.
+             * 
+             * @return false
+             */
+            public boolean equals(Object obj)
+            {
+                return false;
+            }
+
+            /**
+             * Returns the address of the specified color of this palette as a
+             * regular (not SNES) address. Note that color 0 has special uses
+             * and is always rendered as transparent.
+             * 
+             * @param subPalette which subPalette the color is in (0-5)
+             * @param c which color (0-15)
+             * @return regular address of the specified color
+             */
+            public int getStart(int subPalette, int c)
+            {
+                return getStart() + (32 * subPalette) + (2 * c);
+            }
+
+            /**
+             * Returns the address of the specified subPalette of this palette
+             * as a regular (not SNES) address.
+             * 
+             * @param subPalette which subPalette the color is in (0-5)
+             * @return regular address of the specified subPalette
+             */
+            public int getStart(int subPalette)
+            {
+                return getStart(subPalette, 0);
+            }
+
+            /**
+             * Returns the address of this palette as a regular (not SNES)
+             * address.
+             * 
+             * @return regular address of this palette
+             */
+            public int getStart()
+            {
+                return start;
+            }
+
+            /**
+             * Returns the number of the map tileset this palette is associated
+             * with.
+             * 
+             * @return the map tileset this palette is associated with
+             */
+            public int getMapTileset()
+            {
+                return mtileset;
+            }
+
+            /**
+             * Returns the number of the map palette this palette is associated
+             * with.
+             * 
+             * @return the map palette this palette is associated with
+             */
+            public int getMapPalette()
+            {
+                return mpalette;
+            }
         }
 
         /**
@@ -309,7 +434,7 @@ public class TileEditor extends EbHackModule implements ActionListener
          */
         public Palette getPalette(int palette)
         {
-            return palettes[palette];
+            return (Palette) palettes.get(palette);
         }
 
         /**
@@ -321,9 +446,8 @@ public class TileEditor extends EbHackModule implements ActionListener
          */
         public int getPaletteNum(int mtileset, int mpalette)
         {
-            for (int i = 0; i < numPalettes; i++)
-                if (palettes[i].mtileset == mtileset
-                    && palettes[i].mpalette == mpalette)
+            for (int i = 0; i < getPaletteCount(); i++)
+                if (getPalette(i).equals(mtileset, mpalette))
                     return i;
             return 0;
         }
@@ -357,7 +481,7 @@ public class TileEditor extends EbHackModule implements ActionListener
          */
         public void addPalette(Palette palette)
         {
-            this.palettes[numPalettes++] = palette;
+            this.palettes.add(palette);
         }
 
         /**
@@ -377,8 +501,8 @@ public class TileEditor extends EbHackModule implements ActionListener
         public Color getPaletteColor(int c, int palette, int subPalette,
             boolean trueColors)
         {
-            int col = hm.rom.readMulti(this.palettes[palette].start
-                + (32 * subPalette) + (2 * c), 2) & 0x7fff;
+            int col = hm.rom.readMulti(getPalette(palette).getStart(subPalette,
+                c), 2) & 0x7fff;
             return new Color(
                 ((col & 0x001f) << 3) | (!trueColors ? c & 1 : 0),
                 (((col & 0x03e0) >> 5) << 3) | (!trueColors ? (c & 2) >> 1 : 0),
@@ -403,14 +527,8 @@ public class TileEditor extends EbHackModule implements ActionListener
                 return;
             }
 
-            int bgrBlock;
-            bgrBlock = (col.getRed() >> 3) & 0x1f;
-            bgrBlock += ((col.getGreen() >> 3) & 0x1f) << 5;
-            bgrBlock += ((col.getBlue() >> 3) & 0x1f) << 10;
-            bgrBlock &= 0x7FFF;
-
-            hm.rom.write(this.palettes[palette].start + (32 * subPalette)
-                + (2 * c), bgrBlock, 2);
+            hm.rom.writePalette(getPalette(palette).getStart(subPalette, c),
+                col);
         }
 
         /**
@@ -500,8 +618,7 @@ public class TileEditor extends EbHackModule implements ActionListener
          */
         public String getPaletteName(int palette)
         {
-            return palettes[palette].mtileset + "/"
-                + palettes[palette].mpalette;
+            return getPalette(palette).toString();
         }
 
         /**
@@ -513,7 +630,7 @@ public class TileEditor extends EbHackModule implements ActionListener
          */
         public int getPaletteCount()
         {
-            return numPalettes;
+            return palettes.size();
         }
 
         //Tile stuff
@@ -808,8 +925,8 @@ public class TileEditor extends EbHackModule implements ActionListener
             {
                 for (int x = 0; x < 8; x++)
                 {
-                    this.setTilePixel(tile, x, y, (byte)Integer.parseInt(in.substring(
-                        (y * 8) + x, (y * 8) + x + 1), 16));
+                    this.setTilePixel(tile, x, y, (byte) Integer.parseInt(in
+                        .substring((y * 8) + x, (y * 8) + x + 1), 16));
                 }
             }
         }
@@ -915,8 +1032,8 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             String out = new String();
 
-            out += Integer.toString(this.palettes[palette].mtileset, 32);
-            out += Integer.toString(this.palettes[palette].mpalette, 32);
+            out += Integer.toString(getPalette(palette).getMapTileset(), 32);
+            out += Integer.toString(getPalette(palette).getMapPalette(), 32);
             for (int i = 0; i < 6; i++)
                 out += getSubPaletteAsString(palette, i);
 
@@ -961,7 +1078,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         public String getPalettesAsString()
         {
             String out = new String();
-            for (int i = 0; i < this.numPalettes; i++)
+            for (int i = 0; i < getPaletteCount(); i++)
             {
                 out += (i != 0 ? "\n" : "") + this.getPaletteAsString(i);
             }
@@ -1026,9 +1143,9 @@ public class TileEditor extends EbHackModule implements ActionListener
                     this.setArrangementData(arrangement, x, y, Short
                         .parseShort(arr.substring((y * 4 + x) * 6,
                             (y * 4 + x) * 6 + 4), 16));
-                    this.setCollisionData(arrangement, x, y, (byte)Integer.parseInt(arr
-                        .substring((y * 4 + x) * 6 + 4, (y * 4 + x) * 6 + 6),
-                        16));
+                    this.setCollisionData(arrangement, x, y, (byte) Integer
+                        .parseInt(arr.substring((y * 4 + x) * 6 + 4,
+                            (y * 4 + x) * 6 + 6), 16));
                 }
             }
         }
@@ -1103,8 +1220,9 @@ public class TileEditor extends EbHackModule implements ActionListener
             {
                 for (int x = 0; x < 4; x++)
                 {
-                    this.setCollisionData(arrangement, x, y, (byte)Integer.parseInt(arr
-                        .substring((y * 4 + x) * 2, (y * 4 + x) * 2 + 2), 16));
+                    this.setCollisionData(arrangement, x, y, (byte) Integer
+                        .parseInt(arr.substring((y * 4 + x) * 2,
+                            (y * 4 + x) * 2 + 2), 16));
                 }
             }
         }
@@ -2278,12 +2396,9 @@ public class TileEditor extends EbHackModule implements ActionListener
             }
             for (int j = 0; j < k / 0xC0; j++)
             {
-                Tileset.Palette tempPal = new Tileset.Palette();
-                tempPal.mtileset = i;
-                tempPal.mpalette = j;
-                tempPal.start = rom.readMulti(0x2F12FB + (i * 4), 4) - 0xBFFE00
-                    + 0xC0 * j;
-                tilesets[t].addPalette(tempPal);
+                tilesets[t].addPalette(new Tileset.Palette(i, j, rom.readMulti(
+                    0x2F12FB + (i * 4), 4)
+                    - 0xBFFE00 + 0xC0 * j));
             }
         }
         paletteIsInited = true;
@@ -3859,11 +3974,10 @@ public class TileEditor extends EbHackModule implements ActionListener
     {
         paletteSelector.removeActionListener(this);
         paletteSelector.removeAllItems();
-        for (int i = 0; i < getSelectedTileset().numPalettes; i++)
+        for (int i = 0; i < getSelectedTileset().getPaletteCount(); i++)
         {
-            paletteSelector.addItem(new String(
-                getSelectedTileset().palettes[i].mtileset + "/"
-                    + getSelectedTileset().palettes[i].mpalette));
+            paletteSelector.addItem(getSelectedTileset().getPalette(i)
+                .toString());
         }
         paletteSelector.addActionListener(this);
     }

@@ -1993,7 +1993,9 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         }
 
         for (int i = 0; i < gasStations[0].palette.length; i++)
-            gasStations[0].palette[i] = pal;
+        {
+            System.arraycopy(pal, 0, gasStations[0].palette[i], 0, pal.length);
+        }
         for (int t = 0; t < tnum; t++)
         {
             for (int x = 0; x < 8; x++)
