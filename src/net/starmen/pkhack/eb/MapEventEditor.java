@@ -214,8 +214,8 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 		        TileEditor.Tileset tset = TileEditor.tilesets[tileset.getSelectedIndex()];
 		        for (int i = 0; i < tset.getPaletteCount(); i++)
 		        	palette.addItem(new String(
-				               tset.getPalette(i).mtileset + "/"
-				                    + tset.getPalette(i).mpalette));
+				               tset.getPalette(i).getMapTileset() + "/"
+				                    + tset.getPalette(i).getMapPalette()));
 		        palette.addActionListener(this);
 			}
 	        
