@@ -519,6 +519,8 @@ public class TextEditor extends WofHackModule implements ActionListener, ListSel
 	}
 	
 	public static byte[] getRawText(String str) {
+		if (str == null)
+			return null;
 		str = str.toUpperCase();
 		byte[] raw = new byte[str.length() - getNumOccurances(str, LINE_BREAK)];
 		int byteNum = 0, lettersInLine = 0;
@@ -607,14 +609,14 @@ public class TextEditor extends WofHackModule implements ActionListener, ListSel
 		int numLines = 1, lineLen = 0, lastSpaceIndex = -1;
 		for (int i = 0; i < str.length() - 1; i++) {
 			if (numLines > 4)
-				return "";
+				return null;
 			
 			if (str.charAt(i) == ' ')
 				lastSpaceIndex = i;
 			
 			if (lineLen > 11) {
 				if (lastSpaceIndex == -1)
-					return "";
+					return null;
 				else
 					str = str.substring(0, lastSpaceIndex) + LINE_BREAK
 						+ str.substring(lastSpaceIndex + 1);
@@ -703,28 +705,36 @@ public class TextEditor extends WofHackModule implements ActionListener, ListSel
 				}
 				category = Integer.parseInt(listFile[i].substring(1,2));
 				catLines = 0;
-			} else if (catLines < textAddresses[category].length) {
-				text = getRawText(addLineBreaks(listFile[i])); 
-				
-				if (address + text.length > TEXT_BLOCK_END) {
-					rom.write(POINTERS, oldPointers);
-					rom.write(0x101fc, oldPointers2);
-					rom.write(TEXT_ADDR, oldData);
-					JOptionPane.showMessageDialog(
-							mainWindow,
-							"I could not import the data because it ended up taking up\n"
-							+ "too much space. This seems very unlikely and is probably\n"
-							+ "an error on my part. Please contact the author for support.",
-							"Error", JOptionPane.ERROR_MESSAGE);
-					return false;
+			} else {
+				String blah = listFile[i];
+				if ((catLines >= textAddresses[category].length)
+						&& (category < textAddresses.length)) {
+					category++;
+					catLines = 0;
 				}
+				text = getRawText(addLineBreaks(blah));
 				
-				rom.write(address, text);
-				rom.write(0x8010 + rom.readMulti(POINTERS + category * 2, 2) + catLines * 2,
-						address - 0x8010, 2);
-				textAddresses[category][catLines] = address;
-				address += text.length;
-				catLines++;
+				if (text != null) {
+					if (address + text.length > TEXT_BLOCK_END) {
+						rom.write(POINTERS, oldPointers);
+						rom.write(0x101fc, oldPointers2);
+						rom.write(TEXT_ADDR, oldData);
+						JOptionPane.showMessageDialog(
+								mainWindow,
+								"I could not import the data because it ended up taking up\n"
+								+ "too much space. This seems very unlikely and is probably\n"
+								+ "an error on my part. Please contact the author for support.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+						return false;
+					}
+					
+					rom.write(address, text);
+					rom.write(0x8010 + rom.readMulti(POINTERS + category * 2, 2) + catLines * 2,
+							address - 0x8010, 2);
+					textAddresses[category][catLines] = address;
+					address += text.length;
+					catLines++;
+				}
 			}
 		}
 		
