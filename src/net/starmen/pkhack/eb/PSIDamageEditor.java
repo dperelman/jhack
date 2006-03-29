@@ -44,8 +44,6 @@ public class PSIDamageEditor extends EbHackModule implements ActionListener
 	private JLabel ranges;
 	private JLabel multis;
 	private JTextField strike;
-
-	private JFrame mainWindow;
 	
 	protected void init() {
 		
@@ -227,7 +225,7 @@ public class PSIDamageEditor extends EbHackModule implements ActionListener
 	}
 	
 	public void WriteDamageInfo(){
-		rom.write(damageaddresses[s.getSelectedIndex()], psidamage[s.getSelectedIndex()]);
+	    rom.write(damageaddresses[s.getSelectedIndex()], psidamage[s.getSelectedIndex()], 2);
 		if (s.getSelectedIndex() > 11) {
 			if (s.getSelectedIndex() < 16) {
 				rom.write(strikeaddresses[s.getSelectedIndex() - 12], strikes[s.getSelectedIndex() - 12]);
