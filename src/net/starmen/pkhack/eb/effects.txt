@@ -47,17 +47,17 @@
  46 - PSI - PSI Shield Sigma
  47 - PSI - PSI Shield Omega
  48 - PSI - Offense up Alpha
- 49 - PSI - Offense up Beta
+ 49 - PSI - Offense up Omega
  50 - PSI - Defense down Alpha
- 51 - PSI - Defense down Beta
+ 51 - PSI - Defense down Omega
  52 - PSI - Hypnosis Alpha
- 53 - PSI - Hypnosis Beta
+ 53 - PSI - Hypnosis Omega
  54 - PSI - Magnet Alpha
- 55 - PSI - Magnet Beta
+ 55 - PSI - Magnet Omega
  56 - PSI - Paralysis Alpha
- 57 - PSI - Paralysis Beta
+ 57 - PSI - Paralysis Omega
  58 - PSI - Brainshock Alpha
- 59 - PSI - Brainshock Beta
+ 59 - PSI - Brainshock Omega
  60 - PSI - Teleport Alpha
  61 - PSI - Teleport Beta
  62 - CALL - Call for help
