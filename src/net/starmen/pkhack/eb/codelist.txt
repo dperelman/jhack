@@ -49,8 +49,8 @@
 19 20,"UNKNOWN";
 19 21 XX,"UNKNOWN";
 19 22 XX XX YY YY,"Store to memory the direction from character $XX to object $YY";
-19 23 XX XX YY YY,"Store to memory the direction from TPT entry $XX to object $YY";
-19 24 XX XX YY YY,"Store to memory the direction from generated sprite $XX to object $YY";
+19 23 XX XX YY YY ZZ,"Store to memory the direction from TPT entry $XX to object $YY (ZZ unknown)";
+19 24 XX XX YY YY ZZ,"Store to memory the direction from generated sprite $XX to object $YY (ZZ=00)";
 19 25 XX,"UNKNOWN";
 19 26 XX,"UNKNOWN";
 19 27 XX,"UNKNOWN";
@@ -139,7 +139,7 @@
 1E 0D XX YY,"Boost Vitality in character $XX by $YY";
 1E 0E XX YY,"Boost Luck in character $XX by $YY";
 1F 00 XX YY,"Play music track $YY ($XX is unused)";
-1F 01,"Stops music";
+1F 01 00,"Stops music";
 1F 02 XX,"Play sound effect $XX";
 1F 03,"Return music setting to sector default";
 1F 04 XX,"Toggles sound for text printing (?)";

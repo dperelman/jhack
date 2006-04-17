@@ -10,7 +10,6 @@ NEXT v0.0.x (minor) RELEASE
 
 # Partial decomp() for "fail" on abort, retry, fail
 	# In progress; better way?
-# Fix ? in text editor, see forums
 # Add options for fill mode on sprite drawing (diagonal fill enabled or not)
 
 LONG TERM

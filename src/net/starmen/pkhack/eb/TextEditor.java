@@ -78,14 +78,14 @@ public class TextEditor extends EbHackModule implements ActionListener
         super(rom, prefs);
     }
 
-    public static final int TPT = 0; //tpt pointers
-    public static final int RAW = 1; //raw text, various areas
-    public static final int EXP = 2; //expanded meg
-    public static final int TEA = 3; //coffee, tea sequence, flyovers
-    public static final int ECD = 4; //end credits
+    public static final int TPT = 0; // tpt pointers
+    public static final int RAW = 1; // raw text, various areas
+    public static final int EXP = 2; // expanded meg
+    public static final int TEA = 3; // coffee, tea sequence, flyovers
+    public static final int ECD = 4; // end credits
     public static final int NUM_TEXT_TYPES = 5;
 
-    //	String class
+    // String class
     public static class StrInfo
     {
         public int address;
@@ -149,7 +149,7 @@ public class TextEditor extends EbHackModule implements ActionListener
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
 
-        //menu
+        // menu
         JMenuBar mb = new JMenuBar();
 
         JMenu editMenu = new JMenu("Edit");
@@ -211,12 +211,12 @@ public class TextEditor extends EbHackModule implements ActionListener
         showPreview.setAccelerator(KeyStroke.getKeyStroke("ctrl P"));
         showPreview.setActionCommand("showPreview");
         showPreview.addActionListener(this);
-        //        toolsMenu.add(showPreview);
+        // toolsMenu.add(showPreview);
 
         mb.add(toolsMenu);
 
         mainWindow.setJMenuBar(mb);
-        //end menu
+        // end menu
 
         Box entry = new Box(BoxLayout.Y_AXIS);
 
@@ -238,17 +238,17 @@ public class TextEditor extends EbHackModule implements ActionListener
 
                 public Object getElementAt(int a)
                 {
-                    //                    if(a < 10)
-                    //                    System.out.println(
-                    //                        "("
-                    //                            + new Date().toGMTString()
-                    //                            + ") Getting element below 10 at "
-                    //                            + a
-                    //                            + " on "
-                    //                            + tabShortNames[j]
-                    //                            + " JList.");
-                    //                    return cc.parseHeader(
-                    //                        ((StrInfo) tabContents[j].get(a)).str);
+                    // if(a < 10)
+                    // System.out.println(
+                    // "("
+                    // + new Date().toGMTString()
+                    // + ") Getting element below 10 at "
+                    // + a
+                    // + " on "
+                    // + tabShortNames[j]
+                    // + " JList.");
+                    // return cc.parseHeader(
+                    // ((StrInfo) tabContents[j].get(a)).str);
                     return ((StrInfo) tabContents[j].get(a)).header;
                 }
 
@@ -386,7 +386,7 @@ public class TextEditor extends EbHackModule implements ActionListener
         // Loads the raw text area(s) into the specified list of strings.
         // Text from 0x50200 - 0x08BE2D, 0x8DC31 - 0x0A012E, 0x2F5020 -
         // 0x2FA57A
-        //int address = 0x51D12;
+        // int address = 0x51D12;
         int address = 0x50200;
         int istr = 0;
 
@@ -396,7 +396,7 @@ public class TextEditor extends EbHackModule implements ActionListener
         {
             if (address < 0x0A012E || address >= 0x2F5020)
             {
-                if (address < 0x08BE2D || address >= 0x8DC31)
+                if (address < 0x08BE2D || address >= 0x8DBED)
                 {
                     StrInfo s = cc[CC_MAIN].readString(address);
 
@@ -406,15 +406,15 @@ public class TextEditor extends EbHackModule implements ActionListener
                     istr++;
                 }
                 else
-                    address = 0x8DC31;
+                    address = 0x8DBED;
             }
             else
                 address = 0x2F5020;
         }
         while (address < 0x2FA57A);
 
-        //        System.out.println(
-        //            "Done loading raw text! " + istr + " strings loaded.");
+        // System.out.println(
+        // "Done loading raw text! " + istr + " strings loaded.");
         return istr;
     }
 
@@ -440,8 +440,8 @@ public class TextEditor extends EbHackModule implements ActionListener
             }
             while (address < 0x400200);
 
-            //        System.out.println(
-            //            "Done loading exp text! " + istr + " strings loaded.");
+            // System.out.println(
+            // "Done loading exp text! " + istr + " strings loaded.");
             return istr;
         }
         else
@@ -524,34 +524,34 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     public static void readFromRom(HackModule hm)
     {
-        //        System.out.println(
-        //            "("
-        //                + new Date().toGMTString()
-        //                + ") Going to init cc and comp list.");
+        // System.out.println(
+        // "("
+        // + new Date().toGMTString()
+        // + ") Going to init cc and comp list.");
         for (int i = 0; i < NUM_CC_TYPES; i++)
             if (cc[i] == null)
                 cc[i] = new CCInfo(CODELIST_LOCS[i], hm.rom, ALLOW_COMP[i],
                     IS_CREDITS[i]);
-        //        System.out.println(
-        //            "("
-        //                + new Date().toGMTString()
-        //                + ") Finished initing cc and comp list.");
+        // System.out.println(
+        // "("
+        // + new Date().toGMTString()
+        // + ") Finished initing cc and comp list.");
 
         for (int i = 0; i < NUM_TEXT_TYPES; i++)
         {
-            //            System.out.println(
-            //                "("
-            //                    + new Date().toGMTString()
-            //                    + ") Going to read "
-            //                    + tabShortNames[i]
-            //                    + " text.");
+            // System.out.println(
+            // "("
+            // + new Date().toGMTString()
+            // + ") Going to read "
+            // + tabShortNames[i]
+            // + " text.");
             loadText(i, hm);
-            //            System.out.println(
-            //                "("
-            //                    + new Date().toGMTString()
-            //                    + ") Finished reading "
-            //                    + tabShortNames[i]
-            //                    + " text.");
+            // System.out.println(
+            // "("
+            // + new Date().toGMTString()
+            // + ") Finished reading "
+            // + tabShortNames[i]
+            // + " text.");
         }
     }
 
@@ -704,28 +704,28 @@ public class TextEditor extends EbHackModule implements ActionListener
         readFromRom(this);
         for (int i = 0; i < textJLists.length; i++)
         {
-            //            System.out.println(
-            //                "("
-            //                    + new Date().toGMTString()
-            //                    + ") Going to updateUI "
-            //                    + tabShortNames[i]
-            //                    + " text JList.");
+            // System.out.println(
+            // "("
+            // + new Date().toGMTString()
+            // + ") Going to updateUI "
+            // + tabShortNames[i]
+            // + " text JList.");
             textJLists[i].updateUI();
-            //            System.out.println(
-            //                "("
-            //                    + new Date().toGMTString()
-            //                    + ") Done with updateUI on "
-            //                    + tabShortNames[i]
-            //                    + " text JList.");
+            // System.out.println(
+            // "("
+            // + new Date().toGMTString()
+            // + ") Done with updateUI on "
+            // + tabShortNames[i]
+            // + " text JList.");
         }
 
-        //        System.out.println(
-        //            "(" + new Date().toGMTString() + ") Going to show main window.");
+        // System.out.println(
+        // "(" + new Date().toGMTString() + ") Going to show main window.");
         mainWindow.setVisible(true);
-        //        System.out.println(
-        //            "("
-        //                + new Date().toGMTString()
-        //                + ") Done with showing main window.");
+        // System.out.println(
+        // "("
+        // + new Date().toGMTString()
+        // + ") Done with showing main window.");
         showInfo(currentList, currentSelection);
     }
 
@@ -790,7 +790,7 @@ public class TextEditor extends EbHackModule implements ActionListener
      */
     private boolean saveInfo()
     {
-        CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
+        CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; // current CC Type
 
         boolean comp = useComp.isSelected();
         int len = cct.getStringLength(ta.getText(), true);
@@ -846,7 +846,7 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     private void showInfo()
     {
-        CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
+        CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; // current CC Type
 
         si = (StrInfo) textLists[currentList].get(currentSelection);
 
@@ -896,10 +896,10 @@ public class TextEditor extends EbHackModule implements ActionListener
             {
                 if (tmp.equals(tabShortNames[i]))
                 {
-                    //                    currentList = i;
-                    //                    currentSelection = Integer.parseInt(ae.getActionCommand()
-                    //                        .substring(11));
-                    //                    showInfo();
+                    // currentList = i;
+                    // currentSelection = Integer.parseInt(ae.getActionCommand()
+                    // .substring(11));
+                    // showInfo();
                     showInfo(i, Integer.parseInt(ae.getActionCommand()
                         .substring(11)));
                     return;
@@ -956,7 +956,7 @@ public class TextEditor extends EbHackModule implements ActionListener
         else if (ae.getActionCommand().equals("codesOnly"))
         {
             boolean mod = isModified;
-            CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
+            CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; // current CC Type
 
             String text = useComp.isSelected()
                 && cct.getStringLength(ta.getText(), true) > 0 ? cct
@@ -988,7 +988,7 @@ public class TextEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("codesCaps"))
         {
-            CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
+            CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; // current CC Type
 
             String text = useComp.isSelected()
                 && cct.getStringLength(ta.getText(), true) > 0 ? cct
@@ -1076,7 +1076,7 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     private void find()
     {
-        CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; //current CC Type
+        CCInfo cct = cc[TEXT_CC_TYPE[currentList]]; // current CC Type
 
         if (findTF == null)
             return;
@@ -1156,7 +1156,7 @@ public class TextEditor extends EbHackModule implements ActionListener
                 + " does not exist and cannot be selected.");
             return;
         }
-        //don't select the same thing twice unless user is trying to reload
+        // don't select the same thing twice unless user is trying to reload
         if (list == currentList && sel == currentSelection && !isModified
             && isLoaded)
             return;
@@ -1201,7 +1201,7 @@ public class TextEditor extends EbHackModule implements ActionListener
     {
         for (int i = 0; i < textLists[listNum].size(); i++)
         {
-            //make sure offset is before the offset of the next entry
+            // make sure offset is before the offset of the next entry
             if (target < (i + 1 < textLists[listNum].size()
                 ? ((StrInfo) textLists[listNum].get(i + 1)).address
                 : (listNum == EXP ? 0x400201 : 0x300200))
@@ -1229,11 +1229,11 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     public boolean gotoOffsetBlock(int offset)
     {
-        //check exp first
+        // check exp first
         if (offset >= 0x300200 && gotoRaw(EXP, offset))
             return true;
-        //then raw (text from 0x51D12 - 0x08BE2D, 0x8DC31 - 0x0A012E,
-        //    0x2F5020 - 0x2FA57A)
+        // then raw (text from 0x51D12 - 0x08BE2D, 0x8DC31 - 0x0A012E,
+        // 0x2F5020 - 0x2FA57A)
         else if (((offset >= 0x51d12 && offset <= 0x08be2d)
             || (offset >= 0x8DC31 && offset <= 0x0A012E) || (offset >= 0x2F5020 && offset <= 0x2FA57A))
             && gotoRaw(RAW, offset))
@@ -1318,8 +1318,8 @@ public class TextEditor extends EbHackModule implements ActionListener
                     if (tf.getText().charAt(0) == '-'
                         || tf.getText().charAt(0) == '+')
                     {
-                        //                        System.out.println("Going to a relative offset... ("
-                        //                            + tf.getText() + ")");
+                        // System.out.println("Going to a relative offset... ("
+                        // + tf.getText() + ")");
                         offset = si.address
                             + cc[TEXT_CC_TYPE[currentList]].getStringLength(ta
                                 .getText(), useComp.isSelected(), 0, ta
@@ -1417,14 +1417,14 @@ public class TextEditor extends EbHackModule implements ActionListener
         {
             comp = false;
             a = cct.getStringLength(ta.getText(), false);
-            //            System.out.println(
-            //                "Compression failed, uncompressed size is "
-            //                    + cc.getStringLength(ta.getText())
-            //                    + " of \""
-            //                    + ta.getText()
-            //                    + "\"");
+            // System.out.println(
+            // "Compression failed, uncompressed size is "
+            // + cc.getStringLength(ta.getText())
+            // + " of \""
+            // + ta.getText()
+            // + "\"");
         }
-        //System.out.println(cc.compressString(ta.getText()));
+        // System.out.println(cc.compressString(ta.getText()));
         if (a >= 0)
         {
             currSizeLabel.setText("Current Size: "
@@ -1470,7 +1470,7 @@ public class TextEditor extends EbHackModule implements ActionListener
         previewDialog.getContentPane().setLayout(new BorderLayout());
 
         previewDisp = new JPanel();
-        //size of text space is 136x48, border is 8 px on each side
+        // size of text space is 136x48, border is 8 px on each side
         previewDisp.setPreferredSize(new Dimension(136 + 8 + 8, 48 + 8 + 8));
         previewDisp.setBackground(Color.BLACK);
         previewDialog.getContentPane().add(
@@ -1495,12 +1495,12 @@ public class TextEditor extends EbHackModule implements ActionListener
 
     private void updatePreview()
     {
-    //        Image img = previewDisp.createImage(136, 48);
-    //        previewDisp.getGraphics().drawImage(
-    //            FontEditor.mainFont.drawString("Testing", img, 0, 0),
-    //            8,
-    //            8,
-    //            null);
-    //TODO make class for preview component (exteral)
+    // Image img = previewDisp.createImage(136, 48);
+    // previewDisp.getGraphics().drawImage(
+    // FontEditor.mainFont.drawString("Testing", img, 0, 0),
+    // 8,
+    // 8,
+    // null);
+    // TODO make class for preview component (exteral)
     }
 }
