@@ -15,6 +15,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -44,7 +45,7 @@ public class PointerEditor extends EbHackModule implements ActionListener
 
     public String getVersion()
     {
-        return "0.2";
+        return "0.3";
     }
 
     public String getDescription()
@@ -100,6 +101,11 @@ public class PointerEditor extends EbHackModule implements ActionListener
             rom.writeAsmPointer(reg ? toSnesPointer(address) : address, Integer
                 .parseInt(pointer, 16));
         }
+
+        public boolean isValidPointer()
+        {
+            return rom.readAsmPointer(address) != -1;
+        }
     }
 
     private ArrayList pointers = new ArrayList();
@@ -117,14 +123,14 @@ public class PointerEditor extends EbHackModule implements ActionListener
             {
                 if (pointerList[i].startsWith("-"))
                 {
-                    //title line
+                    // title line
                     pointers.add("_"
                         + pointerList[i].replaceAll("-", "").toUpperCase()
                         + "_");
                 }
                 else
                 {
-                    //pointer
+                    // pointer
                     String[] args = pointerList[i].split("=", 2);
                     pointers.add(new Pointer(Integer.parseInt(args[0].trim(),
                         16), args[1].trim()));
@@ -219,7 +225,7 @@ public class PointerEditor extends EbHackModule implements ActionListener
         tfPanel.add(new JLabel("Pointer: "), BorderLayout.WEST);
         tfPanel.add(createFlowLayout(new JRadioButton[]{reg, snes}),
             BorderLayout.CENTER);
-        //edit.add(getLabeledComponent("Pointer: $", tf));
+        // edit.add(getLabeledComponent("Pointer: $", tf));
         edit.add(tfPanel);
 
         mainWindow.getContentPane().add(edit, BorderLayout.CENTER);
@@ -235,10 +241,7 @@ public class PointerEditor extends EbHackModule implements ActionListener
     public void show()
     {
         super.show();
-
-        pointSel.setSelectedIndex(pointSel.getSelectedIndex() != -1 ? pointSel
-            .getSelectedIndex() : 0);
-
+        showInfo();
         mainWindow.show();
     }
 
@@ -256,11 +259,11 @@ public class PointerEditor extends EbHackModule implements ActionListener
     {
         if (ae.getActionCommand().equals(pointSel.getActionCommand()))
         {
-            showInfo(pointSel.getSelectedIndex());
+            showInfo();
         }
         else if (ae.getActionCommand().equals("apply"))
         {
-            saveInfo(pointSel.getSelectedIndex());
+            saveInfo();
         }
         else if (ae.getActionCommand().equals("type_reg"))
         {
@@ -278,69 +281,69 @@ public class PointerEditor extends EbHackModule implements ActionListener
         }
     }
 
-    private void showInfo(int i)
+    private Pointer getCurrentPointer()
     {
-        Pointer p;
+        int i = pointSel.getSelectedIndex();
         if (i == -1)
         {
             try
             {
-                p = new Pointer(Integer.parseInt(pointSel.getSelectedItem()
+                return new Pointer(Integer.parseInt(pointSel.getSelectedItem()
                     .toString(), 16), "");
             }
             catch (NumberFormatException e)
             {
-                System.out
-                    .println("Pointer Editor: Entered address is not hex.");
-                return;
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Entered address is not hex.", "Invalid address",
+                    JOptionPane.ERROR_MESSAGE);
+                return null;
             }
         }
         else
         {
             try
             {
-                p = ((Pointer) pointers.get(i));
+                return (Pointer) pointers.get(i);
             }
             catch (ClassCastException e)
             {
-                //highlight next if current is a title
+                // highlight next if current is a title
                 pointSel.setSelectedIndex(pointSel.getSelectedIndex() + 1);
-                return;
+                return null;
             }
         }
-        tf.setText(p.readPointer(reg.isSelected()));
     }
 
-    private void saveInfo(int i)
+    private void showInfo()
     {
-        Pointer p;
-        if (i == -1)
+        Pointer p = getCurrentPointer();
+        if (p != null)
+        {
+            tf.setText(p.readPointer(reg.isSelected()));
+            if (!p.isValidPointer())
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "No ASM pointer present at entered address.",
+                    "Invalid pointer at address", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }
+
+    private void saveInfo()
+    {
+        Pointer p = getCurrentPointer();
+        if (p != null)
         {
             try
             {
-                p = new Pointer(Integer.parseInt(pointSel.getSelectedItem()
-                    .toString(), 16), "");
+                p.writePointer(tf.getText(), reg.isSelected());
             }
             catch (NumberFormatException e)
             {
-                System.out
-                    .println("Pointer Editor: Entered address is not hex.");
-                return;
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Entered pointer is not hex.", "Invalid pointer",
+                    JOptionPane.ERROR_MESSAGE);
             }
         }
-        else
-        {
-            p = ((Pointer) pointers.get(i));
-        }
-        try
-        {
-            p.writePointer(tf.getText(), reg.isSelected());
-        }
-        catch (NumberFormatException e)
-        {
-            System.out.println("Pointer Editor: Entered pointer is not hex.");
-        }
-
     }
-
 }
