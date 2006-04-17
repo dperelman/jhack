@@ -2,6 +2,7 @@ NEXT VERSION (after v0.5.11):
 # PSI Damage Editor: BUGFIX: writes properly
 # Fixed effects list: Offense up, Defense down, Hypnosis, Magnet, Paralysis, Brainshock
 	have Alpha and Omega forms, not Alpha and Beta
+# Logo Screen Editor v0.2: Added image import.
 
 v0.5.11:
 # Flyover Editor v0.2: BUGFIX: 6MB ROM problem

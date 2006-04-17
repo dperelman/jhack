@@ -24,7 +24,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
@@ -95,7 +98,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
     public String getVersion()
     {
-        return "0.1";
+        return "0.2";
     }
 
     public String getDescription()
@@ -133,7 +136,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         public static final int[] arngPointerArray = new int[]{0x0F0BB,
             0x0F113, 0x0F16A};
 
-        /** The <code>Color<code>'s of each 16 color palette. */
+        /** The <code>Color<code>'s of each 4 color palette. */
         private Color[][] palette;
         /** List of all arrangements. */
         private short[] arrangementList;
@@ -1018,6 +1021,13 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         fileMenu.add(HackModule.createJMenuItem("Export...", 'e', null,
             "export", this));
 
+        fileMenu.addSeparator();
+
+        fileMenu.add(HackModule.createJMenuItem("Import Image...", 'm', null,
+            "importImg", this));
+        //        fileMenu.add(HackModule.createJMenuItem("Export Image...", 'x', null,
+        //            "exportImg", this));
+
         mb.add(fileMenu);
 
         JMenu editMenu = HackModule.createEditMenu(this, true);
@@ -1306,6 +1316,16 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         else if (ae.getActionCommand().equals("export"))
         {
             exportData();
+        }
+        else if (ae.getActionCommand().equals("importImg"))
+        {
+            importImg();
+
+            updatePaletteDisplay();
+            tileSelector.repaint();
+            arrangementEditor.clearSelection();
+            arrangementEditor.repaint();
+            updateTileEditor();
         }
         else if (ae.getActionCommand().equals("apply"))
         {
@@ -1940,6 +1960,11 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 JOptionPane.ERROR_MESSAGE);
             return;
         }
+        importImg(img);
+    }
+
+    public void importImg(Image img)
+    {
         int w = img.getWidth(mainWindow), h = img.getHeight(mainWindow);
         if (w != 256)
         {
@@ -1968,9 +1993,14 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             System.err.println("Interrupted waiting for pixels!");
             return;
         }
-        int[][] arrangement = new int[32][28];
-        byte[][] tiles = new byte[632][64];
-        Color[] pal = new Color[256];
+        importImgPassOne(pixels);
+    }
+
+    private void importImgOnePass(int[] pixels)
+    {
+        short[][] arrangement = new short[32][28];
+        byte[][] tiles = new byte[LogoScreen.NUM_TILES][64];
+        Color[] pal = new Color[4];
         Arrays.fill(pal, new Color(0, 0, 0));
         int tnum = 0, pnum = 0;
         Hashtable tilerefs = new Hashtable(), palrefs = new Hashtable();
@@ -1986,7 +2016,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                     for (int i = 0; i < 8; i++)
                     {
                         //sprite[i][j] = pixels[j * w + i];
-                        int c = pixels[((j + (yt * 8)) * w) + (i + (xt * 8))];
+                        int c = pixels[((j + (yt * 8)) * 256) + (i + (xt * 8))];
                         Color col = new Color(c & 0xf8f8f8);
                         int cn;
                         Object tmpc;
@@ -2007,10 +2037,10 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                                 JOptionPane
                                     .showMessageDialog(
                                         mainWindow,
-                                        "Image must have no more than 256 colors.\n"
+                                        "Image must have no more than 4 colors.\n"
                                             + "Please use the dithering option on your\n"
                                             + "favorite image editor program to decrease\n"
-                                            + "the number of colors to 256.",
+                                            + "the number of colors to 4.",
                                         "ERROR: Too many colors",
                                         JOptionPane.ERROR_MESSAGE);
                                 return;
@@ -2049,7 +2079,9 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                         JOptionPane
                             .showMessageDialog(
                                 mainWindow,
-                                "Image must have no more than 632 unique 8x8 tiles.\n"
+                                "Image must have no more than "
+                                    + tiles.length
+                                    + " unique 8x8 tiles.\n"
                                     + "Flipping of tiles is currently not supported.",
                                 "ERROR: Too many tiles",
                                 JOptionPane.ERROR_MESSAGE);
@@ -2060,18 +2092,296 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             }
         }
 
-        //        for (int i = 0; i < gasStations[0].palette.length; i++)
-        //            gasStations[0].palette[i] = pal;
-        //        for (int t = 0; t < tnum; t++)
-        //        {
-        //            for (int x = 0; x < 8; x++)
-        //                for (int y = 0; y < 8; y++)
-        //                    gasStations[0].tiles[t][x][y] = tiles[t][(y * 8) + x];
-        //        }
-        //        for (int t = tnum; t < gasStations[0].tiles.length; t++)
-        //        {
-        //            gasStations[0].tiles[t] = new byte[8][8];
-        //        }
-        //        gasStations[0].arrangement = arrangement;
+        for (int i = 0; i < getSelectedScreen().palette.length; i++)
+        {
+            System.arraycopy(pal, 0, getSelectedScreen().palette[i], 0,
+                pal.length);
+        }
+        for (int t = 0; t < tnum; t++)
+        {
+            for (int x = 0; x < 8; x++)
+                for (int y = 0; y < 8; y++)
+                    getSelectedScreen().tiles[t][x][y] = tiles[t][(y * 8) + x];
+        }
+        for (int t = tnum; t < getSelectedScreen().tiles.length; t++)
+        {
+            getSelectedScreen().tiles[t] = new byte[8][8];
+        }
+        getSelectedScreen().arrangement = arrangement;
+    }
+
+    static final int PAL_SIZE = 4;
+
+    private void importImgPassOne(int[] pixels)
+    {
+
+        Set pals = new HashSet();
+        int[][] tilepalhash = new int[32][28];
+        for (int yt = 0; yt < 28; yt++)
+        {
+            int js = yt * 8;
+            for (int xt = 0; xt < 32; xt++)
+            {
+                int is = xt * 8;
+                byte[] tile = new byte[64];
+                Set pal = new HashSet();
+                for (int j = 0; j < 8; j++)
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        int c = pixels[((j + (yt * 8)) * 256) + (i + (xt * 8))];
+                        Color col = new Color(c & 0xf8f8f8);
+                        pal.add(col);
+                        if (pal.size() > PAL_SIZE)
+                        {
+                            JOptionPane
+                                .showMessageDialog(
+                                    mainWindow,
+                                    "Image must have no more than "
+                                        + PAL_SIZE
+                                        + " colors per 8x8 tile.\n"
+                                        + "Please use the dithering option on your\n"
+                                        + "favorite image editor program to decrease\n"
+                                        + "the number of colors per 8x8 tile to "
+                                        + PAL_SIZE + ".",
+                                    "ERROR: Too many colors",
+                                    JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                    }
+                }
+                pals.add(pal);
+                tilepalhash[xt][yt] = pal.hashCode();
+            }
+        }
+
+        Hashtable hashhash = mergePals(pals);
+
+        if (pals.size() > LogoScreen.NUM_PALETTES)
+        {
+            JOptionPane.showMessageDialog(mainWindow,
+                "Image must have no more than " + LogoScreen.NUM_PALETTES
+                    + " unique palettes of " + PAL_SIZE + " colors.\n"
+                    + "Please use the dithering option on your\n"
+                    + "favorite image editor program to decrease\n"
+                    + "the number of colors per 8x8 tile to " + PAL_SIZE
+                    + " and number of palettes to " + LogoScreen.NUM_PALETTES
+                    + ".", "ERROR: Too many colors", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        byte[][] tilepal = new byte[32][28];
+        Color[][] palarr = new Color[LogoScreen.NUM_PALETTES][PAL_SIZE];
+        Hashtable palhash = new Hashtable();
+        byte pnum = 0;
+        for (Iterator i = pals.iterator(); i.hasNext();)
+        {
+            int cnum = 0;
+            Set tmp = (Set) i.next();
+            palhash.put(new Integer(tmp.hashCode()), new Byte(pnum));
+            for (Iterator j = ((Set) tmp).iterator(); j.hasNext();)
+            {
+                palarr[pnum][cnum++] = (Color) j.next();
+            }
+            for (; cnum < PAL_SIZE; cnum++)
+            {
+                palarr[pnum][cnum] = Color.BLACK;
+            }
+            pnum++;
+        }
+        for (; pnum < palarr.length; pnum++)
+        {
+            Arrays.fill(palarr[pnum], Color.BLACK);
+        }
+
+        //        System.out.println("hashhash: " + hashhash);
+        //        System.out.println("palhash: " + palhash);
+
+        for (int yt = 0; yt < 28; yt++)
+        {
+            for (int xt = 0; xt < 32; xt++)
+            {
+                Integer phash = new Integer(tilepalhash[xt][yt]);
+                while (hashhash.containsKey(phash))
+                {
+                    phash = (Integer) hashhash.get(phash);
+                }
+                tilepal[xt][yt] = ((Byte) palhash.get(phash)).byteValue();
+            }
+        }
+
+        importImgPassTwo(pixels, palarr, tilepal);
+    }
+
+    private boolean superSetExists(Set pals, Set pal, Hashtable out)
+    {
+        for (Iterator j = pals.iterator(); j.hasNext();)
+        {
+            Set opal = (Set) j.next();
+            if (!pal.equals(opal) && opal.containsAll(pal))
+            {
+                out.put(new Integer(pal.hashCode()), new Integer(opal
+                    .hashCode()));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean findMergeable(Set pals, Set pal, Hashtable out)
+    {
+        for (Iterator j = pals.iterator(); j.hasNext();)
+        {
+            Set opal = (Set) j.next();
+            if (!pal.equals(opal))
+            {
+                Set upal = new HashSet(opal);
+                upal.addAll(pal);
+                if (upal.size() <= PAL_SIZE)
+                {
+                    pals.remove(pal);
+                    pals.remove(opal);
+                    pals.add(upal);
+                    out.put(new Integer(pal.hashCode()), new Integer(upal
+                        .hashCode()));
+                    out.put(new Integer(opal.hashCode()), new Integer(upal
+                        .hashCode()));
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Removes extranous palettes.
+     * 
+     * @param pals a Set of Set's of Color's.
+     */
+    private Hashtable mergePals(Set pals)
+    {
+        Hashtable out = new Hashtable();
+        for (Iterator i = pals.iterator(); i.hasNext();)
+        {
+            if (superSetExists(pals, (Set) i.next(), out))
+            {
+                i.remove();
+            }
+        }
+
+        for (Iterator i = pals.iterator(); i.hasNext();)
+        {
+            if (findMergeable(pals, (Set) i.next(), out))
+            {
+                /* Need to restart because we removed elements. */
+                i = pals.iterator();
+            }
+        }
+        return out;
+    }
+
+    private void importImgPassTwo(int[] pixels, Color[][] pals, byte[][] tilepal)
+    {
+        short[][] arrangement = new short[32][28];
+        byte[][] tiles = new byte[LogoScreen.NUM_TILES][64];
+        int tnum = 0, pnum = 0;
+        Hashtable tilerefs = new Hashtable();
+
+        for (int yt = 0; yt < 28; yt++)
+        {
+            int js = yt * 8;
+            for (int xt = 0; xt < 32; xt++)
+            {
+                int is = xt * 8;
+                byte[] tile = new byte[64];
+                Color[] pal = pals[tilepal[xt][yt]];
+                for (int j = 0; j < 8; j++)
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        int c = pixels[((j + js) * 256) + (i + is)];
+                        Color col = new Color(c & 0xf8f8f8);
+                        byte cn = -1;
+                        for (byte k = 0; k < pal.length; k++)
+                        {
+                            if (col.equals(pal[k]))
+                            {
+                                cn = k;
+                            }
+                        }
+                        if (cn == -1)
+                        {
+                            JOptionPane.showMessageDialog(mainWindow,
+                                "The color could not be found in "
+                                    + "the palette.\n"
+                                    + "This should not be possible.",
+                                "ERROR: Invalid palette",
+                                JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        tile[(j * 8) + i] = cn;
+                    }
+                }
+                TileRef tn;
+                byte[] htile, vtile, hvtile;
+                htile = hFlip(tile);
+                vtile = vFlip(tile);
+                hvtile = hFlip(vtile);
+
+                Object tmpt;
+                if ((tmpt = tilerefs.get(new ByteArrHasher(tile).toInteger())) != null)
+                {
+                    tn = (TileRef) tmpt;
+                }
+                else
+                {
+                    tn = new TileRef(tnum, false, false);
+                    tilerefs.put(new ByteArrHasher(tile).toInteger(), tn);
+                    tilerefs.put(new ByteArrHasher(htile).toInteger(),
+                        new TileRef(tnum, true, false));
+                    tilerefs.put(new ByteArrHasher(vtile).toInteger(),
+                        new TileRef(tnum, false, true));
+                    tilerefs.put(new ByteArrHasher(hvtile).toInteger(),
+                        new TileRef(tnum, true, true));
+                    try
+                    {
+                        tiles[tnum++] = tile;
+                    }
+                    catch (ArrayIndexOutOfBoundsException e)
+                    {
+                        JOptionPane
+                            .showMessageDialog(
+                                mainWindow,
+                                "Image must have no more than "
+                                    + tiles.length
+                                    + " unique 8x8 tiles.\n"
+                                    + "Flipping of tiles is currently not supported.",
+                                "ERROR: Too many tiles",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+                tn = new TileRef(tn.getTile(), tn.isHFlip(), tn.isVFlip(),
+                    tilepal[xt][yt]);
+                arrangement[xt][yt] = tn.getArrangementData();
+            }
+        }
+
+        for (int i = 0; i < getSelectedScreen().palette.length; i++)
+        {
+            System.arraycopy(pals[i], 0, getSelectedScreen().palette[i], 0,
+                pals[i].length);
+        }
+        for (int t = 0; t < tnum; t++)
+        {
+            for (int x = 0; x < 8; x++)
+                for (int y = 0; y < 8; y++)
+                    getSelectedScreen().tiles[t][x][y] = tiles[t][(y * 8) + x];
+        }
+        for (int t = tnum; t < getSelectedScreen().tiles.length; t++)
+        {
+            getSelectedScreen().tiles[t] = new byte[8][8];
+        }
+        getSelectedScreen().arrangement = arrangement;
     }
 }
