@@ -511,16 +511,16 @@ public abstract class ArrangementEditor extends AbstractButton implements
     private void drawTile(Graphics g, int x, int y, int arr, boolean highlight)
     {
         g.drawImage(getTileImage(getTileOfArr(arr), getSubPalOfArr(arr),
-            isArrHFlip(arr), isArrVFlip(arr)), (int) (x * 8 * getZoom())
-            + (isDrawGridLines() ? x : 0), (int) (y * 8 * getZoom())
-            + (isDrawGridLines() ? y : 0), (int) (8 * getZoom()),
-            (int) (8 * getZoom()), null);
+            isArrHFlip(arr), isArrVFlip(arr)), (x * 8 * getZoom())
+            + (isDrawGridLines() ? x : 0), (y * 8 * getZoom())
+            + (isDrawGridLines() ? y : 0), (8 * getZoom()),
+            (8 * getZoom()), null);
         if (highlight)
         {
             g.setColor(new Color(255, 255, 0, 128));
-            g.fillRect((int) (x * 8 * getZoom()) + (isDrawGridLines() ? x : 0),
-                (int) (y * 8 * getZoom()) + (isDrawGridLines() ? y : 0),
-                (int) (8 * getZoom()), (int) (8 * getZoom()));
+            g.fillRect((x * 8 * getZoom()) + (isDrawGridLines() ? x : 0),
+                (y * 8 * getZoom()) + (isDrawGridLines() ? y : 0),
+                (8 * getZoom()), (8 * getZoom()));
         }
     }
 

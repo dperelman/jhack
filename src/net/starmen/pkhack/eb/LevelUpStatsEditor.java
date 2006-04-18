@@ -91,7 +91,7 @@ public class LevelUpStatsEditor extends EbHackModule implements ActionListener
          */
         public float getConvertedStat(int statNum)
         {
-            return (float) (((float) rawStats[statNum]) / 10.2);
+            return (float) (rawStats[statNum] / 10.2);
         }
 
         /**

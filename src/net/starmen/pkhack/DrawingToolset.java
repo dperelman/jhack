@@ -37,14 +37,13 @@ public class DrawingToolset extends JComponent implements Toolset
 {
     private ActionListener al;
     private ButtonGroup bg;
-    private JPanel optionsPane;
     private JComboBox fillSelector, fillMethodSelector;
     private JCheckBox transparentSelection;
     private JTextField roundedRectRad;
 
     private JToggleButton pencil, pBucket, eyedropper, selection, line, rect,
             oval, roundedRect;
-    private final static int[] TOOL_ORDER = new int[]{TOOL_PENCIL,
+    protected final static int[] TOOL_ORDER = new int[]{TOOL_PENCIL,
         TOOL_PAINT_BUCKET, TOOL_EYEDROPER, TOOL_SELECTION, TOOL_LINE,
         TOOL_RECTANGLE, TOOL_OVAL, TOOL_ROUND_RECTANGLE};
 
@@ -227,15 +226,15 @@ public class DrawingToolset extends JComponent implements Toolset
         }
     }
 
-    private void setSelectedDrawingTool(int tool)
+    protected void setSelectedDrawingTool(int tool)
     {
         bg.setSelected(getButton(tool).getModel(), true);
     }
 
-    private void setSelectedDrawingTool(JToggleButton tool)
+/*    private void setSelectedDrawingTool(JToggleButton tool)
     {
         bg.setSelected(tool.getModel(), true);
-    }
+    }*/
 
     /**
      * @see net.starmen.pkhack.DrawingArea.Toolset#getFillType()

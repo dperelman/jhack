@@ -65,8 +65,8 @@ import net.starmen.pkhack.eb.EbHackModule;
  * @author AnyoneEB
  * @version 0.5.11
  */
-//Made by AnyoneEB.
-//Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
+// Made by AnyoneEB.
+// Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
 public class MainGUI implements ActionListener, WindowListener
 {
     private JFrame mainWindow;
@@ -80,19 +80,14 @@ public class MainGUI implements ActionListener, WindowListener
     private XMLPreferences prefs;
     private ArrayList recentLoads = new ArrayList();
     private final static String DATE_FORMAT = "yyyyMMddHHmmss";
-    private Box buttons;
+    protected Box buttons;
     private JButton[] modButtons;
 
-    private String[] addToArr(String[] in, String arg)
-    {
-        String[] out = new String[in.length + 1];
-        for (int i = 0; i < in.length; i++)
-        {
-            out[i] = in[i];
-        }
-        out[in.length] = arg;
-        return out;
-    }
+    /*
+     * private String[] addToArr(String[] in, String arg) { String[] out = new
+     * String[in.length + 1]; for (int i = 0; i < in.length; i++) { out[i] =
+     * in[i]; } out[in.length] = arg; return out; }
+     */
 
     private int getModuleCount()
     {
@@ -112,8 +107,8 @@ public class MainGUI implements ActionListener, WindowListener
      */
     private String[] initModules()
     {
-        //HackModule.initBigArrays();
-        String[] moduleNames = new String[0]; //list of module class names
+        // HackModule.initBigArrays();
+        String[] moduleNames = new String[0]; // list of module class names
 
         try
         {
@@ -137,8 +132,7 @@ public class MainGUI implements ActionListener, WindowListener
 
         String[] spacingList = new String[moduleNames.length + 1];
         Arrays.fill(spacingList, null);
-        String tmp;
-        //modules = new HackModule[moduleList.length];
+        // modules = new HackModule[moduleList.length];
         moduleList.ensureCapacity(moduleNames.length);
         for (int i = 0; i < moduleNames.length; i++)
         {
@@ -165,7 +159,7 @@ public class MainGUI implements ActionListener, WindowListener
                     }
                 }
                 else
-                    moduleList.add((HackModule) Class.forName(
+                    moduleList.add(Class.forName(
                         "net.starmen.pkhack." + moduleNames[i]).getConstructor(
                         new Class[]{AbstractRom.class, XMLPreferences.class})
                         .newInstance(new Object[]{rom, prefs}));
@@ -208,7 +202,7 @@ public class MainGUI implements ActionListener, WindowListener
 
     private void initGraphics()
     {
-        //show loading dialog first
+        // show loading dialog first
         if (showload)
         {
             loadingDialog = new JFrame("Loading...");
@@ -223,7 +217,7 @@ public class MainGUI implements ActionListener, WindowListener
 
         loadPrefs();
 
-        //main init stuff
+        // main init stuff
         mainWindow = new JFrame();
         mainWindow.setTitle(MainGUI.getDescription() + " "
             + MainGUI.getVersion());
@@ -334,7 +328,7 @@ public class MainGUI implements ActionListener, WindowListener
 
         mainWindow.setJMenuBar(menuBar);
 
-        //add buttons
+        // add buttons
         String[] spList = initModules();
         /*
          * int spaces = 0; for (int i = 0; i < spList.length; i++) if
@@ -343,7 +337,7 @@ public class MainGUI implements ActionListener, WindowListener
         buttons = new Box(BoxLayout.Y_AXIS);
         Box currBox = null;
         HeadingLabel prevLabel = null;
-        //buttons.setLayout(new GridLayout(getModuleCount() + spaces, 1));
+        // buttons.setLayout(new GridLayout(getModuleCount() + spaces, 1));
         JScrollPane scroll = new JScrollPane(buttons,
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
             JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -404,9 +398,9 @@ public class MainGUI implements ActionListener, WindowListener
 
     private class HeadingLabel extends JLabel
     {
-        private JComponent ca;
+        protected JComponent ca;
 
-        private Color regCol, hoverCol;
+        protected Color regCol, hoverCol;
 
         public HeadingLabel(String label, int align, Color col, Color hover)
         {
@@ -488,7 +482,7 @@ public class MainGUI implements ActionListener, WindowListener
      * 
      * @return "JHack".
      */
-    public static String getDescription() //Return one line description of
+    public static String getDescription() // Return one line description of
     // class
     {
         return "PK Hack";
@@ -510,7 +504,7 @@ public class MainGUI implements ActionListener, WindowListener
      * 
      * @return The credits for this class.
      */
-    public static String getCredits() //Return who made it
+    public static String getCredits() // Return who made it
     {
         return "Written by AnyoneEB\n" + "Various lists from PK Hack website\n"
             + "Icons from PK Hack v0.2 source";
@@ -642,7 +636,7 @@ public class MainGUI implements ActionListener, WindowListener
                 JHack.err.setEnabled(!this.getPrefs().getValueAsBoolean(
                     "noErrorDialog"));
         }
-        //convert expRomPath and orgRomPath to game specific names
+        // convert expRomPath and orgRomPath to game specific names
         if (this.getPrefs().hasValue("expRomPath"))
         {
             this.getPrefs().setValue("Earthbound.expRomPath",
@@ -661,10 +655,10 @@ public class MainGUI implements ActionListener, WindowListener
         }
         loadRecentLoadsPref();
 
-        //delete old prefs
+        // delete old prefs
         new File("JHack.ini").delete();
         new File("JHackPrefs.xml").delete();
-        //new File("preferences.dtd").delete();
+        // new File("preferences.dtd").delete();
     }
 
     private String getModuleCredits()
@@ -744,40 +738,23 @@ public class MainGUI implements ActionListener, WindowListener
     public void windowOpened(WindowEvent we)
     {}
 
-    private static File getFileOfSize(final long size1, final long size2,
-        String msg, boolean repeat)
-    {
-        JFileChooser jfc = new JFileChooser(AbstractRom.getDefaultDir());
-        jfc.setFileFilter(new FileFilter()
-        {
-            public boolean accept(File f)
-            {
-                if ((((f.getAbsolutePath().toLowerCase().endsWith(".smc")
-                    || f.getAbsolutePath().toLowerCase().endsWith(".sfc") || f
-                    .getAbsolutePath().toLowerCase().endsWith(".fig")) && (f
-                    .length() == size1 || f.length() == size2)) || f
-                    .isDirectory())
-                    && f.exists())
-                {
-                    return true;
-                }
-                return false;
-            }
-
-            public String getDescription()
-            {
-                return "SNES ROMs (*.smc, *.sfc, *.fig)";
-            }
-        });
-        do
-        {
-            JOptionPane.showMessageDialog(null, msg, "Where is this file?",
-                JOptionPane.QUESTION_MESSAGE);
-        }
-        while (jfc.showOpenDialog(null) != JFileChooser.APPROVE_OPTION
-            && repeat);
-        return jfc.getSelectedFile();
-    }
+    /*
+     * private static File getFileOfSize(final long size1, final long size2,
+     * String msg, boolean repeat) { JFileChooser jfc = new
+     * JFileChooser(AbstractRom.getDefaultDir()); jfc.setFileFilter(new
+     * FileFilter() { public boolean accept(File f) { if
+     * ((((f.getAbsolutePath().toLowerCase().endsWith(".smc") ||
+     * f.getAbsolutePath().toLowerCase().endsWith(".sfc") || f
+     * .getAbsolutePath().toLowerCase().endsWith(".fig")) && (f .length() ==
+     * size1 || f.length() == size2)) || f .isDirectory()) && f.exists()) {
+     * return true; } return false; }
+     * 
+     * public String getDescription() { return "SNES ROMs (*.smc, *.sfc,
+     * *.fig)"; } }); do { JOptionPane.showMessageDialog(null, msg, "Where is
+     * this file?", JOptionPane.QUESTION_MESSAGE); } while
+     * (jfc.showOpenDialog(null) != JFileChooser.APPROVE_OPTION && repeat);
+     * return jfc.getSelectedFile(); }
+     */
 
     private static File getFile(String msg, boolean repeat)
     {
@@ -854,7 +831,7 @@ public class MainGUI implements ActionListener, WindowListener
         if ((tmp = this.getPrefs().getValue(romType + ".expRomPath")) == null
             || !(tmpf = new File(tmp)).exists())
         {
-            //if orgRomPath from old version set, use it
+            // if orgRomPath from old version set, use it
             if (!(tmp == null)
                 && (tmpf = new File(tmp)).exists()
                 && ((tmp = this.getPrefs().getValue(romType + ".orgRomPath")) != null))
@@ -895,7 +872,7 @@ public class MainGUI implements ActionListener, WindowListener
             this.getPrefs().removeValue(romType + ".expRomPath");
             return orgRomToExp(romType);
         }
-        //null means expRomPath is set to something valid
+        // null means expRomPath is set to something valid
         return null;
     }
 
@@ -938,8 +915,8 @@ public class MainGUI implements ActionListener, WindowListener
             File backupDir = getBackupDir();
             backupDir.mkdir();
             getOrginalRomFile(rom.getRomType());
-            //			byte[] orgRomArr = new byte[rom.length()];
-            //			new FileInputStream(getOrginalRomFile()).read(orgRomArr);
+            // byte[] orgRomArr = new byte[rom.length()];
+            // new FileInputStream(getOrginalRomFile()).read(orgRomArr);
             System.out.println("About to write backup .ips...");
             IPSFile ips = rom.createIPS(orgRom);
             if (ips == null)
@@ -947,8 +924,8 @@ public class MainGUI implements ActionListener, WindowListener
                 System.out.println("Failed writting backup .ips.");
                 return;
             }
-            //			FileOutputStream out =
-            //				new FileOutputStream(
+            // FileOutputStream out =
+            // new FileOutputStream(
             File f = new File(backupDir.toString()
                 + File.separator
                 + rom.getFilePath().getName()
@@ -956,11 +933,11 @@ public class MainGUI implements ActionListener, WindowListener
                 + new SimpleDateFormat(DATE_FORMAT)
                     .format(new java.util.Date()) + ".bak.ips");
             ips.saveIPSFile(f);
-            //			for (int i = 0; i < ips.length(); i++)
-            //			{
-            //				out.write(ips.charAt(i));
-            //			}
-            //			out.close();
+            // for (int i = 0; i < ips.length(); i++)
+            // {
+            // out.write(ips.charAt(i));
+            // }
+            // out.close();
             System.out.println("Completed writting backup .ips.");
 
             this.refreshRevertMenu();
@@ -1069,7 +1046,7 @@ public class MainGUI implements ActionListener, WindowListener
             File backupDir = getBackupDir();
             if (backupDir.exists())
             {
-                //get list of backed up files
+                // get list of backed up files
                 String[] backups = backupDir.list(new FilenameFilter()
                 {
                     public boolean accept(File dir, String name)
@@ -1080,14 +1057,14 @@ public class MainGUI implements ActionListener, WindowListener
                         return false;
                     }
                 });
-                //sort list so it will be ordered by date
+                // sort list so it will be ordered by date
                 Arrays.sort(backups);
                 JMenu currMenu = revertMenu;
                 int c = 0;
-                //look through list and make menu options from it.
+                // look through list and make menu options from it.
                 for (int i = backups.length - 1; i >= 0; i--)
                 {
-                    //show 20 entries then a more menu
+                    // show 20 entries then a more menu
                     c++;
                     if (c > 20)
                     {
@@ -1130,7 +1107,7 @@ public class MainGUI implements ActionListener, WindowListener
                 out += File.pathSeparatorChar;
         }
         this.getPrefs().setValue("recentLoads", out);
-        loadRecentLoadsPref(); //force down to 5
+        loadRecentLoadsPref(); // force down to 5
     }
 
     private void loadRecentLoadsPref()
@@ -1222,15 +1199,15 @@ public class MainGUI implements ActionListener, WindowListener
             }
             catch (NullPointerException npe)
             {
-                //If not module inited yet
+                // If not module inited yet
             }
         }
     }
 
     private void resetModules()
     {
-        //offset in module list where IPSDatabase is
-        //used to make sure IPSDatabase's reset() is called last
+        // offset in module list where IPSDatabase is
+        // used to make sure IPSDatabase's reset() is called last
         int ipsdOffset = -1;
         for (int i = 0; i < getModuleCount(); i++)
         {
@@ -1238,11 +1215,11 @@ public class MainGUI implements ActionListener, WindowListener
             {
                 if (getModuleAt(i).isRomSupported())
                 {
-                    //                    System.out.println(loc.getName() + " is a "
-                    //                        + rom.getRomType() + " ROM and is usable by "
-                    //                        + modButtons[i].getText() + ".");
+                    // System.out.println(loc.getName() + " is a "
+                    // + rom.getRomType() + " ROM and is usable by "
+                    // + modButtons[i].getText() + ".");
                     modButtons[i].setVisible(true);
-                    //make sure IPSDatabase is reset last
+                    // make sure IPSDatabase is reset last
                     if (getModuleAt(i) instanceof IPSDatabase)
                         ipsdOffset = i;
                     else
@@ -1250,16 +1227,16 @@ public class MainGUI implements ActionListener, WindowListener
                 }
                 else
                 {
-                    //                    System.out.println(loc.getName() + " is a "
-                    //                        + rom.getRomType() + " ROM and is not usable by "
-                    //                        + modButtons[i].getText() + ".");
+                    // System.out.println(loc.getName() + " is a "
+                    // + rom.getRomType() + " ROM and is not usable by "
+                    // + modButtons[i].getText() + ".");
                     modButtons[i].setVisible(false);
                 }
                 getModuleAt(i).hide();
             }
             catch (NullPointerException npe)
             {
-                //If not module inited yet
+                // If not module inited yet
             }
         }
         try
@@ -1269,7 +1246,7 @@ public class MainGUI implements ActionListener, WindowListener
         }
         catch (NullPointerException npe)
         {
-            //If not module inited yet
+            // If not module inited yet
         }
     }
 
@@ -1341,14 +1318,14 @@ public class MainGUI implements ActionListener, WindowListener
             }
         }
 
-        //if a Earthbound ROM was just loaded and it is unexpanded (3 MB + 512
+        // if a Earthbound ROM was just loaded and it is unexpanded (3 MB + 512
         // byte header) then we may want to expand it
         if (rom.getRomType().equals("Earthbound") && rom.length() == 0x300200)
         {
-            //name of the automatic expansion preference
+            // name of the automatic expansion preference
             String prefName = "Earthbound.autoExpand";
-            //check preferences for user set default
-            //Earthbound.autoExpand:
+            // check preferences for user set default
+            // Earthbound.autoExpand:
             // true = always expand unexpanded ROMs on load
             // false = never expand unexpanded ROMs on load
             // null (unset) = ask user
@@ -1356,16 +1333,16 @@ public class MainGUI implements ActionListener, WindowListener
             {
                 if (getPrefs().getValueAsBoolean(prefName))
                 {
-                    //if user selected always expand, do so
+                    // if user selected always expand, do so
                     rom.expand();
                 }
-                //if user selected never expand, do nothing
+                // if user selected never expand, do nothing
             }
             else
             {
-                //if user has not set preference, or choose to have it ask
-                //pop up a dialog explaining preference, with a remember
-                //my preference checkbox
+                // if user has not set preference, or choose to have it ask
+                // pop up a dialog explaining preference, with a remember
+                // my preference checkbox
 
                 JCheckBox remember = new JCheckBox(
                     "Remember my choice and use it next time.", false);
@@ -1381,15 +1358,15 @@ public class MainGUI implements ActionListener, WindowListener
                         + "group. You can also use the ROM Expander "
                         + "to expand by another 2 MB at any time."
                         + "\n\nDo you wish to expand this ROM?", 10, 30);
-                //make sure text area looks right and does word wrap
+                // make sure text area looks right and does word wrap
                 text.setEditable(false);
                 text.setEnabled(false);
                 text.setLineWrap(true);
                 text.setWrapStyleWord(true);
-                //little L&F specific stuff, hopefully it won't mess up other
-                //L&F's
-                //makes text in the JTextArea look like the text in
-                //the JCheckBox
+                // little L&F specific stuff, hopefully it won't mess up other
+                // L&F's
+                // makes text in the JTextArea look like the text in
+                // the JCheckBox
                 text.setBackground(remember.getBackground());
                 text.setDisabledTextColor(remember.getForeground());
                 text.setFont(remember.getFont());
@@ -1397,12 +1374,12 @@ public class MainGUI implements ActionListener, WindowListener
                 int opt = JOptionPane.showConfirmDialog(mainWindow,
                     new JComponent[]{text, remember}, "Expand ROM?",
                     JOptionPane.YES_NO_OPTION);
-                //yes is true if user selected yes, false if they did not
+                // yes is true if user selected yes, false if they did not
                 boolean yes = opt == JOptionPane.YES_OPTION;
                 if (yes)
                     rom.expand();
-                //if user selected to remember their selection, put it into
-                //the preferences
+                // if user selected to remember their selection, put it into
+                // the preferences
                 if (remember.isSelected())
                     getPrefs().setValueAsBoolean(prefName, yes);
             }
@@ -1422,10 +1399,9 @@ public class MainGUI implements ActionListener, WindowListener
             + MainGUI.getVersion() + " - " + rom.getPath());
     }
 
-    private void loadRom()
-    {
-        loadRom(null);
-    }
+    /*
+     * private void loadRom() { loadRom(null); }
+     */
 
     /**
      * Loads the ROM most recently loaded. If the most recently loaded ROM is
@@ -1450,7 +1426,7 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public void actionPerformed(ActionEvent ae)
     {
-        //stuff that can be done while ROM is loading
+        // stuff that can be done while ROM is loading
         if (ae.getActionCommand().equalsIgnoreCase("about"))
         {
             JOptionPane.showMessageDialog(null, this.createScollingLabel(this
@@ -1512,7 +1488,7 @@ public class MainGUI implements ActionListener, WindowListener
         }
         else
         {
-            //if ROM is still loading, stop
+            // if ROM is still loading, stop
             if (isLoading())
             {
                 JOptionPane.showMessageDialog(mainWindow,
@@ -1520,7 +1496,7 @@ public class MainGUI implements ActionListener, WindowListener
                     JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            //stuff that should not be done _during_ loading
+            // stuff that should not be done _during_ loading
             if (ae.getActionCommand().equalsIgnoreCase("load"))
             {
                 loadRom(null);
@@ -1539,7 +1515,7 @@ public class MainGUI implements ActionListener, WindowListener
                 {
                     rom.saveRomAs();
                     updateTitle();
-                    //ROM file name changed, add to recent list
+                    // ROM file name changed, add to recent list
                     addRecentLoad(rom.getPath());
                     refreshRecentLoads();
                     doBackup();
@@ -1565,9 +1541,9 @@ public class MainGUI implements ActionListener, WindowListener
             }
             else if (ae.getActionCommand().equalsIgnoreCase("directio"))
             {
-                //            this.getPrefs().setValueAsBoolean(
-                //                "useDirectFileIO",
-                //                !rom.isDirectFileIO());
+                // this.getPrefs().setValueAsBoolean(
+                // "useDirectFileIO",
+                // !rom.isDirectFileIO());
                 if (rom.isLoaded && !rom.isDirectFileIO())
                 {
                     int ques = JOptionPane.showConfirmDialog(null,
@@ -1596,7 +1572,7 @@ public class MainGUI implements ActionListener, WindowListener
                     rom = new RomMem();
                 }
 
-                //            HackModule.rom = rom;
+                // HackModule.rom = rom;
                 if (rompath != null)
                     rom.loadRom(rompath);
                 for (int i = 0; i < getModuleCount(); i++)
@@ -1609,12 +1585,12 @@ public class MainGUI implements ActionListener, WindowListener
                     }
                     catch (NullPointerException npe)
                     {
-                        //If not module inited yet
+                        // If not module inited yet
                     }
                 }
                 System.gc();
 
-                //System.out.println("Debug: rom classname: " +
+                // System.out.println("Debug: rom classname: " +
                 // rom.getClass().getName());
             }
             else if (ae.getActionCommand().equals("selectDefROM"))
@@ -1626,16 +1602,16 @@ public class MainGUI implements ActionListener, WindowListener
                 }
                 else
                 {
-                    //JDialog typeDia = new JDialog(mainWindow, "Select or
+                    // JDialog typeDia = new JDialog(mainWindow, "Select or
                     // Enter
                     // ROM Type", true);
-                    //typeDia.getContentPane().setLayout(new BorderLayout());
+                    // typeDia.getContentPane().setLayout(new BorderLayout());
 
                     JComboBox typeSel = new JComboBox(RomTypeFinder
                         .getRomTypeNames());
                     typeSel.setEditable(true);
                     typeSel.setSelectedIndex(0);
-                    //typeDia.add(typeSel, BorderLayout.NORTH);
+                    // typeDia.add(typeSel, BorderLayout.NORTH);
                     if (JOptionPane.showConfirmDialog(mainWindow, typeSel,
                         "Select or Enter ROM Type",
                         JOptionPane.OK_CANCEL_OPTION,
@@ -1764,9 +1740,9 @@ public class MainGUI implements ActionListener, WindowListener
         }
         catch (IOException e)
         {
-            //e.printStackTrace();
-            //no internet connection, return null
-            //TODO any way to get here with internet up?
+            // e.printStackTrace();
+            // no internet connection, return null
+            // TODO any way to get here with internet up?
             System.out.println("Update check failed due to connection error: "
                 + e.getClass() + ": " + e.getMessage());
         }
@@ -1870,9 +1846,9 @@ public class MainGUI implements ActionListener, WindowListener
                 }
                 else
                 {
-                    //remember version to not update
-                    //message telling user we did this, no more news about this
-                    //update
+                    // remember version to not update
+                    // message telling user we did this, no more news about this
+                    // update
                     getPrefs().setValue("ignoreUpdateVer", ver);
                     JOptionPane.showMessageDialog(null,
                         "You will not be notifed of JHack updates again\n"

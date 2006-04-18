@@ -201,7 +201,7 @@ public class FullScreenGraphicsImporter
                     for (int i = 0; i < 8; i++)
                     {
                         // sprite[i][j] = pixels[j * w + i];
-                        int c = pixels[((j + (yt * 8)) * 256) + (i + (xt * 8))];
+                        int c = pixels[((j + js) * 256) + (i + is)];
                         Color col = new Color(c & 0xf8f8f8);
                         int cn;
                         Object tmpc;
@@ -308,13 +308,12 @@ public class FullScreenGraphicsImporter
             for (int xt = 0; xt < 32; xt++)
             {
                 int is = xt * 8;
-                byte[] tile = new byte[64];
                 Set pal = new HashSet();
                 for (int j = 0; j < 8; j++)
                 {
                     for (int i = 0; i < 8; i++)
                     {
-                        int c = pixels[((j + (yt * 8)) * 256) + (i + (xt * 8))];
+                        int c = pixels[((j + js) * 256) + (i + is)];
                         Color col = new Color(c & 0xf8f8f8);
                         pal.add(col);
                         if (pal.size() > target.getSubPaletteSize())
@@ -367,7 +366,7 @@ public class FullScreenGraphicsImporter
             int cnum = 0;
             Set tmp = (Set) i.next();
             palhash.put(new Integer(tmp.hashCode()), new Byte(pnum));
-            for (Iterator j = ((Set) tmp).iterator(); j.hasNext();)
+            for (Iterator j = tmp.iterator(); j.hasNext();)
             {
                 palarr[pnum][cnum++] = (Color) j.next();
             }
@@ -472,7 +471,7 @@ public class FullScreenGraphicsImporter
     {
         short[][] arrangement = new short[32][28];
         byte[][] tiles = new byte[LogoScreen.NUM_TILES][64];
-        int tnum = 0, pnum = 0;
+        int tnum = 0;
         Hashtable tilerefs = new Hashtable();
 
         for (int yt = 0; yt < 28; yt++)

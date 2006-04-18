@@ -612,7 +612,7 @@ public abstract class AbstractRom
         int[] newArg = new int[arg.length];
         for (int i = 0; i < arg.length; i++)
         {
-            newArg[i] = (int) arg[i];
+            newArg[i] = arg[i];
         }
         write(offset, newArg);
     }
@@ -1932,7 +1932,7 @@ public abstract class AbstractRom
                     {
                         for (int j = 0; j < ipsr.getRleSize(); j++)
                         {
-                            this.write(ipsr.getOffset() + j, (byte) ipsr
+                            this.write(ipsr.getOffset() + j, ipsr
                                 .getRleInfo());
                         }
                     }

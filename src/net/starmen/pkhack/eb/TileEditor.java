@@ -79,7 +79,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         super(rom, prefs);
     }
 
-    //Static stuff
+    // Static stuff
     public static final int NUM_TILESETS = 20;
     /**
      * All information about the 20 tilesets: graphics, arrangements, collision
@@ -106,19 +106,19 @@ public class TileEditor extends EbHackModule implements ActionListener
     public static class Tileset
     {
         private EbHackModule hm;
-        private byte[][][] tiles; //deinterlaced tiles
-        private short[][][] arrangements; //arrangements
-        private byte[][][] collision; //collision data
+        private byte[][][] tiles; // deinterlaced tiles
+        private short[][][] arrangements; // arrangements
+        private byte[][][] collision; // collision data
         private ArrayList palettes;
         private int tileAddress;
         private int arrangmentsAddress;
         private int collisionAddress;
         private boolean isInited = false;
-        //should be written in expanded meg
+        // should be written in expanded meg
         private boolean tilesChanged = false, arrangementsChanged = false,
                 collisionChanged = false;
-        private int num; //number of the tileset
-        private String name; //String to identify tileset by
+        private int num; // number of the tileset
+        private String name; // String to identify tileset by
         private int tileOldCompLen;
         private int arrOldCompLen;
 
@@ -150,8 +150,8 @@ public class TileEditor extends EbHackModule implements ActionListener
                 if (!readArrangements())
                     return false;
                 readCollision();
-                //readPalettes();
-                //all palettes must be done at the same time by
+                // readPalettes();
+                // all palettes must be done at the same time by
                 // TileEditor.readPalettes()
                 isInited = true;
             }
@@ -189,26 +189,24 @@ public class TileEditor extends EbHackModule implements ActionListener
                 0x2F125B + (num * 4), 4));
             this.tilesChanged = tileAddress > 0x3001ff;
 
-            //            System.out.println(
-            //                "About to read tileset #"
-            //                    + num
-            //                    + " tiles from 0x"
-            //                    + Integer.toHexString(tileAddress));
+            // System.out.println(
+            // "About to read tileset #"
+            // + num
+            // + " tiles from 0x"
+            // + Integer.toHexString(tileAddress));
 
-            byte[] buffer = new byte[28673]; //int[] to decompress into
+            byte[] buffer = new byte[28673]; // int[] to decompress into
             int[] tmp;
             if ((tmp = hm.decomp(tileAddress, buffer, 28673))[0] != 28673)
             {
                 System.out.println("Error bad compressed data on tileset #"
                     + num + " tiles. (" + tmp[0] + ")");
-                //                if (tmp[0] < 0)
-                //                    return false;
+                // if (tmp[0] < 0)
+                // return false;
             }
             tileOldCompLen = tmp[1];
 
             tiles = new byte[1024][8][8];
-            byte[] tile = new byte[32];
-            int i = 0;
             tileloop: for (int t = 0; t < 1024; t++)
             {
                 try
@@ -218,7 +216,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                 catch (ArrayIndexOutOfBoundsException e)
                 {
                     break tileloop;
-                    //if the array has ended, there's nothing left to do
+                    // if the array has ended, there's nothing left to do
                 }
             }
             if (tmp[0] == 28673)
@@ -233,11 +231,11 @@ public class TileEditor extends EbHackModule implements ActionListener
                 0x2F12AB + (num * 4), 4));
             this.arrangementsChanged = arrangmentsAddress > 0x3001ff;
 
-            //            System.out.println(
-            //                "About to read tileset #"
-            //                    + num
-            //                    + " arrangements from 0x"
-            //                    + Integer.toHexString(arrangmentsAddress));
+            // System.out.println(
+            // "About to read tileset #"
+            // + num
+            // + " arrangements from 0x"
+            // + Integer.toHexString(arrangmentsAddress));
 
             byte arrBuffer[] = new byte[32768];
             int[] tmp;
@@ -245,7 +243,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             {
                 System.out.println("Error bad compressed data on tileset #"
                     + num + " arrangments. (" + tmp + ")");
-                //                return false;
+                // return false;
             }
             arrOldCompLen = tmp[1];
 
@@ -469,9 +467,9 @@ public class TileEditor extends EbHackModule implements ActionListener
             return getPaletteNum(mtileset, mpalette);
         }
 
-        //Public funtions
+        // Public funtions
 
-        //Palete stuff
+        // Palete stuff
 
         /**
          * Adds a new palette. Should only be used by TileEditor to init the
@@ -633,9 +631,9 @@ public class TileEditor extends EbHackModule implements ActionListener
             return palettes.size();
         }
 
-        //Tile stuff
+        // Tile stuff
 
-        //Basics
+        // Basics
         /**
          * Returns the number of the color of a point on a specific tile.
          * 
@@ -781,7 +779,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             setTilePixel(tile, x, y, c);
         }
 
-        //Image
+        // Image
         /**
          * Returns an image of the specified tile using the specified palette.
          * If trueColors is false then the color number = (red & 1) + ((green &
@@ -810,7 +808,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                     g.setColor(this.getTilePixel(tile, (hFlip ? 7 - x : x),
                         (vFlip ? 7 - y : y), palette, subPalette, trueColors));
                     g.drawLine(x, y, x, y);
-                    //there's no draw point, WHY?!?
+                    // there's no draw point, WHY?!?
                 }
             }
             return out;
@@ -1421,9 +1419,9 @@ public class TileEditor extends EbHackModule implements ActionListener
             return getTilesetImage(palette, subPalette, -1);
         }
 
-        //Arrangement stuff
+        // Arrangement stuff
 
-        //Basics
+        // Basics
         /**
          * Returns an arrangement number based on the input. Note that is does
          * not actually write to number to anything, it just returns it. <br>
@@ -1467,7 +1465,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             return 0;
         }
 
-        //TODO Add methods to tell the tile, subPal, flip of an arrangement or
+        // TODO Add methods to tell the tile, subPal, flip of an arrangement or
         // make an object that holds it?
         /**
          * Returns which tile is at the specified position in the specified
@@ -1506,7 +1504,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             this.arrangementsChanged = true;
         }
 
-        //Array stuff
+        // Array stuff
         /**
          * Returns an int array of the tiles in the specified arrangement. The
          * number contains more than just the tile, see
@@ -1519,7 +1517,7 @@ public class TileEditor extends EbHackModule implements ActionListener
          */
         public short[][] getArrangementData(int arrangement)
         {
-            //Make a new array so you don't have to worry about pointer stuff
+            // Make a new array so you don't have to worry about pointer stuff
             short[][] out = new short[4][4];
             for (int x = 0; x < 4; x++)
             {
@@ -1553,7 +1551,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             }
         }
 
-        //Image stuff
+        // Image stuff
         /**
          * Returns an image of the specified arrangement using the specified
          * palette. Note that sub-palette is specfied by the arrangement data.
@@ -1825,11 +1823,11 @@ public class TileEditor extends EbHackModule implements ActionListener
                     {
                         g.drawImage(getArrangementImage(arr, palette), x * 33,
                             y * 33, null);
-                        //						if (arr == hightlightedArrangement)
-                        //						{
-                        //							g.setColor(new Color(255, 255, 0, 128));
-                        //							g.fillRect(x * 33, y * 33, 32, 32);
-                        //						}
+                        // if (arr == hightlightedArrangement)
+                        // {
+                        // g.setColor(new Color(255, 255, 0, 128));
+                        // g.fillRect(x * 33, y * 33, 32, 32);
+                        // }
                     }
                 }
             }
@@ -1884,9 +1882,9 @@ public class TileEditor extends EbHackModule implements ActionListener
                 Color.BLACK);
         }
 
-        //Collision stuff
+        // Collision stuff
 
-        //basics
+        // basics
         /**
          * Returns the collision byte for the specified position in the
          * specified arrangement. Little is known about the collision byte, look
@@ -1952,7 +1950,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             this.collisionChanged = true;
         }
 
-        //Array stuff
+        // Array stuff
         /**
          * Returns an array of the collision bytes for the specified
          * arrangement.
@@ -1964,7 +1962,7 @@ public class TileEditor extends EbHackModule implements ActionListener
          */
         public byte[][] getCollisionData(int arrangement)
         {
-            //Make a new array so you don't have to worry about pointer stuff
+            // Make a new array so you don't have to worry about pointer stuff
             byte[][] out = new byte[4][4];
             for (int x = 0; x < 4; x++)
             {
@@ -1988,7 +1986,7 @@ public class TileEditor extends EbHackModule implements ActionListener
          */
         public int[] getCollisionDataFlat(int arrangement)
         {
-            //Make a new array so you don't have to worry about pointer stuff
+            // Make a new array so you don't have to worry about pointer stuff
             int out[] = new int[16], i = 0;
 
             for (int y = 0; y < 4; y++)
@@ -2061,40 +2059,40 @@ public class TileEditor extends EbHackModule implements ActionListener
                 }
             }
 
-            byte[] compTileset; //, compTilesetTv;
+            byte[] compTileset; // , compTilesetTv;
             int compTileLen = comp(buffer, compTileset = new byte[65536], 28673);
             if (compTileLen + offset - 1 > hm.rom.length())
                 return -1;
-            //				compTileLenTv =
-            //					TileViewer.Tileset.comp(
-            //						buffer,
-            //						compTilesetTv = new int[65536],
-            //						i);
-            //			if (compTileLen != compTileLenTv)
-            //			{
-            //				System.out.println(
-            //					"Compressed tiles different lengths: "
-            //						+ compTileLen
-            //						+ " Tv: "
-            //						+ compTileLenTv);
-            //			}
-            //			else
-            //			{
-            //				for (int j = 0; j < compTileLen; j++)
-            //				{
-            //					if (compTileset[j] != compTilesetTv[j])
-            //					{
-            //						System.out.println(
-            //							"Different byte at "
-            //								+ j
-            //								+ " ("
-            //								+ Integer.toHexString(compTileset[j])
-            //								+ " / tv: "
-            //								+ Integer.toHexString(compTilesetTv[j])
-            //								+ ")");
-            //					}
-            //				}
-            //			}
+            // compTileLenTv =
+            // TileViewer.Tileset.comp(
+            // buffer,
+            // compTilesetTv = new int[65536],
+            // i);
+            // if (compTileLen != compTileLenTv)
+            // {
+            // System.out.println(
+            // "Compressed tiles different lengths: "
+            // + compTileLen
+            // + " Tv: "
+            // + compTileLenTv);
+            // }
+            // else
+            // {
+            // for (int j = 0; j < compTileLen; j++)
+            // {
+            // if (compTileset[j] != compTilesetTv[j])
+            // {
+            // System.out.println(
+            // "Different byte at "
+            // + j
+            // + " ("
+            // + Integer.toHexString(compTileset[j])
+            // + " / tv: "
+            // + Integer.toHexString(compTilesetTv[j])
+            // + ")");
+            // }
+            // }
+            // }
             hm.rom.write(this.tileAddress, compTileset, compTileLen);
             System.out
                 .println("Wrote " + compTileLen + " bytes of tileset #" + num
@@ -2215,7 +2213,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                 }
             }
 
-            byte[] compTileset; //, compTilesetTv;
+            byte[] compTileset; // , compTilesetTv;
             int compTileLen = comp(buffer, compTileset = new byte[65536], 28673);
 
             if (!hm.writeToFree(compTileset, 0x2F125B + (num * 4),
@@ -2360,7 +2358,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             tilesets[i] = new Tileset(i, HackModule.getNumberedString(
                 TILESET_NAMES[i], i, false), hm);
-            //tilesets[i].init();
+            // tilesets[i].init();
         }
         readPalettes(hm.rom);
     }
@@ -2414,27 +2412,27 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     private static void writeCollision(AbstractRom rom)
     {
-        //Collision info can not be written separately
+        // Collision info can not be written separately
 
-        //Check if collision data has been changed, just return if not
+        // Check if collision data has been changed, just return if not
         if (!isCollisionChanged())
             return;
 
-        int cc = 0, l; //cc = number of collision sequences written so far
-        int cp[] = new int[20480]; //cp = collision pointers
-        int cpi = 0; //cp incrementer
+        int cc = 0, l; // cc = number of collision sequences written so far
+        int cp[] = new int[20480]; // cp = collision pointers
+        int cpi = 0; // cp incrementer
         boolean tmp;
 
         try
         {
             for (int i = 0; i < tilesets.length; i++)
             {
-                //only care about used arrangements
+                // only care about used arrangements
                 int j = tilesets[i].getArrangementCount();
-                //collision pointer offset is number of pointers written so
+                // collision pointer offset is number of pointers written so
                 // far * 2 (each pointer is two bytes)
                 tilesets[i].collisionAddress = cpi * 2;
-                for (int k = 0; k < j; k++) //go through every used
+                for (int k = 0; k < j; k++) // go through every used
                 // arrangement...
                 {
                     // look through collision data written so far
@@ -2443,11 +2441,11 @@ public class TileEditor extends EbHackModule implements ActionListener
                         if (rom.compare(0x180200 + 16 * l, tilesets[i]
                             .getCollisionDataFlat(k), 16))
                         {
-                            //if collision data already written, use it
+                            // if collision data already written, use it
                             tmp = false;
                             break colloop;
                         }
-                    if (tmp) //if collision data not yet written, write it
+                    if (tmp) // if collision data not yet written, write it
                     {
                         if (0x180200 + (16 * (cc + 2)) > 0x18F8B6)
                             throw (new RomWriteOutOfRangeException(
@@ -2460,7 +2458,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                             .getCollisionDataFlat(k), 16);
                         tmp = false;
                     }
-                    cp[cpi++] = l * 16; //pointer to where the data is
+                    cp[cpi++] = l * 16; // pointer to where the data is
                 }
             }
             if (0x180200 + (16 * cc) + (cpi * 2) > 0x18F8B6)
@@ -2469,12 +2467,12 @@ public class TileEditor extends EbHackModule implements ActionListener
             rom.write(0x180200 + (16 * cc), cp, cpi, 2);
             System.out.println("Collision stuff ends at: "
                 + (0x180200 + (16 * cc) + (cpi * 2)));
-            //write collision pointers after collision data
+            // write collision pointers after collision data
             for (int i = 0; i < 20; i++)
             {
-                //collisionAddress currently holds the offset of where the
+                // collisionAddress currently holds the offset of where the
                 // info is
-                //add the place of the start of the pointers
+                // add the place of the start of the pointers
                 tilesets[i].collisionAddress += 0x180200 + (16 * cc);
                 rom.write(0x2F137B + (4 * i), HackModule
                     .toSnesPointer(tilesets[i].collisionAddress), 4);
@@ -2581,7 +2579,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         return len;
     }
 
-    //GUI stuff
+    // GUI stuff
     /*
      * GUI Design: Main Window Menu File Import... (.png & .csv) Export... (.png &
      * .csv) Edit Undo (Single undo list? (no, make arrow pointing to current
@@ -2607,8 +2605,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     private JComboBox tilesetSelector, paletteSelector, subPaletteSelector;
 
-    //private JTable collisionEditor;
-    //private AbstractTableModel collisionTableModel;
+    // private JTable collisionEditor;
+    // private AbstractTableModel collisionTableModel;
     private CollisionEditor collisionEditor;
     private TileArrangementEditor arrangementEditor;
 
@@ -2619,14 +2617,14 @@ public class TileEditor extends EbHackModule implements ActionListener
     private FocusIndicator drawingAreaFocusIndicator,
             arrangementFocusIndicator;
 
-    private JDialog cbdia; //clipboard dialog
-    private TileSelector cbsel; //clipboard tile selector
-    private byte[][][][] cb; //clipboard
+    private JDialog cbdia; // clipboard dialog
+    private TileSelector cbsel; // clipboard tile selector
+    private byte[][][][] cb; // clipboard
 
     private class ArrangementSelector extends AbstractButton implements
         MouseListener, MouseMotionListener, AdjustmentListener
     {
-        private int currentArrangement = 0, arrangementOffset = 0;
+        private int currentArrangement = 0;
 
         public int getCurrentArrangement()
         {
@@ -2636,13 +2634,13 @@ public class TileEditor extends EbHackModule implements ActionListener
         private int getArrangementOffset()
         {
             return scroll.getValue() * 4;
-            //each increment shows four arrangments (height)
+            // each increment shows four arrangments (height)
         }
 
         public void repaintTile(int tile)
         {
             Graphics g = display.getGraphics();
-            Image img[] = new Image[8]; //one for each subpal
+            Image img[] = new Image[8]; // one for each subpal
             for (int a = getArrangementOffset(); a < getArrangementOffset() + 60; a++)
             {
                 for (int x = 0; x < 4; x++)
@@ -2658,7 +2656,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                                 img[subPal] = getSelectedTileset()
                                     .getTileImage(tile, getCurrentPalette(),
                                         subPal);
-                            //(dx, dy) = top-left corner of destination
+                            // (dx, dy) = top-left corner of destination
                             int dx = (((a - getArrangementOffset()) / 4) * 33)
                                 + (x * 8), dy = (((a - getArrangementOffset()) % 4) * 33)
                                 + (y * 8);
@@ -2667,10 +2665,10 @@ public class TileEditor extends EbHackModule implements ActionListener
                                 ((arr & 0x8000) == 0 ? 0 : 8),
                                 ((arr & 0x4000) != 0 ? 0 : 8),
                                 ((arr & 0x8000) != 0 ? 0 : 8), null);
-                            //if this just drew on the current arrangement...
+                            // if this just drew on the current arrangement...
                             if (a == getCurrentArrangement())
                             {
-                                //rehighlight the part that was just drawn over
+                                // rehighlight the part that was just drawn over
                                 g.setColor(new Color(255, 255, 0, 128));
                                 g.fillRect(
                                     (((a - getArrangementOffset()) / 4) * 33)
@@ -2692,7 +2690,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         public void repaintCurrentArrangement()
         {
             int a = getCurrentArrangement() - getArrangementOffset();
-            //is it being shown?
+            // is it being shown?
             if (a >= 0 && a < 60)
             {
                 drawArrangement(display.getGraphics(), getCurrentArrangement());
@@ -2718,7 +2716,7 @@ public class TileEditor extends EbHackModule implements ActionListener
 
         public void setCurrentArrangement(int newArrangement)
         {
-            //only fire action performed if new arrangment
+            // only fire action performed if new arrangment
             if (currentArrangement != newArrangement)
             {
                 scroll.setValue(newArrangement / 4);
@@ -2733,7 +2731,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             int newArrangement = getArrangementOffset() + ((y / 33))
                 + ((x / 33) * 4);
-            //only fire action performed if new arrangment
+            // only fire action performed if new arrangment
             if (currentArrangement != newArrangement)
             {
                 reHightlight(currentArrangement, newArrangement);
@@ -2750,15 +2748,15 @@ public class TileEditor extends EbHackModule implements ActionListener
                 && oldArr < getArrangementOffset() + 60)
             {
                 drawArrangement(g, oldArr);
-                //                g.drawImage(getSelectedTileset().getArrangementImage(oldArr,
-                //                    getCurrentPalette()),
-                //                    ((oldArr - getArrangementOffset()) / 4) * 33,
-                //                    ((oldArr - getArrangementOffset()) % 4) * 33, null);
+                // g.drawImage(getSelectedTileset().getArrangementImage(oldArr,
+                // getCurrentPalette()),
+                // ((oldArr - getArrangementOffset()) / 4) * 33,
+                // ((oldArr - getArrangementOffset()) % 4) * 33, null);
             }
             highlightArrangement(g, newArr);
-            //            g.setColor(new Color(255, 255, 0, 128));
-            //            g.fillRect(((newArr - getArrangementOffset()) / 4) * 33,
-            //                ((newArr - getArrangementOffset()) % 4) * 33, 32, 32);
+            // g.setColor(new Color(255, 255, 0, 128));
+            // g.fillRect(((newArr - getArrangementOffset()) / 4) * 33,
+            // ((newArr - getArrangementOffset()) % 4) * 33, 32, 32);
         }
 
         public void paint(Graphics g)
@@ -2977,9 +2975,9 @@ public class TileEditor extends EbHackModule implements ActionListener
             getSelectedTileset().setCollisionData(getCurrentArrangement(),
                 new byte[4][4]);
             updateTfs();
-            //			for (int x = 0; x < 4; x++)
-            //				for (int y = 0; y < 4; y++)
-            //					tf[x][y].setText("00");
+            // for (int x = 0; x < 4; x++)
+            // for (int y = 0; y < 4; y++)
+            // tf[x][y].setText("00");
         }
 
         public void cut()
@@ -3121,14 +3119,14 @@ public class TileEditor extends EbHackModule implements ActionListener
 
         public boolean isDrawGridLines()
         {
-            //                TileEditor t = TileEditor.this;
-            //                System.out.println(t == null
-            //                    ? "TileEditor.this is null"
-            //                    : "TileEditor.this is good!");
-            //                XMLPreferences prefs = JHack.main.getPrefs();
-            //                System.out.println(JHack.main.getPrefs() == prefs
-            //                    ? "the same"
-            //                    : "different");
+            // TileEditor t = TileEditor.this;
+            // System.out.println(t == null
+            // ? "TileEditor.this is null"
+            // : "TileEditor.this is good!");
+            // XMLPreferences prefs = JHack.main.getPrefs();
+            // System.out.println(JHack.main.getPrefs() == prefs
+            // ? "the same"
+            // : "different");
             try
             {
                 return prefs
@@ -3161,7 +3159,7 @@ public class TileEditor extends EbHackModule implements ActionListener
     private class FocusIndicator extends AbstractButton implements
         FocusListener, MouseListener
     {
-        //0 = other FI, 1 = left component, 2 = right component
+        // 0 = other FI, 1 = left component, 2 = right component
         private int focus = 1;
         private Component c1, c2;
         private boolean otherUp;
@@ -3224,7 +3222,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             int[] arrowX = new int[]{10, 40, 40, 50, 40, 40, 10};
             int[] arrowY = new int[]{22, 22, 15, 25, 35, 28, 28};
 
-            //flip if arrow should point the other way
+            // flip if arrow should point the other way
             if (focus == 1 || (focus == 0 && otherUp))
             {
                 for (int i = 0; i < arrowX.length; i++)
@@ -3233,7 +3231,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                 }
             }
 
-            if (focus == 0) //switch X and Y for pointing up
+            if (focus == 0) // switch X and Y for pointing up
                 g.fillPolygon(arrowY, arrowX, 7);
             else
                 g.fillPolygon(arrowX, arrowY, 7);
@@ -3282,9 +3280,9 @@ public class TileEditor extends EbHackModule implements ActionListener
     {
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
-        //mainWindow.setSize(900, 515);
+        // mainWindow.setSize(900, 515);
 
-        //Menu
+        // Menu
         JMenuBar mb = new JMenuBar();
 
         JMenu fileMenu = new JMenu("File");
@@ -3404,7 +3402,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         Box edit = new Box(BoxLayout.Y_AXIS);
 
         Box selectors = new Box(BoxLayout.Y_AXIS);
-        //combo boxes
+        // combo boxes
         selectors.add(HackModule.getLabeledComponent("Tileset: ",
             this.tilesetSelector = HackModule.createJComboBoxFromArray(
                 TileEditor.TILESET_NAMES, false)));
@@ -3424,10 +3422,10 @@ public class TileEditor extends EbHackModule implements ActionListener
         subPaletteSelector.addActionListener(this);
 
         edit.add(pairComponents(selectors, new JLabel(), false));
-        //edit.add(Box.createVerticalStrut(70));
+        // edit.add(Box.createVerticalStrut(70));
         edit.add(Box.createVerticalGlue());
 
-        //Tile Editing
+        // Tile Editing
         JPanel tileEdit = new JPanel(new FlowLayout());
         this.tileDrawingPalette = new SpritePalette(16, true);
         tileDrawingPalette.setActionCommand("paletteEditor");
@@ -3444,7 +3442,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         tileForegroundDrawingArea.setZoom(10);
         tileForegroundDrawingArea.setPreferredSize(new Dimension(80, 80));
         tileForegroundDrawingArea.setActionCommand("tileForegroundDrawingArea");
-        //use same clipboard
+        // use same clipboard
         tileForegroundDrawingArea.setIntArrClipboard(tileDrawingArea
             .getIntArrClipboard());
 
@@ -3462,17 +3460,17 @@ public class TileEditor extends EbHackModule implements ActionListener
         this.drawingAreaFocusIndicator
             .setOtherFocusIndicator(arrangementFocusIndicator);
 
-        //background to foreground copy
+        // background to foreground copy
         JButton bfCopy = new JButton("--> Copy -->");
         bfCopy.setActionCommand("bfCopy");
         bfCopy.addActionListener(this);
 
-        //foreground to background copy
+        // foreground to background copy
         JButton fbCopy = new JButton("<-- Copy <--");
         fbCopy.setActionCommand("fbCopy");
         fbCopy.addActionListener(this);
 
-        //drawing area buttons
+        // drawing area buttons
         JPanel daButtons = new JPanel(new BorderLayout());
         daButtons.add(HackModule
             .createFlowLayout(this.drawingAreaFocusIndicator),
@@ -3559,7 +3557,7 @@ public class TileEditor extends EbHackModule implements ActionListener
      */
     public void show()
     {
-        //readFromRom();
+        // readFromRom();
         super.show();
 
         mainWindow.setVisible(true);
@@ -3623,7 +3621,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             }
             else if (opt.equals("Retry"))
             {
-                //                mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
+                // mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
                 doTilesetSelectAction();
                 return;
             }
@@ -3652,7 +3650,7 @@ public class TileEditor extends EbHackModule implements ActionListener
      */
     public void actionPerformed(ActionEvent ae)
     {
-        //respond to each component
+        // respond to each component
         if (ae.getActionCommand().equals("tilesetSelector"))
         {
             doTilesetSelectAction();
@@ -3689,7 +3687,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         else if (ae.getActionCommand().equals("arrangementEditor"))
         {
             setFocus((Component) ae.getSource());
-            //updateArrangementSelector();
+            // updateArrangementSelector();
             arrangementSelector.repaintCurrentArrangement();
         }
         else if (ae.getActionCommand().equals("tileDrawingArea"))
@@ -3720,17 +3718,17 @@ public class TileEditor extends EbHackModule implements ActionListener
             getSelectedTileset().setTile(getCurrentTile() + 512,
                 tileForegroundDrawingArea.getByteArrImage());
         }
-        //default window stuff
+        // default window stuff
         else if (ae.getActionCommand().equals("apply"))
         {
-            //writeInfo(true);
+            // writeInfo(true);
             writeInfo(rom);
         }
         else if (ae.getActionCommand().equals("close"))
         {
             hide();
         }
-        //flipping
+        // flipping
         else if (ae.getActionCommand().equals("hFlip"))
         {
             if (getCurrentComponent() instanceof ImageDrawingArea)
@@ -3741,13 +3739,13 @@ public class TileEditor extends EbHackModule implements ActionListener
             if (getCurrentComponent() instanceof ImageDrawingArea)
                 ((ImageDrawingArea) getCurrentComponent()).doVFlip();
         }
-        //undo
+        // undo
         else if (ae.getActionCommand().equals("undo"))
         {
             getCurrentUndoable().undo();
             getCurrentComponent().repaint();
         }
-        //copy&paste stuff
+        // copy&paste stuff
         else if (ae.getActionCommand().equals("cut"))
         {
             getCurrentCopyAndPaster().cut();
@@ -3768,7 +3766,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             getCurrentCopyAndPaster().delete();
             getCurrentComponent().repaint();
         }
-        //copy&paste both stuff
+        // copy&paste both stuff
         else if (ae.getActionCommand().equals("cutBoth"))
         {
             this.cutBoth();
@@ -3785,7 +3783,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             this.deleteBoth();
         }
-        //copy&paste cb stuff
+        // copy&paste cb stuff
         else if (ae.getActionCommand().equals("cb_show"))
         {
             if (cbdia == null)
@@ -3818,7 +3816,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             tileForegroundDrawingArea.paste(fg, true);
             tileForegroundDrawingArea.repaint();
         }
-        //backgroud <--> foreground copies
+        // backgroud <--> foreground copies
         else if (ae.getActionCommand().equals("bfCopy"))
         {
             this.tileForegroundDrawingArea.setImage(this.tileDrawingArea
@@ -3833,7 +3831,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             this.tileDrawingArea.repaint();
             this.setFocus(tileDrawingArea);
         }
-        //gridline toggle
+        // gridline toggle
         else if (ae.getActionCommand().equals("tileSelGridLines"))
         {
             mainWindow.getContentPane().invalidate();
@@ -3862,7 +3860,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             arrangementEditor.repaint();
             mainWindow.getContentPane().validate();
         }
-        //import/export
+        // import/export
         else if (ae.getActionCommand().equals("importTile"))
         {
             importTile(getCurrentTileset(), getCurrentTile());
@@ -3941,7 +3939,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             exportAll();
         }
-        //focus stuff
+        // focus stuff
         else if (ae.getActionCommand().equals("bgeFocus"))
         {
             setFocus(this.tileDrawingArea);
@@ -4014,20 +4012,20 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     private void updateTileGraphicsEditor()
     {
-        //		this.tileDrawingArea.setImage(
-        //			getSelectedTileset().getTileImage(
-        //				getCurrentTile(),
-        //				getCurrentPalette(),
-        //				getCurrentSubPalette(),
-        //				false));
+        // this.tileDrawingArea.setImage(
+        // getSelectedTileset().getTileImage(
+        // getCurrentTile(),
+        // getCurrentPalette(),
+        // getCurrentSubPalette(),
+        // false));
         this.tileDrawingArea.setImage(getSelectedTileset().getTile(
             getCurrentTile()));
-        //		this.tileForegroundDrawingArea.setImage(
-        //			getSelectedTileset().getTileImage(
-        //				getCurrentTile() ^ 512,
-        //				getCurrentPalette(),
-        //				getCurrentSubPalette(),
-        //				false));
+        // this.tileForegroundDrawingArea.setImage(
+        // getSelectedTileset().getTileImage(
+        // getCurrentTile() ^ 512,
+        // getCurrentPalette(),
+        // getCurrentSubPalette(),
+        // false));
         this.tileForegroundDrawingArea
             .setEnabled(((getCurrentTile() & 511) < 384));
         this.tileForegroundDrawingArea.setImage(getSelectedTileset().getTile(
@@ -4040,7 +4038,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         arrangementEditor.resetUndo();
     }
 
-    //getCurrent...() methods
+    // getCurrent...() methods
     private int getCurrentTileset()
     {
         return this.tilesetSelector.getSelectedIndex();
@@ -4065,7 +4063,7 @@ public class TileEditor extends EbHackModule implements ActionListener
     private int getCurrentTile()
     {
         return this.tileSelector.getCurrentTile();
-        //that and that + 512 are current
+        // that and that + 512 are current
     }
 
     private int getCurrentArrangement()
@@ -4088,7 +4086,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         return drawingAreaFocusIndicator.getCurrentFocus();
     }
 
-    //focus changing
+    // focus changing
     private void setFocus(Component focusedComponent)
     {
         drawingAreaFocusIndicator.setFocus(focusedComponent);
@@ -4135,7 +4133,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         setFocus(getFocusNum() + 1);
     }
 
-    //copy and paste both stuff
+    // copy and paste both stuff
     private class Paster
     {
         private byte[][] data1, data2;
@@ -4263,7 +4261,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         cbdia.pack();
     }
 
-    //import and export stuff
+    // import and export stuff
     public static void importTile(int tileset, int tile, File f)
     {
         try

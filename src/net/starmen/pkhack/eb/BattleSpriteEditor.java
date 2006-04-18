@@ -35,12 +35,12 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.BMPReader;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JSearchableComboBox;
-import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
 
@@ -109,8 +109,8 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
             if (isInited)
                 return 0;
 
-            //            System.out.println("Reading battle sprite #" + num + " from 0x"
-            //                + Integer.toHexString(orgPointer));
+            // System.out.println("Reading battle sprite #" + num + " from 0x"
+            // + Integer.toHexString(orgPointer));
 
             Dimension d = BATTLE_SPRITE_SIZES[size];
 
@@ -128,8 +128,8 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
                     return tmp[0];
                 }
             }
-            //                System.out.println("Finished decompressing battle sprite #"
-            //                    + num);
+            // System.out.println("Finished decompressing battle sprite #"
+            // + num);
             orgCompLen = tmp[1];
             int offset = 0;
             for (int q = 0; q < (d.height / 32); q++)
@@ -148,7 +148,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
                 }
             }
             isInited = true;
-            //                System.out.println("Finished reading battle sprite #" + num);
+            // System.out.println("Finished reading battle sprite #" + num);
             if (tmp[0] < 0)
             {
                 return tmp[0];
@@ -174,12 +174,12 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
         public boolean writeInfo()
         {
-            //if not inited, don't write anything
+            // if not inited, don't write anything
             if (!isInited)
                 return false;
 
             AbstractRom rom = hm.rom;
-            //write size 4 bytes after the start, 4 byte pointer is first
+            // write size 4 bytes after the start, 4 byte pointer is first
             rom.write(address + 4, size);
             Dimension d = BATTLE_SPRITE_SIZES[size];
 
@@ -238,7 +238,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         {
             readInfo(true);
 
-            //resize to incoming sprite
+            // resize to incoming sprite
             for (int i = 1; i < BATTLE_SPRITE_SIZES.length; i++)
             {
                 Dimension d = BATTLE_SPRITE_SIZES[i];
@@ -410,9 +410,9 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         entryNE.add(getLabeledComponent("Palette: ", palSelector,
             "Palettes 0-31 real palettes, rest are battle swirl data."));
 
-        //        sizeSelector = createJComboBoxFromArray(new String[]{"[01] 32x32",
-        //            "[02] 32x64", "[03] 64x32", "[04] 64x64", "[05] 128x64",
-        //            "[06] 128x128"});
+        // sizeSelector = createJComboBoxFromArray(new String[]{"[01] 32x32",
+        // "[02] 32x64", "[03] 64x32", "[04] 64x64", "[05] 128x64",
+        // "[06] 128x128"});
         sizeSelector = createJComboBoxFromArray(new String[]{"[01] 32x32",
             "[02] 64x32", "[03] 32x64", "[04] 64x64", "[05] 128x64",
             "[06] 128x128"});
@@ -442,13 +442,13 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
         da = new IntArrDrawingArea(dt, pal);
         da.setZoom(10);
-        //default size for first battle sprite at default zoom (32x32@1000%)
+        // default size for first battle sprite at default zoom (32x32@1000%)
         da.setPreferredSize(new Dimension(321, 321));
         entry.add(jsp = new JScrollPane(da), BorderLayout.CENTER);
 
         mainWindow.getContentPane().add(entry, BorderLayout.CENTER);
 
-        //menu
+        // menu
         JMenuBar mb = new JMenuBar();
 
         JMenu fileMenu = new JMenu("File");
@@ -545,7 +545,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
     private void doSpriteSelectAction()
     {
-        //don't even try if selector is -1
+        // don't even try if selector is -1
         if (getCurrentSprite() == -1)
             return;
         int err = getSelectedSprite().readInfo(false);
@@ -624,27 +624,27 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
                 }
                 catch (NumberFormatException nfe)
                 {
-                    //we shouldn't get number format exceptions
-                    //the regular expression should remove all
-                    //non-digit characters
+                    // we shouldn't get number format exceptions
+                    // the regular expression should remove all
+                    // non-digit characters
                     System.err
                         .println("This error cannot occur (BattleSpriteEditor"
                             + ".actionPerformed(palSelector) "
                             + "NumberFormatException).");
                     nfe.printStackTrace();
-                    //set it back to a legal value
+                    // set it back to a legal value
                     palSelector.setSelectedIndex(currPal);
                     return;
                 }
                 catch (IllegalArgumentException iae)
                 {
-                    //number out of range
-                    //would mean number too high, negitive is prevented
-                    //by the regular expression
-                    //change the palette selector back to what it was
+                    // number out of range
+                    // would mean number too high, negitive is prevented
+                    // by the regular expression
+                    // change the palette selector back to what it was
                     palSelector.setSelectedIndex(currPal);
-                    //previous line should have caused a call to this method,
-                    //no need to do it again
+                    // previous line should have caused a call to this method,
+                    // no need to do it again
                     return;
                 }
             }
@@ -795,7 +795,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
 
     private int getCurrentPalNum()
     {
-        //make sure nothing ever thinks palette is #-1
+        // make sure nothing ever thinks palette is #-1
         int tmp = palSelector.getSelectedIndex();
         if (tmp != -1)
             currPal = tmp;
@@ -880,7 +880,6 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         }
         try
         {
-            byte[][] img = getSelectedSprite().getSprite();
             ImageIO.write((BufferedImage) da.getImage(), "png", f);
         }
         catch (IOException e)
@@ -1138,7 +1137,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
         {
             byte[][] img = getSelectedSprite().getSprite();
             ImageIO.write(drawImage(img, BITMAP_PAL), "png", f);
-            //new Bitmap(drawImage(img,
+            // new Bitmap(drawImage(img,
             // BITMAP_PAL)).writeTo(f.getAbsolutePath());
         }
         catch (IOException e)

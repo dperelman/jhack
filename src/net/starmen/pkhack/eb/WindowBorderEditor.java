@@ -19,7 +19,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
 
 import javax.swing.Box;
@@ -45,7 +44,6 @@ import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IPSDatabase;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
-import net.starmen.pkhack.MaxLengthDocument;
 import net.starmen.pkhack.NodeSelectionListener;
 import net.starmen.pkhack.PrefsCheckBox;
 import net.starmen.pkhack.SpritePalette;
@@ -136,9 +134,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
     {
         byte[] buffer = new byte[8192];
         int[] tmp;
-        AbstractRom r = readOrg
-            ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
-            : hm.rom;
+        AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(hm.rom
+            .getRomType()) : hm.rom;
         int address = r.readRegAsmPointer(pointerAddress);
         System.out.println("Reading from address: 0x"
             + Integer.toHexString(address) + " (" + address + ")");
@@ -192,8 +189,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                 rom.readPaletteSeek(palettes[pal][s]);
     }
 
-    //    public static final int[][] FLAVOR_NAME_LOC = new int[][]{{0x04c34d, 12},
-    //        {0x04c35a, 11}, {0x04c366, 18}, {0x04c378, 14}, {0x04c386, 14}};
+    // public static final int[][] FLAVOR_NAME_LOC = new int[][]{{0x04c34d, 12},
+    // {0x04c35a, 11}, {0x04c366, 18}, {0x04c378, 14}, {0x04c386, 14}};
 
     private static void readFlavorNames(HackModule hm, boolean readOrg)
     {
@@ -202,15 +199,14 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
          * 04c366:18 #21 from JeffMan's list 04c378:14 #22 from JeffMan's list
          * 04c386:14 #23 from JeffMan's list
          */
-        AbstractRom r = readOrg
-            ? JHack.main.getOrginalRomFile(hm.rom.getRomType())
-            : hm.rom;
+        AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(hm.rom
+            .getRomType()) : hm.rom;
         for (int i = 0; i < FLAVOR_NAME_POINTERS.length; i++)
         {
-            //            int offset = hm.rom.readRegAsmPointer(FLAVOR_NAME_POINTERS[i]);
-            //            System.out
-            //                .println("WindowBorderEditor.readFlavorNames(): offset=0x"
-            //                    + Integer.toHexString(offset));
+            // int offset = hm.rom.readRegAsmPointer(FLAVOR_NAME_POINTERS[i]);
+            // System.out
+            // .println("WindowBorderEditor.readFlavorNames(): offset=0x"
+            // + Integer.toHexString(offset));
             flavorNames[i] = hm.readRegString(r
                 .readRegAsmPointer(FLAVOR_NAME_POINTERS[i]));
             flavorLens[i] = flavorNames[i].length() + 1;
@@ -242,14 +238,14 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                     }
                 }
                 in.close();
-                //                boolean[] tmp = new boolean[8];
-                //                for (int j = 0; j < 423; j++)
-                //                {
-                //                    tmp[subPalNums[j]] = true;
-                //                }
-                //                for (int j = 0; j < 8; j++)
-                //                    System.out.println("subpal #" + j + " is "
-                //                        + (tmp[j] ? "" : "un") + "used.");
+                // boolean[] tmp = new boolean[8];
+                // for (int j = 0; j < 423; j++)
+                // {
+                // tmp[subPalNums[j]] = true;
+                // }
+                // for (int j = 0; j < 8; j++)
+                // System.out.println("subpal #" + j + " is "
+                // + (tmp[j] ? "" : "un") + "used.");
             }
             catch (IOException e)
             {
@@ -267,7 +263,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         oldLens[0] = readGraphics(0x47E47, 416, hm, readOrg); // and B798
         if (oldLens[0] < 0)
             return false;
-        //oldLens[0] = readGraphics(0xB798);
+        // oldLens[0] = readGraphics(0xB798);
         oldLens[1] = readGraphics(0x47EAA, 7, hm, readOrg);
         if (oldLens[1] < 0)
             return false;
@@ -301,7 +297,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
     {
         if (oldLen < 0)
             return oldLen;
-        byte[] buffer = new byte[8192]; //new byte[num * 16];
+        byte[] buffer = new byte[8192]; // new byte[num * 16];
         for (int i = 0; i < num; i++)
             HackModule.write2BPPArea(graphics[wOff++], buffer, 16 * i, 0, 0);
         byte[] comp = new byte[8192];
@@ -345,49 +341,28 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         for (int i = 0; i < FLAVOR_NAME_POINTERS.length; i++)
         {
             writeFlavorName(hm, i);
-            //            byte[] str = new byte[flavorNames[i].length() + 1];
-            //            char[] c = hm.simpToGameString(flavorNames[i].toCharArray());
-            //            for (int j = 0; j < c.length; j++)
-            //                str[j] = (byte) c[j];
-            //            str[str.length - 1] = 0;
-            //            hm.writeToFreeASMLink(str, FLAVOR_NAME_POINTERS[i],
+            // byte[] str = new byte[flavorNames[i].length() + 1];
+            // char[] c = hm.simpToGameString(flavorNames[i].toCharArray());
+            // for (int j = 0; j < c.length; j++)
+            // str[j] = (byte) c[j];
+            // str[str.length - 1] = 0;
+            // hm.writeToFreeASMLink(str, FLAVOR_NAME_POINTERS[i],
             // flavorLens[i],
-            //                str.length);
-            //            // hm.writeRegString(FLAVOR_NAME_LOC[i][0],
+            // str.length);
+            // // hm.writeRegString(FLAVOR_NAME_LOC[i][0],
             // FLAVOR_NAME_LOC[i][1],
-            //            // flavorNames[i]);
+            // // flavorNames[i]);
         }
     }
 
-    private static void writeSubPalNums()
-    {
-        try
-        {
-            OutputStream out = new FileOutputStream("windowGPals.dat");
-            int i = 0;
-            while (i < 423)
-            {
-                int w = 0;
-                for (int j = 0; j < 8; j++)
-                {
-                    if (i < 423)
-                        w |= (subPalNums[i++] & 7) << (j * 3);
-                }
-                out.write(w);
-                out.write(w >> 8);
-                out.write(w >> 16);
-            }
-            out.close();
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
+    /*
+     * private static void writeSubPalNums() { try { OutputStream out = new
+     * FileOutputStream("windowGPals.dat"); int i = 0; while (i < 423) { int w =
+     * 0; for (int j = 0; j < 8; j++) { if (i < 423) w |= (subPalNums[i++] & 7) <<
+     * (j * 3); } out.write(w); out.write(w >> 8); out.write(w >> 16); }
+     * out.close(); } catch (FileNotFoundException e) { e.printStackTrace(); }
+     * catch (IOException e) { e.printStackTrace(); } }
+     */
 
     public static void writeGraphics(EbHackModule hm)
     {
@@ -402,7 +377,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         writeGraphics(hm);
         writePalettes(hm.rom);
         writeFlavorNames(hm);
-        //writeSubPalNums();
+        // writeSubPalNums();
     }
 
     private void drawTile(int i, Graphics g, int subpal, boolean zeroBlack,
@@ -411,22 +386,22 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         if (getCurrentFlavor() == -1)
             return;
         byte[][] img = graphics[i];
-        //        if (hFlip)
-        //        {
-        //            byte[][] tmp = new byte[img.length][img[0].length];
-        //            for (int ax = 0; ax < tmp.length; ax++)
-        //                for (int ay = 0; ay < tmp[0].length; ay++)
-        //                    tmp[ax][ay] = img[img.length - ax - 1][ay];
-        //            img = tmp;
-        //        }
-        //        if (vFlip)
-        //        {
-        //            byte[][] tmp = new byte[img.length][img[0].length];
-        //            for (int ax = 0; ax < tmp.length; ax++)
-        //                for (int ay = 0; ay < tmp[0].length; ay++)
-        //                    tmp[ax][ay] = img[ax][img.length - ay - 1];
-        //            img = tmp;
-        //        }
+        // if (hFlip)
+        // {
+        // byte[][] tmp = new byte[img.length][img[0].length];
+        // for (int ax = 0; ax < tmp.length; ax++)
+        // for (int ay = 0; ay < tmp[0].length; ay++)
+        // tmp[ax][ay] = img[img.length - ax - 1][ay];
+        // img = tmp;
+        // }
+        // if (vFlip)
+        // {
+        // byte[][] tmp = new byte[img.length][img[0].length];
+        // for (int ax = 0; ax < tmp.length; ax++)
+        // for (int ay = 0; ay < tmp[0].length; ay++)
+        // tmp[ax][ay] = img[ax][img.length - ay - 1];
+        // img = tmp;
+        // }
         Color[] pal = new Color[4];
         System.arraycopy(palettes[getCurrentFlavor()][subpal], 0, pal, 0, 4);
         if (zeroBlack)
@@ -437,15 +412,15 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             8 * zoom, 8 * zoom, null);
     }
 
-    private void drawTile(int i, Graphics g, int subpal, int x, int y, int zoom)
-    {
-        drawTile(i, g, subpal, false, false, false, x, y, zoom);
-    }
+    /*
+     * private void drawTile(int i, Graphics g, int subpal, int x, int y, int
+     * zoom) { drawTile(i, g, subpal, false, false, false, x, y, zoom); }
+     */
 
-    private void drawTile(int i, Graphics g, int x, int y, int zoom)
-    {
-        drawTile(i, g, subPalNums[i], x, y, zoom);
-    }
+    /*
+     * private void drawTile(int i, Graphics g, int x, int y, int zoom) {
+     * drawTile(i, g, subPalNums[i], x, y, zoom); }
+     */
 
     private class TileSelector extends DoubleSelTileSelector
     {
@@ -486,7 +461,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
 
         public int getTileCount()
         {
-            return graphics.length; //TODO better way?
+            return graphics.length; // TODO better way?
         }
 
         public Image getTileImage(int tile)
@@ -632,313 +607,312 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                 repaintTile(getCurrentTile() + tileSelector.getTilesWide());
         }
 
-        //        private void draw(int x, int y, Graphics g)
-        //        {
-        //            int a = arrangement[x][y], arr = a & 0x1ff;
-        //            if (getCurrentFlavor() > 0 && arr > 15 && arr < 23) arr += 400;
-        //            drawTile(arr, g, (a >> 10) & 7, true, (a & 0x4000) != 0,
-        //                (a & 0x8000) != 0, x * 8 * getZoom(), y * 8 * getZoom(),
-        //                getZoom());
-        //        }
+        // private void draw(int x, int y, Graphics g)
+        // {
+        // int a = arrangement[x][y], arr = a & 0x1ff;
+        // if (getCurrentFlavor() > 0 && arr > 15 && arr < 23) arr += 400;
+        // drawTile(arr, g, (a >> 10) & 7, true, (a & 0x4000) != 0,
+        // (a & 0x8000) != 0, x * 8 * getZoom(), y * 8 * getZoom(),
+        // getZoom());
+        // }
         //
-        //        public void draw(int x, int y)
-        //        {
-        //            draw(x, y, this.getGraphics());
-        //        }
+        // public void draw(int x, int y)
+        // {
+        // draw(x, y, this.getGraphics());
+        // }
         //
-        //        public void draw(int i)
-        //        {
-        //            for (int x = 0; x < arrangement.length; x++)
-        //                for (int y = 0; y < arrangement[0].length; y++)
-        //                {
-        //                    int arr = arrangement[x][y] & 0x1ff;
-        //                    if (arr
-        //                        + (getCurrentFlavor() > 0 && arr > 15 && arr < 23
-        //                            ? 400
-        //                            : 0) == i) draw(x, y);
-        //                }
-        //        }
+        // public void draw(int i)
+        // {
+        // for (int x = 0; x < arrangement.length; x++)
+        // for (int y = 0; y < arrangement[0].length; y++)
+        // {
+        // int arr = arrangement[x][y] & 0x1ff;
+        // if (arr
+        // + (getCurrentFlavor() > 0 && arr > 15 && arr < 23
+        // ? 400
+        // : 0) == i) draw(x, y);
+        // }
+        // }
         //
-        //        public void repaintCurrent()
-        //        {
-        //            draw(getCurrentTile());
-        //            if (tileSelector.isDoubleSel())
-        //                draw(getCurrentTile() + TileSelector.TILES_WIDE);
-        //        }
+        // public void repaintCurrent()
+        // {
+        // draw(getCurrentTile());
+        // if (tileSelector.isDoubleSel())
+        // draw(getCurrentTile() + TileSelector.TILES_WIDE);
+        // }
         //
-        //        protected Image getArrangementImage(int[][] selection)
-        //        {
-        //            initArr();
+        // protected Image getArrangementImage(int[][] selection)
+        // {
+        // initArr();
         //            
-        //            BufferedImage out = new BufferedImage(
-        //                (isDrawGridLines() ? arrangement.length - 1 : 0)
-        //                    + (int) (getTileSize() * arrangement.length * getZoom()),
-        //                (isDrawGridLines() ? arrangement[0].length - 1 : 0)
-        //                    + (int) (getTileSize() * arrangement[0].length * getZoom()),
-        //                BufferedImage.TYPE_4BYTE_ABGR_PRE);
-        //            Graphics g = out.getGraphics();
-        //            for (int x = 0; x < arrangement.length; x++)
-        //            {
-        //                for (int y = 0; y < arrangement[0].length; y++)
-        //                {
-        //                    draw(x, y, g);
+        // BufferedImage out = new BufferedImage(
+        // (isDrawGridLines() ? arrangement.length - 1 : 0)
+        // + (int) (getTileSize() * arrangement.length * getZoom()),
+        // (isDrawGridLines() ? arrangement[0].length - 1 : 0)
+        // + (int) (getTileSize() * arrangement[0].length * getZoom()),
+        // BufferedImage.TYPE_4BYTE_ABGR_PRE);
+        // Graphics g = out.getGraphics();
+        // for (int x = 0; x < arrangement.length; x++)
+        // {
+        // for (int y = 0; y < arrangement[0].length; y++)
+        // {
+        // draw(x, y, g);
         //
-        //                    if (selection[x][y] != -1)
-        //                    {
-        //                        g.setColor(new Color(255, 255, 0, 128));
-        //                        g.fillRect((int) (x * 8 * getZoom())
-        //                            + (isDrawGridLines() ? x : 0),
-        //                            (int) (y * 8 * getZoom())
-        //                                + (isDrawGridLines() ? y : 0),
-        //                            (int) (8 * getZoom()), (int) (8 * getZoom()));
-        //                    }
-        //                }
-        //            }
-        //            return out;
-        //        }
+        // if (selection[x][y] != -1)
+        // {
+        // g.setColor(new Color(255, 255, 0, 128));
+        // g.fillRect((int) (x * 8 * getZoom())
+        // + (isDrawGridLines() ? x : 0),
+        // (int) (y * 8 * getZoom())
+        // + (isDrawGridLines() ? y : 0),
+        // (int) (8 * getZoom()), (int) (8 * getZoom()));
+        // }
+        // }
+        // }
+        // return out;
+        // }
     }
-    //    private class ArrangementEditor extends AbstractButton implements
-    //        MouseListener, MouseMotionListener
-    //    {
-    //        private static final int WIDTH = 32, HEIGHT = 28; //size of EB screen for
+    // private class ArrangementEditor extends AbstractButton implements
+    // MouseListener, MouseMotionListener
+    // {
+    // private static final int WIDTH = 32, HEIGHT = 28; //size of EB screen for
     // 8x8's
-    //        private static final int TILE_SIZE = 8;
-    //        private static final int ZOOM = 1;
-    //        private static final boolean EDITABLE = false;
+    // private static final int TILE_SIZE = 8;
+    // private static final int ZOOM = 1;
+    // private static final boolean EDITABLE = false;
     //
-    //        private boolean drawGridLines = false;
-    //        private int[][] arrangement = new int[WIDTH][HEIGHT];
+    // private boolean drawGridLines = false;
+    // private int[][] arrangement = new int[WIDTH][HEIGHT];
     //
-    //        public boolean drawGridLines()
-    //        {
-    //            return drawGridLines;
-    //        }
+    // public boolean drawGridLines()
+    // {
+    // return drawGridLines;
+    // }
     //
-    //        public void setDrawGridLines(boolean in)
-    //        {
-    //            drawGridLines = in;
-    //        }
+    // public void setDrawGridLines(boolean in)
+    // {
+    // drawGridLines = in;
+    // }
     //
-    //        private int makeArrangementNumber(int tile, int subPalette,
-    //            boolean hFlip, boolean vFlip)
-    //        {
-    //            return (tile & 0x01ff) | (((subPalette) & 7) << 10)
-    //                | (hFlip ? 0x4000 : 0) | (vFlip ? 0x8000 : 0);
-    //        }
+    // private int makeArrangementNumber(int tile, int subPalette,
+    // boolean hFlip, boolean vFlip)
+    // {
+    // return (tile & 0x01ff) | (((subPalette) & 7) << 10)
+    // | (hFlip ? 0x4000 : 0) | (vFlip ? 0x8000 : 0);
+    // }
     //
-    //        private void leftClickAction(int x, int y)
-    //        {
-    //            if (EDITABLE)
-    //            {
-    //                //put current tile with current subPalette with no flip at clicked
-    //                // on location
-    //                if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
-    //                    arrangement[x][y] = makeArrangementNumber(getCurrentTile(),
-    //                        getCurrentSubPal(), false, false);
-    //                if (tileSelector.isDoubleSel() && x >= 0 && x < WIDTH
-    //                    && y + 1 >= 0 && y + 1 < HEIGHT)
-    //                    arrangement[x][y + 1] = makeArrangementNumber(
-    //                        getCurrentTile() + TileSelector.TILES_WIDE,
-    //                        getCurrentSubPal(), false, false);
-    //                this.repaint();
-    //            }
-    //            else
-    //            {
-    //                leftShiftClickAction(x, y);
-    //            }
-    //        }
+    // private void leftClickAction(int x, int y)
+    // {
+    // if (EDITABLE)
+    // {
+    // //put current tile with current subPalette with no flip at clicked
+    // // on location
+    // if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
+    // arrangement[x][y] = makeArrangementNumber(getCurrentTile(),
+    // getCurrentSubPal(), false, false);
+    // if (tileSelector.isDoubleSel() && x >= 0 && x < WIDTH
+    // && y + 1 >= 0 && y + 1 < HEIGHT)
+    // arrangement[x][y + 1] = makeArrangementNumber(
+    // getCurrentTile() + TileSelector.TILES_WIDE,
+    // getCurrentSubPal(), false, false);
+    // this.repaint();
+    // }
+    // else
+    // {
+    // leftShiftClickAction(x, y);
+    // }
+    // }
     //
-    //        private void rightClickAction(int x, int y)
-    //        {
-    //            if (EDITABLE)
-    //            {
-    //                //add one to flip of current tile (sorta rotation)
-    //                if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
-    //                {
-    //                    arrangement[x][y] += 0x4000;
-    //                    arrangement[x][y] &= 0xffff;
-    //                }
-    //                this.repaint();
-    //            }
-    //            else
-    //            {
-    //                leftShiftClickAction(x, y);
-    //            }
-    //        }
+    // private void rightClickAction(int x, int y)
+    // {
+    // if (EDITABLE)
+    // {
+    // //add one to flip of current tile (sorta rotation)
+    // if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
+    // {
+    // arrangement[x][y] += 0x4000;
+    // arrangement[x][y] &= 0xffff;
+    // }
+    // this.repaint();
+    // }
+    // else
+    // {
+    // leftShiftClickAction(x, y);
+    // }
+    // }
     //
-    //        private void leftShiftClickAction(int x, int y)
-    //        {
-    //            //set tile editor to current tile
-    //            if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
-    //            {
-    //                tileSelector.setCurrentTile(arrangement[x][y] & 0x1ff);
-    //                palSelector.setSelectedIndex((arrangement[x][y] >> 10) & 7);
-    //            }
-    //        }
+    // private void leftShiftClickAction(int x, int y)
+    // {
+    // //set tile editor to current tile
+    // if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
+    // {
+    // tileSelector.setCurrentTile(arrangement[x][y] & 0x1ff);
+    // palSelector.setSelectedIndex((arrangement[x][y] >> 10) & 7);
+    // }
+    // }
     //
-    //        public void mouseClicked(MouseEvent me)
-    //        {
-    //            if ((me.getModifiers() & MouseEvent.ALT_MASK) != 0) return;
+    // public void mouseClicked(MouseEvent me)
+    // {
+    // if ((me.getModifiers() & MouseEvent.ALT_MASK) != 0) return;
     //
-    //            int x = me.getX() / (TILE_SIZE * ZOOM + (drawGridLines() ? 1 : 0));
-    //            int y = me.getY() / (TILE_SIZE * ZOOM + (drawGridLines() ? 1 : 0));
-    //            if (me.getButton() == MouseEvent.BUTTON1)
-    //            {
-    //                if ((me.getModifiers() & MouseEvent.SHIFT_MASK) != 0)
-    //                {
-    //                    leftShiftClickAction(x, y);
-    //                }
-    //                else if (!((me.getModifiers() & MouseEvent.CTRL_MASK) != 0))
-    //                {
-    //                    leftClickAction(x, y);
-    //                }
-    //            }
-    //            else if (me.getButton() == MouseEvent.BUTTON3)
-    //            {
-    //                rightClickAction(x, y);
-    //            }
-    //            this.fireActionPerformed(new ActionEvent(this,
-    //                ActionEvent.ACTION_PERFORMED, this.getActionCommand()));
-    //        }
+    // int x = me.getX() / (TILE_SIZE * ZOOM + (drawGridLines() ? 1 : 0));
+    // int y = me.getY() / (TILE_SIZE * ZOOM + (drawGridLines() ? 1 : 0));
+    // if (me.getButton() == MouseEvent.BUTTON1)
+    // {
+    // if ((me.getModifiers() & MouseEvent.SHIFT_MASK) != 0)
+    // {
+    // leftShiftClickAction(x, y);
+    // }
+    // else if (!((me.getModifiers() & MouseEvent.CTRL_MASK) != 0))
+    // {
+    // leftClickAction(x, y);
+    // }
+    // }
+    // else if (me.getButton() == MouseEvent.BUTTON3)
+    // {
+    // rightClickAction(x, y);
+    // }
+    // this.fireActionPerformed(new ActionEvent(this,
+    // ActionEvent.ACTION_PERFORMED, this.getActionCommand()));
+    // }
     //
-    //        public void mousePressed(MouseEvent me)
-    //        {}
+    // public void mousePressed(MouseEvent me)
+    // {}
     //
-    //        public void mouseReleased(MouseEvent me)
-    //        {}
+    // public void mouseReleased(MouseEvent me)
+    // {}
     //
-    //        public void mouseEntered(MouseEvent me)
-    //        {}
+    // public void mouseEntered(MouseEvent me)
+    // {}
     //
-    //        public void mouseExited(MouseEvent me)
-    //        {}
+    // public void mouseExited(MouseEvent me)
+    // {}
     //
-    //        /*
-    //         * (non-Javadoc)
-    //         *
-    //         * @see
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see
     // java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
-    //         */
-    //        public void mouseDragged(MouseEvent me)
-    //        {
-    //            int x = me.getX() / (TILE_SIZE * ZOOM + (drawGridLines() ? 1 : 0));
-    //            int y = me.getY() / (TILE_SIZE * ZOOM + (drawGridLines() ? 1 : 0));
-    //            if ((me.getModifiers() & MouseEvent.SHIFT_MASK) != 0)
-    //            {
-    //                leftShiftClickAction(x, y);
-    //            }
-    //            else
-    //            {
-    //                leftClickAction(x, y);
-    //            }
-    //        }
+    // */
+    // public void mouseDragged(MouseEvent me)
+    // {
+    // int x = me.getX() / (TILE_SIZE * ZOOM + (drawGridLines() ? 1 : 0));
+    // int y = me.getY() / (TILE_SIZE * ZOOM + (drawGridLines() ? 1 : 0));
+    // if ((me.getModifiers() & MouseEvent.SHIFT_MASK) != 0)
+    // {
+    // leftShiftClickAction(x, y);
+    // }
+    // else
+    // {
+    // leftClickAction(x, y);
+    // }
+    // }
     //
-    //        public void mouseMoved(MouseEvent me)
-    //        {}
+    // public void mouseMoved(MouseEvent me)
+    // {}
     //
-    //        private void draw(int x, int y, Graphics g)
-    //        {
-    //            int a = arrangement[x][y], arr = a & 0x1ff;
-    //            if (getCurrentFlavor() > 0 && arr > 15 && arr < 23) arr += 400;
-    //            drawTile(arr, g, (a >> 10) & 7, true, (a & 0x4000) != 0,
-    //                (a & 0x8000) != 0, x * 8 * ZOOM, y * 8 * ZOOM, ZOOM);
-    //        }
+    // private void draw(int x, int y, Graphics g)
+    // {
+    // int a = arrangement[x][y], arr = a & 0x1ff;
+    // if (getCurrentFlavor() > 0 && arr > 15 && arr < 23) arr += 400;
+    // drawTile(arr, g, (a >> 10) & 7, true, (a & 0x4000) != 0,
+    // (a & 0x8000) != 0, x * 8 * ZOOM, y * 8 * ZOOM, ZOOM);
+    // }
     //
-    //        public void draw(int x, int y)
-    //        {
-    //            draw(x, y, this.getGraphics());
-    //        }
+    // public void draw(int x, int y)
+    // {
+    // draw(x, y, this.getGraphics());
+    // }
     //
-    //        public void draw(int i)
-    //        {
-    //            for (int x = 0; x < arrangement.length; x++)
-    //                for (int y = 0; y < arrangement[0].length; y++)
-    //                {
-    //                    int arr = arrangement[x][y] & 0x1ff;
-    //                    if (arr
-    //                        + (getCurrentFlavor() > 0 && arr > 15 && arr < 23
-    //                            ? 400
-    //                            : 0) == i) draw(x, y);
-    //                }
-    //        }
+    // public void draw(int i)
+    // {
+    // for (int x = 0; x < arrangement.length; x++)
+    // for (int y = 0; y < arrangement[0].length; y++)
+    // {
+    // int arr = arrangement[x][y] & 0x1ff;
+    // if (arr
+    // + (getCurrentFlavor() > 0 && arr > 15 && arr < 23
+    // ? 400
+    // : 0) == i) draw(x, y);
+    // }
+    // }
     //
-    //        public void repaintCurrent()
-    //        {
-    //            draw(getCurrentTile());
-    //            if (tileSelector.isDoubleSel())
-    //                draw(getCurrentTile() + TileSelector.TILES_WIDE);
-    //        }
+    // public void repaintCurrent()
+    // {
+    // draw(getCurrentTile());
+    // if (tileSelector.isDoubleSel())
+    // draw(getCurrentTile() + TileSelector.TILES_WIDE);
+    // }
     //
-    //        public void paint(Graphics g)
-    //        {
-    //            for (int x = 0; x < arrangement.length; x++)
-    //                for (int y = 0; y < arrangement[0].length; y++)
-    //                    draw(x, y, g);
-    //        }
+    // public void paint(Graphics g)
+    // {
+    // for (int x = 0; x < arrangement.length; x++)
+    // for (int y = 0; y < arrangement[0].length; y++)
+    // draw(x, y, g);
+    // }
     //
-    //        private String actionCommand = new String();
+    // private String actionCommand = new String();
     //
-    //        public String getActionCommand()
-    //        {
-    //            return this.actionCommand;
-    //        }
+    // public String getActionCommand()
+    // {
+    // return this.actionCommand;
+    // }
     //
-    //        public void setActionCommand(String arg0)
-    //        {
-    //            this.actionCommand = arg0;
-    //        }
+    // public void setActionCommand(String arg0)
+    // {
+    // this.actionCommand = arg0;
+    // }
     //
-    //        public void writeInfo()
-    //        {
-    //            try
-    //            {
-    //                DataOutputStream out = new DataOutputStream(
-    //                    new FileOutputStream("src/" + DEFAULT_BASE_DIR
-    //                        + "windowPrevArr.dat"));
-    //                System.out.println("Writing to " + "src/" + DEFAULT_BASE_DIR
-    //                    + "windowPrevArr.dat");
-    //                for (int x = 0; x < arrangement.length; x++)
-    //                    for (int y = 0; y < arrangement[0].length; y++)
-    //                        out.writeShort(arrangement[x][y]);
-    //                out.close();
-    //            }
-    //            catch (IOException e)
-    //            {
-    //                System.out.println("Error writing window border editor "
-    //                    + "preview arrangement file (windowPrevArr.dat).");
-    //                e.printStackTrace();
-    //            }
-    //        }
+    // public void writeInfo()
+    // {
+    // try
+    // {
+    // DataOutputStream out = new DataOutputStream(
+    // new FileOutputStream("src/" + DEFAULT_BASE_DIR
+    // + "windowPrevArr.dat"));
+    // System.out.println("Writing to " + "src/" + DEFAULT_BASE_DIR
+    // + "windowPrevArr.dat");
+    // for (int x = 0; x < arrangement.length; x++)
+    // for (int y = 0; y < arrangement[0].length; y++)
+    // out.writeShort(arrangement[x][y]);
+    // out.close();
+    // }
+    // catch (IOException e)
+    // {
+    // System.out.println("Error writing window border editor "
+    // + "preview arrangement file (windowPrevArr.dat).");
+    // e.printStackTrace();
+    // }
+    // }
     //
-    //        public ArrangementEditor()
-    //        {
-    //            try
-    //            {
-    //                DataInputStream in = new DataInputStream((ClassLoader
-    //                    .getSystemResourceAsStream(DEFAULT_BASE_DIR
-    //                        + "windowPrevArr.dat")));
-    //                for (int x = 0; x < arrangement.length; x++)
-    //                    for (int y = 0; y < arrangement[0].length; y++)
-    //                        arrangement[x][y] = ((int) in.readShort()) & 0xffff;
-    //                in.close();
-    //            }
-    //            catch (IOException e)
-    //            {
-    //                System.out.println("Error reading window border editor "
-    //                    + "preview arrangement file (windowPrevArr.dat).");
-    //                e.printStackTrace();
-    //            }
+    // public ArrangementEditor()
+    // {
+    // try
+    // {
+    // DataInputStream in = new DataInputStream((ClassLoader
+    // .getSystemResourceAsStream(DEFAULT_BASE_DIR
+    // + "windowPrevArr.dat")));
+    // for (int x = 0; x < arrangement.length; x++)
+    // for (int y = 0; y < arrangement[0].length; y++)
+    // arrangement[x][y] = ((int) in.readShort()) & 0xffff;
+    // in.close();
+    // }
+    // catch (IOException e)
+    // {
+    // System.out.println("Error reading window border editor "
+    // + "preview arrangement file (windowPrevArr.dat).");
+    // e.printStackTrace();
+    // }
     //
-    //            this.setPreferredSize(new Dimension(ZOOM * WIDTH * 8, ZOOM * HEIGHT
-    //                * 8));
-    //            this.addMouseListener(this);
-    //            this.addMouseMotionListener(this);
-    //        }
-    //    }
+    // this.setPreferredSize(new Dimension(ZOOM * WIDTH * 8, ZOOM * HEIGHT
+    // * 8));
+    // this.addMouseListener(this);
+    // this.addMouseMotionListener(this);
+    // }
+    // }
     private TileSelector tileSelector;
     private JComboBox flavorSelector, palSelector;
     private JTextField flavorNameEdit;
-    private MaxLengthDocument flavorNameDoc;
     private JButton editName;
     private SpritePalette pal;
     private DrawingToolset toolset;
@@ -1161,12 +1135,12 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("2xSelect"))
         {
-            //            System.out.println("2xSelect now set to "
-            //                + Boolean.toString(JHack.main.getPrefs().getValueAsBoolean(
-            //                    "eb_window_border_editor.allow_2x_sel")) + ".");
+            // System.out.println("2xSelect now set to "
+            // + Boolean.toString(JHack.main.getPrefs().getValueAsBoolean(
+            // "eb_window_border_editor.allow_2x_sel")) + ".");
             tileSelector.setCurrentTile(getCurrentTile(), true);
         }
-        //edit menu
+        // edit menu
         else if (ae.getActionCommand().equals("undo"))
         {
             da.undo();
@@ -1192,7 +1166,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             da.delete();
             da.repaint();
         }
-        //flipping
+        // flipping
         else if (ae.getActionCommand().equals("hFlip"))
         {
             da.doHFlip();
@@ -1203,20 +1177,20 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("changeFlavorName"))
         {
-            //put edited name in names array
+            // put edited name in names array
             flavorNames[getCurrentFlavor()] = flavorNameEdit.getText();
-            //reload flavor selector with updated names array
+            // reload flavor selector with updated names array
             updateFlavorSelector();
-            //write modified name
+            // write modified name
             writeFlavorName(this, getCurrentFlavor());
-            //            writeRegString(FLAVOR_NAME_LOC[getCurrentFlavor()][0],
-            //                FLAVOR_NAME_LOC[getCurrentFlavor()][1],
-            //                flavorNames[getCurrentFlavor()]);
+            // writeRegString(FLAVOR_NAME_LOC[getCurrentFlavor()][0],
+            // FLAVOR_NAME_LOC[getCurrentFlavor()][1],
+            // flavorNames[getCurrentFlavor()]);
         }
         else if (ae.getActionCommand().equals("apply"))
         {
             writeInfo(this);
-            //            arre.writeInfo();
+            // arre.writeInfo();
         }
         else if (ae.getActionCommand().equals("close"))
         {
@@ -1265,10 +1239,10 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         return palSelector.getSelectedIndex();
     }
 
-    private Color[] getPal(int i)
-    {
-        return palettes[getCurrentFlavor()][subPalNums[i]];
-    }
+    /*
+     * private Color[] getPal(int i) { return
+     * palettes[getCurrentFlavor()][subPalNums[i]]; }
+     */
 
     private Color[] getCurrentPal()
     {
@@ -1287,7 +1261,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
 
     public static void exportData(File file, boolean[] a)
     {
-        //make a byte whichMaps. for each map if it is used set the bit at the
+        // make a byte whichMaps. for each map if it is used set the bit at the
         // place equal to the map number to 1
         int whichFlavors = 0;
         for (int i = 0; i < a.length; i++)
@@ -1301,10 +1275,10 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             out.write(whichFlavors);
             for (int f = 0; f < a.length; f++)
             {
-                //write flavor/tiles?
+                // write flavor/tiles?
                 if (a[f])
                 {
-                    //if is tiles...
+                    // if is tiles...
                     if (f == 0)
                     {
                         byte[] b = new byte[graphics.length * 32];
@@ -1314,7 +1288,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                                 0);
                         out.write(b);
                     }
-                    //... else is flavors/palettes
+                    // ... else is flavors/palettes
                     else
                     {
                         byte[] pal = new byte[palettes[f - 1].length * 4 * 2];
@@ -1347,7 +1321,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
     {
         WindowBorderImportData out = new WindowBorderImportData();
 
-        //FileInputStream in = new FileInputStream(f);
+        // FileInputStream in = new FileInputStream(f);
 
         byte version = (byte) in.read();
         if (version > WBG_VERSION)
@@ -1361,10 +1335,10 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         byte whichMaps = (byte) in.read();
         for (int m = 0; m < 8; m++)
         {
-            //if bit for this flavor/tiles set...
+            // if bit for this flavor/tiles set...
             if (((whichMaps >> m) & 1) != 0)
             {
-                //if tiles...
+                // if tiles...
                 if (m == 0)
                 {
                     byte[] b = new byte[graphics.length * 32];
@@ -1375,7 +1349,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                     for (int i = 0; i < graphics.length; i++)
                         offset += read2BPPArea(out.tiles[i], b, offset, 0, 0);
                 }
-                //... else flavor (palettes)
+                // ... else flavor (palettes)
                 else
                 {
                     byte[] pal = new byte[8 * 4 * 2];
@@ -1476,7 +1450,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
         checkTree.putClientProperty("JTree.lineStyle", "Angled");
         checkTree.addMouseListener(new NodeSelectionListener(checkTree));
 
-        //if user clicked cancel, don't take action
+        // if user clicked cancel, don't take action
         if (JOptionPane.showConfirmDialog(null, pairComponents(
             new JLabel(text), new JScrollPane(checkTree), false), title,
             JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
@@ -1547,21 +1521,21 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             {
                 public void actionPerformed(ActionEvent ae)
                 {
-                    //t = array of used targets
+                    // t = array of used targets
                     boolean[] t = new boolean[flavorNames.length];
-                    //m = source screen
+                    // m = source screen
                     for (int m = 0; m < flavorNames.length; m++)
                     {
                         if (targets[m] != null)
                         {
-                            //n = target map
+                            // n = target map
                             int n = targets[m].getSelectedIndex();
                             if (a[m])
                             {
-                                //if part already used...
+                                // if part already used...
                                 if (t[n])
                                 {
-                                    //fail
+                                    // fail
                                     JOptionPane.showMessageDialog(targetDialog,
                                         "Imported data must not overlap,\n"
                                             + "check your targets.",
@@ -1571,7 +1545,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                                 }
                                 else
                                 {
-                                    //set target part as used
+                                    // set target part as used
                                     t[n] = true;
                                 }
                             }
@@ -1655,7 +1629,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
 
     private static boolean checkPal(Color[][] pal)
     {
-        //could be applied to any palette, check all
+        // could be applied to any palette, check all
         for (int p = 0; p < palettes.length; p++)
             if (checkPal(pal, p))
                 return true;
@@ -1677,7 +1651,7 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             readFromRom(wbe);
         WindowBorderImportData wbid = importData(b);
 
-        //check graphics if included
+        // check graphics if included
         if (wbid.tiles != null)
         {
             for (int t = 0; t < wbid.tiles.length; t++)
@@ -1685,13 +1659,13 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                     if (!Arrays.equals(wbid.tiles[t][x], graphics[t][x]))
                         return false;
         }
-        //check palettes
+        // check palettes
         for (int p = 0; p < wbid.palettes.length; p++)
-            if (wbid.palettes[p] != null) //make sure pal is there
+            if (wbid.palettes[p] != null) // make sure pal is there
                 if (!checkPal(wbid.palettes[p]))
                     return false;
 
-        //didn't find anything missing
+        // didn't find anything missing
         return true;
     }
 
@@ -1718,14 +1692,14 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             writeGraphics(wbe);
         }
         AbstractRom orgRom = JHack.main.getOrginalRomFile(wbe.rom.getRomType());
-        //restore palettes
-        //each of 7 palettes has 8 subpals of 4 colors each
-        //2 bytes/color = 8*4*2 = 64 bytes/palette
-        //reset areas of selected palettes
+        // restore palettes
+        // each of 7 palettes has 8 subpals of 4 colors each
+        // 2 bytes/color = 8*4*2 = 64 bytes/palette
+        // reset areas of selected palettes
         for (int i = 1; i < a.length; i++)
             if (a[i])
                 wbe.rom.resetArea(0x2021C8 + (i - 1) * 64, 64, orgRom);
-        //reread palettes
+        // reread palettes
         readPalettes(wbe.rom);
 
         if (wbe.mainWindow != null)

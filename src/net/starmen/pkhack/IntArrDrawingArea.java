@@ -14,8 +14,6 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-import net.starmen.pkhack.DrawingArea.Toolset;
-
 /**
  * A DrawingArea that holds images as int[][]'s. Rounded rectangle non-filled
  * tool is not implemented, instead a regular rectangle gets drawn. If anyone

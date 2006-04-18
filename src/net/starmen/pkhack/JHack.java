@@ -9,8 +9,8 @@ import java.util.Date;
  * 
  * @author AnyoneEB
  */
-//Made by AnyoneEB.
-//Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
+// Made by AnyoneEB.
+// Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
 public class JHack
 {
     /**

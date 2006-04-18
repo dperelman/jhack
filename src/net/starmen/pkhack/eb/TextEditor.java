@@ -1091,7 +1091,7 @@ public class TextEditor extends EbHackModule implements ActionListener
                 JOptionPane.ERROR_MESSAGE);
             return;
         }
-        int tmp = 0, s = textLists[currentList].size(), c = currentSelection + 1;
+        int s = textLists[currentList].size(), c = currentSelection + 1;
         for (int i = 0; i < textLists[currentList].size(); i++)
         {
             int j = i + c < s ? i + c : i + c - s;

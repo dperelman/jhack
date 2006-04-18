@@ -137,12 +137,10 @@ public class WindowPositionEditor extends EbHackModule implements
         private final static int TILE_CORNER = 16;
         private final static int TILE_HORZ = 17;
         private final static int TILE_VERT = 18;
-        private float zoom;
         private int x, y, w, h, xn, yn, wn, hn, size;
 
         public WindowPlacer(float zoom)
         {
-            this.zoom = zoom;
             size = (int) (zoom * 8);
             this.setPreferredSize(new Dimension((int) (256 * zoom),
                 (int) (224 * zoom)));
@@ -269,8 +267,7 @@ public class WindowPositionEditor extends EbHackModule implements
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
 
-        private int sx, sy, swx, swy, sww, swh, swxn, swyn, swwn, swhn,
-                stmp = -1;
+        private int sx, sy, swxn, swyn, swwn, swhn, stmp = -1;
 
         public void mousePressed(MouseEvent e)
         {
@@ -281,10 +278,6 @@ public class WindowPositionEditor extends EbHackModule implements
             swyn = yn;
             swwn = wn;
             swhn = hn;
-            swx = x;
-            swy = y;
-            sww = w;
-            swh = h;
         }
 
         public void mouseReleased(MouseEvent e)
@@ -297,7 +290,7 @@ public class WindowPositionEditor extends EbHackModule implements
             int mx = e.getX(), my = e.getY();
             if (mx < 0 || my < 0 || mx > getWidth() || my > getHeight())
                 return;
-            if (stmp == 0) //move
+            if (stmp == 0) // move
             {
                 int tx = Math.max(0, swxn + ((mx - sx) / size)), ty = Math.max(
                     0, swyn + ((my - sy) / size));

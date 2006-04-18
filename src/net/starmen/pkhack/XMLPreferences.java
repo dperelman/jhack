@@ -366,14 +366,14 @@ public class XMLPreferences
     {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setValidating(true);
-        //factory.setNamespaceAware(true);
+        // factory.setNamespaceAware(true);
         try
         {
             DocumentBuilder builder = factory.newDocumentBuilder();
             builder.setErrorHandler(new ErrorHandler()
             {
 
-                public void error(SAXParseException sxe) throws SAXException
+                public void error(SAXParseException sxe)
                 {
                     Exception x = sxe;
                     if (sxe.getException() != null)
@@ -418,7 +418,7 @@ public class XMLPreferences
                         throw (sxe);
                 }
 
-                public void warning(SAXParseException sxe) throws SAXException
+                public void warning(SAXParseException sxe)
                 {}
             });
             return builder.parse(f);

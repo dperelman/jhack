@@ -29,8 +29,8 @@ public class CCInfo
 
     public static class CCNode implements Comparable
     {
-        public String cc; //how cc looks in file
-        public String desc; //desc from file
+        public String cc; // how cc looks in file
+        public String desc; // desc from file
 
         public int level; // depth, i.e., CC byte # (sorta)
         public int value; // byte value (-1 for arguments)
@@ -42,11 +42,11 @@ public class CCInfo
         // if true, number of arguments remaining is multiplied by the
         // value of the first ('!')
 
-        public boolean endcc; //if true this CC ends a text block ('/')
+        public boolean endcc; // if true this CC ends a text block ('/')
 
-        public boolean menu_raise; //if true, increases menu level ('{')
-        public boolean menu_lower; //if true, decreases menu level ('}')
-        //a negitive menu level results in the end of a text block
+        public boolean menu_raise; // if true, increases menu level ('{')
+        public boolean menu_lower; // if true, decreases menu level ('}')
+        // a negitive menu level results in the end of a text block
 
         public boolean isTerminator;
 
@@ -130,10 +130,10 @@ public class CCInfo
         this.crdChr = crdChr;
 
         createCCTable(ccTable, codefile);
-        //        System.out.println(
-        //            "("
-        //                + new Date().toGMTString()
-        //                + ") Done with CC table, starting on compression table.");
+        // System.out.println(
+        // "("
+        // + new Date().toGMTString()
+        // + ") Done with CC table, starting on compression table.");
         createCompressionTable(comprTable);
     }
 
@@ -149,12 +149,12 @@ public class CCInfo
         // the string's length. This function does not do any formatting
         // or decompression.
 
-        //        char[] buffer = new char[8192];
-        //        char[] headBuff = new char[100];
+        // char[] buffer = new char[8192];
+        // char[] headBuff = new char[100];
         StringBuffer buffer = new StringBuffer(), headBuff = new StringBuffer();
         int headlen = 100;
 
-        int pos = 0, hpos = 0;
+        int hpos = 0;
         int len = 0;
         int offset = address;
 
@@ -167,7 +167,8 @@ public class CCInfo
 
         int ch;
 
-        for (int i = 0; i < 8192; i++)
+        /* XXX: Correct loop? */
+        while (true)
         {
             ch = rom.readChar(offset++);
             len++;
@@ -213,14 +214,14 @@ public class CCInfo
                 if (activeNode.type == TYPE_ARGLIST)
                 {
                     arglevel = activeNode.num_arg - 1;
-                    //if arg multipler, multiply arguments
+                    // if arg multipler, multiply arguments
                     if (activeNode.arg_multiplier && ch < MAX_ARG_MULT)
                     {
                         CCNode t = prevNode;
                         while (!t.isTerminator)
                             t = (CCNode) t.nodes.get(0);
                         arglevel = ((t.num_arg - 1) * ch);
-                        //if(ch > 20) System.out.println(ch + " offset: " +
+                        // if(ch > 20) System.out.println(ch + " offset: " +
                         // Integer.toHexString(address));
                     }
 
@@ -243,7 +244,7 @@ public class CCInfo
                     buffer.append((char) ch);
                 }
 
-                //if (activeNode.level == 0 && activeNode.value == 0x02)
+                // if (activeNode.level == 0 && activeNode.value == 0x02)
                 if (activeNode.menu_lower)
                 {
                     if (menulevel > 0)
@@ -251,28 +252,28 @@ public class CCInfo
                     else
                         break;
                 }
-                //                if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx
+                // if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx
                 // xx]"))
                 if (activeNode.endcc && activeNode.cc != null)
                 {
-                    //                    if (ch == 10)
-                    //                    {
-                    //                        System.out.println();
-                    //                    }
+                    // if (ch == 10)
+                    // {
+                    // System.out.println();
+                    // }
                     endcc = true;
                 }
-                //                else if (
-                //                    activeNode.isTerminator
-                //                        && activeNode.toString().equals("[0A XX XX XX XX]"))
-                //                {
-                //                    System.out.println("0x" + Integer.toHexString(address));
-                //                    break;
-                //                }
+                // else if (
+                // activeNode.isTerminator
+                // && activeNode.toString().equals("[0A XX XX XX XX]"))
+                // {
+                // System.out.println("0x" + Integer.toHexString(address));
+                // break;
+                // }
 
                 if (activeNode.isTerminator)
                 {
                     opcode = false;
-                    //if (activeNode.toString().equals("[19 02]"))
+                    // if (activeNode.toString().equals("[19 02]"))
                     if (activeNode.menu_raise)
                         menulevel++;
 
@@ -281,7 +282,7 @@ public class CCInfo
             }
             else
             {
-                //buffer[pos++] = (char) ((((int) ch) & 0xFF) - asciiOff);
+                // buffer[pos++] = (char) ((((int) ch) & 0xFF) - asciiOff);
                 buffer.append((char) ch);
                 if (headBuff.length() < headlen - 1)
                     headBuff.append(crdChr
@@ -314,52 +315,52 @@ public class CCInfo
     {
         if (!allowComp)
             return str;
-        //System.out.println("Compressing \""+str+"\"!");
+        // System.out.println("Compressing \""+str+"\"!");
 
-        //        for (int i = 0; i < comprTable.length; i++)
-        //        {
-        //        String pattern =
-        //            new String(comprTable[c]).replaceAll(
-        //                "(\\(|\\)|\\.|\\\\|\\{|\\}|\\?)",
-        //                "\\\\$1");
-        //        String replaceCC =
-        //            "["
-        //                + (15 + (c >> 8))
-        //                + " "
-        //                + HackModule.addZeros(Integer.toHexString(c & 0xff), 2)
-        //                + "]";
-        //        //String replace = "" + (char) (c << 8);
+        // for (int i = 0; i < comprTable.length; i++)
+        // {
+        // String pattern =
+        // new String(comprTable[c]).replaceAll(
+        // "(\\(|\\)|\\.|\\\\|\\{|\\}|\\?)",
+        // "\\\\$1");
+        // String replaceCC =
+        // "["
+        // + (15 + (c >> 8))
+        // + " "
+        // + HackModule.addZeros(Integer.toHexString(c & 0xff), 2)
+        // + "]";
+        // //String replace = "" + (char) (c << 8);
         String newStr = str;
-        //        try
-        //        {
-        //            // System.out.println(
-        //            // "s/" + pattern + "/" + replace + "/g");
-        //            newStr = str.replaceAll(pattern, replaceCC);
-        //        }
-        //        catch (PatternSyntaxException e)
-        //        {
-        //            System.out.println(
-        //                "Pattern errror at " + c + " (" + new String(pattern) + ")");
-        //        }
+        // try
+        // {
+        // // System.out.println(
+        // // "s/" + pattern + "/" + replace + "/g");
+        // newStr = str.replaceAll(pattern, replaceCC);
+        // }
+        // catch (PatternSyntaxException e)
+        // {
+        // System.out.println(
+        // "Pattern errror at " + c + " (" + new String(pattern) + ")");
+        // }
         newStr = comprPatTable[c].compress(str);
         return (c < comprPatTable.length - 1 ? (newStr.equals(str)
             ? compressStringNoCC(newStr, c + 1)
             : compressString(newStr, c + 1)) : newStr);
-        //        }
-        //        for (int i = 0; i < comprTable.length; i++)
-        //        {
-        //            str =
-        //                str.replaceAll(
-        //                    (((char) (i << 8)) + "").replaceAll(
-        //                        "(\\(|\\)|\\.|\\\\|\\{|\\}|\\?)",
-        //                        "\\\\$1"),
-        //                    "["
-        //                        + (15 + (i >> 8))
-        //                        + " "
-        //                        + HackModule.addZeros(Integer.toHexString(i & 0xff), 2)
-        //                        + "]");
-        //        }
-        //        return (str);
+        // }
+        // for (int i = 0; i < comprTable.length; i++)
+        // {
+        // str =
+        // str.replaceAll(
+        // (((char) (i << 8)) + "").replaceAll(
+        // "(\\(|\\)|\\.|\\\\|\\{|\\}|\\?)",
+        // "\\\\$1"),
+        // "["
+        // + (15 + (i >> 8))
+        // + " "
+        // + HackModule.addZeros(Integer.toHexString(i & 0xff), 2)
+        // + "]");
+        // }
+        // return (str);
     }
 
     public String compressString(String str, int c)
@@ -376,7 +377,7 @@ public class CCInfo
         {
             String tmp = st.nextToken();
 
-            //length of 2 or less can never be compressed
+            // length of 2 or less can never be compressed
             if (tmp.length() <= 2)
             {
                 if (tmp.equals("["))
@@ -386,7 +387,7 @@ public class CCInfo
                 else if (CC && tmp.equals("02"))
                     menuLevel--;
                 out += tmp;
-                //System.out.println(tmp + " (" + CC +")");
+                // System.out.println(tmp + " (" + CC +")");
             }
             else
             {
@@ -395,7 +396,7 @@ public class CCInfo
                 if (CC && (tmp.endsWith("19 02") || tmp.endsWith("19 2")))
                     menuLevel++;
                 out += (CC || menuLevel != 0 ? tmp : compressStringNoCC(tmp, c));
-                //System.out.println(tmp + " (" + CC +")");
+                // System.out.println(tmp + " (" + CC +")");
             }
         }
 
@@ -418,11 +419,11 @@ public class CCInfo
     public String parseString(String str, boolean showCC, boolean codesOnly,
         boolean codesCaps)
     {
-        //char[] buffer = new char[81920];
-        //aribitary length guess
+        // char[] buffer = new char[81920];
+        // aribitary length guess
         StringBuffer buffer = new StringBuffer(str.length() * 2);
 
-        //int pos = 0; // position in returned string
+        // int pos = 0; // position in returned string
         int ipos = 0;
 
         CCNode activeNode = ccTable, prevNode = null;
@@ -431,14 +432,15 @@ public class CCInfo
         int arglevel = 0;
         int menulevel = 0;
 
-        int curcode = 0; // initial byte of current control code TODO init to ?
+        int curcode = 0; // initial byte of current control code TODO init to
+        // ?
 
         int ch;
 
         for (int i = 0; i < str.length(); i++)
         {
             ch = str.charAt(ipos++) & 0xFF;
-            //len++;
+            // len++;
 
             // if there are arguments left to count, decrement arg level and
             // continue
@@ -513,42 +515,42 @@ public class CCInfo
                     // set arg level to num_arg - 1 because we've already read
                     // one of the argument bytes
                     arglevel = activeNode.num_arg - 1;
-                    //                    System.out.println(activeNode.toString() + ": num_arg = "
-                    //                        + activeNode.num_arg);
-                    //if arg multipler, multiply arguments
+                    // System.out.println(activeNode.toString() + ": num_arg = "
+                    // + activeNode.num_arg);
+                    // if arg multipler, multiply arguments
                     if (activeNode.arg_multiplier && ch < MAX_ARG_MULT)
                     {
                         CCNode t = prevNode;
                         while (!t.isTerminator)
                             t = (CCNode) t.nodes.get(0);
                         arglevel = ((t.num_arg - 1) * ch);
-                        //                        if (!showCC)
-                        //                            System.out.println("arg_mult debug: " + "ch = "
-                        //                                + ch + ", t = " + t.toString()
-                        //                                + ", t.num_arg = " + t.num_arg
-                        //                                + ", arglevel = " + arglevel);
-                        //                        arglevel = t.num_arg;
-                        //                        System.out.println(
-                        //                            "parseString(): arglevel = "
-                        //                                + arglevel
-                        //                                + " ("
-                        //                                + t.toString()
-                        //                                + "'s num_arg = "
-                        //                                + t.num_arg
-                        //                                + ", val = "
-                        //                                + t.value
-                        //                                + ", level = "
-                        //                                + t.level
-                        //                                + ") (will be mult'd by "
-                        //                                + ch
-                        //                                + ") at offset "
-                        //                                + i);
-                        //                        arglevel *= ch;
-                        //                        arglevel--;
+                        // if (!showCC)
+                        // System.out.println("arg_mult debug: " + "ch = "
+                        // + ch + ", t = " + t.toString()
+                        // + ", t.num_arg = " + t.num_arg
+                        // + ", arglevel = " + arglevel);
+                        // arglevel = t.num_arg;
+                        // System.out.println(
+                        // "parseString(): arglevel = "
+                        // + arglevel
+                        // + " ("
+                        // + t.toString()
+                        // + "'s num_arg = "
+                        // + t.num_arg
+                        // + ", val = "
+                        // + t.value
+                        // + ", level = "
+                        // + t.level
+                        // + ") (will be mult'd by "
+                        // + ch
+                        // + ") at offset "
+                        // + i);
+                        // arglevel *= ch;
+                        // arglevel--;
 
                     }
-                    //                    if (!showCC && curcode == 9)
-                    //                        System.out.println("[09] has " + arglevel + " args.");
+                    // if (!showCC && curcode == 9)
+                    // System.out.println("[09] has " + arglevel + " args.");
 
                     if (curcode == 0x15 || curcode == 0x16 || curcode == 0x17)
                     {
@@ -585,7 +587,7 @@ public class CCInfo
 
                 // if the current node is a first-byte code with value 2,
                 // terminate text block
-                //if (activeNode.level == 0 && activeNode.value == 0x02)
+                // if (activeNode.level == 0 && activeNode.value == 0x02)
                 if (activeNode.menu_lower)
                 {
                     if (menulevel > 0)
@@ -593,27 +595,27 @@ public class CCInfo
                     else
                         break;
                 }
-                //                if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx
+                // if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx
                 // xx]"))
                 if (activeNode.endcc && activeNode.cc != null)
                 {
                     endcc = true;
                 }
-                //                else if (
-                //                    activeNode.isTerminator
-                //                        && activeNode.toString().equals("[0A XX XX XX XX]"))
-                //                {
-                //                    break;
-                //                }
+                // else if (
+                // activeNode.isTerminator
+                // && activeNode.toString().equals("[0A XX XX XX XX]"))
+                // {
+                // break;
+                // }
 
                 // if the active node is a terminator node, stop stuff
                 if (activeNode.isTerminator)
                 {
-                    //                    System.out.println("End of " + activeNode.toString());
+                    // System.out.println("End of " + activeNode.toString());
                     if (arglevel == 0)
                         buffer.append('\u1234');
                     opcode = false;
-                    //if (activeNode.toString().equals("[19 02]"))
+                    // if (activeNode.toString().equals("[19 02]"))
                     if (activeNode.menu_raise)
                         menulevel++;
 
@@ -626,10 +628,10 @@ public class CCInfo
             {
                 // if the current byte is not a control code,
                 // add it to the string as-is
-                //buffer[pos++] = (char) ch;
+                // buffer[pos++] = (char) ch;
                 char cht = (crdChr ? EbHackModule
                     .simpCreditsToRegChar((char) ch) : (char) (ch - asciiOff));
-                //make sure brackets never get added as characters
+                // make sure brackets never get added as characters
                 if (codesOnly && showCC)
                 {
                     addCode(buffer, ch, codesCaps);
@@ -652,16 +654,16 @@ public class CCInfo
             }
         }
 
-        //return parseGrouping(new String(buffer, 0, pos));
+        // return parseGrouping(new String(buffer, 0, pos));
         return parseGrouping(buffer.toString());
 
-        //		char* newstr = new char[pos];
-        //		for(i = 0; i < pos; i++)
-        //			newstr[i] = buffer[i];
+        // char* newstr = new char[pos];
+        // for(i = 0; i < pos; i++)
+        // newstr[i] = buffer[i];
         //
-        //		newstr[pos] = 0;
+        // newstr[pos] = 0;
         //
-        //		return newstr;
+        // return newstr;
     }
 
     public String parseString(String str)
@@ -677,13 +679,13 @@ public class CCInfo
     public String parseCodesOnly(String str, boolean codesCaps)
     {
         return parseString(str, true, true, codesCaps);
-        //        String out = new String();
-        //        for (int i = 0; i < str.length(); i++)
-        //        {
-        //            if (i != 0) out += " ";
-        //            out += HackModule.addZeros(Integer.toHexString(str.charAt(i)), 2);
-        //        }
-        //        return "[" + out + "]";
+        // String out = new String();
+        // for (int i = 0; i < str.length(); i++)
+        // {
+        // if (i != 0) out += " ";
+        // out += HackModule.addZeros(Integer.toHexString(str.charAt(i)), 2);
+        // }
+        // return "[" + out + "]";
     }
 
     public String parseCodesOnly(String str)
@@ -694,7 +696,7 @@ public class CCInfo
     public String parseHeader(String str)
     {
         String newString = parseString(str, false, false).trim();
-        //newString = newString.substring(0, Math.min(70,
+        // newString = newString.substring(0, Math.min(70,
         // newString.length()));
         if (newString.length() == 0)
             newString = " ";
@@ -717,14 +719,12 @@ public class CCInfo
         int arglevel = 0;
         int menulevel = 0;
 
-        int curcode = 0;
-
         int ch;
 
         for (int i = 0; i < str.length(); i++)
         {
             ch = str.charAt(ipos++) & 0xFF;
-            //len++;
+            // len++;
 
             // if there are arguments left to count, decrement arg level and
             // continue
@@ -735,9 +735,9 @@ public class CCInfo
             }
             if (endcc)
             {
-                //                ccs.add(activeNode);
-                //                System.out.println("getCCsUsed(): ending, added "
-                //                    + activeNode.toString());
+                // ccs.add(activeNode);
+                // System.out.println("getCCsUsed(): ending, added "
+                // + activeNode.toString());
                 break;
             }
 
@@ -746,7 +746,6 @@ public class CCInfo
             {
                 if (isCC(ch))
                 {
-                    curcode = ch;
                     opcode = true;
                 }
             }
@@ -795,7 +794,7 @@ public class CCInfo
                     // set arg level to num_arg - 1 because we've already read
                     // one of the argument bytes
                     arglevel = activeNode.num_arg - 1;
-                    //if arg multipler, multiply arguments
+                    // if arg multipler, multiply arguments
                     if (activeNode.arg_multiplier && ch < MAX_ARG_MULT)
                     {
                         CCNode t = prevNode;
@@ -812,7 +811,7 @@ public class CCInfo
 
                 // if the current node is a first-byte code with value 2,
                 // terminate text block
-                //if (activeNode.level == 0 && activeNode.value == 0x02)
+                // if (activeNode.level == 0 && activeNode.value == 0x02)
                 if (activeNode.menu_lower)
                 {
                     if (menulevel > 0)
@@ -823,7 +822,7 @@ public class CCInfo
                         ccs.add(activeNode);
                     }
                 }
-                //                if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx
+                // if (activeNode.toString().equalsIgnoreCase("[0a xx xx xx
                 // xx]"))
                 if (activeNode.endcc)
                 {
@@ -831,23 +830,23 @@ public class CCInfo
                     if (activeNode.cc == null && activeNode.nodes.size() > 0)
                         ccs.add(activeNode.nodes.get(0));
                 }
-                //                else if (
-                //                    activeNode.isTerminator
-                //                        && activeNode.toString().equals("[0A XX XX XX XX]"))
-                //                {
-                //                    ccs.add(activeNode);
-                //                    break;
-                //                }
+                // else if (
+                // activeNode.isTerminator
+                // && activeNode.toString().equals("[0A XX XX XX XX]"))
+                // {
+                // ccs.add(activeNode);
+                // break;
+                // }
 
                 // if the active node is a terminator node, stop stuff
                 if (activeNode.isTerminator)
                 {
-                    //don't report compression codes
+                    // don't report compression codes
                     if (!(activeNode.toString().startsWith("[15")
                         || activeNode.toString().startsWith("[16") || activeNode
                         .toString().startsWith("[17")))
                         ccs.add(activeNode);
-                    //if (activeNode.toString().equals("[19 02]"))
+                    // if (activeNode.toString().equals("[19 02]"))
                     if (activeNode.menu_raise)
                         menulevel++;
 
@@ -891,13 +890,13 @@ public class CCInfo
 
         for (int i = 0; i < xlen; i++)
         {
-            //            if(str.charAt(i) == '\0')
-            //            {
-            //                CString x;
-            //                x.Format("%d", i);
-            //                AfxMessageBox(x);
-            //                break;
-            //            }
+            // if(str.charAt(i) == '\0')
+            // {
+            // CString x;
+            // x.Format("%d", i);
+            // AfxMessageBox(x);
+            // break;
+            // }
 
             if (str.charAt(i) == '[')
             {
@@ -928,7 +927,7 @@ public class CCInfo
                     }
                     catch (StringIndexOutOfBoundsException se)
                     {
-                        //return -1 on an error
+                        // return -1 on an error
                         return -1;
                     }
 
@@ -997,28 +996,28 @@ public class CCInfo
     public int getStringLength(String str, boolean comp, int start, int end)
         throws StringIndexOutOfBoundsException
     {
-        //only try to get length of strings with an equal number of brackets
-        if (str.split("\\[", -1).length - 1 == str.split("\\]", -1).length - 1) //num
+        // only try to get length of strings with an equal number of brackets
+        if (str.split("\\[", -1).length - 1 == str.split("\\]", -1).length - 1) // num
         // [ ==
         // num
         // ]
         {
-            //part is the substring we are getting the length of
+            // part is the substring we are getting the length of
             String part = str.substring(start, end);
-            //make sure brackets match
-            //if the last '[' comes after the last ']' then add a ']' at the
+            // make sure brackets match
+            // if the last '[' comes after the last ']' then add a ']' at the
             // end
             if (part.lastIndexOf('[') > part.lastIndexOf(']'))
                 part = part + ']';
-            //if the first ']' comes before the first '[' then add a '[' at the
+            // if the first ']' comes before the first '[' then add a '[' at the
             // start
             if (part.indexOf(']') < part.indexOf('['))
                 part = '[' + part;
-            //get the length of the partial string
-            //System.out.println("Finding partial length of \"" + part + "\"");
+            // get the length of the partial string
+            // System.out.println("Finding partial length of \"" + part + "\"");
             return getStringLength(part, comp);
         }
-        //if there's an unequal number of ['s and ]'s then return -1 to
+        // if there's an unequal number of ['s and ]'s then return -1 to
         // indicate failure
         else
             return -1;
@@ -1152,18 +1151,18 @@ public class CCInfo
             return null;
         }
 
-        //buffer[pos++] = 0;
+        // buffer[pos++] = 0;
 
-        //return new String(buffer, 0, pos);
+        // return new String(buffer, 0, pos);
         return buffer.toString();
 
-        //		char* newstr = new char[pos];
-        //		for(i = 0; i < pos; i++)
-        //			newstr[i] = buffer[i];
+        // char* newstr = new char[pos];
+        // for(i = 0; i < pos; i++)
+        // newstr[i] = buffer[i];
         //
-        //		newstr[pos] = 0;
+        // newstr[pos] = 0;
         //
-        //		return newstr;
+        // return newstr;
     }
 
     public int searchNode(CCNode node, int val)
@@ -1189,8 +1188,8 @@ public class CCInfo
 
     public boolean isCC(int ch)
     {
-        return searchNode(ccTable, ch) != -1; //-1 = no find
-        //return ch >= 0 && ch <= 0x1F;
+        return searchNode(ccTable, ch) != -1; // -1 = no find
+        // return ch >= 0 && ch <= 0x1F;
     }
 
     public void addCode(char[] str, int val, int pos, boolean codesCaps)
@@ -1249,7 +1248,7 @@ public class CCInfo
         comprPatTable = (CompressionPattern[]) patterns
             .toArray(new CompressionPattern[0]);
         Arrays.sort(comprPatTable);
-        //System.out.println("Created compression table!");
+        // System.out.println("Created compression table!");
     }
 
     protected void createCCTable(CCNode table, String filename)
@@ -1268,33 +1267,33 @@ public class CCInfo
              */
             for (int f = 0; f < file.length; f++)
             {
-                boolean argMulti = false; //is CC arg multipler
-                boolean endcc = false; //if true this CC ends a text block
+                boolean argMulti = false; // is CC arg multipler
+                boolean endcc = false; // if true this CC ends a text block
                 // ('/')
-                boolean menu_raise = false; //if true, increases menu level
+                boolean menu_raise = false; // if true, increases menu level
                 // ('{')
-                boolean menu_lower = false; //if true, decreases menu level
+                boolean menu_lower = false; // if true, decreases menu level
                 // ('}')
 
                 String[] tmp = file[f].split(",", 2);
                 descstr = new StringTokenizer(tmp[1], "\"", false).nextToken();
 
-                if (tmp[0].startsWith("!")) //a ! means arg multipler
+                if (tmp[0].startsWith("!")) // a ! means arg multipler
                 {
                     argMulti = true;
                     tmp[0] = tmp[0].substring(1);
                 }
-                if (tmp[0].startsWith("/")) //a / means endcc
+                if (tmp[0].startsWith("/")) // a / means endcc
                 {
                     endcc = true;
                     tmp[0] = tmp[0].substring(1);
                 }
-                if (tmp[0].startsWith("{")) //a { means menu raiser
+                if (tmp[0].startsWith("{")) // a { means menu raiser
                 {
                     menu_raise = true;
                     tmp[0] = tmp[0].substring(1);
                 }
-                if (tmp[0].startsWith("}")) //a } means menu lowerer
+                if (tmp[0].startsWith("}")) // a } means menu lowerer
                 {
                     menu_lower = true;
                     tmp[0] = tmp[0].substring(1);
@@ -1304,24 +1303,24 @@ public class CCInfo
                 nodestr = new int[nodestrtmp.length];
                 for (int i = 0; i < nodestrtmp.length; i++)
                 {
-                    char fc = nodestrtmp[i].charAt(0); //first char
-                    //check if first and second are both equal and not hex
+                    char fc = nodestrtmp[i].charAt(0); // first char
+                    // check if first and second are both equal and not hex
                     // digits
-                    //isDigit() checks if it's a number, isLetter() checks
-                    //if it is a letter and then checks if it's a letter A-F
+                    // isDigit() checks if it's a number, isLetter() checks
+                    // if it is a letter and then checks if it's a letter A-F
                     if (fc == nodestrtmp[i].charAt(1)
                         && !Character.isDigit(fc)
                         && !(Character.isLetter(fc) && Character
                             .toUpperCase(fc) <= 'F'))
                         nodestr[i] = nodestrtmp[i].charAt(0) * -1;
                     else
-                        nodestr[i] = (int) Integer.parseInt(nodestrtmp[i], 16);
+                        nodestr[i] = Integer.parseInt(nodestrtmp[i], 16);
                 }
-                //				nodestr[pos] = 0;
-                //				len = pos;
-                //				pos = 0;
+                // nodestr[pos] = 0;
+                // len = pos;
+                // pos = 0;
 
-                //printf("%s\n", nodestr);
+                // printf("%s\n", nodestr);
 
                 // now loop through the code string and add a series of nodes
 
@@ -1336,7 +1335,7 @@ public class CCInfo
 
                 for (i = 0; i < nodestr.length; i++)
                 {
-                    //printf("%X: ", nodestr[i]);
+                    // printf("%X: ", nodestr[i]);
                     // if we encounter an argument value (0xAA, 0xBB, etc.),
                     // start counting arguments
 
@@ -1346,7 +1345,7 @@ public class CCInfo
                     {
                         if (nodestr[i] >= 0 && prev != nodestr[i])
                         {
-                            //printf("STOP! %d arguments!\n", arg_count);
+                            // printf("STOP! %d arguments!\n", arg_count);
 
                             // now add latent node
                             activeNode = addNode(activeNode, nodeLevel,
@@ -1357,11 +1356,11 @@ public class CCInfo
                             arg_counting = false;
                         }
                     }
-                    //                    if ((nodestr[i] - 0xAA) % 0x11 == 0
-                    //                        && nodestr[i] != 0
+                    // if ((nodestr[i] - 0xAA) % 0x11 == 0
+                    // && nodestr[i] != 0
                     if (nodestr[i] < 0 && !arg_counting)
                     {
-                        //System.out.println("COUNTING ARGUMENTS!\n");
+                        // System.out.println("COUNTING ARGUMENTS!\n");
                         arg_counting = true;
                     }
 
@@ -1383,7 +1382,7 @@ public class CCInfo
                                 ? descstr
                                 : null));
                         nodeLevel++;
-                        //printf("\n");
+                        // printf("\n");
                     }
 
                     prev = nodestr[i];
@@ -1392,7 +1391,7 @@ public class CCInfo
                 {
                     // if we're still counting arguments, tidy up
 
-                    //printf("STOP! %d arguments!\n", arg_count);
+                    // printf("STOP! %d arguments!\n", arg_count);
 
                     addNode(activeNode, nodeLevel, nodestr[i - 1],
                         TYPE_ARGLIST, arg_count, argMulti, endcc, menu_lower,
@@ -1402,9 +1401,9 @@ public class CCInfo
                     arg_count = 0;
                 }
 
-                //printf("\n");
+                // printf("\n");
             }
-            //System.out.println("Created control node network!");
+            // System.out.println("Created control node network!");
         }
         catch (NumberFormatException e)
         {

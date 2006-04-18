@@ -1,8 +1,8 @@
 package net.starmen.pkhack.eb;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -13,8 +13,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.swing.Box;
-import javax.swing.ButtonGroup;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -30,8 +30,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
-import net.starmen.pkhack.AutoSearchBox;
 import net.starmen.pkhack.AbstractRom;
+import net.starmen.pkhack.AutoSearchBox;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.JLinkComboBox;
 import net.starmen.pkhack.JSearchableComboBox;
@@ -62,26 +62,26 @@ public class ItemEditor extends EbHackModule implements ActionListener
     public static Item[] items = new Item[NUM_ITEMS];
     private static Icon closedPresentIcon = initIcon();
 
-    //GUI components
+    // GUI components
     private JComboBox itemSelector, typeSel;
     private ActionEditor.ActionEntry effectSelector;
     private JTextField name, cost, strength, extraPower, epIncrease, special,
-    //	helpAdd,
+    // helpAdd,
             search;
     private AutoSearchBox type;
     private TextEditor.TextOffsetEntry helpAdd;
     private JCheckBox ness, paula, jeff, poo, noGive, unknown, chicken,
             infinite;
-    //labels for relabelable components
+    // labels for relabelable components
     private JLabel strLabel, epLabel, incLabel, specialLabel;
 
-    //auxillary panels
+    // auxillary panels
     private JPanel foodAux, armorAux, brokenAux;
     private AutoSearchBox recoverType, fixedItem;
     private JRadioButton[] protect;
     private JPanel[] protectSections;
     private ButtonGroup[] bg;
-    //    private JButton selectItem; //this isn't working and I'm tired of it.
+    // private JButton selectItem; //this isn't working and I'm tired of it.
 
     private final DocumentListener protectSetter = new DocumentListener()
     {
@@ -122,68 +122,68 @@ public class ItemEditor extends EbHackModule implements ActionListener
         Arrays.fill(labels[2], "E.P. Increase (N/A): ");
         Arrays.fill(labels[3], "Special (N/A): ");
 
-        //exceptions
-        //type 4 - buyable character - 0000 0100
+        // exceptions
+        // type 4 - buyable character - 0000 0100
         labels[0][4] = "PST entry + 1: ";
         labels[1][4] = "Unknown(E.P.): ";
         labels[2][4] = "Unknown(E.P.inc): ";
 
-        //type 8 - broken item - 0000 1000
+        // type 8 - broken item - 0000 1000
         labels[1][8] = "Fixed Item: ";
         labels[2][8] = "IQ Required: ";
 
-        //food items
-        //type 32 - 0010 0000
+        // food items
+        // type 32 - 0010 0000
         labels[0][32] = "Recovery Type: ";
         labels[1][32] = "Poo Increase: ";
         labels[2][32] = "Increase: ";
         labels[3][32] = "Skip Sandwich Effect Time: ";
 
-        //type 36 - 0010 0100
+        // type 36 - 0010 0100
         labels[0][36] = "Recovery Type: ";
         labels[1][36] = "Poo Increase: ";
         labels[2][36] = "Increase: ";
         labels[3][36] = "Skip Sandwich Effect Time: ";
 
-        //type 40 - 0010 1000
+        // type 40 - 0010 1000
         labels[0][40] = "Recovery Type: ";
         labels[1][40] = "Poo Increase: ";
         labels[2][40] = "Increase: ";
         labels[3][40] = "Skip Sandwich Effect Time: ";
 
-        //type 44 - 0010 1100
+        // type 44 - 0010 1100
         labels[0][44] = "Recovery Type: ";
         labels[1][44] = "Poo Increase: ";
         labels[2][44] = "Increase: ";
         labels[3][44] = "Skip Sandwich Effect Time: ";
 
-        //armor items
-        //type 20 - body - 0001 0100
+        // armor items
+        // type 20 - body - 0001 0100
         labels[0][20] = "Defense: ";
         labels[1][20] = "Speed: ";
         labels[2][20] = "4th Character Def";
         labels[3][20] = "Protection: ";
 
-        //type 24 - arm - 0001 1000
+        // type 24 - arm - 0001 1000
         labels[0][24] = "Defense: ";
         labels[1][24] = "Luck: ";
         labels[2][24] = "4th Character Def";
         labels[3][24] = "Protection: ";
 
-        //type 28 - other - 0001 1100
+        // type 28 - other - 0001 1100
         labels[0][28] = "Defense: ";
         labels[1][28] = "Luck: ";
         labels[2][28] = "4th Character Def";
         labels[3][28] = "Protection: ";
 
-        //weapon items
-        //type 16 - 0001 0000
+        // weapon items
+        // type 16 - 0001 0000
         labels[0][16] = "Offense: ";
         labels[1][16] = "Guts: ";
         labels[2][16] = "Poo Offense: ";
         labels[3][16] = "Miss Rate: (/16)";
 
-        //type 17 - 0001 0001
+        // type 17 - 0001 0001
         labels[0][17] = "Offense: ";
         labels[1][17] = "Guts(?): ";
         labels[2][17] = "Poo Offense(?): ";
@@ -199,7 +199,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
         mainWindow.setIconImage(((ImageIcon) this.getIcon()).getImage());
-        //mainWindow.setSize(400, 320);
+        // mainWindow.setSize(400, 320);
         mainWindow.setResizable(false);
 
         JPanel itemStats = new JPanel();
@@ -207,7 +207,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
 
         JPanel upper = new JPanel();
         upper.setLayout(new GridLayout(3, 2));
-        //		upper.add(new JLabel("Item:"));
+        // upper.add(new JLabel("Item:"));
         itemSelector = createItemComboBox(this, this);
         itemSelector.setActionCommand("itemSelect");
 
@@ -216,16 +216,16 @@ public class ItemEditor extends EbHackModule implements ActionListener
 
         mainWindow.getContentPane().add(
             new JSearchableComboBox(itemSelector, "Item: "),
-            //			pairComponents(
-            //				pairComponents(search = new JTextField(10), searchb, true),
-            //				getLabeledComponent("Item:", itemSelector),
-            //				true),
+            // pairComponents(
+            // pairComponents(search = new JTextField(10), searchb, true),
+            // getLabeledComponent("Item:", itemSelector),
+            // true),
             BorderLayout.NORTH);
-        //		upper.add(new JLabel("Name:"));
+        // upper.add(new JLabel("Name:"));
         this.name = createSizedJTextField(25);
         upper.add(FontEditor.StringViewer.createWithFontSelector(name, this));
         upper.add(getLabeledComponent("Name:", this.name));
-        //		upper.add(new JLabel("Effect:"));
+        // upper.add(new JLabel("Effect:"));
         upper.add(effectSelector = new ActionEditor.ActionEntry("Effect"));
         itemStats.add(upper);
 
@@ -279,10 +279,10 @@ public class ItemEditor extends EbHackModule implements ActionListener
         lowerLeft.add(pairComponents(specialLabel = new JLabel(labels[3][255]),
             this.special = createSizedJTextField(3, true), true));
         special.getDocument().addDocumentListener(protectSetter);
-        //		lowerLeft.add(
-        //			getLabeledComponent(
-        //				"Help Text Address $:",
-        //				this.helpAdd = new JTextField(8)));
+        // lowerLeft.add(
+        // getLabeledComponent(
+        // "Help Text Address $:",
+        // this.helpAdd = new JTextField(8)));
         lowerLeft.add(this.helpAdd = new TextEditor.TextOffsetEntry(
             "Help Text Address", true));
         lower.add(lowerLeft);
@@ -425,7 +425,6 @@ public class ItemEditor extends EbHackModule implements ActionListener
     {
         ItemEditor.readFromRom(hm);
         out.removeAllItems();
-        ArrayList tmp = new ArrayList();
         for (int i = 0; i < items.length; i++)
         {
             if (items[i].type == type)
@@ -594,10 +593,10 @@ public class ItemEditor extends EbHackModule implements ActionListener
             this.address = 0x155200 + (itemNumber * 39);
             rom.seek(this.address);
 
-            //            for (int j = 0; j < 25; j++)
-            //            {
-            //                this.name[j] = simpToRegChar(rom.readCharSeek());
-            //            }
+            // for (int j = 0; j < 25; j++)
+            // {
+            // this.name[j] = simpToRegChar(rom.readCharSeek());
+            // }
             this.name = hm.readSeekRegString(25);
             this.type = rom.readSeek();
             this.cost = rom.readMultiSeek(2);
@@ -616,7 +615,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
          * @return A <code>String</code> with the item number in []'s and the
          *         item name.
          */
-        public String toString() //gets name as regular text
+        public String toString() // gets name as regular text
         {
             /*
              * return HackModule.getNumberedString( new
@@ -631,7 +630,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
          */
         public void writeInfo()
         {
-            //don't overwrite null item
+            // don't overwrite null item
             if (number == 0)
                 return;
 
@@ -639,10 +638,10 @@ public class ItemEditor extends EbHackModule implements ActionListener
 
             rom.seek(this.address);
 
-            //            for (int j = 0; j < 25; j++)
-            //            {
-            //                rom.writeSeek(simpToEbChar(this.name[j]));
-            //            }
+            // for (int j = 0; j < 25; j++)
+            // {
+            // rom.writeSeek(simpToEbChar(this.name[j]));
+            // }
             hm.writeSeekRegString(25, this.name);
             rom.writeSeek(this.type);
             rom.writeSeek(this.cost, 2);
@@ -657,17 +656,17 @@ public class ItemEditor extends EbHackModule implements ActionListener
     }
 
     private void saveItemInfo(int i)
-    //puts the changed info into the Item
+    // puts the changed info into the Item
     // object
     {
         if (i < 0)
             return;
 
-        //        char[] tfName = this.name.getText().toCharArray();
-        //        for (int j = 0; j < items[i].name.length; j++)
-        //        {
-        //            items[i].name[j] = (j < tfName.length ? tfName[j] : (char) 0);
-        //        }
+        // char[] tfName = this.name.getText().toCharArray();
+        // for (int j = 0; j < items[i].name.length; j++)
+        // {
+        // items[i].name[j] = (j < tfName.length ? tfName[j] : (char) 0);
+        // }
         items[i].name = this.name.getText();
 
         items[i].effect = this.effectSelector.getSelectedIndex() & 0xffff;
@@ -699,8 +698,8 @@ public class ItemEditor extends EbHackModule implements ActionListener
     {
         if (i < 0)
             return;
-        //assumes that itemSelector was changed to i
-        //set text boxes and combo boxes
+        // assumes that itemSelector was changed to i
+        // set text boxes and combo boxes
         this.name.setText(items[i].name.trim());
         this.effectSelector.setSelectedIndex(items[i].effect);
         effectSelector.repaint();
@@ -720,12 +719,13 @@ public class ItemEditor extends EbHackModule implements ActionListener
         this.noGive.setSelected(getBit(items[i].ownership, 5));
         this.unknown.setSelected(getBit(items[i].ownership, 6));
         this.infinite.setSelected(!getBit(items[i].ownership, 7));
-        //bit is true if not infinite
+        // bit is true if not infinite
 
         setLabels(items[i].type);
     }
 
-    private boolean getBit(int i, int b) //return true if bit #b = 1 (#'s 0-7)
+    private boolean getBit(int i, int b) // return true if bit #b = 1 (#'s
+                                            // 0-7)
     {
         return ((i >> b) & 1) == 1;
     }
@@ -737,7 +737,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
         this.epLabel.setText(this.labels[1][type]);
         this.incLabel.setText(this.labels[2][type]);
         this.specialLabel.setText(this.labels[3][type]);
-        //aux windows
+        // aux windows
         armorAux.setVisible(false);
         foodAux.setVisible(false);
         brokenAux.setVisible(false);
@@ -777,7 +777,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equalsIgnoreCase("apply"))
         {
-            //put text field info into the Item object, then call
+            // put text field info into the Item object, then call
             // items[i].writeInfo();
             int i = itemSelector.getSelectedIndex();
             if (i < 0)
@@ -960,7 +960,7 @@ public class ItemEditor extends EbHackModule implements ActionListener
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
 
-        //Created by ImageFileToCode from net/starmen/pkhack/closepresent.gif
+        // Created by ImageFileToCode from net/starmen/pkhack/closepresent.gif
         g.setColor(new Color(255, 255, 255));
         g.setColor(new Color(58, 50, 47));
         g.drawLine(3, 0, 3, 0);

@@ -37,15 +37,16 @@ public class RomFileIO extends AbstractRom
     {
         try
         {
-            if (offset >= this.length()) //don't write past the end of the ROM
+            if (offset >= this.length()) // don't write past the end of the
+                                            // ROM
             {
-                //			System.out.println(
-                //				"Attempted read past end of rom, (0x"
-                //					+ Integer.toHexString(offset)
-                //					+ ")");
+                // System.out.println(
+                // "Attempted read past end of rom, (0x"
+                // + Integer.toHexString(offset)
+                // + ")");
                 return -1;
             }
-            rom.seek((long) offset);
+            rom.seek(offset);
             return rom.readUnsignedByte();
         }
         catch (IOException e)
@@ -59,7 +60,7 @@ public class RomFileIO extends AbstractRom
     {
         try
         {
-            rom.seek((long) offset);
+            rom.seek(offset);
             byte[] out = new byte[length];
             rom.read(out);
             return out;
@@ -99,7 +100,7 @@ public class RomFileIO extends AbstractRom
         {
             if (offset >= rom.length())
                 return;
-            rom.seek((long) offset);
+            rom.seek(offset);
             rom.writeByte(arg);
 
             if (getRomType().equals("Earthbound") && length() == 0x600200
@@ -118,7 +119,7 @@ public class RomFileIO extends AbstractRom
         {
             if (offset >= rom.length())
                 return;
-            rom.seek((long) offset);
+            rom.seek(offset);
             rom.write(arg, 0, len);
         }
         catch (IOException e)
@@ -198,12 +199,12 @@ public class RomFileIO extends AbstractRom
      */
     public boolean saveRom(File rompath)
     {
-        if (!this.isLoaded) //don't try to save if nothing is loaded
+        if (!this.isLoaded) // don't try to save if nothing is loaded
         {
             return false;
         }
 
-        //ensure mirror for ExHiRom
+        // ensure mirror for ExHiRom
         if (length() == 0x600200)
         {
             write(0x0101d5, 0x25);
@@ -243,7 +244,7 @@ public class RomFileIO extends AbstractRom
         try
         {
             rom.seek(rom.length());
-            byte[] b = new byte[1 << 20]; //1 mebibyte
+            byte[] b = new byte[1 << 20]; // 1 mebibyte
             for (int j = 0; j < 4096; j++)
                 b[(j * 256) + 255] = 2;
             rom.write(b);
@@ -262,7 +263,7 @@ public class RomFileIO extends AbstractRom
         try
         {
             rom.seek(rom.length());
-            byte[] b = new byte[2 << 20]; //2 mebibytes
+            byte[] b = new byte[2 << 20]; // 2 mebibytes
             write(0x0101d5, 0x25);
             write(0x0101d7, 0x0d);
             System.arraycopy(readByte(0x008200, 0x8000), 0, b, 0x8000, 0x8000);
@@ -290,7 +291,7 @@ public class RomFileIO extends AbstractRom
             return false;
         }
     }
-    
+
     /*
      * (non-Javadoc)
      * 

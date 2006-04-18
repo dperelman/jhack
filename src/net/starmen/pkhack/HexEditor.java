@@ -108,7 +108,7 @@ public class HexEditor extends GeneralHackModule implements ActionListener
     {
         mainWindow.setVisible(false);
     }
-    private JDialog gotoDialog, findWindow;
+    protected JDialog gotoDialog, findWindow;
     private JTextArea findTA;
 
     /*
@@ -135,7 +135,7 @@ public class HexEditor extends GeneralHackModule implements ActionListener
         }
     }
 
-    private boolean gotoOffset(int off)
+    protected boolean gotoOffset(int off)
     {
         if (off >= rom.length() || off < 0)
             return false;
@@ -145,7 +145,7 @@ public class HexEditor extends GeneralHackModule implements ActionListener
     }
     private int findOff = 0;
 
-    private void find()
+    protected void find()
     {
         String[] f = findTA.getText().split(" ");
         byte[] s = new byte[f.length];

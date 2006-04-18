@@ -15,7 +15,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.PixelGrabber;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,9 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Hashtable;
 
-import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -42,8 +39,6 @@ import javax.swing.JTree;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.starmen.pkhack.AbstractRom;
-import net.starmen.pkhack.BMPReader;
-import net.starmen.pkhack.ByteArrHasher;
 import net.starmen.pkhack.CheckNode;
 import net.starmen.pkhack.CheckRenderer;
 import net.starmen.pkhack.CopyAndPaster;

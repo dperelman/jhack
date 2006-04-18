@@ -255,6 +255,16 @@ public class StoreEditor extends EbHackModule implements ActionListener
                 items[i] = rom.readSeek();
             }
         }
+        
+        /**
+         * Returns which store number this is.
+         * 
+         * @return the store number of this
+         */
+        public int getNum()
+        {
+            return num;
+        }
 
         /**
          * Writes the information stored in this to the ROM.

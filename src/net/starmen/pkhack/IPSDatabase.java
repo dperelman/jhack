@@ -228,7 +228,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         inited = false;
     }
 
-    private static void readAll(byte[] b, InputStream in) throws IOException
+    protected static void readAll(byte[] b, InputStream in) throws IOException
     {
         int i = 0;
         int tmp;
@@ -236,7 +236,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
             i += tmp;
     }
 
-    private static List entries = new ArrayList();
+    protected static List entries = new ArrayList();
 
     private static boolean xmlInited = false;
 

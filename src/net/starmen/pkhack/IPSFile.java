@@ -21,8 +21,8 @@ import javax.swing.JOptionPane;
  * @see IPSPatchMaker
  * @see IPSPatchApplier
  */
-//Made by AnyoneEB.
-//Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
+// Made by AnyoneEB.
+// Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
 public class IPSFile
 {
     private List records = new ArrayList();
@@ -44,18 +44,18 @@ public class IPSFile
         int i = 5, size;
         while (!subString(in, i, i + 3).equals("EOF"))
         {
-            if ((in.length - i) < 8) //not enough space for more records
+            if ((in.length - i) < 8) // not enough space for more records
             {
                 return;
             }
             size = (in[i + 3] << 8) & 0xFF00;
             size += in[i + 4] & 0xFF;
 
-            //			System.out.println("Size: " + size);
+            // System.out.println("Size: " + size);
 
             if (size == 0)
             {
-                //RLE record is 8 bytes: OF FS ET SI ZE RL ES CB
+                // RLE record is 8 bytes: OF FS ET SI ZE RL ES CB
                 addRecord(new IPSRecord(subString(in, i, (i + 8))));
                 i += 8;
             }
@@ -77,26 +77,26 @@ public class IPSFile
         int i = 5, size;
         while (!subString(in, i, i + 3).equals("EOF"))
         {
-            if ((in.length - i) < 8) //not enough space for more records
+            if ((in.length - i) < 8) // not enough space for more records
             {
                 return;
             }
             size = (in[i + 3] << 8) & 0xFF00;
             size += in[i + 4] & 0xFF;
 
-            //			System.out.println("Size: " + size);
+            // System.out.println("Size: " + size);
 
             if (size == 0)
             {
-                //RLE record is 8 bytes: OF FS ET SI ZE RL ES CB
+                // RLE record is 8 bytes: OF FS ET SI ZE RL ES CB
                 addRecord(new IPSRecord(ByteBlock.wrap(in, i, 8)));
-                //subString(in, i, (i + 8))));
+                // subString(in, i, (i + 8))));
                 i += 8;
             }
             else
             {
                 addRecord(new IPSRecord(ByteBlock.wrap(in, i, 5 + size)));
-                //subString(in, i, (i + 5 + size))));
+                // subString(in, i, (i + 5 + size))));
                 i += (5 + size);
             }
         }
@@ -117,11 +117,11 @@ public class IPSFile
             byte[] b = new byte[(int) ips.length()];
             in.read(b);
             in.close();
-            //			int[] ipsFile = new int[b.length];
-            //			for (int i = 0; i < b.length; i++)
-            //			{
-            //				ipsFile[i] = (b[i] & 255);
-            //			}
+            // int[] ipsFile = new int[b.length];
+            // for (int i = 0; i < b.length; i++)
+            // {
+            // ipsFile[i] = (b[i] & 255);
+            // }
 
             return new IPSFile(b);
         }
@@ -131,7 +131,7 @@ public class IPSFile
             JOptionPane.showMessageDialog(null, errmsg, errtitle,
                 JOptionPane.ERROR_MESSAGE);
             System.out.println(errtitle + ": " + errmsg);
-            //e.printStackTrace();
+            // e.printStackTrace();
         }
         catch (IOException e)
         {
@@ -140,7 +140,7 @@ public class IPSFile
             JOptionPane.showMessageDialog(null, errmsg, errtitle,
                 JOptionPane.ERROR_MESSAGE);
             System.out.println(errtitle + ": " + errmsg);
-            //e.printStackTrace();
+            // e.printStackTrace();
         }
         return new IPSFile();
     }
@@ -217,7 +217,7 @@ public class IPSFile
         // Creates an IPS file by comparing two files.
         // file1 is the modified file, file2 is the orginal file
 
-        //System.out.println("Creating a .IPS file");
+        // System.out.println("Creating a .IPS file");
         if (start > file1.length - 1 || start > file2.length - 1
             || end > file1.length || end > file2.length)
         {
@@ -241,7 +241,7 @@ public class IPSFile
             if (file1[i] != file2[i])
             {
                 temp += (char) file1[i];
-                //if(temp.length() % 1000 == 0)
+                // if(temp.length() % 1000 == 0)
                 // {System.out.println(temp.length());}
             }
             else
@@ -292,7 +292,7 @@ public class IPSFile
         // Creates an IPS file by comparing two files.
         // file1 is the modified file, file2 is the orginal file
 
-        //System.out.println("Creating a .IPS file");
+        // System.out.println("Creating a .IPS file");
         if (start > file1.length - 1 || start > file2.length - 1
             || end > file1.length || end > file2.length)
         {
@@ -309,26 +309,26 @@ public class IPSFile
 
         IPSFile out = new IPSFile();
 
-        //String temp = new String();
+        // String temp = new String();
         int cStart = -1;
 
         for (int i = start; i < end; i++)
         {
             if (file1[i] != file2[i])
             {
-                //temp += (char) file1[i];
+                // temp += (char) file1[i];
                 if (cStart == -1)
                     cStart = i;
             }
             else
             {
-                //if (temp.length() > 0)
+                // if (temp.length() > 0)
                 if (cStart != -1)
                 {
-                    //out.addRecord(i - temp.length(), temp);
+                    // out.addRecord(i - temp.length(), temp);
                     out.addRecord(cStart, ByteBlock.wrap(file1, cStart, i
                         - cStart));
-                    //temp = new String();
+                    // temp = new String();
                     cStart = -1;
                 }
             }
@@ -379,10 +379,10 @@ public class IPSFile
 
         for (int i = 1; i < info.length(); i++)
         {
-            if (i == 0xFFFF) //max record length
+            if (i == 0xFFFF) // max record length
             {
                 this.addRecord(new IPSRecord(offset, info.substring(0, i)));
-                if (info.length() >= i) //if there's more.
+                if (info.length() >= i) // if there's more.
                 {
                     this.addRecord(offset + i, info.substring(i));
                 }
@@ -393,21 +393,21 @@ public class IPSFile
                 streak++;
             }
             else
-            //different char
+            // different char
             {
                 if (streak > 12)
-                //if the steak is long enough to make compression worth it
+                // if the steak is long enough to make compression worth it
                 {
                     this.addRecord(new IPSRecord(offset, info.substring(0, i
                         - streak)));
-                    //make uncompressed record for info before streak
+                    // make uncompressed record for info before streak
                     this.addRecord(new IPSRecord(offset + (i - streak), streak,
                         info.charAt(i - 1)));
-                    //make compressed record of streak
-                    if (info.length() >= i) //if there's more...
+                    // make compressed record of streak
+                    if (info.length() >= i) // if there's more...
                     {
                         this.addRecord(offset + i, info.substring(i));
-                        //add records for after compressed part
+                        // add records for after compressed part
                     }
                     return;
                 }
@@ -450,12 +450,12 @@ public class IPSFile
 
         for (int i = 1; i < info.getLength(); i++)
         {
-            if (i == 0xFFFF) //max record length
+            if (i == 0xFFFF) // max record length
             {
                 this.addRecord(new IPSRecord(offset, info.subBlock(0, i)));
-                if (info.getLength() >= i) //if there's more.
+                if (info.getLength() >= i) // if there's more.
                 {
-                    //this.addRecord(offset + i, info.subBlock(i));
+                    // this.addRecord(offset + i, info.subBlock(i));
                     return i;
                 }
                 return -1;
@@ -465,21 +465,21 @@ public class IPSFile
                 streak++;
             }
             else
-            //different char
+            // different char
             {
                 if (streak > 12)
-                //if the steak is long enough to make compression worth it
+                // if the steak is long enough to make compression worth it
                 {
                     this.addRecord(new IPSRecord(offset, info.subBlock(0, i
                         - streak)));
-                    //make uncompressed record for info before streak
+                    // make uncompressed record for info before streak
                     this.addRecord(new IPSRecord(offset + (i - streak), streak,
                         info.get(i - 1)));
-                    //make compressed record of streak
-                    if (info.getLength() >= i) //if there's more...
+                    // make compressed record of streak
+                    if (info.getLength() >= i) // if there's more...
                     {
-                        //this.addRecord(offset + i, info.subBlock(i));
-                        //add records for after compressed part
+                        // this.addRecord(offset + i, info.subBlock(i));
+                        // add records for after compressed part
                         return i;
                     }
                     return -1;
@@ -623,11 +623,11 @@ public class IPSFile
         private int size;
         private int rleSize;
         private byte rleInfo;
-        //use non-null info
+        // use non-null info
         private String info = null;
         private ByteBlock infoBB = null;
 
-        public IPSRecord(int offset, String info) //create new uncompressed
+        public IPSRecord(int offset, String info) // create new uncompressed
         // IPSRecord
         {
             this.offset = offset;
@@ -648,7 +648,7 @@ public class IPSFile
             this.size = 0;
             this.rleSize = rleSize;
             this.rleInfo = (byte) info;
-            //this.info = new String(new char[] { info });
+            // this.info = new String(new char[] { info });
         }
 
         public IPSRecord(int offset, int rleSize, byte info)
@@ -661,19 +661,19 @@ public class IPSFile
 
         public IPSRecord(String in)
         {
-            this.offset = (int) ((in.charAt(0) << 16)) & 0xFF0000;
-            this.offset += (int) ((in.charAt(1) << 8)) & 0xFF00;
-            this.offset += (int) (in.charAt(2)) & 0xFF;
+            this.offset = (in.charAt(0) << 16) & 0xFF0000;
+            this.offset += (in.charAt(1) << 8) & 0xFF00;
+            this.offset += in.charAt(2) & 0xFF;
 
-            this.size = (int) ((in.charAt(3) << 8)) & 0xFF00;
-            this.size += (int) (in.charAt(4)) & 0xFF;
+            this.size = (in.charAt(3) << 8) & 0xFF00;
+            this.size += in.charAt(4) & 0xFF;
 
             this.info = new String();
 
             if (this.size == 0)
             {
-                this.rleSize = (int) ((in.charAt(5) << 8)) & 0xFF00;
-                this.rleSize += (int) (in.charAt(6)) & 0xFF;
+                this.rleSize = (in.charAt(5) << 8) & 0xFF00;
+                this.rleSize += in.charAt(6) & 0xFF;
 
                 this.rleInfo = (byte) in.charAt(7);
             }
@@ -688,19 +688,19 @@ public class IPSFile
 
         public IPSRecord(byte[] in)
         {
-            this.offset = (int) ((in[0] << 16)) & 0xFF0000;
-            this.offset += (int) ((in[1] << 8)) & 0xFF00;
-            this.offset += (int) (in[2]) & 0xFF;
+            this.offset = (in[0] << 16) & 0xFF0000;
+            this.offset += (in[1] << 8) & 0xFF00;
+            this.offset += in[2] & 0xFF;
 
-            this.size = (int) ((in[3] << 8)) & 0xFF00;
-            this.size += (int) (in[4]) & 0xFF;
+            this.size = (in[3] << 8) & 0xFF00;
+            this.size += in[4] & 0xFF;
 
             if (this.size == 0)
             {
-                this.rleSize = (int) ((in[5] << 8)) & 0xFF00;
-                this.rleSize += (int) (in[6]) & 0xFF;
+                this.rleSize = (in[5] << 8) & 0xFF00;
+                this.rleSize += in[6] & 0xFF;
 
-                this.rleInfo = (byte) in[7];
+                this.rleInfo = in[7];
             }
             else
             {
@@ -711,43 +711,43 @@ public class IPSFile
         public IPSRecord(ByteBlock in)
         {
             this(in.toByteArray());
-            //above method seems faster
+            // above method seems faster
 
-            //            this.offset = (int) ((in.get(0) << 16)) & 0xFF0000;
-            //            this.offset += (int) ((in.get(1) << 8)) & 0xFF00;
-            //            this.offset += (int) (in.get(2)) & 0xFF;
+            // this.offset = (int) ((in.get(0) << 16)) & 0xFF0000;
+            // this.offset += (int) ((in.get(1) << 8)) & 0xFF00;
+            // this.offset += (int) (in.get(2)) & 0xFF;
             //
-            //            this.size = (int) ((in.get(3) << 8)) & 0xFF00;
-            //            this.size += (int) (in.get(4)) & 0xFF;
+            // this.size = (int) ((in.get(3) << 8)) & 0xFF00;
+            // this.size += (int) (in.get(4)) & 0xFF;
             //
-            //            if (this.size == 0)
-            //            {
-            //                this.rleSize = (int) ((in.get(5) << 8)) & 0xFF00;
-            //                this.rleSize += (int) (in.get(6)) & 0xFF;
+            // if (this.size == 0)
+            // {
+            // this.rleSize = (int) ((in.get(5) << 8)) & 0xFF00;
+            // this.rleSize += (int) (in.get(6)) & 0xFF;
             //
-            //                this.rleInfo = (byte) in.get(7);
-            //                //this.info += in.charAt(7);
-            //            }
-            //            else
-            //            {
-            //                infoBB = in.subBlock(5, size);
-            //            }
+            // this.rleInfo = (byte) in.get(7);
+            // //this.info += in.charAt(7);
+            // }
+            // else
+            // {
+            // infoBB = in.subBlock(5, size);
+            // }
         }
 
         public String toString()
         {
             String out = new String();
 
-            out += (char) ((this.offset >> 16) & 255); //write offset
+            out += (char) ((this.offset >> 16) & 255); // write offset
             out += (char) ((this.offset >> 8) & 255);
             out += (char) (this.offset & 255);
 
-            out += (char) ((this.size >> 8) & 255); //write size
+            out += (char) ((this.size >> 8) & 255); // write size
             out += (char) (this.size & 255);
 
             if (size == 0)
             {
-                out += (char) ((this.rleSize >> 8) & 255); //write RLE size
+                out += (char) ((this.rleSize >> 8) & 255); // write RLE size
                 out += (char) (this.rleSize & 255);
 
                 out += (char) this.rleInfo;
@@ -774,7 +774,8 @@ public class IPSFile
 
             if (size == 0)
             {
-                out[5] = (byte) ((this.rleSize >> 8) & 255); //write RLE size
+                out[5] = (byte) ((this.rleSize >> 8) & 255); // write RLE
+                // size
                 out[6] = (byte) (this.rleSize & 255);
                 out[7] = this.rleInfo;
                 /*
@@ -817,14 +818,14 @@ public class IPSFile
 
         public int[] patch(int[] arg)
         {
-            //do stuff first
+            // do stuff first
             if (this.isInfoString())
             {
                 if (size > 0)
                 {
                     for (int i = 0; i < this.size; i++)
                     {
-                        arg[offset + i] = (int) this.info.charAt(i);
+                        arg[offset + i] = this.info.charAt(i);
                     }
                 }
                 else
@@ -842,7 +843,7 @@ public class IPSFile
                 {
                     for (int i = 0; i < this.size; i++)
                     {
-                        arg[offset + i] = (int) this.infoBB.get(i);
+                        arg[offset + i] = this.infoBB.get(i);
                     }
                 }
                 else
@@ -860,7 +861,7 @@ public class IPSFile
 
         public byte[] patch(byte[] arg)
         {
-            //do stuff first
+            // do stuff first
             if (this.isInfoString())
             {
                 if (size > 0)
@@ -1068,8 +1069,8 @@ public class IPSFile
         }
 
         /**
-         * The size of the change stored by this record if it is RLE. This record is 
-         * RLE if and only if {@see #getSize()} is 0.
+         * The size of the change stored by this record if it is RLE. This
+         * record is RLE if and only if {@see #getSize()} is 0.
          * 
          * @return the RLE size of this record
          * @see #getRleInfo()
@@ -1080,7 +1081,8 @@ public class IPSFile
         }
 
         /**
-         * The size of the change stored by this record or 0 if this is an RLE record.
+         * The size of the change stored by this record or 0 if this is an RLE
+         * record.
          * 
          * @return 0 for RLE or the size of this record
          * @see #getRleSize()
@@ -1091,7 +1093,8 @@ public class IPSFile
         }
 
         /**
-         * If this is RLE (Run Length Encoding) then this returns the repeated byte.
+         * If this is RLE (Run Length Encoding) then this returns the repeated
+         * byte.
          * 
          * @return the RLE byte
          */
@@ -1121,7 +1124,7 @@ public class IPSFile
     {
         return records.size();
     }
-    
+
     /**
      * Returns the last offset this IPS file modifies.
      * 

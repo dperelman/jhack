@@ -6,7 +6,7 @@
 
 package net.starmen.pkhack.eb;
 
-//import java.util.Map;
+// import java.util.Map;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -63,7 +63,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
     {
         super(rom, prefs);
     }
-    //variables other than GUI:
+    // variables other than GUI:
     private Flyover[] scene;
     private CCInfo textParser;
 
@@ -71,9 +71,9 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
 
     private boolean preventOverwriteToggle = true;
 
-    //number format conversions...1pp and standard are just a difference of
+    // number format conversions...1pp and standard are just a difference of
     // different bases
-    //8ppu = hex and 1/8 of standard
+    // 8ppu = hex and 1/8 of standard
     private int numberFormat = 0;
     private boolean numbersHexToggle = false;
     private boolean numbers1ppuToggle = true;
@@ -82,54 +82,55 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
         "01 - N. East", "02 - East", "03 - S. East", "04 - South",
         "05 - S. West", "06 - West", "07 - N. West"};
 
-    //CONSTANTS:
-    //Coordinate Addresses:
-    //starting addresses (2 bytes - 1ppu reverse format):
+    // CONSTANTS:
+    // Coordinate Addresses:
+    // starting addresses (2 bytes - 1ppu reverse format):
     private static final int NUM_SCENES = 3, START_X_OFFSET = 0x2009E,
             START_Y_OFFSET = 0x2009B,
-            //flyover coordinate addresses (2 bytes - 1ppu reverse format):
+            // flyover coordinate addresses (2 bytes - 1ppu reverse format):
             X_OFFSET[] = {0x3ADEE, 0x3AE28, 0x3AE62}, Y_OFFSET[] = {0x3ADF1,
                 0x3AE2B, 0x3AE65}, SCENE3_X2_OFFSET = 0x3AE85,
             SCENE3_Y2_OFFSET = 0x3AE89,
-            //teleport addresses (2 bytes - 8ppu reverse format):
+            // teleport addresses (2 bytes - 8ppu reverse format):
             TELE_OFFSET = 0x15EDAB,
-            //SCENE2_TEL_X_OFFSET = 0x15F25B,
-            //SCENE2_TEL_Y_OFFSET = 0x15F25D,
-            TEL_OFFSET[] = {0, 0x05E923, //one byte, should be 0x96, reference
+            // SCENE2_TEL_X_OFFSET = 0x15F25B,
+            // SCENE2_TEL_Y_OFFSET = 0x15F25D,
+            TEL_OFFSET[] = {0, 0x05E923, // one byte, should be 0x96,
+                // reference
                 // to the tp table
-                //SCENE3_TEL_X_OFFSET = 0x15F263,
-                //SCENE3_TEL_Y_OFFSET = 0x15F265,
-                0x05E936}, //one byte, should be 0x97, reference
+                // SCENE3_TEL_X_OFFSET = 0x15F263,
+                // SCENE3_TEL_Y_OFFSET = 0x15F265,
+                0x05E936}, // one byte, should be 0x97, reference
             // to the tp table
-            //movement addresses (1 byte - values from 0 to 7 (from north
+            // movement addresses (1 byte - values from 0 to 7 (from north
             // clockwise to northwest)
             MOVE_OFFSET[] = {0x3AE06, 0x3AE40},
 
-            //Text Pointers:
-            //3 byte addresses - reverse snes format, to text block data
+            // Text Pointers:
+            // 3 byte addresses - reverse snes format, to text block data
             TEXT_OFFSET[] = {0x4A0A4, 0x4A0A8, 0x4A0AC};
 
-    //wrapper for all flyover stuff
+    // wrapper for all flyover stuff
     public class Flyover
     {
         private int sceneNumber;
 
-        //only scene 3 has finish coords...
+        // only scene 3 has finish coords...
         private int startX, startY, finishX, finishY;
 
-        //backup values
+        // backup values
         private int bStartX, bStartY, bFinishX, bFinishY;
 
-        private int teleportOffset, //for scene 2 or 3, should be 96 and 97
+        private int teleportOffset, // for scene 2 or 3, should be 96 and 97
                 // respectively unless changed
                 bTeleportOffset;
 
-        //value from 00 to 07
-        private byte movement, bMovement; //backup
+        // value from 00 to 07
+        private byte movement, bMovement; // backup
 
         private Text textBlock;
 
-        //send scene 0-2 so it knows which pointers to use
+        // send scene 0-2 so it knows which pointers to use
         public Flyover(int sceneNumber)
         {
             this.sceneNumber = sceneNumber;
@@ -170,29 +171,28 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
             textBlock = new Text(TEXT_OFFSET[sceneNumber], false);
         }
 
-        //as a precaution this function will not write anything until all
+        // as a precaution this function will not write anything until all
         // values have been checked
-        //startX and y, and finishX and y must be parsable and <= 0xffff
-        //direction doesn't need to be checked
-        //updateText must work, meaning that it's a parsable field with a
+        // startX and y, and finishX and y must be parsable and <= 0xffff
+        // direction doesn't need to be checked
+        // updateText must work, meaning that it's a parsable field with a
         // defined size...
-        //it will check for overwrites, and provide a warning
-        //it will handle all of the coords all over, tp coords, start coords,
+        // it will check for overwrites, and provide a warning
+        // it will handle all of the coords all over, tp coords, start coords,
         // and normal coords
         public boolean writeInfo()
         {
             boolean error = false;
             String errorMessage = new String();
-            byte left, right;
 
-            //must update these values before checked otherwise, check if
+            // must update these values before checked otherwise, check if
             // updating fails
             if (!this.parseCoords())
             {
                 errorMessage += "invalid coordinate entries.\n";
                 error = true;
             }
-            //now check actual values
+            // now check actual values
             if (startX < 0 || startX > 0xffff || finishX < 0
                 || finishX > 0xffff)
             {
@@ -204,7 +204,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                 errorMessage += "teleport offset must be from 0 to e8.\n";
                 error = true;
             }
-            //warn the user if they are using a different teleport offset,
+            // warn the user if they are using a different teleport offset,
             // unless they were using one to start
             else if (sceneNumber != 0
                 && !(teleportOffset == 0x96 || teleportOffset == 0x97 || teleportOffset == bTeleportOffset))
@@ -217,7 +217,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                         "Warning!", JOptionPane.YES_NO_OPTION);
 
                 if (choice == JOptionPane.NO_OPTION)
-                    return true; //pretend that it was successful so that
+                    return true; // pretend that it was successful so that
                 // there's no error message
 
             }
@@ -269,16 +269,16 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
             rom.write(Y_OFFSET[sceneNumber], startY, 2);
             if (sceneNumber == 2)
             {
-                //FINISH
-                //X2:
+                // FINISH
+                // X2:
                 rom.write(SCENE3_X2_OFFSET, finishX, 2);
 
-                //Y2:
+                // Y2:
                 rom.write(SCENE3_Y2_OFFSET, finishY, 2);
             }
             else
             {
-                //direction:
+                // direction:
                 movement = (byte) directionSceneCombo[sceneNumber]
                     .getSelectedIndex();
                 rom.write(MOVE_OFFSET[sceneNumber], movement);
@@ -295,8 +295,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
             updateText(false);
 
             if (sceneNumber < 2)
-                directionSceneCombo[sceneNumber]
-                    .setSelectedIndex((int) movement);
+                directionSceneCombo[sceneNumber].setSelectedIndex(movement);
         }
 
         public void restore()
@@ -314,7 +313,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
             initGUI();
         }
 
-        //makes sure the values are proper hex or base 10 numbers, sets startx,
+        // makes sure the values are proper hex or base 10 numbers, sets startx,
         // y, finishx, y
         public boolean parseCoords()
         {
@@ -434,7 +433,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
             }
         }
 
-        //either used to restore original text or update the offset and present
+        // either used to restore original text or update the offset and present
         // that (false and true respectively)
         public boolean updateText(boolean update)
         {
@@ -445,9 +444,9 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                     int address = Integer.parseInt(
                         textPointerField[sceneNumber].getText(), 16);
 
-                    //this is just making sure that it won't have an
+                    // this is just making sure that it won't have an
                     // error reading the rom
-                    //these values in the bounds should never be used
+                    // these values in the bounds should never be used
                     // for a pointer =p
                     if (address < rom.length() - 1 && address >= 0)
                     {
@@ -477,12 +476,12 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
 
         private class Text
         {
-            //pointer to text block, for use if user moves the text block
+            // pointer to text block, for use if user moves the text block
             private int textPointer;
 
-            //original text block length
+            // original text block length
             private int originalTextBlockLength;
-            //current...update as typing
+            // current...update as typing
             private String currentParsedTextBlock;
 
             public void updateGUI()
@@ -496,23 +495,23 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                     originalTextBlockLength).toString());
             }
 
-            //depends on toggle textHexToggle...
-            //if true, pass an array of bytes, returns a string in format "[01
+            // depends on toggle textHexToggle...
+            // if true, pass an array of bytes, returns a string in format "[01
             // 10 20 00]"
-            //if false, pass an array of bytes, returns a string with mix of
+            // if false, pass an array of bytes, returns a string with mix of
             // hex (control codes)
-            //and normal chars (converted from byte to eb char) ie.
+            // and normal chars (converted from byte to eb char) ie.
             // "[10]hello[00]"
-            //*note* it seperates all control code sets with brackets so that
+            // *note* it seperates all control code sets with brackets so that
             // it's easier to tell which are which
-            //the parser doesn't care if they're seperated like that however,
+            // the parser doesn't care if they're seperated like that however,
             // just as long as they're in brackets
             private String toFormattedText(String array)
             {
                 return textParser.parseString(array, true, textHexToggle);
             }
 
-            //gets size from currentSize, then assumes that the string is
+            // gets size from currentSize, then assumes that the string is
             // formatted correctly for it's algorithm
             public boolean updateCurrentArray(String text)
             {
@@ -527,9 +526,9 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                 }
             }
 
-            //this reads either an address from the rom then reads from that
+            // this reads either an address from the rom then reads from that
             // address, or reads directly
-            //from the specified address
+            // from the specified address
             public Text(int address, boolean actualAddress)
             {
                 if (!actualAddress)
@@ -542,7 +541,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                 currentParsedTextBlock = toFormattedText(si.str);
             }
 
-            //updates the pointer, catches invalid and out of bounds errors
+            // updates the pointer, catches invalid and out of bounds errors
             protected boolean updateTextPointer()
             {
                 try
@@ -550,9 +549,9 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                     int address = Integer.parseInt(
                         textPointerField[sceneNumber].getText(), 16);
 
-                    //this is just making sure that it won't have
+                    // this is just making sure that it won't have
                     // an error reading the rom
-                    //these values in the bounds should never be
+                    // these values in the bounds should never be
                     // used for a pointer =p
                     if (address < rom.length() - 1 && address >= 0)
                     {
@@ -578,10 +577,10 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                 rom.write(TEXT_OFFSET[sceneNumber], toSnesPointer(textPointer),
                     3);
 
-                //write the block
-                //System.out.println( "text Block: size = " +
+                // write the block
+                // System.out.println( "text Block: size = " +
                 // currentTextBlock.length + " data = " + currentTextBlock );
-                //System.out.println( "Writing text block " + sceneNumber + "
+                // System.out.println( "Writing text block " + sceneNumber + "
                 // to offset " + textPointer );
                 textParser.writeString(textParser
                     .deparseString(currentParsedTextBlock), textPointer);
@@ -597,18 +596,11 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                 return textParser.getStringLength(currentParsedTextBlock);
             }
 
-            //parses text length
-            //throws an exception if unable to parse...should only be unable to
+            // parses text length
+            // throws an exception if unable to parse...should only be unable to
             // parse if there's invalid hex codes..
-            //or unfinished ones...ie. "[01 04 02 "
+            // or unfinished ones...ie. "[01 04 02 "
 
-            //doubles array size if needed
-            private byte[] doubleArray(byte[] array)
-            {
-                byte[] returnValue = new byte[array.length * 2];
-                System.arraycopy(array, 0, returnValue, 0, array.length);
-                return returnValue;
-            }
             /*
              * TODO: add parser function that parses a text field on events add
              * parser function for raw hex as well also add something to output
@@ -622,12 +614,11 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
         }
     }
 
-    //parses string text and returns the current size
-    //brackets do not count against the size, nor do spaces in brackets, as
+    // parses string text and returns the current size
+    // brackets do not count against the size, nor do spaces in brackets, as
     // long as the brackets are not nested
-    //ie. [][][][][aa 01 ]dajdkdjfad[][00] is a valid string (size 13)
-    public int currentSize(String text) throws UndefinedSizeException,
-        InvalidNumberFormatException
+    // ie. [][][][][aa 01 ]dajdkdjfad[][00] is a valid string (size 13)
+    public int currentSize(String text) throws InvalidNumberFormatException
     {
         return textParser.getStringLength(text);
     }
@@ -638,14 +629,6 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
         {
             super(
                 "invalid number format, hex values range from 0-9 and a-f only");
-        }
-    }
-
-    class UndefinedSizeException extends Exception
-    {
-        public UndefinedSizeException()
-        {
-            super("Undefined text block size");
         }
     }
 
@@ -723,8 +706,8 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                 JScrollPane helpPane = new JScrollPane(pane);
                 helpPane
                     .setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-                //helpPane.setPreferredSize(new Dimension(480, 480));
-                //helpPane.setMinimumSize(new Dimension(320, 320));
+                // helpPane.setPreferredSize(new Dimension(480, 480));
+                // helpPane.setMinimumSize(new Dimension(320, 320));
 
                 JFrame helpWindow = new JFrame();
                 helpWindow.getContentPane().add(helpPane);
@@ -732,10 +715,10 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                 helpWindow.setTitle("Blue Antoid's Flyover Tutorial");
 
                 helpWindow.setVisible(true);
-                //JOptionPane.showMessageDialog( null, pane.getDocument(),
+                // JOptionPane.showMessageDialog( null, pane.getDocument(),
                 // "Blue Antoid's Flyover Tutorial", JOptionPane.OK_OPTION );
             }
-            catch (MalformedURLException e) //do nothing because this shouldn't
+            catch (MalformedURLException e) // do nothing because this shouldn't
             // happen
             {}
             catch (IOException e)
@@ -758,8 +741,8 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                 JScrollPane helpPane = new JScrollPane(pane);
                 helpPane
                     .setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-                //helpPane.setPreferredSize(new Dimension(480, 480));
-                //helpPane.setMinimumSize(new Dimension(320, 320));
+                // helpPane.setPreferredSize(new Dimension(480, 480));
+                // helpPane.setMinimumSize(new Dimension(320, 320));
 
                 JFrame helpWindow = new JFrame();
                 helpWindow.getContentPane().add(helpPane);
@@ -768,10 +751,10 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                     .setTitle("Chris_Davis' shorter more confusing guide");
 
                 helpWindow.setVisible(true);
-                //JOptionPane.showMessageDialog( null, pane.getDocument(),
+                // JOptionPane.showMessageDialog( null, pane.getDocument(),
                 // "Blue Antoid's Flyover Tutorial", JOptionPane.OK_OPTION );
             }
-            catch (MalformedURLException e) //do nothing because this shouldn't
+            catch (MalformedURLException e) // do nothing because this shouldn't
             // happen
             {}
             catch (IOException e)
@@ -782,7 +765,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
             }
         }
 
-        //POINTER UPDATES
+        // POINTER UPDATES
         else if (ae.getSource() == textPointerUpdateButton[0])
             scene[0].updateText(true);
 
@@ -792,7 +775,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
         else if (ae.getSource() == textPointerUpdateButton[2])
             scene[2].updateText(true);
 
-        //NUMBER FORMAT
+        // NUMBER FORMAT
         else if (ae.getActionCommand().equals("Standard Number Format"))
         {
             System.out.println("standard");
@@ -1076,10 +1059,6 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                 {
 
                 }
-                catch (UndefinedSizeException e)
-                {
-
-                }
             }
 
         }
@@ -1107,10 +1086,6 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
                 {
                     currentSizeSceneField[i].setText(" ");
                 }
-                catch (UndefinedSizeException e)
-                {
-                    currentSizeSceneField[i].setText(" ");
-                }
                 return;
             }
         }
@@ -1126,7 +1101,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
         changedUpdate(de);
     }
 
-    //keep this at the end cuz it's so long and pretty much uneditable (grid
+    // keep this at the end cuz it's so long and pretty much uneditable (grid
     // bag layouts)...and ugly
     protected void init()
     {
@@ -1146,7 +1121,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
 
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
-        //mainWindow.setIconImage(((ImageIcon) this.getIcon()).getImage());
+        // mainWindow.setIconImage(((ImageIcon) this.getIcon()).getImage());
         mainWindow.setSize(210, 450);
         mainWindow.setResizable(false);
 
@@ -1295,7 +1270,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
         scene1Panel.add(textPointerField[0], gridBagConstraints);
 
         textPointerUpdateButton[0].setText("Update Text from Pointer");
-        //mainWindow.getContentPane().add( textPointerUpdateButton[0] ,
+        // mainWindow.getContentPane().add( textPointerUpdateButton[0] ,
         // BorderLayout.SOUTH );
         textPointerUpdateButton[1].setText("Update Text from Pointer");
         textPointerUpdateButton[2].setText("Update Text from Pointer");
@@ -1354,8 +1329,8 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 3;
-        //gridBagConstraints.ipadx = -62;
-        //gridBagConstraints.ipady = 102;
+        // gridBagConstraints.ipadx = -62;
+        // gridBagConstraints.ipady = 102;
         gridBagConstraints.insets = new Insets(0, 20, 14, 0);
         scene1Panel.add(new JScrollPane(sceneArea[0]), gridBagConstraints);
 
@@ -1489,8 +1464,8 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 3;
-        //gridBagConstraints.ipadx = -62;
-        //gridBagConstraints.ipady = 102;
+        // gridBagConstraints.ipadx = -62;
+        // gridBagConstraints.ipady = 102;
         gridBagConstraints.insets = new Insets(0, 20, 14, 0);
         scene2Panel.add(new JScrollPane(sceneArea[1]), gridBagConstraints);
 
@@ -1607,8 +1582,8 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 4;
-        //gridBagConstraints.ipadx = -62;
-        //gridBagConstraints.ipady = 102;
+        // gridBagConstraints.ipadx = -62;
+        // gridBagConstraints.ipady = 102;
         gridBagConstraints.insets = new Insets(0, 20, 14, 15);
         scene3Panel.add(new JScrollPane(sceneArea[2]), gridBagConstraints);
 
@@ -1689,7 +1664,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
         optionsMenu.addSeparator();
 
         teleportMenuItem.setText("Change Teleport Links");
-        //teleportMenuItem.setEnabled(false);
+        // teleportMenuItem.setEnabled(false);
         optionsMenu.add(teleportMenuItem);
 
         flyoverMenu.add(optionsMenu);
@@ -1706,7 +1681,7 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
         mainWindow.getContentPane().add(flyoverMenu, BorderLayout.NORTH);
         mainWindow.getContentPane().add(mainPanel, BorderLayout.CENTER);
 
-        //listeners
+        // listeners
         hexTextCheckBox.addItemListener(this);
 
         numberStandardRadio.addActionListener(this);
@@ -1858,34 +1833,34 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
 
     }
 
-    //GUI Variable declaration - do not modify
+    // GUI Variable declaration - do not modify
 
-    //MENU:
-    //options section:
+    // MENU:
+    // options section:
     private JCheckBoxMenuItem preventOverwritesCheckBox, hexTextCheckBox;
     private JRadioButtonMenuItem numberStandardRadio, number1ppuRadio,
             number8ppuRadio;
     private JMenuItem teleportMenuItem;
-    //help section
+    // help section
     private JMenuItem aboutFlyoverMenuItem, blueFlyoverTutorialMenuItem;
 
-    //TEXT:
-    //pointers
+    // TEXT:
+    // pointers
     private JTextField[] textPointerField;
     private JButton[] textPointerUpdateButton;
-    //original size:
+    // original size:
     private JTextField[] originalSizeSceneField;
-    //current size:
+    // current size:
     private JTextField[] currentSizeSceneField;
-    //text blocks
+    // text blocks
     private JTextArea[] sceneArea;
 
-    //MOVEMENT:
-    //coordinates
+    // MOVEMENT:
+    // coordinates
     private JTextField[] xSceneField, ySceneField;
-    //scene 3
+    // scene 3
     private JTextField x2Scene3Field, y2Scene3Field;
-    //direction
+    // direction
     private JComboBox[] directionSceneCombo;
 
     // End of GUI variables declaration

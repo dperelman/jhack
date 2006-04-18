@@ -93,8 +93,8 @@ public class ItemDumper extends EbHackModule
 						+ EnemyEditor.enemies[e].getName()
 						+ " ("
 						+ (int) Math.pow(
-							(double) 2,
-							(double) EnemyEditor.enemies[e].getFreq())
+							2,
+							EnemyEditor.enemies[e].getFreq())
 						+ "/128)";
 					if (first)
 						first = false;

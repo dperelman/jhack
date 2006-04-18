@@ -8,8 +8,6 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.KeyStroke;
 
@@ -120,21 +118,5 @@ public class PrefsCheckBox extends JCheckBoxMenuItem
 
     private PrefsCheckBox() {
         super();
-    }
-
-    private PrefsCheckBox(Action arg0) {
-        super(arg0);
-    }
-
-    private PrefsCheckBox(Icon arg0) {
-        super(arg0);
-    }
-
-    private PrefsCheckBox(String arg0, Icon arg1) {
-        super(arg0, arg1);
-    }
-
-    private PrefsCheckBox(String arg0, Icon arg1, boolean arg2) {
-        super(arg0, arg1, arg2);
     }
 }
