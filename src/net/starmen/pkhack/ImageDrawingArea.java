@@ -19,12 +19,12 @@ import java.util.ArrayList;
  */
 public class ImageDrawingArea extends DrawingArea
 {
-    private BufferedImage img = null, selectImg; //img being edited
+    private BufferedImage img = null, selectImg; // img being edited
     /** {@link ColorPalette}used by this. */
     protected ColorPalette pal;
 
     /** Selection stuff. */
-    protected int sx, sy, selx, sely; //x,y of start of mouse drag
+    protected int sx, sy, selx, sely; // x,y of start of mouse drag
     /** Current selection. */
     protected Rectangle selection = new Rectangle();
     private Clipboard cb;
@@ -191,8 +191,8 @@ public class ImageDrawingArea extends DrawingArea
         this.setPreferredSize(new Dimension(w, h));
 
         repaint();
-        //		Graphics g = this.getGraphics();
-        //		g.drawImage(img, 0, 0, w, h, Color.BLACK, this);
+        // Graphics g = this.getGraphics();
+        // g.drawImage(img, 0, 0, w, h, Color.BLACK, this);
     }
 
     /**
@@ -292,7 +292,7 @@ public class ImageDrawingArea extends DrawingArea
 
         this.undoArr.clear();
         this.selection = new Rectangle();
-        //anything else to reset?
+        // anything else to reset?
 
         this.initGraphics();
     }
@@ -349,7 +349,7 @@ public class ImageDrawingArea extends DrawingArea
         Graphics g = img.getGraphics();
         g.setColor(pal.getColorOf(c));
         g.drawLine(x, y, x, y);
-        //		this.drawPoint(x, y);
+        // this.drawPoint(x, y);
     }
 
     /**
@@ -365,7 +365,7 @@ public class ImageDrawingArea extends DrawingArea
         Graphics g = img.getGraphics();
         g.setColor(c);
         g.drawLine(x, y, x, y);
-        //		this.drawPoint(x, y);
+        // this.drawPoint(x, y);
     }
 
     /**
@@ -386,7 +386,7 @@ public class ImageDrawingArea extends DrawingArea
      */
     public Color getPointColor(int x, int y)
     {
-        //return new Color(((BufferedImage) img).getRGB(x, y));
+        // return new Color(((BufferedImage) img).getRGB(x, y));
 
         int w = 1, h = 1;
         int[] pixels = new int[w * h];
@@ -428,10 +428,10 @@ public class ImageDrawingArea extends DrawingArea
 
     public void addUndo()
     {
-        BufferedImage newImg = this.getNewImage(img); //copy img into newImg
-        undoArr.add(img); //add old img to undo
-        //add a copy of img to the array
-        img = newImg; //set img to newImg
+        BufferedImage newImg = this.getNewImage(img); // copy img into newImg
+        undoArr.add(img); // add old img to undo
+        // add a copy of img to the array
+        img = newImg; // set img to newImg
     }
 
     public void paint(Graphics g)
@@ -456,28 +456,28 @@ public class ImageDrawingArea extends DrawingArea
             {
                 g.drawImage(img, 0, 0, getZoomedXY(drawingWidth),
                     getZoomedXY(drawingHeight),
-                    //Color.BLACK,
+                    // Color.BLACK,
                     this);
             }
-            //selection image
+            // selection image
             if (selection.width > 0 && selection.height > 0)
             {
                 flattenSelection(g, true);
-                //			g.drawImage(
-                //				selectImg,
-                //				getZoomedXY(selection.x),
-                //				getZoomedXY(selection.y),
-                //				getZoomedXY(selection.width),
-                //				getZoomedXY(selection.height),
-                //				this);
-                //			g.setColor(Color.WHITE);
-                //			g.drawRect(
-                //				getZoomedXY(selection.x),
-                //				getZoomedXY(selection.y),
-                //				getZoomedXY(selection.width),
-                //				getZoomedXY(selection.height));
+                // g.drawImage(
+                // selectImg,
+                // getZoomedXY(selection.x),
+                // getZoomedXY(selection.y),
+                // getZoomedXY(selection.width),
+                // getZoomedXY(selection.height),
+                // this);
+                // g.setColor(Color.WHITE);
+                // g.drawRect(
+                // getZoomedXY(selection.x),
+                // getZoomedXY(selection.y),
+                // getZoomedXY(selection.width),
+                // getZoomedXY(selection.height));
             }
-            //gridlines
+            // gridlines
             if (this.isDrawGridlines())
             {
                 g.setColor(Color.BLACK);
@@ -494,17 +494,17 @@ public class ImageDrawingArea extends DrawingArea
                 g.drawRect(0, 0, getZoomedXY(drawingWidth),
                     getZoomedXY(drawingHeight));
             }
-            //selection border
+            // selection border
             if (selection.width > 0 && selection.height > 0)
             {
-                //			flattenSelection(g, true);
-                //			g.drawImage(
-                //				selectImg,
-                //				getZoomedXY(selection.x),
-                //				getZoomedXY(selection.y),
-                //				getZoomedXY(selection.width),
-                //				getZoomedXY(selection.height),
-                //				this);
+                // flattenSelection(g, true);
+                // g.drawImage(
+                // selectImg,
+                // getZoomedXY(selection.x),
+                // getZoomedXY(selection.y),
+                // getZoomedXY(selection.width),
+                // getZoomedXY(selection.height),
+                // this);
                 g.setColor(Color.WHITE);
                 g
                     .drawRect(getZoomedXY(selection.x),
@@ -615,6 +615,35 @@ public class ImageDrawingArea extends DrawingArea
         fireChanged();
     }
 
+    private void doPaintBucketReg(int x, int y, Color newCol, Color currentCol)
+    {
+        // make sure it's on the image
+        if (x > -1 && y > -1 && x < this.getDrawingWidth()
+            && y < this.getDrawingHeight()
+            && this.getPointColor(x, y).equals(currentCol))
+        {
+            this.drawPoint(x, y, newCol);
+            for (int ax = -1; ax < 2; ax++)
+                for (int ay = -1; ay < 2; ay++)
+                    doPaintBucketReg(x + ax, y + ay, newCol, currentCol);
+        }
+    }
+
+    private void doPaintBucketNoDia(int x, int y, Color newCol, Color currentCol)
+    {
+        // make sure it's on the image
+        if (x > -1 && y > -1 && x < this.getDrawingWidth()
+            && y < this.getDrawingHeight()
+            && this.getPointColor(x, y).equals(currentCol))
+        {
+            this.drawPoint(x, y, newCol);
+            doPaintBucketNoDia(x - 1, y, newCol, currentCol);
+            doPaintBucketNoDia(x + 1, y, newCol, currentCol);
+            doPaintBucketNoDia(x, y - 1, newCol, currentCol);
+            doPaintBucketNoDia(x, y + 1, newCol, currentCol);
+        }
+    }
+
     /**
      * Recursively fills an area of the same color with the current color.
      * 
@@ -630,14 +659,14 @@ public class ImageDrawingArea extends DrawingArea
             undo();
             return;
         }
-        this.drawPoint(x, y, newCol);
-        for (int ax = -1; ax < 2; ax++)
-            for (int ay = -1; ay < 2; ay++)
-                if (x + ax > -1 && y + ay > -1 && x + ax < img.getWidth()
-                    && y + ay < img.getHeight())
-                    //make sure it's on the image
-                    if (this.getPointColor(x + ax, y + ay).equals(currentCol))
-                        doPaintBucket(x + ax, y + ay);
+        if (tools.getFillMethod() == Toolset.FILL_METHOD_NO_DIAGONALS)
+        {
+            doPaintBucketNoDia(x, y, newCol, currentCol);
+        }
+        else
+        {
+            doPaintBucketReg(x, y, newCol, currentCol);
+        }
     }
 
     /**
@@ -651,9 +680,9 @@ public class ImageDrawingArea extends DrawingArea
      */
     protected void doTool(int x1, int y1, int x2, int y2)
     {
-        //x1, y1 is start of drag
-        //x2, y2 is end/current place of drag
-        //		addUndo();
+        // x1, y1 is start of drag
+        // x2, y2 is end/current place of drag
+        // addUndo();
         Graphics g = img.getGraphics();
         g.setColor(pal.getSelectedColor());
 
@@ -673,12 +702,12 @@ public class ImageDrawingArea extends DrawingArea
         {
             case Toolset.TOOL_EYEDROPER:
                 pal.setSelectedColor(getPointColor(x2, y2));
-                //undo();
+                // undo();
                 break;
             case Toolset.TOOL_PENCIL:
-                //undo();
+                // undo();
                 g.drawLine(x2, y2, x2, y2);
-                //this.drawLine(rx1, ry1, rx2, ry2,
+                // this.drawLine(rx1, ry1, rx2, ry2,
                 // pal.getSelectedColorIndex());
                 break;
             case Toolset.TOOL_LINE:
@@ -749,19 +778,19 @@ public class ImageDrawingArea extends DrawingArea
                 }
                 break;
             case Toolset.TOOL_PAINT_BUCKET:
-                //undo();
-                //do on mouse release
+                // undo();
+                // do on mouse release
                 break;
             case Toolset.TOOL_SELECTION:
                 if (!isMakingSelect)
                 {
-                    //move selection
+                    // move selection
                     selection.setLocation(selx + (x2 - x1), sely + (y2 - y1));
                 }
                 else
                 {
-                    //create new selection
-                    //don't do anything if selection out of range
+                    // create new selection
+                    // don't do anything if selection out of range
                     if (rx1 >= 0 && ry1 >= 0 && rx2 < getWidth()
                         && ry2 < getHeight())
                     {
@@ -816,7 +845,7 @@ public class ImageDrawingArea extends DrawingArea
                 || tool == Toolset.TOOL_PAINT_BUCKET || tool == Toolset.TOOL_PENCIL)
                 || tool == Toolset.TOOL_SELECTION)
             {
-                //other tools need to be undo'd before drawing again
+                // other tools need to be undo'd before drawing again
                 undo(false);
                 addUndo();
             }
@@ -1103,10 +1132,10 @@ public class ImageDrawingArea extends DrawingArea
     {
         paste(img, sel, false);
     }
-    
+
     /**
-     * Pastes a given selection. If flatten is false, it stays as a selection until the user flattens
-     * it.
+     * Pastes a given selection. If flatten is false, it stays as a selection
+     * until the user flattens it.
      * 
      * @param img Image to paste, must fit exactly in sel
      * @param sel Selection rectangle to place image in
@@ -1116,7 +1145,7 @@ public class ImageDrawingArea extends DrawingArea
     {
         this.selectImg = getNewImage(img);
         this.selection = sel;
-        if(flatten)
+        if (flatten)
         {
             flattenSelection();
             selection = new Rectangle();

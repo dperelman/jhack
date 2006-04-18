@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
 import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -36,7 +38,7 @@ public class DrawingToolset extends JComponent implements Toolset
     private ActionListener al;
     private ButtonGroup bg;
     private JPanel optionsPane;
-    private JComboBox fillSelector;
+    private JComboBox fillSelector, fillMethodSelector;
     private JCheckBox transparentSelection;
     private JTextField roundedRectRad;
 
@@ -58,7 +60,7 @@ public class DrawingToolset extends JComponent implements Toolset
         pencil = new JToggleButton();
         pencil.setIcon(getPencilIcon());
         pencil.setActionCommand(Integer.toString(TOOL_PENCIL));
-        pencil.setSelected(true); //start with pencil tool
+        pencil.setSelected(true); // start with pencil tool
         bg.add(pencil);
         buttons.add(pencil);
 
@@ -87,7 +89,7 @@ public class DrawingToolset extends JComponent implements Toolset
         buttons.add(line);
 
         rect = new JToggleButton();
-        //rect.setIcon(new ImageIcon("net/starmen/pkhack/rect.gif"));
+        // rect.setIcon(new ImageIcon("net/starmen/pkhack/rect.gif"));
         rect.setIcon(getRectangleIcon());
         rect.setActionCommand(Integer.toString(TOOL_RECTANGLE));
         rect.setToolTipText("Rectangle");
@@ -95,7 +97,7 @@ public class DrawingToolset extends JComponent implements Toolset
         buttons.add(rect);
 
         oval = new JToggleButton();
-        //oval.setIcon(new ImageIcon("net/starmen/pkhack/oval.gif"));
+        // oval.setIcon(new ImageIcon("net/starmen/pkhack/oval.gif"));
         oval.setIcon(getOvalIcon());
         oval.setToolTipText("Oval");
         oval.setActionCommand(Integer.toString(TOOL_OVAL));
@@ -103,8 +105,8 @@ public class DrawingToolset extends JComponent implements Toolset
         buttons.add(oval);
 
         roundedRect = new JToggleButton();
-        //roundedRect.setIcon(
-        //	new ImageIcon("net/starmen/pkhack/roundedRect.gif"));
+        // roundedRect.setIcon(
+        // new ImageIcon("net/starmen/pkhack/roundedRect.gif"));
         roundedRect.setIcon(getRoundedRectangleIcon());
         roundedRect.setToolTipText("Rounded Rectangle");
         roundedRect.setActionCommand(Integer.toString(TOOL_ROUND_RECTANGLE));
@@ -130,26 +132,33 @@ public class DrawingToolset extends JComponent implements Toolset
         buttonsWrapper.add(buttons);
         this.add(buttonsWrapper, BorderLayout.NORTH);
 
-        JPanel settings = new JPanel(new BorderLayout());
+        // JPanel settings = new JPanel(new BorderLayout());
+        Box settings = new Box(BoxLayout.Y_AXIS);
 
         this.fillSelector = new JComboBox();
         fillSelector.addItem("None");
         fillSelector.addItem("Background");
         fillSelector.addItem("Opque");
         fillSelector.setSelectedIndex(0);
-        settings.add(HackModule.getLabeledComponent("Fill: ", fillSelector),
-            BorderLayout.NORTH);
+        settings.add(HackModule.getLabeledComponent("Fill: ", fillSelector));
+
+        this.fillMethodSelector = new JComboBox();
+        fillMethodSelector.addItem("All");
+        fillMethodSelector.addItem("No diagonals");
+        fillMethodSelector.setSelectedIndex(0);
+        settings.add(HackModule.getLabeledComponent("Fill Dirs: ",
+            fillMethodSelector, "Selects regular fill (\"All\") or "
+                + "horizonal/vertical only (\"No diagonals\")"));
 
         this.transparentSelection = new JCheckBox();
         this.transparentSelection.setSelected(false);
         settings.add(HackModule.getLabeledComponent("Transparent Selection: ",
-            transparentSelection), BorderLayout.CENTER);
+            transparentSelection));
 
         this.roundedRectRad = HackModule.createSizedJTextField(2, true);
         this.roundedRectRad.setText("1");
         settings.add(HackModule.getLabeledComponent("Curve Size: ",
-            roundedRectRad, "Curve width & height for rounded rectangles"),
-            BorderLayout.SOUTH);
+            roundedRectRad, "Curve width & height for rounded rectangles"));
 
         this.add(settings, BorderLayout.SOUTH);
 
@@ -173,7 +182,7 @@ public class DrawingToolset extends JComponent implements Toolset
      * 
      * @param al ActionListener to tell about flip events.
      */
-    public DrawingToolset(ActionListener al) //to listen to flip events
+    public DrawingToolset(ActionListener al) // to listen to flip events
     {
         super();
         this.al = al;
@@ -237,6 +246,14 @@ public class DrawingToolset extends JComponent implements Toolset
     }
 
     /**
+     * @see net.starmen.pkhack.DrawingArea.Toolset#getFillMethod()
+     */
+    public int getFillMethod()
+    {
+        return this.fillMethodSelector.getSelectedIndex();
+    }
+
+    /**
      * @see net.starmen.pkhack.DrawingArea.Toolset#isTransparentSelection()
      */
     public boolean isTransparentSelection()
@@ -259,7 +276,7 @@ public class DrawingToolset extends JComponent implements Toolset
         }
     }
 
-    //Icons for the buttons
+    // Icons for the buttons
     private static Icon rectIco, rrectIco, ovalIco, lineIco, hFlipIco,
             vFlipIco, pencilIco, selIco, paintIco, eyeIco;
 
@@ -271,7 +288,7 @@ public class DrawingToolset extends JComponent implements Toolset
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = rectImg.getGraphics();
 
-        //Created by ImageFileToCode from net/starmen/pkhack/rect.gif
+        // Created by ImageFileToCode from net/starmen/pkhack/rect.gif
         g.setColor(new Color(0, 0, 0));
         g.drawLine(0, 1, 15, 1);
         g.drawLine(0, 2, 0, 13);
@@ -289,7 +306,7 @@ public class DrawingToolset extends JComponent implements Toolset
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
 
-        //Created by ImageFileToCode from net/starmen/pkhack/oval.gif
+        // Created by ImageFileToCode from net/starmen/pkhack/oval.gif
         g.setColor(new Color(255, 255, 255));
         g.setColor(new Color(0, 0, 0));
         g.drawLine(5, 3, 5, 3);
@@ -352,7 +369,7 @@ public class DrawingToolset extends JComponent implements Toolset
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
 
-        //Created by ImageFileToCode from net/starmen/pkhack/roundedRect.gif
+        // Created by ImageFileToCode from net/starmen/pkhack/roundedRect.gif
         g.setColor(new Color(255, 255, 255));
         g.setColor(new Color(0, 0, 0));
         g.drawLine(2, 1, 2, 1);
@@ -423,7 +440,7 @@ public class DrawingToolset extends JComponent implements Toolset
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
 
-        //Created by ImageFileToCode from net/starmen/pkhack/selection.gif
+        // Created by ImageFileToCode from net/starmen/pkhack/selection.gif
         g.setColor(new Color(0, 0, 0));
         g.drawLine(0, 0, 0, 0);
         g.drawLine(1, 0, 1, 0);
@@ -467,7 +484,7 @@ public class DrawingToolset extends JComponent implements Toolset
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
 
-        //Created by ImageFileToCode from net/starmen/pkhack/pencil.gif
+        // Created by ImageFileToCode from net/starmen/pkhack/pencil.gif
         g.setColor(new Color(255, 255, 255));
         g.setColor(new Color(0, 0, 0));
         g.drawLine(10, 0, 10, 0);
@@ -594,7 +611,7 @@ public class DrawingToolset extends JComponent implements Toolset
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
 
-        //Created by ImageFileToCode from net/starmen/pkhack/pBucket.gif
+        // Created by ImageFileToCode from net/starmen/pkhack/pBucket.gif
         g.setColor(new Color(255, 255, 255));
         g.setColor(new Color(0, 0, 4));
         g.drawLine(8, 1, 8, 1);
@@ -824,7 +841,7 @@ public class DrawingToolset extends JComponent implements Toolset
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
 
-        //Created by ImageFileToCode from net/starmen/pkhack/eyedropper.gif
+        // Created by ImageFileToCode from net/starmen/pkhack/eyedropper.gif
         g.setColor(new Color(255, 255, 255));
         g.setColor(new Color(0, 0, 0));
         g.drawLine(9, 1, 9, 1);
@@ -913,7 +930,7 @@ public class DrawingToolset extends JComponent implements Toolset
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
 
-        //Created by ImageFileToCode from net/starmen/pkhack/line.gif
+        // Created by ImageFileToCode from net/starmen/pkhack/line.gif
         g.setColor(new Color(255, 255, 255));
         g.setColor(new Color(0, 0, 0));
         g.drawLine(2, 1, 2, 1);
@@ -978,7 +995,7 @@ public class DrawingToolset extends JComponent implements Toolset
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
 
-        //Created by ImageFileToCode from net/starmen/pkhack/hFlip.gif
+        // Created by ImageFileToCode from net/starmen/pkhack/hFlip.gif
         g.setColor(new Color(255, 255, 255));
         g.setColor(new Color(0, 0, 0));
         g.drawLine(4, 3, 4, 3);
@@ -1065,7 +1082,7 @@ public class DrawingToolset extends JComponent implements Toolset
             BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = out.getGraphics();
 
-        //Created by ImageFileToCode from net/starmen/pkhack/vFlip.gif
+        // Created by ImageFileToCode from net/starmen/pkhack/vFlip.gif
         g.setColor(new Color(255, 255, 255));
         g.setColor(new Color(0, 0, 0));
         g.drawLine(7, 0, 7, 0);

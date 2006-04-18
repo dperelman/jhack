@@ -14,6 +14,8 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
+import net.starmen.pkhack.DrawingArea.Toolset;
+
 /**
  * A DrawingArea that holds images as int[][]'s. Rounded rectangle non-filled
  * tool is not implemented, instead a regular rectangle gets drawn. If anyone
@@ -152,7 +154,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
      */
     public void addUndo()
     {
-        undoArr.add(getNewImage(img)); //add copy of img to undo
+        undoArr.add(getNewImage(img)); // add copy of img to undo
     }
 
     /*
@@ -229,9 +231,9 @@ public class IntArrDrawingArea extends ImageDrawingArea
      */
     protected void doTool(int x1, int y1, int x2, int y2)
     {
-        //x1, y1 is start of drag
-        //x2, y2 is end/current place of drag
-        //		addUndo();
+        // x1, y1 is start of drag
+        // x2, y2 is end/current place of drag
+        // addUndo();
         int c = pal.getSelectedColorIndex();
 
         int tool = tools.getSelectedDrawingTool(), fill = tools.getFillType();
@@ -244,10 +246,10 @@ public class IntArrDrawingArea extends ImageDrawingArea
         {
             case Toolset.TOOL_EYEDROPER:
                 pal.setSelectedColor(getPointColor(x2, y2));
-                //undo();
+                // undo();
                 break;
             case Toolset.TOOL_PENCIL:
-                //undo();
+                // undo();
                 drawPoint(x2, y2, c);
                 break;
             case Toolset.TOOL_LINE:
@@ -304,23 +306,23 @@ public class IntArrDrawingArea extends ImageDrawingArea
                 }
                 break;
             case Toolset.TOOL_PAINT_BUCKET:
-                //undo();
-                //do on mouse release
+                // undo();
+                // do on mouse release
                 break;
             case Toolset.TOOL_SELECTION:
                 if (!isMakingSelect)
                 {
-                    //move selection
-                    //selection.setLocation(selx + (x2 - x1), sely + (y2 -
+                    // move selection
+                    // selection.setLocation(selx + (x2 - x1), sely + (y2 -
                     // y1));
                     selection.setLocation(selx + w, sely + h);
                 }
                 else
                 {
-                    //create new selection
-                    //selection = new Rectangle(rx1, ry1, rx2 - rx1, ry2 -
+                    // create new selection
+                    // selection = new Rectangle(rx1, ry1, rx2 - rx1, ry2 -
                     // ry1);
-                    //don't do anything if selection out of range
+                    // don't do anything if selection out of range
                     if (rx1 >= 0 && ry1 >= 0 && rx2 < getWidth()
                         && ry2 < getHeight())
                     {
@@ -367,7 +369,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
         }
         else
         {
-            //TODO draw a real unfilled rounded rectangle
+            // TODO draw a real unfilled rounded rectangle
             this.drawRect(rx1, ry1, w, h, c, fill);
         }
     }
@@ -395,7 +397,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
         else
         {
             float yr = ((float) h) / 2, xr = ((float) w) / 2;
-            double tp = 0.01; //t percison
+            double tp = 0.01; // t percison
             for (double t = 0; t < Math.PI * 2; t += tp)
             {
                 drawPoint((int) Math.round(rx1 + xr + (xr * Math.cos(t))),
@@ -668,8 +670,8 @@ public class IntArrDrawingArea extends ImageDrawingArea
             {
                 return;
             }
-            //if (this.drawingWidth * this.drawingHeight < 500)
-            //{
+            // if (this.drawingWidth * this.drawingHeight < 500)
+            // {
             for (int x = 0; x < this.drawingWidth; x++)
             {
                 for (int y = 0; y < this.drawingHeight; y++)
@@ -688,18 +690,18 @@ public class IntArrDrawingArea extends ImageDrawingArea
                     }
                 }
             }
-            //}
+            // }
             /*
              * else { g .drawImage( this.getImage(), 0, 0,
              * getZoomedXY(drawingWidth), getZoomedXY(drawingHeight),
              * //Color.BLACK, this);
              */
-            //selection image
-            //		if (selection.width > 0 && selection.height > 0)
-            //		{
-            //			flattenSelection(g, true);
-            //		}
-            //gridlines
+            // selection image
+            // if (selection.width > 0 && selection.height > 0)
+            // {
+            // flattenSelection(g, true);
+            // }
+            // gridlines
             if (this.isDrawGridlines())
             {
                 g.setColor(Color.BLACK);
@@ -716,17 +718,17 @@ public class IntArrDrawingArea extends ImageDrawingArea
                 g.drawRect(0, 0, getZoomedXY(drawingWidth),
                     getZoomedXY(drawingHeight));
             }
-            //selection border
+            // selection border
             if (selection.width > 0 && selection.height > 0)
             {
-                //			flattenSelection(g, true);
-                //			g.drawImage(
-                //				selectImg,
-                //				getZoomedXY(selection.x),
-                //				getZoomedXY(selection.y),
-                //				getZoomedXY(selection.width),
-                //				getZoomedXY(selection.height),
-                //				this);
+                // flattenSelection(g, true);
+                // g.drawImage(
+                // selectImg,
+                // getZoomedXY(selection.x),
+                // getZoomedXY(selection.y),
+                // getZoomedXY(selection.width),
+                // getZoomedXY(selection.height),
+                // this);
                 g.setColor(Color.WHITE);
                 g
                     .drawRect(getZoomedXY(selection.x),
@@ -810,7 +812,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
      */
     public static int[][] getNewImage(int[][] img, int x, int y, int w, int h)
     {
-        //make sure height and width aren't out of range
+        // make sure height and width aren't out of range
         w = Math.min(w, img.length - x);
         h = Math.min(h, img[0].length - y);
         int[][] newImg = new int[w][h];
@@ -825,10 +827,11 @@ public class IntArrDrawingArea extends ImageDrawingArea
 
         return newImg;
     }
-    
-    public static short[][] getNewShortImage(short[][] img, int x, int y, int w, int h)
+
+    public static short[][] getNewShortImage(short[][] img, int x, int y,
+        int w, int h)
     {
-        //make sure height and width aren't out of range
+        // make sure height and width aren't out of range
         w = Math.min(w, img.length - x);
         h = Math.min(h, img[0].length - y);
         short[][] newImg = new short[w][h];
@@ -847,7 +850,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
     public static byte[][] getNewByteImage(int[][] img, int x, int y, int w,
         int h)
     {
-        //make sure height and width aren't out of range
+        // make sure height and width aren't out of range
         w = Math.min(w, img.length - x);
         h = Math.min(h, img[0].length - y);
         byte[][] newImg = new byte[w][h];
@@ -865,7 +868,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
 
     public static int[][] getNewImage(byte[][] img, int x, int y, int w, int h)
     {
-        //make sure height and width aren't out of range
+        // make sure height and width aren't out of range
         w = Math.min(w, img.length - x);
         h = Math.min(h, img[0].length - y);
         int[][] newImg = new int[w][h];
@@ -901,7 +904,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
     {
         return getNewImage(img, 0, 0, img.length, img[0].length);
     }
-    
+
     public static short[][] getNewShortImage(short[][] img)
     {
         return getNewShortImage(img, 0, 0, img.length, img[0].length);
@@ -1090,6 +1093,50 @@ public class IntArrDrawingArea extends ImageDrawingArea
      * 
      * @see net.starmen.pkhack.ImageDrawingArea#doPaintBucket(int, int)
      */
+    /*
+     * protected void doPaintBucket(int x, int y) { int currentCol =
+     * this.getPoint(x, y), newCol = pal .getSelectedColorIndex(); if
+     * (currentCol == newCol) { undo(); return; } this.drawPoint(x, y, newCol);
+     * for (int ax = -1; ax < 2; ax++) for (int ay = -1; ay < 2; ay++) if (x +
+     * ax > -1 && y + ay > -1 && x + ax < this.getDrawingWidth() && y + ay <
+     * this.getDrawingHeight()) //make sure it's on the image if
+     * (this.getPoint(x + ax, y + ay) == currentCol) doPaintBucket(x + ax, y +
+     * ay); }
+     */
+
+    private void doPaintBucketReg(int x, int y, int newCol, int currentCol)
+    {
+        // make sure it's on the image
+        if (x > -1 && y > -1 && x < this.getDrawingWidth()
+            && y < this.getDrawingHeight() && this.getPoint(x, y) == currentCol)
+        {
+            this.drawPoint(x, y, newCol);
+            for (int ax = -1; ax < 2; ax++)
+                for (int ay = -1; ay < 2; ay++)
+                    doPaintBucketReg(x + ax, y + ay, newCol, currentCol);
+        }
+    }
+
+    private void doPaintBucketNoDia(int x, int y, int newCol, int currentCol)
+    {
+        // make sure it's on the image
+        if (x > -1 && y > -1 && x < this.getDrawingWidth()
+            && y < this.getDrawingHeight() && this.getPoint(x, y) == currentCol)
+        {
+            this.drawPoint(x, y, newCol);
+            doPaintBucketNoDia(x - 1, y, newCol, currentCol);
+            doPaintBucketNoDia(x + 1, y, newCol, currentCol);
+            doPaintBucketNoDia(x, y - 1, newCol, currentCol);
+            doPaintBucketNoDia(x, y + 1, newCol, currentCol);
+        }
+    }
+
+    /**
+     * Recursively fills an area of the same color with the current color.
+     * 
+     * @param x X-coordinate to start from.
+     * @param y Y-coordinate to start from.
+     */
     protected void doPaintBucket(int x, int y)
     {
         int currentCol = this.getPoint(x, y), newCol = pal
@@ -1099,15 +1146,13 @@ public class IntArrDrawingArea extends ImageDrawingArea
             undo();
             return;
         }
-        this.drawPoint(x, y, newCol);
-        for (int ax = -1; ax < 2; ax++)
-            for (int ay = -1; ay < 2; ay++)
-                if (x + ax > -1 && y + ay > -1
-                    && x + ax < this.getDrawingWidth()
-                    && y + ay < this.getDrawingHeight())
-                    //make sure it's on the image
-                    if (this.getPoint(x + ax, y + ay) == currentCol)
-                        doPaintBucket(x + ax, y + ay);
+        if (tools.getFillMethod() == Toolset.FILL_METHOD_NO_DIAGONALS)
+        {
+            doPaintBucketNoDia(x, y, newCol, currentCol);
+        }
+        else
+        {
+            doPaintBucketReg(x, y, newCol, currentCol);
+        }
     }
-
 }
