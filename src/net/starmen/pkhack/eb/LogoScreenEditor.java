@@ -111,10 +111,9 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         return "Written by AnyoneEB/n42";
     }
 
-    public static class LogoScreen
+    public static class LogoScreen extends FullScreenGraphics
     {
         private EbHackModule hm;
-        private boolean isInited = false;
         private int num, tilePointer, tileLen, palPointer, palLen, arngPointer,
                 arngLen;
 
@@ -136,15 +135,6 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         public static final int[] arngPointerArray = new int[]{0x0F0BB,
             0x0F113, 0x0F16A};
 
-        /** The <code>Color<code>'s of each 4 color palette. */
-        private Color[][] palette;
-        /** List of all arrangements. */
-        private short[] arrangementList;
-        /** Two-dimentional array of arrangements used. */
-        private short[][] arrangement;
-        /** All tiles stored as pixels being found at [tile_num][x][y]. */
-        private byte[][][] tiles;
-
         public LogoScreen(int i, EbHackModule hm)
         {
             this.hm = hm;
@@ -153,6 +143,26 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             palPointer = hm.rom.readRegAsmPointer(palPointerArray[num]);
             tilePointer = hm.rom.readRegAsmPointer(tilePointerArray[num]);
             arngPointer = hm.rom.readRegAsmPointer(arngPointerArray[num]);
+        }
+
+        public int getNumSubPalettes()
+        {
+            return NUM_PALETTES;
+        }
+
+        public int getSubPaletteSize()
+        {
+            return 4;
+        }
+
+        public int getNumArrangements()
+        {
+            return NUM_ARRANGEMENTS;
+        }
+
+        public int getNumTiles()
+        {
+            return NUM_TILES;
         }
 
         private boolean readGraphics(boolean allowFailure, boolean readOrg)
@@ -176,7 +186,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                     + " decompressing logo screen #" + num + " graphics.");
                 if (allowFailure)
                 {
-                    //EMPTY TILES
+                    // EMPTY TILES
                     for (int i = 0; i < tiles.length; i++)
                         for (int x = 0; x < tiles[i].length; x++)
                             Arrays.fill(tiles[i][x], (byte) 0);
@@ -224,7 +234,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 System.out.println("Error " + tmp[0]
                     + " decompressing logo screen #" + num + " palette.");
                 if (allowFailure)
-                { //EMPTY PALETTES
+                { // EMPTY PALETTES
                     for (int i = 0; i < palette.length; i++)
                         Arrays.fill(palette[i], Color.BLACK);
                     palLen = 0;
@@ -271,7 +281,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 System.out.println("Error " + tmp[0]
                     + " decompressing logo screen #" + num + " arrangement.");
                 if (allowFailure)
-                { //EMPTY ARRANGEMENTS
+                { // EMPTY ARRANGEMENTS
                     Arrays.fill(arrangementList, (short) 0);
                     for (int x = 0; x < arrangement.length; x++)
                         Arrays.fill(arrangement[x], (short) 0);
@@ -303,17 +313,6 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             return true;
         }
 
-        /**
-         * Decompresses information from ROM. allowFailure defaults to true, and
-         * is set to false when "fail" is selected from the abort/retry/fail box
-         * presented to the user when a problem is encountered while reading.
-         * 
-         * @param allowFailure if true, false will not be returned on failure,
-         *            instead the failed item will be set to zeros and reading
-         *            will continue
-         * @return true if everything is read or if allowFailure is true, false
-         *         if any decompression failed and allowFailure is false
-         */
         public boolean readInfo(boolean allowFailure)
         {
             if (isInited)
@@ -328,21 +327,6 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
             isInited = true;
             return true;
-        }
-
-        public boolean readInfo()
-        {
-            return readInfo(false);
-        }
-
-        /**
-         * Inits all values to zero. Will have no effect if {@link #readInfo()}
-         * or this has already been run successfully. Use this if
-         * <code>readInfo()</code> always fails.
-         */
-        public void initToNull()
-        {
-            readInfo(true);
         }
 
         private boolean writeGraphics()
@@ -451,306 +435,6 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                 return false;
 
             return true;
-        }
-
-        /**
-         * @return Returns the isInited.
-         */
-        public boolean isInited()
-        {
-            return isInited;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param x
-         * @param y
-         * @param data
-         */
-        public void setArrangementData(int x, int y, short data)
-        {
-            readInfo();
-            arrangement[x][y] = data;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param x
-         * @param y
-         * @return
-         */
-        public short getArrangementData(int x, int y)
-        {
-            readInfo();
-            return arrangement[x][y];
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @return
-         */
-        public short[][] getArrangementData()
-        {
-            readInfo();
-            short[][] out = new short[arrangement.length][arrangement[0].length];
-            for (int x = 0; x < out.length; x++)
-                for (int y = 0; y < out[0].length; y++)
-                    out[x][y] = arrangement[x][y];
-            return out;
-        }
-
-        public short[] getArrangementArr()
-        {
-            readInfo();
-            int j = 0;
-            short out[] = new short[NUM_ARRANGEMENTS];
-            for (int y = 0; y < arrangement[0].length; y++)
-                for (int x = 0; x < arrangement.length; x++)
-                    out[j++] = arrangement[x][y];
-            for (; j < NUM_ARRANGEMENTS; j++)
-                out[j] = arrangementList[j];
-            return out;
-        }
-
-        public void setArrangementArr(short[] arr)
-        {
-            readInfo();
-            int j = 0;
-            for (int y = 0; y < arrangement[0].length; y++)
-                for (int x = 0; x < arrangement.length; x++)
-                    arrangement[x][y] = arr[j++];
-            for (; j < NUM_ARRANGEMENTS; j++)
-                arrangementList[j] = arr[j];
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param data
-         */
-        public void setArrangementData(short[][] data)
-        {
-            readInfo();
-            for (int x = 0; x < data.length; x++)
-                for (int y = 0; y < data[0].length; y++)
-                    arrangement[x][y] = data[x][y];
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param subPal
-         * @return
-         */
-        public Image getTileImage(int tile, int subPal, boolean hFlip,
-            boolean vFlip)
-        {
-            readInfo();
-            //            byte[][] img = new byte[8][8];
-            //            for (int x = 0; x < 8; x++)
-            //                for (int y = 0; y < 8; y++)
-            //                    img[x][y] = tiles[tile][hFlip ? 7 - x : x][vFlip
-            //                        ? 7 - y
-            //                        : y];
-            return HackModule.drawImage(tiles[tile], palette[subPal], hFlip,
-                vFlip);
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param subPal
-         * @return
-         */
-        public Image getTileImage(int tile, int subPal)
-        {
-            readInfo();
-            return HackModule.drawImage(tiles[tile], palette[subPal]);
-        }
-
-        //        /**
-        //         * TODO Write javadoc for this method
-        //         *
-        //         * @param i
-        //         * @param j
-        //         * @return
-        //         */
-        //        public Image getTilesetImage(int subPal, int width, int height)
-        //        {
-        //            readInfo();
-        //            BufferedImage out = new BufferedImage(width * 8, height * 8,
-        //                BufferedImage.TYPE_INT_ARGB);
-        //            Graphics g = out.getGraphics();
-        //            int i = 0;
-        //            try
-        //            {
-        //                for (int y = 0; y < height; y++)
-        //                    for (int x = 0; x < width; x++)
-        //                        g.drawImage(HackModule.drawImage(tiles[i++],
-        //                            palette[subPal]), x * 8, y * 8, null);
-        //            }
-        //            catch (ArrayIndexOutOfBoundsException e)
-        //            {}
-        //            return out;
-        //        }
-        //
-        //        public Image getTilesetImage(int subPal, int width, int height,
-        //            int highlightTile)
-        //        {
-        //            readInfo();
-        //            Image out = getTilesetImage(subPal, width, height);
-        //            Graphics g = out.getGraphics();
-        //            if (highlightTile >= 0 && highlightTile <= tiles.length - 1)
-        //            {
-        //                g.setColor(new Color(255, 255, 0, 128));
-        //                g.fillRect((highlightTile % width) * 8,
-        //                    (highlightTile / width) * 8, 8, 8);
-        //            }
-        //            return out;
-        //        }
-        //
-        //        /**
-        //         * TODO Write javadoc for this method
-        //         *
-        //         * @param is
-        //         * @param f
-        //         * @param b
-        //         * @return
-        //         */
-        //        public Image getArrangementImage(int[][] selection, float zoom,
-        //            boolean gridLines)
-        //        {
-        //            readInfo();
-        //            BufferedImage out = new BufferedImage((gridLines
-        //                ? arrangement.length - 1
-        //                : 0)
-        //                + (int) (8 * arrangement.length * zoom), (gridLines
-        //                ? arrangement[0].length - 1
-        //                : 0)
-        //                + (int) (8 * arrangement[0].length * zoom),
-        //                BufferedImage.TYPE_4BYTE_ABGR_PRE);
-        //            Graphics g = out.getGraphics();
-        //            for (int x = 0; x < arrangement.length; x++)
-        //            {
-        //                for (int y = 0; y < arrangement[0].length; y++)
-        //                {
-        //                    // System.out.println(addZeros(Integer
-        //                    // .toBinaryString(this.arrangement[x][y]), 16));
-        //                    int arr = selection[x][y] == -1
-        //                        ? arrangement[x][y]
-        //                        : selection[x][y];
-        //                    g.drawImage(getTileImage(arr & 0x01ff,
-        //                        ((arr & 0x0400) >> 10), (arr & 0x4000) != 0,
-        //                        (arr & 0x8000) != 0), (int) (x * 8 * zoom)
-        //                        + (gridLines ? x : 0), (int) (y * 8 * zoom)
-        //                        + (gridLines ? y : 0), (int) (8 * zoom),
-        //                        (int) (8 * zoom), null);
-        //                    if (selection[x][y] != -1)
-        //                    {
-        //                        g.setColor(new Color(255, 255, 0, 128));
-        //                        g.fillRect((int) (x * 8 * zoom) + (gridLines ? x : 0),
-        //                            (int) (y * 8 * zoom) + (gridLines ? y : 0),
-        //                            (int) (8 * zoom), (int) (8 * zoom));
-        //                    }
-        //                }
-        //            }
-        //            return out;
-        //        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param pal
-         * @return
-         */
-        public Color[] getSubPal(int pal)
-        {
-            readInfo();
-            Color[] out = new Color[4];
-            System.arraycopy(palette[pal], 0, out, 0, 4);
-            return out;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @return
-         */
-        public byte[][] getTile(int tile)
-        {
-            byte[][] out = new byte[8][8];
-            for (int x = 0; x < 8; x++)
-            {
-                for (int y = 0; y < 8; y++)
-                {
-                    out[x][y] = this.getTilePixel(tile, x, y);
-                }
-            }
-            return out;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param x
-         * @param y
-         * @return
-         */
-        private byte getTilePixel(int tile, int x, int y)
-        {
-            readInfo();
-            return tiles[tile][x][y];
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param in
-         */
-        public void setTile(int tile, byte[][] in)
-        {
-            for (int x = 0; x < 8; x++)
-            {
-                for (int y = 0; y < 8; y++)
-                {
-                    this.setTilePixel(tile, x, y, in[x][y]);
-                }
-            }
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param x
-         * @param y
-         * @param i
-         */
-        private void setTilePixel(int tile, int x, int y, byte i)
-        {
-            readInfo();
-            this.tiles[tile][x][y] = i;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param col
-         * @param subPal
-         * @param color
-         */
-        public void setPaletteColor(int col, int subPal, Color color)
-        {
-            readInfo();
-            palette[subPal][col] = color;
         }
     }
 
@@ -888,11 +572,11 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             getSelectedScreen().setArrangementData(data);
         }
 
-        //        protected Image getArrangementImage(int[][] selection)
-        //        {
-        //            return getSelectedScreen().getArrangementImage(selection,
-        //                getZoom(), isDrawGridLines());
-        //        }
+        // protected Image getArrangementImage(int[][] selection)
+        // {
+        // return getSelectedScreen().getArrangementImage(selection,
+        // getZoom(), isDrawGridLines());
+        // }
 
         protected Image getTileImage(int tile, int subPal, boolean hFlip,
             boolean vFlip)
@@ -904,7 +588,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
     private class FocusIndicator extends AbstractButton implements
         FocusListener, MouseListener
     {
-        //true = tile editor, false = arrangement editor
+        // true = tile editor, false = arrangement editor
         private boolean focus = true;
 
         public Component getCurrentFocus()
@@ -1005,7 +689,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(getDescription());
 
-        //menu
+        // menu
         JMenuBar mb = new JMenuBar();
 
         JMenu fileMenu = new JMenu("File");
@@ -1025,8 +709,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         fileMenu.add(HackModule.createJMenuItem("Import Image...", 'm', null,
             "importImg", this));
-        //        fileMenu.add(HackModule.createJMenuItem("Export Image...", 'x', null,
-        //            "exportImg", this));
+        // fileMenu.add(HackModule.createJMenuItem("Export Image...", 'x', null,
+        // "exportImg", this));
 
         mb.add(fileMenu);
 
@@ -1054,7 +738,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
         mainWindow.setJMenuBar(mb);
 
-        //components
+        // components
         tileSelector = new TileSelector()
         {
             public int getTilesWide()
@@ -1199,7 +883,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             }
             else if (opt.equals("Retry"))
             {
-                //                mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
+                // mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
                 doLogoSelectAction();
                 return;
             }
@@ -1253,7 +937,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             tileSelector.repaint();
             arrangementEditor.repaint();
         }
-        //flip
+        // flip
         else if (ae.getActionCommand().equals("hFlip"))
         {
             da.doHFlip();
@@ -1262,13 +946,13 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         {
             da.doVFlip();
         }
-        //edit menu
-        //undo
+        // edit menu
+        // undo
         else if (ae.getActionCommand().equals("undo"))
         {
             fi.getCurrentUndoable().undo();
         }
-        //copy&paste stuff
+        // copy&paste stuff
         else if (ae.getActionCommand().equals("cut"))
         {
             fi.getCurrentCopyAndPaster().cut();
@@ -1319,7 +1003,8 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("importImg"))
         {
-            importImg();
+            FullScreenGraphicsImporter.importImg(getSelectedScreen(),
+                mainWindow);
 
             updatePaletteDisplay();
             tileSelector.repaint();
@@ -1329,7 +1014,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("apply"))
         {
-            //TownMap.writeInfo() will only write if the map has been inited
+            // TownMap.writeInfo() will only write if the map has been inited
             for (int i = 0; i < logoScreens.length; i++)
                 logoScreens[i].writeInfo();
             int m = getCurrentScreen();
@@ -1401,7 +1086,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
     public static void exportData(File f, boolean[][] a)
     {
-        //make a byte whichMaps. for each map if it is used set the bit at the
+        // make a byte whichMaps. for each map if it is used set the bit at the
         // place equal to the map number to 1
         byte whichMaps = 0;
         for (int i = 0; i < a.length; i++)
@@ -1417,13 +1102,13 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
             {
                 if (a[m][NODE_BASE])
                 {
-                    //if writing this map...
-                    //say what parts we will write, once again as a bit mask
+                    // if writing this map...
+                    // say what parts we will write, once again as a bit mask
                     byte whichParts = 0;
                     for (int i = 1; i < a[m].length; i++)
                         whichParts |= (a[m][i] ? 1 : 0) << (i - 1);
                     out.write(whichParts);
-                    //write tiles?
+                    // write tiles?
                     if (a[m][NODE_TILES])
                     {
                         byte[] b = new byte[LogoScreen.NUM_TILES * 32];
@@ -1433,7 +1118,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                                 b, offset, 0, 0);
                         out.write(b);
                     }
-                    //write arrangements?
+                    // write arrangements?
                     if (a[m][NODE_ARR])
                     {
                         short[] arr = logoScreens[m].getArrangementArr();
@@ -1446,7 +1131,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                         }
                         out.write(barr);
                     }
-                    //write palettes?
+                    // write palettes?
                     if (a[m][NODE_PAL])
                     {
                         byte[] pal = new byte[LogoScreen.NUM_PALETTES * 4 * 2];
@@ -1492,12 +1177,12 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         byte whichMaps = (byte) in.read();
         for (int m = 0; m < logoScreens.length; m++)
         {
-            //if bit for this map set...
+            // if bit for this map set...
             if (((whichMaps >> m) & 1) != 0)
             {
                 out[m] = new LogoScreenImportData();
                 byte whichParts = (byte) in.read();
-                //if tile bit set...
+                // if tile bit set...
                 if ((whichParts & 1) != 0)
                 {
                     byte[] b = new byte[LogoScreen.NUM_TILES * 32];
@@ -1508,7 +1193,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                     for (int i = 0; i < LogoScreen.NUM_TILES; i++)
                         offset += read2BPPArea(out[m].tiles[i], b, offset, 0, 0);
                 }
-                //if arr bit set...
+                // if arr bit set...
                 if (((whichParts >> 1) & 1) != 0)
                 {
                     out[m].arrangement = new short[LogoScreen.NUM_ARRANGEMENTS];
@@ -1521,7 +1206,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                         out[m].arrangement[i] = (short) ((barr[off++] & 0xff) + ((barr[off++] & 0xff) << 8));
                     }
                 }
-                //if pal bit set...
+                // if pal bit set...
                 if (((whichParts >> 2) & 1) != 0)
                 {
                     byte[] pal = new byte[LogoScreen.NUM_PALETTES * 4 * 2];
@@ -1705,23 +1390,23 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                //t = array of used targets
+                // t = array of used targets
                 boolean[][] t = new boolean[NUM_LOGO_SCREENS][4];
-                //m = source screen
+                // m = source screen
                 for (int m = 0; m < NUM_LOGO_SCREENS; m++)
                 {
                     if (targets[m] != null)
                     {
-                        //n = target map
+                        // n = target map
                         int n = targets[m].getSelectedIndex();
                         for (int i = 1; i < 4; i++)
                         {
                             if (a[m][i])
                             {
-                                //if part already used...
+                                // if part already used...
                                 if (t[n][i])
                                 {
-                                    //fail
+                                    // fail
                                     JOptionPane.showMessageDialog(targetDialog,
                                         "Imported data must not overlap,\n"
                                             + "check your targets.",
@@ -1731,7 +1416,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                                 }
                                 else
                                 {
-                                    //set target part as used
+                                    // set target part as used
                                     t[n][i] = true;
                                 }
                             }
@@ -1819,7 +1504,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         logoScreens[i].readInfo();
         if (lsid.tiles != null)
         {
-            //check tiles
+            // check tiles
             for (int t = 0; t < lsid.tiles.length; t++)
                 for (int x = 0; x < lsid.tiles[t].length; x++)
                     if (!Arrays.equals(lsid.tiles[t][x],
@@ -1828,14 +1513,14 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         }
         if (lsid.arrangement != null)
         {
-            //check arrangement
+            // check arrangement
             if (!Arrays.equals(lsid.arrangement, logoScreens[i]
                 .getArrangementArr()))
                 return false;
         }
         if (lsid.palette != null)
         {
-            //check palette
+            // check palette
             for (int p = 0; p < lsid.palette.length; p++)
                 for (int c = 0; c < lsid.palette[p].length; c++)
                     if (!lsid.palette[p][c]
@@ -1843,7 +1528,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
                         return false;
         }
 
-        //nothing found wrong
+        // nothing found wrong
         return true;
     }
 
@@ -1925,463 +1610,5 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         }
 
         return true;
-    }
-
-    public void importImg()
-    {
-        importImg(getFile(false, new String[]{"bmp", "gif", "png"},
-            new String[]{"Windows BitMaP", "Compuserv GIF format",
-                "Portable Network Graphics"}));
-    }
-
-    public void importImg(File f)
-    {
-        if (f == null)
-            return;
-
-        Image img;
-        try
-        {
-            if (f.getName().endsWith(".bmp"))
-            {
-                FileInputStream in = new FileInputStream(f);
-                img = mainWindow.createImage(BMPReader.getBMPImage(in));
-                in.close();
-            }
-            else
-            {
-                img = ImageIO.read(f);
-            }
-        }
-        catch (IOException e1)
-        {
-            JOptionPane.showMessageDialog(mainWindow, "Unexpected IO error:\n"
-                + e1.getLocalizedMessage(), "ERROR: IO Error",
-                JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        importImg(img);
-    }
-
-    public void importImg(Image img)
-    {
-        int w = img.getWidth(mainWindow), h = img.getHeight(mainWindow);
-        if (w != 256)
-        {
-            JOptionPane.showMessageDialog(mainWindow,
-                "Image width must be 256 pixels.", "ERROR: Invalid width",
-                JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (h != 224)
-        {
-            JOptionPane.showMessageDialog(mainWindow,
-                "Image height must be 224 pixels.", "ERROR: Invalid height",
-                JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        int[] pixels = new int[w * h];
-
-        PixelGrabber pg = new PixelGrabber(img, 0, 0, w, h, pixels, 0, w);
-        try
-        {
-            pg.grabPixels();
-        }
-        catch (InterruptedException e)
-        {
-            System.err.println("Interrupted waiting for pixels!");
-            return;
-        }
-        importImgPassOne(pixels);
-    }
-
-    private void importImgOnePass(int[] pixels)
-    {
-        short[][] arrangement = new short[32][28];
-        byte[][] tiles = new byte[LogoScreen.NUM_TILES][64];
-        Color[] pal = new Color[4];
-        Arrays.fill(pal, new Color(0, 0, 0));
-        int tnum = 0, pnum = 0;
-        Hashtable tilerefs = new Hashtable(), palrefs = new Hashtable();
-        for (int yt = 0; yt < 28; yt++)
-        {
-            int js = yt * 8;
-            for (int xt = 0; xt < 32; xt++)
-            {
-                int is = xt * 8;
-                byte[] tile = new byte[64];
-                for (int j = 0; j < 8; j++)
-                {
-                    for (int i = 0; i < 8; i++)
-                    {
-                        //sprite[i][j] = pixels[j * w + i];
-                        int c = pixels[((j + (yt * 8)) * 256) + (i + (xt * 8))];
-                        Color col = new Color(c & 0xf8f8f8);
-                        int cn;
-                        Object tmpc;
-                        if ((tmpc = palrefs.get(col)) != null)
-                        {
-                            cn = ((Integer) tmpc).intValue();
-                        }
-                        else
-                        {
-                            cn = pnum;
-                            palrefs.put(col, new Integer(pnum));
-                            try
-                            {
-                                pal[pnum++] = col;
-                            }
-                            catch (ArrayIndexOutOfBoundsException e)
-                            {
-                                JOptionPane
-                                    .showMessageDialog(
-                                        mainWindow,
-                                        "Image must have no more than 4 colors.\n"
-                                            + "Please use the dithering option on your\n"
-                                            + "favorite image editor program to decrease\n"
-                                            + "the number of colors to 4.",
-                                        "ERROR: Too many colors",
-                                        JOptionPane.ERROR_MESSAGE);
-                                return;
-                            }
-                        }
-                        tile[(j * 8) + i] = (byte) cn;
-                    }
-                }
-                TileRef tn;
-                byte[] htile, vtile, hvtile;
-                htile = hFlip(tile);
-                vtile = vFlip(tile);
-                hvtile = hFlip(vtile);
-
-                Object tmpt;
-                if ((tmpt = tilerefs.get(new ByteArrHasher(tile).toInteger())) != null)
-                {
-                    tn = (TileRef) tmpt;
-                }
-                else
-                {
-                    tn = new TileRef(tnum, false, false);
-                    tilerefs.put(new ByteArrHasher(tile).toInteger(), tn);
-                    tilerefs.put(new ByteArrHasher(htile).toInteger(),
-                        new TileRef(tnum, true, false));
-                    tilerefs.put(new ByteArrHasher(vtile).toInteger(),
-                        new TileRef(tnum, false, true));
-                    tilerefs.put(new ByteArrHasher(hvtile).toInteger(),
-                        new TileRef(tnum, true, true));
-                    try
-                    {
-                        tiles[tnum++] = tile;
-                    }
-                    catch (ArrayIndexOutOfBoundsException e)
-                    {
-                        JOptionPane
-                            .showMessageDialog(
-                                mainWindow,
-                                "Image must have no more than "
-                                    + tiles.length
-                                    + " unique 8x8 tiles.\n"
-                                    + "Flipping of tiles is currently not supported.",
-                                "ERROR: Too many tiles",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-                }
-                arrangement[xt][yt] = tn.getArrangementData();
-            }
-        }
-
-        for (int i = 0; i < getSelectedScreen().palette.length; i++)
-        {
-            System.arraycopy(pal, 0, getSelectedScreen().palette[i], 0,
-                pal.length);
-        }
-        for (int t = 0; t < tnum; t++)
-        {
-            for (int x = 0; x < 8; x++)
-                for (int y = 0; y < 8; y++)
-                    getSelectedScreen().tiles[t][x][y] = tiles[t][(y * 8) + x];
-        }
-        for (int t = tnum; t < getSelectedScreen().tiles.length; t++)
-        {
-            getSelectedScreen().tiles[t] = new byte[8][8];
-        }
-        getSelectedScreen().arrangement = arrangement;
-    }
-
-    static final int PAL_SIZE = 4;
-
-    private void importImgPassOne(int[] pixels)
-    {
-
-        Set pals = new HashSet();
-        int[][] tilepalhash = new int[32][28];
-        for (int yt = 0; yt < 28; yt++)
-        {
-            int js = yt * 8;
-            for (int xt = 0; xt < 32; xt++)
-            {
-                int is = xt * 8;
-                byte[] tile = new byte[64];
-                Set pal = new HashSet();
-                for (int j = 0; j < 8; j++)
-                {
-                    for (int i = 0; i < 8; i++)
-                    {
-                        int c = pixels[((j + (yt * 8)) * 256) + (i + (xt * 8))];
-                        Color col = new Color(c & 0xf8f8f8);
-                        pal.add(col);
-                        if (pal.size() > PAL_SIZE)
-                        {
-                            JOptionPane
-                                .showMessageDialog(
-                                    mainWindow,
-                                    "Image must have no more than "
-                                        + PAL_SIZE
-                                        + " colors per 8x8 tile.\n"
-                                        + "Please use the dithering option on your\n"
-                                        + "favorite image editor program to decrease\n"
-                                        + "the number of colors per 8x8 tile to "
-                                        + PAL_SIZE + ".",
-                                    "ERROR: Too many colors",
-                                    JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                    }
-                }
-                pals.add(pal);
-                tilepalhash[xt][yt] = pal.hashCode();
-            }
-        }
-
-        Hashtable hashhash = mergePals(pals);
-
-        if (pals.size() > LogoScreen.NUM_PALETTES)
-        {
-            JOptionPane.showMessageDialog(mainWindow,
-                "Image must have no more than " + LogoScreen.NUM_PALETTES
-                    + " unique palettes of " + PAL_SIZE + " colors.\n"
-                    + "Please use the dithering option on your\n"
-                    + "favorite image editor program to decrease\n"
-                    + "the number of colors per 8x8 tile to " + PAL_SIZE
-                    + " and number of palettes to " + LogoScreen.NUM_PALETTES
-                    + ".", "ERROR: Too many colors", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        byte[][] tilepal = new byte[32][28];
-        Color[][] palarr = new Color[LogoScreen.NUM_PALETTES][PAL_SIZE];
-        Hashtable palhash = new Hashtable();
-        byte pnum = 0;
-        for (Iterator i = pals.iterator(); i.hasNext();)
-        {
-            int cnum = 0;
-            Set tmp = (Set) i.next();
-            palhash.put(new Integer(tmp.hashCode()), new Byte(pnum));
-            for (Iterator j = ((Set) tmp).iterator(); j.hasNext();)
-            {
-                palarr[pnum][cnum++] = (Color) j.next();
-            }
-            for (; cnum < PAL_SIZE; cnum++)
-            {
-                palarr[pnum][cnum] = Color.BLACK;
-            }
-            pnum++;
-        }
-        for (; pnum < palarr.length; pnum++)
-        {
-            Arrays.fill(palarr[pnum], Color.BLACK);
-        }
-
-        //        System.out.println("hashhash: " + hashhash);
-        //        System.out.println("palhash: " + palhash);
-
-        for (int yt = 0; yt < 28; yt++)
-        {
-            for (int xt = 0; xt < 32; xt++)
-            {
-                Integer phash = new Integer(tilepalhash[xt][yt]);
-                while (hashhash.containsKey(phash))
-                {
-                    phash = (Integer) hashhash.get(phash);
-                }
-                tilepal[xt][yt] = ((Byte) palhash.get(phash)).byteValue();
-            }
-        }
-
-        importImgPassTwo(pixels, palarr, tilepal);
-    }
-
-    private boolean superSetExists(Set pals, Set pal, Hashtable out)
-    {
-        for (Iterator j = pals.iterator(); j.hasNext();)
-        {
-            Set opal = (Set) j.next();
-            if (!pal.equals(opal) && opal.containsAll(pal))
-            {
-                out.put(new Integer(pal.hashCode()), new Integer(opal
-                    .hashCode()));
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean findMergeable(Set pals, Set pal, Hashtable out)
-    {
-        for (Iterator j = pals.iterator(); j.hasNext();)
-        {
-            Set opal = (Set) j.next();
-            if (!pal.equals(opal))
-            {
-                Set upal = new HashSet(opal);
-                upal.addAll(pal);
-                if (upal.size() <= PAL_SIZE)
-                {
-                    pals.remove(pal);
-                    pals.remove(opal);
-                    pals.add(upal);
-                    out.put(new Integer(pal.hashCode()), new Integer(upal
-                        .hashCode()));
-                    out.put(new Integer(opal.hashCode()), new Integer(upal
-                        .hashCode()));
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Removes extranous palettes.
-     * 
-     * @param pals a Set of Set's of Color's.
-     */
-    private Hashtable mergePals(Set pals)
-    {
-        Hashtable out = new Hashtable();
-        for (Iterator i = pals.iterator(); i.hasNext();)
-        {
-            if (superSetExists(pals, (Set) i.next(), out))
-            {
-                i.remove();
-            }
-        }
-
-        for (Iterator i = pals.iterator(); i.hasNext();)
-        {
-            if (findMergeable(pals, (Set) i.next(), out))
-            {
-                /* Need to restart because we removed elements. */
-                i = pals.iterator();
-            }
-        }
-        return out;
-    }
-
-    private void importImgPassTwo(int[] pixels, Color[][] pals, byte[][] tilepal)
-    {
-        short[][] arrangement = new short[32][28];
-        byte[][] tiles = new byte[LogoScreen.NUM_TILES][64];
-        int tnum = 0, pnum = 0;
-        Hashtable tilerefs = new Hashtable();
-
-        for (int yt = 0; yt < 28; yt++)
-        {
-            int js = yt * 8;
-            for (int xt = 0; xt < 32; xt++)
-            {
-                int is = xt * 8;
-                byte[] tile = new byte[64];
-                Color[] pal = pals[tilepal[xt][yt]];
-                for (int j = 0; j < 8; j++)
-                {
-                    for (int i = 0; i < 8; i++)
-                    {
-                        int c = pixels[((j + js) * 256) + (i + is)];
-                        Color col = new Color(c & 0xf8f8f8);
-                        byte cn = -1;
-                        for (byte k = 0; k < pal.length; k++)
-                        {
-                            if (col.equals(pal[k]))
-                            {
-                                cn = k;
-                            }
-                        }
-                        if (cn == -1)
-                        {
-                            JOptionPane.showMessageDialog(mainWindow,
-                                "The color could not be found in "
-                                    + "the palette.\n"
-                                    + "This should not be possible.",
-                                "ERROR: Invalid palette",
-                                JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                        tile[(j * 8) + i] = cn;
-                    }
-                }
-                TileRef tn;
-                byte[] htile, vtile, hvtile;
-                htile = hFlip(tile);
-                vtile = vFlip(tile);
-                hvtile = hFlip(vtile);
-
-                Object tmpt;
-                if ((tmpt = tilerefs.get(new ByteArrHasher(tile).toInteger())) != null)
-                {
-                    tn = (TileRef) tmpt;
-                }
-                else
-                {
-                    tn = new TileRef(tnum, false, false);
-                    tilerefs.put(new ByteArrHasher(tile).toInteger(), tn);
-                    tilerefs.put(new ByteArrHasher(htile).toInteger(),
-                        new TileRef(tnum, true, false));
-                    tilerefs.put(new ByteArrHasher(vtile).toInteger(),
-                        new TileRef(tnum, false, true));
-                    tilerefs.put(new ByteArrHasher(hvtile).toInteger(),
-                        new TileRef(tnum, true, true));
-                    try
-                    {
-                        tiles[tnum++] = tile;
-                    }
-                    catch (ArrayIndexOutOfBoundsException e)
-                    {
-                        JOptionPane
-                            .showMessageDialog(
-                                mainWindow,
-                                "Image must have no more than "
-                                    + tiles.length
-                                    + " unique 8x8 tiles.\n"
-                                    + "Flipping of tiles is currently not supported.",
-                                "ERROR: Too many tiles",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-                }
-                tn = new TileRef(tn.getTile(), tn.isHFlip(), tn.isVFlip(),
-                    tilepal[xt][yt]);
-                arrangement[xt][yt] = tn.getArrangementData();
-            }
-        }
-
-        for (int i = 0; i < getSelectedScreen().palette.length; i++)
-        {
-            System.arraycopy(pals[i], 0, getSelectedScreen().palette[i], 0,
-                pals[i].length);
-        }
-        for (int t = 0; t < tnum; t++)
-        {
-            for (int x = 0; x < 8; x++)
-                for (int y = 0; y < 8; y++)
-                    getSelectedScreen().tiles[t][x][y] = tiles[t][(y * 8) + x];
-        }
-        for (int t = tnum; t < getSelectedScreen().tiles.length; t++)
-        {
-            getSelectedScreen().tiles[t] = new byte[8][8];
-        }
-        getSelectedScreen().arrangement = arrangement;
     }
 }

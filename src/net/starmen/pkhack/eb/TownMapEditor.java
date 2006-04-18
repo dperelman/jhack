@@ -89,7 +89,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
     public String getVersion()
     {
-        return "0.1";
+        return "0.2";
     }
 
     public String getDescription()
@@ -102,10 +102,9 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         return "Written by AnyoneEB";
     }
 
-    public static class TownMap
+    public static class TownMap extends FullScreenGraphics
     {
         private EbHackModule hm;
-        private boolean isInited = false;
         private int num, oldPointer, oldLen;
 
         /** Number of palettes. */
@@ -118,21 +117,32 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         /** Number of tiles. */
         public static final int NUM_TILES = 512;
 
-        /** The <code>Color<code>'s of each 16 color palette. */
-        private Color[][] palette;
-        /** List of all arrangements. */
-        private short[] arrangementList;
-        /** Two-dimentional array of arrangements used. */
-        private short[][] arrangement;
-        /** All tiles stored as pixels being found at [tile_num][x][y]. */
-        private byte[][][] tiles;
-
         public TownMap(int i, EbHackModule hm)
         {
             this.hm = hm;
             this.num = i;
 
             oldPointer = toRegPointer(hm.rom.readMulti(0x202390 + (i * 4), 4));
+        }
+
+        public int getNumSubPalettes()
+        {
+            return NUM_PALETTES;
+        }
+
+        public int getSubPaletteSize()
+        {
+            return 16;
+        }
+
+        public int getNumArrangements()
+        {
+            return NUM_ARRANGEMENTS;
+        }
+
+        public int getNumTiles()
+        {
+            return NUM_TILES;
         }
 
         /**
@@ -259,7 +269,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
         public boolean readInfo()
         {
-            return readInfo(true); //XXX should this be false?
+            return readInfo(true); // XXX should this be false?
         }
 
         /**
@@ -272,21 +282,21 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             if (isInited)
                 return;
 
-            //EMPTY PALETTES
+            // EMPTY PALETTES
             for (int i = 0; i < palette.length; i++)
                 Arrays.fill(palette[i], Color.BLACK);
 
-            //EMPTY ARRANGEMENTS
+            // EMPTY ARRANGEMENTS
             Arrays.fill(arrangementList, (short) 0);
             for (int x = 0; x < arrangement.length; x++)
                 Arrays.fill(arrangement[x], (short) 0);
 
-            //EMPTY TILES
+            // EMPTY TILES
             for (int i = 0; i < tiles.length; i++)
                 for (int x = 0; x < tiles[i].length; x++)
                     Arrays.fill(tiles[i][x], (byte) 0);
 
-            //mark length as zero to prevent problems
+            // mark length as zero to prevent problems
             oldLen = 0;
 
             isInited = true;
@@ -320,7 +330,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                     0);
             }
 
-            byte[] compMap; //, compTilesetTv;
+            byte[] compMap; // , compTilesetTv;
             int compLen = comp(udata, compMap = new byte[20000]);
 
             if (!hm.writeToFree(compMap, 0x202390 + (num * 4), oldLen, compLen))
@@ -337,305 +347,6 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             return true;
         }
 
-        /**
-         * @return Returns the isInited.
-         */
-        public boolean isInited()
-        {
-            return isInited;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param x
-         * @param y
-         * @param data
-         */
-        public void setArrangementData(int x, int y, short data)
-        {
-            readInfo();
-            arrangement[x][y] = data;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param x
-         * @param y
-         * @return
-         */
-        public short getArrangementData(int x, int y)
-        {
-            readInfo();
-            return arrangement[x][y];
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @return
-         */
-        public short[][] getArrangementData()
-        {
-            readInfo();
-            short[][] out = new short[arrangement.length][arrangement[0].length];
-            for (int x = 0; x < out.length; x++)
-                for (int y = 0; y < out[0].length; y++)
-                    out[x][y] = arrangement[x][y];
-            return out;
-        }
-
-        public short[] getArrangementArr()
-        {
-            readInfo();
-            int j = 0;
-            short[] out = new short[NUM_ARRANGEMENTS];
-            for (int y = 0; y < arrangement[0].length; y++)
-                for (int x = 0; x < arrangement.length; x++)
-                    out[j++] = arrangement[x][y];
-            for (; j < NUM_ARRANGEMENTS; j++)
-                out[j] = arrangementList[j];
-            return out;
-        }
-
-        public void setArrangementArr(short[] arr)
-        {
-            readInfo();
-            int j = 0;
-            for (int y = 0; y < arrangement[0].length; y++)
-                for (int x = 0; x < arrangement.length; x++)
-                    arrangement[x][y] = arr[j++];
-            for (; j < NUM_ARRANGEMENTS; j++)
-                arrangementList[j] = arr[j];
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param data
-         */
-        public void setArrangementData(short[][] data)
-        {
-            readInfo();
-            for (int x = 0; x < data.length; x++)
-                for (int y = 0; y < data[0].length; y++)
-                    arrangement[x][y] = data[x][y];
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param subPal
-         * @return
-         */
-        public Image getTileImage(int tile, int subPal, boolean hFlip,
-            boolean vFlip)
-        {
-            readInfo();
-            //            byte[][] img = new byte[8][8];
-            //            for (int x = 0; x < 8; x++)
-            //                for (int y = 0; y < 8; y++)
-            //                    img[x][y] = tiles[tile][hFlip ? 7 - x : x][vFlip
-            //                        ? 7 - y
-            //                        : y];
-            return HackModule.drawImage(tiles[tile], palette[subPal], hFlip,
-                vFlip);
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param subPal
-         * @return
-         */
-        public Image getTileImage(int tile, int subPal)
-        {
-            readInfo();
-            return HackModule.drawImage(tiles[tile], palette[subPal]);
-        }
-
-        //        /**
-        //         * TODO Write javadoc for this method
-        //         *
-        //         * @param i
-        //         * @param j
-        //         * @return
-        //         */
-        //        public Image getTilesetImage(int subPal, int width, int height)
-        //        {
-        //            readInfo();
-        //            BufferedImage out = new BufferedImage(width * 8, height * 8,
-        //                BufferedImage.TYPE_INT_ARGB);
-        //            Graphics g = out.getGraphics();
-        //            int i = 0;
-        //            try
-        //            {
-        //                for (int y = 0; y < height; y++)
-        //                    for (int x = 0; x < width; x++)
-        //                        g.drawImage(HackModule.drawImage(tiles[i++],
-        //                            palette[subPal]), x * 8, y * 8, null);
-        //            }
-        //            catch (ArrayIndexOutOfBoundsException e)
-        //            {}
-        //            return out;
-        //        }
-
-        //        public Image getTilesetImage(int subPal, int width, int height,
-        //            int highlightTile)
-        //        {
-        //            readInfo();
-        //            Image out = getTilesetImage(subPal, width, height);
-        //            Graphics g = out.getGraphics();
-        //            if (highlightTile >= 0 && highlightTile <= tiles.length - 1)
-        //            {
-        //                g.setColor(new Color(255, 255, 0, 128));
-        //                g.fillRect((highlightTile % width) * 8,
-        //                    (highlightTile / width) * 8, 8, 8);
-        //            }
-        //            return out;
-        //        }
-
-        //        /**
-        //         * TODO Write javadoc for this method
-        //         *
-        //         * @param is
-        //         * @param f
-        //         * @param b
-        //         * @return
-        //         */
-        //        public Image getArrangementImage(int[][] selection, float zoom,
-        //            boolean gridLines)
-        //        {
-        //            readInfo();
-        //            BufferedImage out = new BufferedImage((gridLines
-        //                ? arrangement.length - 1
-        //                : 0)
-        //                + (int) (8 * arrangement.length * zoom), (gridLines
-        //                ? arrangement[0].length - 1
-        //                : 0)
-        //                + (int) (8 * arrangement[0].length * zoom),
-        //                BufferedImage.TYPE_4BYTE_ABGR_PRE);
-        //            Graphics g = out.getGraphics();
-        //            for (int x = 0; x < arrangement.length; x++)
-        //            {
-        //                for (int y = 0; y < arrangement[0].length; y++)
-        //                {
-        //                    // System.out.println(addZeros(Integer
-        //                    // .toBinaryString(this.arrangement[x][y]), 16));
-        //                    int arr = selection[x][y] == -1
-        //                        ? arrangement[x][y]
-        //                        : selection[x][y];
-        //                    g.drawImage(getTileImage(arr & 0x01ff,
-        //                        ((arr & 0x0400) >> 10), (arr & 0x4000) != 0,
-        //                        (arr & 0x8000) != 0), (int) (x * 8 * zoom)
-        //                        + (gridLines ? x : 0), (int) (y * 8 * zoom)
-        //                        + (gridLines ? y : 0), (int) (8 * zoom),
-        //                        (int) (8 * zoom), null);
-        //                    if (selection[x][y] != -1)
-        //                    {
-        //                        g.setColor(new Color(255, 255, 0, 128));
-        //                        g.fillRect((int) (x * 8 * zoom) + (gridLines ? x : 0),
-        //                            (int) (y * 8 * zoom) + (gridLines ? y : 0),
-        //                            (int) (8 * zoom), (int) (8 * zoom));
-        //                    }
-        //                }
-        //            }
-        //            return out;
-        //        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param pal
-         * @return
-         */
-        public Color[] getSubPal(int pal)
-        {
-            readInfo();
-            Color[] out = new Color[16];
-            System.arraycopy(palette[pal], 0, out, 0, 16);
-            return out;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @return
-         */
-        public byte[][] getTile(int tile)
-        {
-            byte[][] out = new byte[8][8];
-            for (int x = 0; x < 8; x++)
-            {
-                for (int y = 0; y < 8; y++)
-                {
-                    out[x][y] = this.getTilePixel(tile, x, y);
-                }
-            }
-            return out;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param x
-         * @param y
-         * @return
-         */
-        private byte getTilePixel(int tile, int x, int y)
-        {
-            readInfo();
-            return tiles[tile][x][y];
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param in
-         */
-        public void setTile(int tile, byte[][] in)
-        {
-            for (int x = 0; x < 8; x++)
-            {
-                for (int y = 0; y < 8; y++)
-                {
-                    this.setTilePixel(tile, x, y, in[x][y]);
-                }
-            }
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param x
-         * @param y
-         * @param i
-         */
-        private void setTilePixel(int tile, int x, int y, byte i)
-        {
-            readInfo();
-            this.tiles[tile][x][y] = i;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param col
-         * @param subPal
-         * @param color
-         */
-        public void setPaletteColor(int col, int subPal, Color color)
-        {
-            readInfo();
-            palette[subPal][col] = color;
-        }
     }
 
     public static final TownMap[] townMaps = new TownMap[NUM_TOWN_MAPS];
@@ -676,9 +387,9 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         public TownMapArrangementEditor()
         {
             super();
-            //            this.setPreferredSize(new Dimension(getTilesWide()
-            //                * (getTileSize() * getZoom()), getTilesHigh()
-            //                * (getTileSize() * getZoom())));
+            // this.setPreferredSize(new Dimension(getTilesWide()
+            // * (getTileSize() * getZoom()), getTilesHigh()
+            // * (getTileSize() * getZoom())));
         }
 
         public short makeArrangementNumber(int tile, int subPalette,
@@ -767,11 +478,11 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             getSelectedMap().setArrangementData(data);
         }
 
-        //        protected Image getArrangementImage(int[][] selection)
-        //        {
-        //            return getSelectedMap().getArrangementImage(selection, getZoom(),
-        //                isDrawGridLines());
-        //        }
+        // protected Image getArrangementImage(int[][] selection)
+        // {
+        // return getSelectedMap().getArrangementImage(selection, getZoom(),
+        // isDrawGridLines());
+        // }
 
         protected Image getTileImage(int tile, int subPal, boolean hFlip,
             boolean vFlip)
@@ -783,7 +494,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
     private class FocusIndicator extends AbstractButton implements
         FocusListener, MouseListener
     {
-        //true = tile editor, false = arrangement editor
+        // true = tile editor, false = arrangement editor
         private boolean focus = true;
 
         public Component getCurrentFocus()
@@ -847,7 +558,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             int[] arrowX = new int[]{40, 10, 10, 00, 10, 10, 40};
             int[] arrowY = new int[]{22, 22, 15, 25, 35, 28, 28};
 
-            if (focus) //switch X and Y for pointing up
+            if (focus) // switch X and Y for pointing up
                 g.fillPolygon(arrowY, arrowX, 7);
             else
                 g.fillPolygon(arrowX, arrowY, 7);
@@ -883,7 +594,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(getDescription());
 
-        //menu
+        // menu
         JMenuBar mb = new JMenuBar();
 
         JMenu fileMenu = new JMenu("File");
@@ -898,6 +609,13 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             "import", this));
         fileMenu.add(HackModule.createJMenuItem("Export...", 'e', null,
             "export", this));
+
+        fileMenu.addSeparator();
+
+        fileMenu.add(HackModule.createJMenuItem("Import Image...", 'm', null,
+            "importImg", this));
+        // fileMenu.add(HackModule.createJMenuItem("Export Image...", 'x', null,
+        // "exportImg", this));
 
         mb.add(fileMenu);
 
@@ -925,7 +643,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
         mainWindow.setJMenuBar(mb);
 
-        //components
+        // components
         tileSelector = new TileSelector()
         {
             public int getTilesWide()
@@ -1071,7 +789,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             }
             else if (opt == JOptionPane.NO_OPTION)
             {
-                //                mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
+                // mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
                 doMapSelectAction();
                 return;
             }
@@ -1125,7 +843,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             tileSelector.repaint();
             arrangementEditor.repaint();
         }
-        //flip
+        // flip
         else if (ae.getActionCommand().equals("hFlip"))
         {
             da.doHFlip();
@@ -1134,13 +852,13 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         {
             da.doVFlip();
         }
-        //edit menu
-        //undo
+        // edit menu
+        // undo
         else if (ae.getActionCommand().equals("undo"))
         {
             fi.getCurrentUndoable().undo();
         }
-        //copy&paste stuff
+        // copy&paste stuff
         else if (ae.getActionCommand().equals("cut"))
         {
             fi.getCurrentCopyAndPaster().cut();
@@ -1189,9 +907,19 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         {
             exportData();
         }
+        else if (ae.getActionCommand().equals("importImg"))
+        {
+            FullScreenGraphicsImporter.importImg(getSelectedMap(), mainWindow);
+
+            updatePaletteDisplay();
+            tileSelector.repaint();
+            arrangementEditor.clearSelection();
+            arrangementEditor.repaint();
+            updateTileEditor();
+        }
         else if (ae.getActionCommand().equals("apply"))
         {
-            //TownMap.writeInfo() will only write if the map has been inited
+            // TownMap.writeInfo() will only write if the map has been inited
             for (int i = 0; i < townMaps.length; i++)
                 townMaps[i].writeInfo();
             int m = getCurrentMap();
@@ -1263,7 +991,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
     public static void exportData(File f, boolean[][] a)
     {
-        //make a byte whichMaps. for each map if it is used set the bit at the
+        // make a byte whichMaps. for each map if it is used set the bit at the
         // place equal to the map number to 1
         byte whichMaps = 0;
         for (int i = 0; i < a.length; i++)
@@ -1279,13 +1007,13 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             {
                 if (a[m][NODE_BASE])
                 {
-                    //if writing this map...
-                    //say what parts we will write, once again as a bit mask
+                    // if writing this map...
+                    // say what parts we will write, once again as a bit mask
                     byte whichParts = 0;
                     for (int i = 1; i < a[m].length; i++)
                         whichParts |= (a[m][i] ? 1 : 0) << (i - 1);
                     out.write(whichParts);
-                    //write tiles?
+                    // write tiles?
                     if (a[m][NODE_TILES])
                     {
                         byte[] b = new byte[TownMap.NUM_TILES * 32];
@@ -1295,7 +1023,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                                 offset, 0, 0);
                         out.write(b);
                     }
-                    //write arrangements?
+                    // write arrangements?
                     if (a[m][NODE_ARR])
                     {
                         short[] arr = townMaps[m].getArrangementArr();
@@ -1308,7 +1036,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                         }
                         out.write(barr);
                     }
-                    //write palettes?
+                    // write palettes?
                     if (a[m][NODE_PAL])
                     {
                         byte[] pal = new byte[64];
@@ -1353,12 +1081,12 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         byte whichMaps = (byte) in.read();
         for (int m = 0; m < townMaps.length; m++)
         {
-            //if bit for this map set...
+            // if bit for this map set...
             if (((whichMaps >> m) & 1) != 0)
             {
                 out[m] = new TownMapImportData();
                 byte whichParts = (byte) in.read();
-                //if tile bit set...
+                // if tile bit set...
                 if ((whichParts & 1) != 0)
                 {
                     byte[] b = new byte[TownMap.NUM_TILES * 32];
@@ -1369,7 +1097,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                     for (int i = 0; i < TownMap.NUM_TILES; i++)
                         offset += read4BPPArea(out[m].tiles[i], b, offset, 0, 0);
                 }
-                //if arr bit set...
+                // if arr bit set...
                 if (((whichParts >> 1) & 1) != 0)
                 {
                     out[m].arrangement = new short[TownMap.NUM_ARRANGEMENTS];
@@ -1382,7 +1110,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                         out[m].arrangement[i] = (short) ((barr[off++] & 0xff) + ((barr[off++] & 0xff) << 8));
                     }
                 }
-                //if pal bit set...
+                // if pal bit set...
                 if (((whichParts >> 2) & 1) != 0)
                 {
                     byte[] pal = new byte[64];
@@ -1515,7 +1243,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         checkTree.putClientProperty("JTree.lineStyle", "Angled");
         checkTree.addMouseListener(new NodeSelectionListener(checkTree));
 
-        //if user clicked cancel, don't take action
+        // if user clicked cancel, don't take action
         if (JOptionPane.showConfirmDialog(null, pairComponents(
             new JLabel(text), new JScrollPane(checkTree), false), title,
             JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
@@ -1593,23 +1321,23 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                //t = array of used targets
+                // t = array of used targets
                 boolean[][] t = new boolean[NUM_TOWN_MAPS][4];
-                //m = source map
+                // m = source map
                 for (int m = 0; m < NUM_TOWN_MAPS; m++)
                 {
                     if (targets[m] != null)
                     {
-                        //n = target map
+                        // n = target map
                         int n = targets[m].getSelectedIndex();
                         for (int i = 1; i < 4; i++)
                         {
                             if (a[m][i])
                             {
-                                //if part already used...
+                                // if part already used...
                                 if (t[n][i])
                                 {
-                                    //fail
+                                    // fail
                                     JOptionPane.showMessageDialog(targetDialog,
                                         "Imported data must not overlap,\n"
                                             + "check your targets.",
@@ -1619,7 +1347,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                                 }
                                 else
                                 {
-                                    //set target part as used
+                                    // set target part as used
                                     t[n][i] = true;
                                 }
                             }
@@ -1709,7 +1437,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             return false;
         if (tmid.tiles != null)
         {
-            //check tiles
+            // check tiles
             for (int t = 0; t < tmid.tiles.length; t++)
                 for (int x = 0; x < tmid.tiles[t].length; x++)
                     if (!Arrays.equals(tmid.tiles[t][x],
@@ -1718,21 +1446,21 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         }
         if (tmid.arrangement != null)
         {
-            //check arrangement
+            // check arrangement
             if (!Arrays.equals(tmid.arrangement, townMaps[i]
                 .getArrangementArr()))
                 return false;
         }
         if (tmid.palette != null)
         {
-            //check palette
+            // check palette
             for (int p = 0; p < tmid.palette.length; p++)
                 for (int c = 0; c < tmid.palette[p].length; c++)
                     if (!tmid.palette[p][c].equals(townMaps[i].palette[p][c]))
                         return false;
         }
 
-        //nothing found wrong
+        // nothing found wrong
         return true;
     }
 

@@ -106,10 +106,9 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         return "Written by n42, based on AnyoneEB's gas editor";
     }
 
-    public static class GasStation
+    public static class GasStation extends FullScreenGraphics
     {
         private EbHackModule hm;
-        private boolean isInited = false;
         private int num, tilePointer, tileLen,
                 palPointer[] = new int[NUM_PALETTES],
                 palLen[] = new int[NUM_PALETTES], arngPointer, arngLen;
@@ -130,15 +129,6 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             0x0F5F0};
         public static final int[] arngPointerArray = new int[]{0x0F31B};
 
-        /** The <code>Color<code>'s of each 256 color palette. */
-        private Color[][] palette = new Color[NUM_PALETTES][256];
-        /** List of all arrangements. */
-        private short[] arrangementList = new short[NUM_ARRANGEMENTS];
-        /** Two-dimentional array of arrangements used. */
-        private short[][] arrangement = new short[32][28];
-        /** All tiles stored as pixels being found at [tile_num][x][y]. */
-        private byte[][][] tiles = new byte[NUM_TILES][8][8];
-
         public GasStation(EbHackModule hm)
         {
             this.hm = hm;
@@ -148,6 +138,26 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 palPointer[i] = hm.rom.readRegAsmPointer(palPointerArray[i]);
             tilePointer = hm.rom.readRegAsmPointer(tilePointerArray[0]);
             arngPointer = hm.rom.readRegAsmPointer(arngPointerArray[0]);
+        }
+
+        public int getNumSubPalettes()
+        {
+            return NUM_PALETTES;
+        }
+
+        public int getSubPaletteSize()
+        {
+            return 256;
+        }
+
+        public int getNumArrangements()
+        {
+            return NUM_ARRANGEMENTS;
+        }
+
+        public int getNumTiles()
+        {
+            return NUM_TILES;
         }
 
         private boolean readGraphics(boolean allowFailure, boolean readOrg)
@@ -170,7 +180,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                     + " decompressing Gas Station #" + num + ".");
                 if (allowFailure)
                 {
-                    //EMPTY TILES
+                    // EMPTY TILES
                     for (int i = 0; i < tiles.length; i++)
                         for (int x = 0; x < tiles[i].length; x++)
                             Arrays.fill(tiles[i][x], (byte) 0);
@@ -220,7 +230,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                     System.out.println("Error " + tmp[0]
                         + " decompressing Gas Station #" + num + " palette.");
                     if (allowFailure)
-                    { //EMPTY PALETTES
+                    { // EMPTY PALETTES
                         Arrays.fill(palette[i], Color.BLACK);
                         palLen[i] = 0;
                     }
@@ -262,7 +272,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 System.out.println("Error " + tmp[0]
                     + " decompressing Gas Station #" + num + " palette.");
                 if (allowFailure)
-                { //EMPTY ARRANGEMENTS
+                { // EMPTY ARRANGEMENTS
                     Arrays.fill(arrangementList, (short) 0);
                     for (int x = 0; x < arrangement.length; x++)
                         Arrays.fill(arrangement[x], (short) 0);
@@ -307,26 +317,10 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         {
             if (isInited)
                 return true;
-            //short curcuit
+            // short curcuit
             return isInited = readGraphics(allowFailure, false)
                 && readPalettes(allowFailure, false)
                 && readArrangement(allowFailure, false);
-        }
-
-        public boolean readInfo()
-        {
-            return readInfo(false);
-        }
-
-        //TODO make gas station initToNull() work like logo screen initToNull()
-        /**
-         * Inits all values to zero. Will have no effect if {@link #readInfo()}
-         * or this has already been run successfully. Use this if
-         * <code>readInfo()</code> always fails.
-         */
-        public void initToNull()
-        {
-            readInfo(true);
         }
 
         private boolean writeGraphics()
@@ -425,318 +419,6 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
             return writePalettes() && writeArrangement() && writeGraphics();
         }
-
-        /**
-         * @return Returns the isInited.
-         */
-        public boolean isInited()
-        {
-            return isInited;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param x
-         * @param y
-         * @param data
-         */
-        public void setArrangementData(int x, int y, short data)
-        {
-            readInfo();
-            arrangement[x][y] = data;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param x
-         * @param y
-         * @return
-         */
-        public short getArrangementData(int x, int y)
-        {
-            readInfo();
-            return arrangement[x][y];
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @return
-         */
-        public short[][] getArrangementData()
-        {
-            readInfo();
-            short[][] out = new short[arrangement.length][arrangement[0].length];
-            for (int x = 0; x < out.length; x++)
-                for (int y = 0; y < out[0].length; y++)
-                    out[x][y] = arrangement[x][y];
-            return out;
-        }
-
-        public short[] getArrangementArr()
-        {
-            readInfo();
-            int j = 0;
-            short[] out = new short[NUM_ARRANGEMENTS];
-            for (int y = 0; y < arrangement[0].length; y++)
-                for (int x = 0; x < arrangement.length; x++)
-                    out[j++] = arrangement[x][y];
-            for (; j < NUM_ARRANGEMENTS; j++)
-                out[j] = arrangementList[j];
-            return out;
-        }
-
-        public void setArrangementArr(short[] arr)
-        {
-            readInfo();
-            int j = 0;
-            for (int y = 0; y < arrangement[0].length; y++)
-                for (int x = 0; x < arrangement.length; x++)
-                    arrangement[x][y] = arr[j++];
-            for (; j < NUM_ARRANGEMENTS; j++)
-                arrangementList[j] = arr[j];
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param data
-         */
-        public void setArrangementData(short[][] data)
-        {
-            readInfo();
-            for (int x = 0; x < data.length; x++)
-                for (int y = 0; y < data[0].length; y++)
-                    arrangement[x][y] = data[x][y];
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param subPal
-         * @return
-         */
-        public Image getTileImage(int tile, int subPal, boolean hFlip,
-            boolean vFlip)
-        {
-            readInfo();
-            //            byte[][] img = new byte[8][8];
-            //            for (int x = 0; x < 8; x++)
-            //                for (int y = 0; y < 8; y++)
-            //                    img[x][y] = tiles[tile][hFlip ? 7 - x : x][vFlip
-            //                        ? 7 - y
-            //                        : y];
-            return HackModule.drawImage(tiles[tile], palette[subPal], hFlip,
-                vFlip);
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param subPal
-         * @return
-         */
-        public Image getTileImage(int tile, int subPal)
-        {
-            readInfo();
-            return HackModule.drawImage(tiles[tile], palette[subPal]);
-        }
-
-        //        /**
-        //         * TODO Write javadoc for this method
-        //         *
-        //         * @param subPal
-        //         * @param j
-        //         * @return
-        //         */
-        //        public Image getTilesetImage(int subPal, int width, int height)
-        //        {
-        //            readInfo();
-        //            BufferedImage out = new BufferedImage(width * 8, height * 8,
-        //                BufferedImage.TYPE_INT_ARGB);
-        //            Graphics g = out.getGraphics();
-        //            int i = 0;
-        //            try
-        //            {
-        //                for (int y = 0; y < height; y++)
-        //                    for (int x = 0; x < width; x++)
-        //                        g.drawImage(HackModule.drawImage(tiles[i++],
-        //                            palette[subPal]), x * 8, y * 8, null);
-        //            }
-        //            catch (ArrayIndexOutOfBoundsException e)
-        //            {}
-        //            return out;
-        //        }
-        //
-        //        public Image getTilesetImage(int subPal, int width, int height,
-        //            int highlightTile)
-        //        {
-        //            readInfo();
-        //            Image out = getTilesetImage(subPal, width, height);
-        //            Graphics g = out.getGraphics();
-        //            if (highlightTile >= 0 && highlightTile <= tiles.length - 1)
-        //            {
-        //                g.setColor(new Color(255, 255, 0, 128));
-        //                g.fillRect((highlightTile % width) * 8,
-        //                    (highlightTile / width) * 8, 8, 8);
-        //            }
-        //            return out;
-        //        }
-
-        //        /**
-        //         * TODO Write javadoc for this method
-        //         *
-        //         * @param is
-        //         * @param f
-        //         * @param b
-        //         * @return
-        //         */
-        //        public Image getArrangementImage(int[][] selection, float zoom,
-        //            boolean gridLines)
-        //        {
-        //            readInfo();
-        //            BufferedImage out = new BufferedImage((gridLines
-        //                ? arrangement.length - 1
-        //                : 0)
-        //                + (int) (8 * arrangement.length * zoom), (gridLines
-        //                ? arrangement[0].length - 1
-        //                : 0)
-        //                + (int) (8 * arrangement[0].length * zoom),
-        //                BufferedImage.TYPE_4BYTE_ABGR_PRE);
-        //            Graphics g = out.getGraphics();
-        //            for (int x = 0; x < arrangement.length; x++)
-        //            {
-        //                for (int y = 0; y < arrangement[0].length; y++)
-        //                {
-        //                    // System.out.println(addZeros(Integer
-        //                    // .toBinaryString(this.arrangement[x][y]), 16));
-        //                    int arr = selection[x][y] == -1
-        //                        ? arrangement[x][y]
-        //                        : selection[x][y];
-        //                    g.drawImage(getTileImage(arr & 0x01ff,
-        //                        ((arr & 0x0400) >> 10), (arr & 0x4000) != 0,
-        //                        (arr & 0x8000) != 0), (int) (x * 8 * zoom)
-        //                        + (gridLines ? x : 0), (int) (y * 8 * zoom)
-        //                        + (gridLines ? y : 0), (int) (8 * zoom),
-        //                        (int) (8 * zoom), null);
-        //                    if (selection[x][y] != -1)
-        //                    {
-        //                        g.setColor(new Color(255, 255, 0, 128));
-        //                        g.fillRect((int) (x * 8 * zoom) + (gridLines ? x : 0),
-        //                            (int) (y * 8 * zoom) + (gridLines ? y : 0),
-        //                            (int) (8 * zoom), (int) (8 * zoom));
-        //                    }
-        //                }
-        //            }
-        //            return out;
-        //        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param pal
-         * @return
-         */
-        public Color[] getSubPal(int pal)
-        {
-            readInfo();
-            Color[] out = new Color[256];
-            System.arraycopy(palette[pal], 0, out, 0, 256);
-            return out;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @return
-         */
-        public byte[][] getTile(int tile)
-        {
-            byte[][] out = new byte[8][8];
-            for (int x = 0; x < 8; x++)
-            {
-                for (int y = 0; y < 8; y++)
-                {
-                    out[x][y] = this.getTilePixel(tile, x, y);
-                }
-            }
-            return out;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param x
-         * @param y
-         * @return
-         */
-        private byte getTilePixel(int tile, int x, int y)
-        {
-            readInfo();
-            return tiles[tile][x][y];
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param in
-         */
-        public void setTile(int tile, byte[][] in)
-        {
-            for (int x = 0; x < 8; x++)
-            {
-                for (int y = 0; y < 8; y++)
-                {
-                    this.setTilePixel(tile, x, y, in[x][y]);
-                }
-            }
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param tile
-         * @param x
-         * @param y
-         * @param i
-         */
-        private void setTilePixel(int tile, int x, int y, byte i)
-        {
-            readInfo();
-            this.tiles[tile][x][y] = i;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param col
-         * @param subPal
-         * @param color
-         */
-        public void setPaletteColor(int col, int subPal, Color color)
-        {
-            readInfo();
-            palette[subPal][col] = color;
-        }
-
-        /**
-         * TODO Write javadoc for this method
-         * 
-         * @param i
-         * @param paltmp
-         */
-        public void setSubPal(int i, Color[] paltmp)
-        {
-            if (paltmp.length >= 256 && i < NUM_PALETTES && i >= 0)
-                System.arraycopy(paltmp, 0, palette[i], 0, 256);
-        }
     }
 
     public static final GasStation[] gasStations = new GasStation[NUM_GAS_STATIONS];
@@ -764,9 +446,9 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         public GasStationArrangementEditor()
         {
             super();
-            //            this.setPreferredSize(new Dimension(getTilesWide()
-            //                * (getTileSize() * getZoom()), getTilesHigh()
-            //                * (getTileSize() * getZoom())));
+            // this.setPreferredSize(new Dimension(getTilesWide()
+            // * (getTileSize() * getZoom()), getTilesHigh()
+            // * (getTileSize() * getZoom())));
         }
 
         protected int getCurrentTile()
@@ -859,7 +541,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
     private class FocusIndicator extends AbstractButton implements
         FocusListener, MouseListener
     {
-        //true = tile editor, false = arrangement editor
+        // true = tile editor, false = arrangement editor
         private boolean focus = true;
 
         public Component getCurrentFocus()
@@ -923,7 +605,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             int[] arrowX = new int[]{40, 10, 10, 00, 10, 10, 40};
             int[] arrowY = new int[]{22, 22, 15, 25, 35, 28, 28};
 
-            if (focus) //switch X and Y for pointing up
+            if (focus) // switch X and Y for pointing up
                 g.fillPolygon(arrowY, arrowX, 7);
             else
                 g.fillPolygon(arrowX, arrowY, 7);
@@ -951,17 +633,17 @@ public class GasStationEditor extends EbHackModule implements ActionListener
     private DrawingToolset dt;
     private FocusIndicator fi;
 
-    //    private JComboBox mapSelector
+    // private JComboBox mapSelector
     private JComboBox palSelector;
 
-    //    private JTextField name;
+    // private JTextField name;
 
     protected void init()
     {
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(getDescription());
 
-        //menu
+        // menu
         JMenuBar mb = new JMenuBar();
 
         JMenu fileMenu = new JMenu("File");
@@ -981,8 +663,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
         fileMenu.add(HackModule.createJMenuItem("Import Image...", 'm', null,
             "importImg", this));
-        //        fileMenu.add(HackModule.createJMenuItem("Export Image...", 'x', null,
-        //            "exportImg", this));
+        // fileMenu.add(HackModule.createJMenuItem("Export Image...", 'x', null,
+        // "exportImg", this));
 
         mb.add(fileMenu);
 
@@ -1010,7 +692,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
         mainWindow.setJMenuBar(mb);
 
-        //components
+        // components
         tileSelector = new TileSelector()
         {
             public int getTilesWide()
@@ -1081,10 +763,10 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         da.setZoom(10);
         da.setPreferredSize(new Dimension(81, 81));
 
-        //        mapSelector = createComboBox(gasStationNames, this);
-        //        mapSelector.setActionCommand("mapSelector");
+        // mapSelector = createComboBox(gasStationNames, this);
+        // mapSelector.setActionCommand("mapSelector");
 
-        //        name = new JTextField(15);
+        // name = new JTextField(15);
 
         palSelector = createJComboBoxFromArray(new String[]{"Regular", "Flash",
             "Regular after 1st flash"}, false);
@@ -1141,7 +823,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
     private boolean doMapSelectAction()
     {
-        //        name.setText(gasStationNames[getCurrentStation()]);
+        // name.setText(gasStationNames[getCurrentStation()]);
         if (!getSelectedStation().readInfo())
         {
             Object opt = JOptionPane.showInputDialog(mainWindow,
@@ -1228,7 +910,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             tileSelector.repaint();
             arrangementEditor.repaint();
         }
-        //flip
+        // flip
         else if (ae.getActionCommand().equals("hFlip"))
         {
             da.doHFlip();
@@ -1237,13 +919,13 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         {
             da.doVFlip();
         }
-        //edit menu
-        //undo
+        // edit menu
+        // undo
         else if (ae.getActionCommand().equals("undo"))
         {
             fi.getCurrentUndoable().undo();
         }
-        //copy&paste stuff
+        // copy&paste stuff
         else if (ae.getActionCommand().equals("cut"))
         {
             fi.getCurrentCopyAndPaster().cut();
@@ -1302,7 +984,8 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("importImg"))
         {
-            importImg();
+            FullScreenGraphicsImporter.importImg(getSelectedStation(),
+                mainWindow, true);
 
             updatePaletteDisplay();
             tileSelector.repaint();
@@ -1312,13 +995,13 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         }
         else if (ae.getActionCommand().equals("apply"))
         {
-            //TownMap.writeInfo() will only write if the map has been inited
+            // TownMap.writeInfo() will only write if the map has been inited
             for (int i = 0; i < gasStations.length; i++)
                 gasStations[i].writeInfo();
-            //            int m = getCurrentStation();
-            //            gasStationNames[m] = name.getText();
-            //            notifyDataListeners(gasStationNames, this, m);
-            //            writeArray("gasStationNames.txt", false, gasStationNames);
+            // int m = getCurrentStation();
+            // gasStationNames[m] = name.getText();
+            // notifyDataListeners(gasStationNames, this, m);
+            // writeArray("gasStationNames.txt", false, gasStationNames);
         }
         else if (ae.getActionCommand().equals("close"))
         {
@@ -1384,7 +1067,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
     public static void exportData(File f, boolean[][] a)
     {
-        //make a byte whichMaps. for each map if it is used set the bit at the
+        // make a byte whichMaps. for each map if it is used set the bit at the
         // place equal to the map number to 1
         byte whichMaps = 0;
         for (int i = 0; i < a.length; i++)
@@ -1399,13 +1082,13 @@ public class GasStationEditor extends EbHackModule implements ActionListener
             {
                 if (a[m][NODE_BASE])
                 {
-                    //if writing this map...
-                    //say what parts we will write, once again as a bit mask
+                    // if writing this map...
+                    // say what parts we will write, once again as a bit mask
                     byte whichParts = 0;
                     for (int i = 1; i < a[m].length; i++)
                         whichParts |= (a[m][i] ? 1 : 0) << (i - 1);
                     out.write(whichParts);
-                    //write tiles?
+                    // write tiles?
                     if (a[m][NODE_TILES])
                     {
                         byte[] b = new byte[GasStation.NUM_TILES * 64];
@@ -1415,7 +1098,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                                 b, offset, 0, 0);
                         out.write(b);
                     }
-                    //write arrangements?
+                    // write arrangements?
                     if (a[m][NODE_ARR])
                     {
                         short[] arr = gasStations[m].getArrangementArr();
@@ -1428,7 +1111,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                         }
                         out.write(barr);
                     }
-                    //write palettes?
+                    // write palettes?
                     if (a[m][NODE_PAL])
                     {
                         for (int i = 0; i < GasStation.NUM_PALETTES; i++)
@@ -1475,7 +1158,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         {
             out[m] = new GasImportData();
             byte whichParts = (byte) in.read();
-            //if tile bit set...
+            // if tile bit set...
             if ((whichParts & 1) != 0)
             {
                 byte[] b = new byte[GasStation.NUM_TILES * 64];
@@ -1486,7 +1169,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                 for (int i = 0; i < GasStation.NUM_TILES; i++)
                     offset += read8BPPArea(out[m].tiles[i], b, offset, 0, 0);
             }
-            //if arr bit set...
+            // if arr bit set...
             if (((whichParts >> 1) & 1) != 0)
             {
                 out[m].arrangement = new short[GasStation.NUM_ARRANGEMENTS];
@@ -1499,7 +1182,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
                     out[m].arrangement[i] = (short) ((barr[off++] & 0xff) + ((barr[off++] & 0xff) << 8));
                 }
             }
-            //if pal bit set...
+            // if pal bit set...
             if (((whichParts >> 2) & 1) != 0)
             {
                 out[m].palette = new Color[GasStation.NUM_PALETTES][256];
@@ -1617,7 +1300,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         checkTree.putClientProperty("JTree.lineStyle", "Angled");
         checkTree.addMouseListener(new NodeSelectionListener(checkTree));
 
-        //if user clicked cancel, don't take action
+        // if user clicked cancel, don't take action
         if (JOptionPane.showConfirmDialog(null, pairComponents(
             new JLabel(text), new JScrollPane(checkTree), false), title,
             JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
@@ -1726,7 +1409,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         gasStations[i].readInfo();
         if (gid.tiles != null)
         {
-            //check tiles
+            // check tiles
             for (int t = 0; t < gid.tiles.length; t++)
                 for (int x = 0; x < gid.tiles[t].length; x++)
                     if (!Arrays.equals(gid.tiles[t][x],
@@ -1735,21 +1418,21 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         }
         if (gid.arrangement != null)
         {
-            //check arrangement
+            // check arrangement
             if (!Arrays.equals(gid.arrangement, gasStations[i]
                 .getArrangementArr()))
                 return false;
         }
         if (gid.palette != null)
         {
-            //check palette
+            // check palette
             for (int p = 0; p < gid.palette.length; p++)
                 for (int c = 0; c < gid.palette[p].length; c++)
                     if (!gid.palette[p][c].equals(gasStations[i].palette[p][c]))
                         return false;
         }
 
-        //nothing found wrong
+        // nothing found wrong
         return true;
     }
 
@@ -1837,175 +1520,5 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         }
 
         return true;
-    }
-
-    public void importImg()
-    {
-        importImg(getFile(false, new String[]{"bmp", "gif", "png"},
-            new String[]{"Windows BitMaP", "Compuserv GIF format",
-                "Portable Network Graphics"}));
-    }
-
-    public void importImg(File f)
-    {
-        if (f == null)
-            return;
-
-        Image img;
-        try
-        {
-            if (f.getName().endsWith(".bmp"))
-            {
-                FileInputStream in = new FileInputStream(f);
-                img = mainWindow.createImage(BMPReader.getBMPImage(in));
-                in.close();
-            }
-            else
-            {
-                img = ImageIO.read(f);
-            }
-        }
-        catch (IOException e1)
-        {
-            JOptionPane.showMessageDialog(mainWindow, "Unexpected IO error:\n"
-                + e1.getLocalizedMessage(), "ERROR: IO Error",
-                JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        int w = img.getWidth(mainWindow), h = img.getHeight(mainWindow);
-        if (w != 256)
-        {
-            JOptionPane.showMessageDialog(mainWindow,
-                "Image width must be 256 pixels.", "ERROR: Invalid width",
-                JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (h != 224)
-        {
-            JOptionPane.showMessageDialog(mainWindow,
-                "Image height must be 224 pixels.", "ERROR: Invalid height",
-                JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        int[] pixels = new int[w * h];
-
-        PixelGrabber pg = new PixelGrabber(img, 0, 0, w, h, pixels, 0, w);
-        try
-        {
-            pg.grabPixels();
-        }
-        catch (InterruptedException e)
-        {
-            System.err.println("Interrupted waiting for pixels!");
-            return;
-        }
-        short[][] arrangement = new short[32][28];
-        byte[][] tiles = new byte[632][64];
-        Color[] pal = new Color[256];
-        Arrays.fill(pal, new Color(0, 0, 0));
-        int tnum = 0, pnum = 0;
-        Hashtable tilerefs = new Hashtable(), palrefs = new Hashtable();
-        for (int yt = 0; yt < 28; yt++)
-        {
-            int js = yt * 8;
-            for (int xt = 0; xt < 32; xt++)
-            {
-                int is = xt * 8;
-                byte[] tile = new byte[64];
-                for (int j = 0; j < 8; j++)
-                {
-                    for (int i = 0; i < 8; i++)
-                    {
-                        //sprite[i][j] = pixels[j * w + i];
-                        int c = pixels[((j + (yt * 8)) * w) + (i + (xt * 8))];
-                        Color col = new Color(c & 0xf8f8f8);
-                        int cn;
-                        Object tmpc;
-                        if ((tmpc = palrefs.get(col)) != null)
-                        {
-                            cn = ((Integer) tmpc).intValue();
-                        }
-                        else
-                        {
-                            cn = pnum;
-                            palrefs.put(col, new Integer(pnum));
-                            try
-                            {
-                                pal[pnum++] = col;
-                            }
-                            catch (ArrayIndexOutOfBoundsException e)
-                            {
-                                JOptionPane
-                                    .showMessageDialog(
-                                        mainWindow,
-                                        "Image must have no more than 256 colors.\n"
-                                            + "Please use the dithering option on your\n"
-                                            + "favorite image editor program to decrease\n"
-                                            + "the number of colors to 256.",
-                                        "ERROR: Too many colors",
-                                        JOptionPane.ERROR_MESSAGE);
-                                return;
-                            }
-                        }
-                        tile[(j * 8) + i] = (byte) cn;
-                    }
-                }
-                TileRef tn;
-                byte[] htile, vtile, hvtile;
-                htile = hFlip(tile);
-                vtile = vFlip(tile);
-                hvtile = hFlip(vtile);
-
-                Object tmpt;
-                if ((tmpt = tilerefs.get(new ByteArrHasher(tile).toInteger())) != null)
-                {
-                    tn = (TileRef) tmpt;
-                }
-                else
-                {
-                    tn = new TileRef(tnum, false, false);
-                    tilerefs.put(new ByteArrHasher(tile).toInteger(), tn);
-                    tilerefs.put(new ByteArrHasher(htile).toInteger(),
-                        new TileRef(tnum, true, false));
-                    tilerefs.put(new ByteArrHasher(vtile).toInteger(),
-                        new TileRef(tnum, false, true));
-                    tilerefs.put(new ByteArrHasher(hvtile).toInteger(),
-                        new TileRef(tnum, true, true));
-                    try
-                    {
-                        tiles[tnum++] = tile;
-                    }
-                    catch (ArrayIndexOutOfBoundsException e)
-                    {
-                        JOptionPane
-                            .showMessageDialog(
-                                mainWindow,
-                                "Image must have no more than 632 unique 8x8 tiles.\n"
-                                    + "Flipping of tiles is currently not supported.",
-                                "ERROR: Too many tiles",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-                }
-                arrangement[xt][yt] = tn.getArrangementData();
-            }
-        }
-
-        for (int i = 0; i < gasStations[0].palette.length; i++)
-        {
-            System.arraycopy(pal, 0, gasStations[0].palette[i], 0, pal.length);
-        }
-        for (int t = 0; t < tnum; t++)
-        {
-            for (int x = 0; x < 8; x++)
-                for (int y = 0; y < 8; y++)
-                    gasStations[0].tiles[t][x][y] = tiles[t][(y * 8) + x];
-        }
-        for (int t = tnum; t < gasStations[0].tiles.length; t++)
-        {
-            gasStations[0].tiles[t] = new byte[8][8];
-        }
-        gasStations[0].arrangement = arrangement;
     }
 }
