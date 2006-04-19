@@ -50,8 +50,8 @@ import javax.swing.filechooser.FileFilter;
  * 
  * @author AnyoneEB
  */
-//Made by AnyoneEB.
-//Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
+// Made by AnyoneEB.
+// Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
 public abstract class HackModule
 {
     /**
@@ -225,7 +225,7 @@ public abstract class HackModule
      */
     public abstract boolean isRomSupported();
 
-    //common GUI functions
+    // common GUI functions
     /**
      * Wraps a component in a <code>JPanel</code> with a <code>JLabel</code>
      * and that component. This is the same as calling
@@ -239,7 +239,7 @@ public abstract class HackModule
      *         the component.
      * @see #pairComponents(JComponent, JComponent, boolean)
      */
-    public static JPanel getLabeledComponent(String label, JComponent comp) //useful
+    public static JPanel getLabeledComponent(String label, JComponent comp) // useful
     // for
     // making
     // layouts
@@ -262,7 +262,7 @@ public abstract class HackModule
      * @see #pairComponents(JComponent, JComponent, boolean, String)
      */
     public static JPanel getLabeledComponent(String label, JComponent comp,
-        String tooltip) //useful for making layouts
+        String tooltip) // useful for making layouts
     {
         /*
          * return pairComponents(new JLabel(), pairComponents(new JLabel(label),
@@ -638,7 +638,7 @@ public abstract class HackModule
      */
     public static JComboBox createJComboBoxFromArray(Object[] in, JComboBox out)
     {
-        //return createJComboBoxFromArray(in, out, getUseHexNumbers());
+        // return createJComboBoxFromArray(in, out, getUseHexNumbers());
         out.setModel(new NumberedComboBoxModel(in));
         return out;
     }
@@ -679,7 +679,7 @@ public abstract class HackModule
      */
     public static JComboBox createJComboBoxFromArray(Object[] in)
     {
-        //return createJComboBoxFromArray(in, getUseHexNumbers());
+        // return createJComboBoxFromArray(in, getUseHexNumbers());
         return new JComboBox(new NumberedComboBoxModel(in));
     }
 
@@ -929,7 +929,7 @@ public abstract class HackModule
         if ((save ? jfc.showSaveDialog(null) : jfc.showOpenDialog(null)) == JFileChooser.APPROVE_OPTION)
         {
             File out = jfc.getSelectedFile();
-            //extension is forced on save.
+            // extension is forced on save.
             if (!out.getPath().endsWith("." + ext) && save)
                 out = new File(out.getPath() + "." + ext);
             AbstractRom.setDefaultDir(out.getParent());
@@ -977,7 +977,7 @@ public abstract class HackModule
         if ((save ? jfc.showSaveDialog(null) : jfc.showOpenDialog(null)) == JFileChooser.APPROVE_OPTION)
         {
             File out = jfc.getSelectedFile();
-            //extension is forced on save.
+            // extension is forced on save.
             String exts = ((SimpleFileFilter) jfc.getFileFilter()).getExt();
             if (!out.getPath().endsWith("." + exts) && save)
                 out = new File(out.getPath() + "." + exts);
@@ -990,7 +990,7 @@ public abstract class HackModule
         }
     }
 
-    //common other functions
+    // common other functions
     /**
      * Simple conversion from a regular <code>char</code> to an EarthBound
      * <code>char</code>. Adds 0x30 to the character value. Simple because it
@@ -1166,18 +1166,18 @@ public abstract class HackModule
      */
     public static BufferedImage drawImage(int[][] image, Color[] palette)
     {
-        //        BufferedImage out = new BufferedImage(image.length, image[0].length,
-        //            BufferedImage.TYPE_INT_ARGB);
-        //        Graphics g = out.getGraphics();
-        //        for (int x = 0; x < image.length; x++)
-        //        {
-        //            for (int y = 0; y < image[0].length; y++)
-        //            {
-        //                g.setColor(palette[image[x][y]]);
-        //                g.drawLine(x, y, x, y);
-        //            }
-        //        }
-        //        return out;
+        // BufferedImage out = new BufferedImage(image.length, image[0].length,
+        // BufferedImage.TYPE_INT_ARGB);
+        // Graphics g = out.getGraphics();
+        // for (int x = 0; x < image.length; x++)
+        // {
+        // for (int y = 0; y < image[0].length; y++)
+        // {
+        // g.setColor(palette[image[x][y]]);
+        // g.drawLine(x, y, x, y);
+        // }
+        // }
+        // return out;
         return drawImage(image, palette, false, false);
     }
 
@@ -1225,18 +1225,18 @@ public abstract class HackModule
      */
     public static BufferedImage drawImage(byte[][] image, Color[] palette)
     {
-        //        BufferedImage out = new BufferedImage(image.length, image[0].length,
-        //            BufferedImage.TYPE_INT_ARGB);
-        //        Graphics g = out.getGraphics();
-        //        for (int x = 0; x < image.length; x++)
-        //        {
-        //            for (int y = 0; y < image[0].length; y++)
-        //            {
-        //                g.setColor(palette[image[x][y]]);
-        //                g.drawLine(x, y, x, y);
-        //            }
-        //        }
-        //        return out;
+        // BufferedImage out = new BufferedImage(image.length, image[0].length,
+        // BufferedImage.TYPE_INT_ARGB);
+        // Graphics g = out.getGraphics();
+        // for (int x = 0; x < image.length; x++)
+        // {
+        // for (int y = 0; y < image[0].length; y++)
+        // {
+        // g.setColor(palette[image[x][y]]);
+        // g.drawLine(x, y, x, y);
+        // }
+        // }
+        // return out;
         return drawImage(image, palette, false, false);
     }
 
@@ -1287,7 +1287,7 @@ public abstract class HackModule
             throw new IllegalArgumentException(
                 "net.starmen.pkhack.HackModule.hFlip(byte[]) "
                     + "only accepts byte[64]s");
-        byte[] o = new byte[64]; //out
+        byte[] o = new byte[64]; // out
         for (int x = 0; x < 8; x++)
             for (int y = 0; y < 8; y++)
                 o[(y * 8) + (7 - x)] = b[(y * 8) + x];
@@ -1309,7 +1309,7 @@ public abstract class HackModule
             throw new IllegalArgumentException(
                 "net.starmen.pkhack.HackModule.vFlip(byte[]) "
                     + "only accepts byte[64]s");
-        byte[] o = new byte[64]; //out
+        byte[] o = new byte[64]; // out
         for (int x = 0; x < 8; x++)
             for (int y = 0; y < 8; y++)
                 o[((7 - y) * 8) + x] = b[(y * 8) + x];
@@ -1406,12 +1406,13 @@ public abstract class HackModule
      *         ROM on failure)
      * @see #findFreeRange(int, int)
      */
-    
-    /* 
-     * TODO This method should look to see that, if it is rewriting something that is FF shielded,
-     * that the old data is not already FF shielded, so that we can just ignore it. Right now,
-     * repeatedly using this method could scatter FF bytes around the expanded area, effectively
-     * filling it up, if it were used repeately. -MrTenda
+
+    /*
+     * TODO This method should look to see that, if it is rewriting something
+     * that is FF shielded, that the old data is not already FF shielded, so
+     * that we can just ignore it. Right now, repeatedly using this method could
+     * scatter FF bytes around the expanded area, effectively filling it up, if
+     * it were used repeately. -MrTenda
      */
     public boolean writetoFree(byte[] rawData, int[] pointerLoc,
         int pointerBase, int pointerLen, int oldLen, int newLen, int beginAt,
@@ -1450,23 +1451,23 @@ public abstract class HackModule
         else
             data = rawData;
 
-        //make sure ROM is expanded if needed
+        // make sure ROM is expanded if needed
         if ((newLen > oldLen) || mustBeInExpanded)
             askExpandType();
 
-        //store old pointer for use later
+        // store old pointer for use later
         int oldPointer;
         if (pointerLen < 0)
             oldPointer = rom.readRegAsmPointer(pointerLoc[0]);
         else
             oldPointer = toRegPointer(rom.readMulti(pointerLoc[0], pointerLen)
                 + pointerBase);
-        //do not bother with shielding before 0x300200.
+        // do not bother with shielding before 0x300200.
         if ((newLen <= oldLen)
             && !(mustBeInExpanded && (oldPointer < 0x300200))
             && (oldPointer + oldLen <= beginAt))
         {
-            //if it fits in the same place, then write there
+            // if it fits in the same place, then write there
             nullifyArea(oldPointer, oldLen);
             if (oldPointer < 0x300200)
                 rom.write(oldPointer, rawData, orgNewLen);
@@ -1486,21 +1487,21 @@ public abstract class HackModule
         }
         else
         {
-            //if it's too big to fit in the same place...
-            //back-up old data in case there isn't enough space
+            // if it's too big to fit in the same place...
+            // back-up old data in case there isn't enough space
             byte[] oldData = rom.readByte(oldPointer, oldLen);
-            //delete old data from ROM, it may be part of the empty space
+            // delete old data from ROM, it may be part of the empty space
             // found
             nullifyArea(oldPointer, oldLen);
             try
             {
-                //look for space...
+                // look for space...
                 int newPointer = findFreeRange(beginAt, newLen);
-                //write data there
+                // write data there
                 rom.write(newPointer, data, newLen);
-                //change pointer
+                // change pointer
                 newPointer = newPointer - pointerBase + pointerDelay;
-                //write pointer
+                // write pointer
                 if (pointerLen > 0)
                     for (int i = 0; i < pointerLoc.length; i++)
                         rom.write(pointerLoc[i], toSnesPointer(newPointer),
@@ -1508,12 +1509,12 @@ public abstract class HackModule
                 else
                     for (int i = 0; i < pointerLoc.length; i++)
                         rom.writeRegAsmPointer(pointerLoc[i], newPointer);
-                //success!
+                // success!
                 return true;
             }
             catch (EOFException e)
             {
-                //if there isn't space, rewrite old data, and return failure
+                // if there isn't space, rewrite old data, and return failure
                 rom.write(oldPointer, oldData);
                 return false;
             }
@@ -1801,7 +1802,7 @@ public abstract class HackModule
             false);
     }
 
-    //1BPP
+    // 1BPP
     /**
      * Reads a one bit per pixel (1BPP) area from the ROM and writes the data to
      * the specified area on the given byte array. This area represents a 8x
@@ -1915,7 +1916,7 @@ public abstract class HackModule
         return offset - off;
     }
 
-    //2BPP
+    // 2BPP
     /**
      * Writes a two bit per pixel (2BPP) area into the ROM from the specified
      * area on the given byte array. This area represents a 8x8 four color
@@ -2139,7 +2140,7 @@ public abstract class HackModule
         return write2BPPArea(source, target, off, x, y, 0);
     }
 
-    //4BPP
+    // 4BPP
     /**
      * Writes a four bit per pixel (4BPP) area into the ROM from the specified
      * area on the given byte array. This area represents a 8x8 four color
@@ -2344,7 +2345,7 @@ public abstract class HackModule
         return write4BPPArea(source, target, off, x, y, 0);
     }
 
-    //8BPP
+    // 8BPP
     /**
      * Reads an eight bit per pixel (8BPP) area from <code>source</code> to
      * the given byte array. This area represents a 8x8 256 color image. Note
@@ -2397,7 +2398,7 @@ public abstract class HackModule
         return 64;
     }
 
-    //read palette from byte[]
+    // read palette from byte[]
     /**
      * Reads an SNES format palette color from the specificed place in a
      * <code>byte[]</code>. This reads one color of a palette, which is two
@@ -2534,7 +2535,7 @@ public abstract class HackModule
         return c;
     }
 
-    //write palette to byte[]
+    // write palette to byte[]
     /**
      * Writes an SNES format palette color to the specificed place in a
      * <code>byte[]</code>. This writes one color of a palette, which is two
@@ -2736,7 +2737,7 @@ public abstract class HackModule
      * @return A new <code>String</code> with the contents of <code>in</code>
      *         without any spaces.
      */
-    public static String killSpaces(String in) //removes _ALL_ spaces from a
+    public static String killSpaces(String in) // removes _ALL_ spaces from a
     // string
     {
         String out = new String();
@@ -2803,7 +2804,7 @@ public abstract class HackModule
         }
 
         /**
-         *  
+         * 
          */
         public SimpleComboBoxModel()
         {}
@@ -2986,7 +2987,10 @@ public abstract class HackModule
      */
     protected static void addDataListener(Object[] array, ListDataListener ldl)
     {
-        getListeners(array).add(ldl);
+        if (array != null)
+        {
+            getListeners(array).add(ldl);
+        }
     }
 
     /**
@@ -3312,7 +3316,7 @@ public abstract class HackModule
         return createComboBox(array, (ActionListener) null);
     }
 
-    //big array init
+    // big array init
     /**
      * Returns the base directory most files are located at. Ends with a
      * separator.
@@ -3348,7 +3352,7 @@ public abstract class HackModule
     {
         if (out == null)
             out = new String[size];
-        //if the first one is null, the rest are
+        // if the first one is null, the rest are
         if (out[0] == null)
             Arrays.fill(out, new String());
         try
@@ -3364,8 +3368,8 @@ public abstract class HackModule
             }
             catch (Exception e1)
             {
-                //If file in directory of ROM doesn't exist,
-                //then read the default file.
+                // If file in directory of ROM doesn't exist,
+                // then read the default file.
                 System.out.println("No ROM specific " + filename
                     + " file was found, using default (" + baseDir + filename
                     + ").");
@@ -3576,7 +3580,7 @@ public abstract class HackModule
     public static int numberize(String ib)
     {
         String in = ib;
-        //remove preceding spaces
+        // remove preceding spaces
         for (int i = 0; i < in.length(); i++)
         {
             if ((in.charAt(i) <= '9') && (in.charAt(i) >= '0'))
@@ -3585,7 +3589,7 @@ public abstract class HackModule
                 break;
             }
         }
-        //get number
+        // get number
         for (int i = 0; i < in.length(); i++)
         {
             if (!((in.charAt(i) <= '9') && (in.charAt(i) >= '0')))
@@ -3616,9 +3620,9 @@ public abstract class HackModule
      */
     public static int getColorDiff(Color a, Color b)
     {
-        int r = a.getRed() - b.getRed(); //Red delta
-        int g = a.getGreen() - b.getGreen(); //Green delta
-        int u = a.getBlue() - b.getBlue(); //blUe delta
+        int r = a.getRed() - b.getRed(); // Red delta
+        int g = a.getGreen() - b.getGreen(); // Green delta
+        int u = a.getBlue() - b.getBlue(); // blUe delta
 
         return r * r + g * g + u * u;
     }
@@ -3634,8 +3638,8 @@ public abstract class HackModule
      */
     public static byte getNearestColorIndex(Color[] pal, Color c)
     {
-        int m = Integer.MAX_VALUE; //min difference
-        byte mi = -1; //index
+        int m = Integer.MAX_VALUE; // min difference
+        byte mi = -1; // index
         for (byte i = 0; i < pal.length; i++)
         {
             int tmp;

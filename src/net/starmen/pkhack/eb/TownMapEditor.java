@@ -6,15 +6,8 @@ package net.starmen.pkhack.eb;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,35 +17,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.SwingConstants;
 import javax.swing.tree.TreeSelectionModel;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.CheckNode;
 import net.starmen.pkhack.CheckRenderer;
-import net.starmen.pkhack.CopyAndPaster;
-import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IPSDatabase;
-import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.NodeSelectionListener;
-import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.AbstractRom;
-import net.starmen.pkhack.SpritePalette;
-import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -60,9 +45,19 @@ import net.starmen.pkhack.XMLPreferences;
  * 
  * @author AnyoneEB
  */
-public class TownMapEditor extends EbHackModule implements ActionListener
+public class TownMapEditor extends FullScreenGraphicsEditor
 {
+    protected String getClassName()
+    {
+        return "eb.TownMapEditor";
+    }
+
     public static final int NUM_TOWN_MAPS = 6;
+
+    public int getNumScreens()
+    {
+        return NUM_TOWN_MAPS;
+    }
 
     public TownMapEditor(AbstractRom rom, XMLPreferences prefs)
     {
@@ -359,7 +354,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         }
     }
 
-    private void readFromRom()
+    protected void readFromRom()
     {
         readFromRom(this);
     }
@@ -374,360 +369,56 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             townMapNames);
     }
 
+    public FullScreenGraphics getScreen(int num)
+    {
+        return townMaps[num];
+    }
+
+    public String getScreenName(int num)
+    {
+        return townMapNames[num];
+    }
+
+    public String[] getScreenNames()
+    {
+        return townMapNames;
+    }
+
+    public void setScreenName(int num, String newName)
+    {
+        townMapNames[num] = newName;
+    }
+
     public void reset()
     {
         initTownMapNames(rom.getPath());
         readFromRom();
     }
 
-    private boolean guiInited = false;
-
-    private class TownMapArrangementEditor extends ArrangementEditor
+    protected int getTileSelectorWidth()
     {
-        public TownMapArrangementEditor()
-        {
-            super();
-            // this.setPreferredSize(new Dimension(getTilesWide()
-            // * (getTileSize() * getZoom()), getTilesHigh()
-            // * (getTileSize() * getZoom())));
-        }
-
-        public short makeArrangementNumber(int tile, int subPalette,
-            boolean hFlip, boolean vFlip)
-        {
-            return (short) ((tile & 0x01ff) | (((subPalette) & 1) << 10)
-                | (hFlip ? 0x4000 : 0) | (vFlip ? 0x8000 : 0));
-        }
-
-        protected int getCurrentTile()
-        {
-            return tileSelector.getCurrentTile();
-        }
-
-        protected void setCurrentTile(int tile)
-        {
-            tileSelector.setCurrentTile(tile);
-        }
-
-        protected int getTilesWide()
-        {
-            return 32;
-        }
-
-        protected int getTilesHigh()
-        {
-            return 28;
-        }
-
-        protected int getTileSize()
-        {
-            return 8;
-        }
-
-        protected int getZoom()
-        {
-            return 2;
-        }
-
-        protected boolean isDrawGridLines()
-        {
-            try
-            {
-                return prefs
-                    .getValueAsBoolean("eb.TownMapEditor.arrEditor.gridLines");
-            }
-            catch (NullPointerException e)
-            {
-                return JHack.main.getPrefs().getValueAsBoolean(
-                    "eb.TownMapEditor.arrEditor.gridLines");
-            }
-        }
-
-        protected boolean isEditable()
-        {
-            return true;
-        }
-
-        protected boolean isGuiInited()
-        {
-            return guiInited;
-        }
-
-        protected int getCurrentSubPalette()
-        {
-            return TownMapEditor.this.getCurrentSubPalette();
-        }
-
-        protected short getArrangementData(int x, int y)
-        {
-            return getSelectedMap().getArrangementData(x, y);
-        }
-
-        protected short[][] getArrangementData()
-        {
-            return getSelectedMap().getArrangementData();
-        }
-
-        protected void setArrangementData(int x, int y, short data)
-        {
-            getSelectedMap().setArrangementData(x, y, data);
-        }
-
-        protected void setArrangementData(short[][] data)
-        {
-            getSelectedMap().setArrangementData(data);
-        }
-
-        // protected Image getArrangementImage(int[][] selection)
-        // {
-        // return getSelectedMap().getArrangementImage(selection, getZoom(),
-        // isDrawGridLines());
-        // }
-
-        protected Image getTileImage(int tile, int subPal, boolean hFlip,
-            boolean vFlip)
-        {
-            return getSelectedMap().getTileImage(tile, subPal, hFlip, vFlip);
-        }
+        return 32;
     }
 
-    private class FocusIndicator extends AbstractButton implements
-        FocusListener, MouseListener
+    protected int getTileSelectorHeight()
     {
-        // true = tile editor, false = arrangement editor
-        private boolean focus = true;
-
-        public Component getCurrentFocus()
-        {
-            return (focus ? (Component) da : (Component) arrangementEditor);
-        }
-
-        public Undoable getCurrentUndoable()
-        {
-            return (focus ? (Undoable) da : (Undoable) arrangementEditor);
-        }
-
-        public CopyAndPaster getCurrentCopyAndPaster()
-        {
-            return (focus
-                ? (CopyAndPaster) da
-                : (CopyAndPaster) arrangementEditor);
-        }
-
-        private void cycleFocus()
-        {
-            focus = !focus;
-            repaint();
-        }
-
-        private void setFocus(Component c)
-        {
-            focus = c == da;
-            repaint();
-        }
-
-        public void focusGained(FocusEvent fe)
-        {
-            System.out.println("FocusIndicator.focusGained(FocusEvent)");
-            setFocus(fe.getComponent());
-            repaint();
-        }
-
-        public void focusLost(FocusEvent arg0)
-        {}
-
-        public void mouseClicked(MouseEvent me)
-        {
-            cycleFocus();
-        }
-
-        public void mousePressed(MouseEvent arg0)
-        {}
-
-        public void mouseReleased(MouseEvent arg0)
-        {}
-
-        public void mouseEntered(MouseEvent arg0)
-        {}
-
-        public void mouseExited(MouseEvent arg0)
-        {}
-
-        public void paint(Graphics g)
-        {
-            int[] arrowX = new int[]{40, 10, 10, 00, 10, 10, 40};
-            int[] arrowY = new int[]{22, 22, 15, 25, 35, 28, 28};
-
-            if (focus) // switch X and Y for pointing up
-                g.fillPolygon(arrowY, arrowX, 7);
-            else
-                g.fillPolygon(arrowX, arrowY, 7);
-        }
-
-        public FocusIndicator()
-        {
-            da.addFocusListener(this);
-            arrangementEditor.addFocusListener(this);
-
-            this.addMouseListener(this);
-
-            this.setPreferredSize(new Dimension(50, 50));
-
-            this
-                .setToolTipText("This arrow points to which component will recive menu commands. "
-                    + "Click to change.");
-        }
+        return 16;
     }
 
-    private TownMapArrangementEditor arrangementEditor;
-    private TileSelector tileSelector;
-    private IntArrDrawingArea da;
-    private SpritePalette pal;
-    private DrawingToolset dt;
-    private FocusIndicator fi;
-
-    private JComboBox mapSelector, subPalSelector;
-    private JTextField name;
-
-    protected void init()
+    protected int focusDaDir()
     {
-        mainWindow = createBaseWindow(this);
-        mainWindow.setTitle(getDescription());
+        return SwingConstants.TOP;
+    }
 
-        // menu
-        JMenuBar mb = new JMenuBar();
+    protected int focusArrDir()
+    {
+        return SwingConstants.LEFT;
+    }
 
-        JMenu fileMenu = new JMenu("File");
-        fileMenu.setMnemonic('f');
-
-        fileMenu.add(HackModule.createJMenuItem("Apply Changes", 'y', "ctrl S",
-            "apply", this));
-
-        fileMenu.addSeparator();
-
-        fileMenu.add(HackModule.createJMenuItem("Import...", 'i', null,
-            "import", this));
-        fileMenu.add(HackModule.createJMenuItem("Export...", 'e', null,
-            "export", this));
-
-        fileMenu.addSeparator();
-
-        fileMenu.add(HackModule.createJMenuItem("Import Image...", 'm', null,
-            "importImg", this));
-        // fileMenu.add(HackModule.createJMenuItem("Export Image...", 'x', null,
-        // "exportImg", this));
-
-        mb.add(fileMenu);
-
-        JMenu editMenu = HackModule.createEditMenu(this, true);
-
-        editMenu.addSeparator();
-
-        editMenu.add(HackModule.createJMenuItem("H-Flip", 'h', null, "hFlip",
-            this));
-        editMenu.add(HackModule.createJMenuItem("V-Flip", 'v', null, "vFlip",
-            this));
-
-        mb.add(editMenu);
-
-        JMenu optionsMenu = new JMenu("Options");
-        optionsMenu.setMnemonic('o');
-        optionsMenu.add(new PrefsCheckBox("Enable Tile Selector Grid Lines",
-            prefs, "eb.TownMapEditor.tileSelector.gridLines", false, 't', null,
-            "tileSelGridLines", this));
-        optionsMenu.add(new PrefsCheckBox(
-            "Enable Arrangement Editor Grid Lines", prefs,
-            "eb.TownMapEditor.arrEditor.gridLines", false, 'a', null,
-            "arrEdGridLines", this));
-        mb.add(optionsMenu);
-
-        mainWindow.setJMenuBar(mb);
-
-        // components
-        tileSelector = new TileSelector()
-        {
-            public int getTilesWide()
-            {
-                return 32;
-            }
-
-            public int getTilesHigh()
-            {
-                return 16;
-            }
-
-            public int getTileSize()
-            {
-                return 8;
-            }
-
-            public int getZoom()
-            {
-                return 2;
-            }
-
-            public boolean isDrawGridLines()
-            {
-                try
-                {
-                    return prefs
-                        .getValueAsBoolean("eb.TownMapEditor.tileSelector.gridLines");
-                }
-                catch (RuntimeException e)
-                {
-                    return JHack.main.getPrefs().getValueAsBoolean(
-                        "eb.TownMapEditor.tileSelector.gridLines");
-                }
-            }
-
-            public int getTileCount()
-            {
-                return 512;
-            }
-
-            public Image getTileImage(int tile)
-            {
-                return getSelectedMap().getTileImage(tile,
-                    getCurrentSubPalette());
-            }
-
-            protected boolean isGuiInited()
-            {
-                return guiInited;
-            }
-        };
-        tileSelector.setActionCommand("tileSelector");
-        tileSelector.addActionListener(this);
-
-        arrangementEditor = new TownMapArrangementEditor();
-        arrangementEditor.setActionCommand("arrangementEditor");
-        arrangementEditor.addActionListener(this);
-
-        dt = new DrawingToolset(this);
-
-        pal = new SpritePalette(16, 20, 2);
-        pal.setActionCommand("paletteEditor");
-        pal.addActionListener(this);
-
-        da = new IntArrDrawingArea(dt, pal, this);
-        da.setActionCommand("drawingArea");
-        da.setZoom(10);
-        da.setPreferredSize(new Dimension(80, 80));
-
-        mapSelector = createComboBox(townMapNames, this);
-        mapSelector.setActionCommand("mapSelector");
-
-        name = new JTextField(15);
-
-        subPalSelector = createJComboBoxFromArray(new Object[2], false);
-        subPalSelector.setSelectedIndex(0);
-        subPalSelector.setActionCommand("subPalSelector");
-        subPalSelector.addActionListener(this);
-
-        fi = new FocusIndicator();
-
+    protected JComponent layoutComponents()
+    {
         Box center = new Box(BoxLayout.Y_AXIS);
-        center.add(getLabeledComponent("Map: ", mapSelector));
+        center.add(getLabeledComponent("Map: ", screenSelector));
         center.add(getLabeledComponent("Map Name: ", name));
         center.add(getLabeledComponent("SubPalette: ", subPalSelector));
         center.add(Box.createVerticalStrut(20));
@@ -744,235 +435,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         display.add(pairComponents(tileSelector, arrangementEditor, false),
             BorderLayout.WEST);
 
-        mainWindow.getContentPane().add(new JScrollPane(display),
-            BorderLayout.CENTER);
-
-        mainWindow.pack();
-    }
-
-    public void show()
-    {
-        super.show();
-
-        readFromRom();
-        mapSelector.setSelectedIndex(mapSelector.getSelectedIndex() == -1
-            ? 0
-            : mapSelector.getSelectedIndex());
-
-        mainWindow.setVisible(true);
-    }
-
-    public void hide()
-    {
-        mainWindow.setVisible(false);
-    }
-
-    private void doMapSelectAction()
-    {
-        if (!getSelectedMap().readInfo(false))
-        {
-            guiInited = false;
-            int opt = JOptionPane.showOptionDialog(mainWindow,
-                "Error decompressing the " + townMapNames[getCurrentMap()]
-                    + " town map (#" + getCurrentMap() + ").",
-                "Decompression Error", JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.ERROR_MESSAGE, null, new String[]{"Abort", "Retry",
-                    "Fail"}, "Retry");
-            if (opt == JOptionPane.CLOSED_OPTION
-                || opt == JOptionPane.YES_OPTION)
-            {
-                mapSelector
-                    .setSelectedIndex((mapSelector.getSelectedIndex() + 1)
-                        % mapSelector.getItemCount());
-                doMapSelectAction();
-                return;
-            }
-            else if (opt == JOptionPane.NO_OPTION)
-            {
-                // mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
-                doMapSelectAction();
-                return;
-            }
-            else if (opt == JOptionPane.CANCEL_OPTION)
-            {
-                getSelectedMap().readInfo(true);
-            }
-        }
-        guiInited = true;
-        name.setText(townMapNames[getCurrentMap()]);
-        updatePaletteDisplay();
-        tileSelector.repaint();
-        arrangementEditor.clearSelection();
-        arrangementEditor.repaint();
-        updateTileEditor();
-    }
-
-    public void actionPerformed(ActionEvent ae)
-    {
-        if (ae.getActionCommand().equals("drawingArea"))
-        {
-            getSelectedMap().setTile(getCurrentTile(), da.getByteArrImage());
-            tileSelector.repaintCurrent();
-            arrangementEditor.repaintCurrentTile();
-            fi.setFocus(da);
-        }
-        else if (ae.getActionCommand().equals("arrangementEditor"))
-        {
-            fi.setFocus(arrangementEditor);
-        }
-        else if (ae.getActionCommand().equals("mapSelector"))
-        {
-            doMapSelectAction();
-        }
-        else if (ae.getActionCommand().equals("tileSelector"))
-        {
-            updateTileEditor();
-        }
-        else if (ae.getActionCommand().equals("subPalSelector"))
-        {
-            updatePaletteDisplay();
-            tileSelector.repaint();
-            da.repaint();
-        }
-        else if (ae.getActionCommand().equals("paletteEditor"))
-        {
-            getSelectedMap().setPaletteColor(pal.getSelectedColorIndex(),
-                getCurrentSubPalette(), pal.getNewColor());
-            updatePaletteDisplay();
-            da.repaint();
-            tileSelector.repaint();
-            arrangementEditor.repaint();
-        }
-        // flip
-        else if (ae.getActionCommand().equals("hFlip"))
-        {
-            da.doHFlip();
-        }
-        else if (ae.getActionCommand().equals("vFlip"))
-        {
-            da.doVFlip();
-        }
-        // edit menu
-        // undo
-        else if (ae.getActionCommand().equals("undo"))
-        {
-            fi.getCurrentUndoable().undo();
-        }
-        // copy&paste stuff
-        else if (ae.getActionCommand().equals("cut"))
-        {
-            fi.getCurrentCopyAndPaster().cut();
-        }
-        else if (ae.getActionCommand().equals("copy"))
-        {
-            fi.getCurrentCopyAndPaster().copy();
-        }
-        else if (ae.getActionCommand().equals("paste"))
-        {
-            fi.getCurrentCopyAndPaster().paste();
-        }
-        else if (ae.getActionCommand().equals("delete"))
-        {
-            fi.getCurrentCopyAndPaster().delete();
-        }
-        else if (ae.getActionCommand().equals("tileSelGridLines"))
-        {
-            mainWindow.getContentPane().invalidate();
-            tileSelector.invalidate();
-            tileSelector.resetPreferredSize();
-            tileSelector.validate();
-            tileSelector.repaint();
-            mainWindow.getContentPane().validate();
-        }
-        else if (ae.getActionCommand().equals("arrEdGridLines"))
-        {
-            mainWindow.getContentPane().invalidate();
-            arrangementEditor.invalidate();
-            arrangementEditor.resetPreferredSize();
-            arrangementEditor.validate();
-            arrangementEditor.repaint();
-            mainWindow.getContentPane().validate();
-        }
-        else if (ae.getActionCommand().equals("import"))
-        {
-            importData();
-
-            updatePaletteDisplay();
-            tileSelector.repaint();
-            arrangementEditor.clearSelection();
-            arrangementEditor.repaint();
-            updateTileEditor();
-        }
-        else if (ae.getActionCommand().equals("export"))
-        {
-            exportData();
-        }
-        else if (ae.getActionCommand().equals("importImg"))
-        {
-            FullScreenGraphicsImporter.importImg(getSelectedMap(), mainWindow);
-
-            updatePaletteDisplay();
-            tileSelector.repaint();
-            arrangementEditor.clearSelection();
-            arrangementEditor.repaint();
-            updateTileEditor();
-        }
-        else if (ae.getActionCommand().equals("apply"))
-        {
-            // TownMap.writeInfo() will only write if the map has been inited
-            for (int i = 0; i < townMaps.length; i++)
-                townMaps[i].writeInfo();
-            int m = getCurrentMap();
-            townMapNames[m] = name.getText();
-            notifyDataListeners(townMapNames, this, m);
-            writeArray("townMapNames.txt", false, townMapNames);
-        }
-        else if (ae.getActionCommand().equals("close"))
-        {
-            hide();
-        }
-        else
-        {
-            System.err
-                .println("TownMapEditor.actionPerformed: ERROR: unhandled "
-                    + "action command: \"" + ae.getActionCommand() + "\"");
-        }
-    }
-
-    private int getCurrentMap()
-    {
-        return mapSelector.getSelectedIndex();
-    }
-
-    private TownMap getSelectedMap()
-    {
-        return townMaps[getCurrentMap()];
-    }
-
-    private int getCurrentSubPalette()
-    {
-        return subPalSelector.getSelectedIndex();
-    }
-
-    private Color[] getSelectedSubPalette()
-    {
-        return getSelectedMap().getSubPal(getCurrentSubPalette());
-    }
-
-    private int getCurrentTile()
-    {
-        return tileSelector.getCurrentTile();
-    }
-
-    private void updatePaletteDisplay()
-    {
-        pal.setPalette(getSelectedSubPalette());
-        pal.repaint();
-    }
-
-    private void updateTileEditor()
-    {
-        da.setImage(getSelectedMap().getTile(getCurrentTile()));
+        return display;
     }
 
     public static final int NODE_BASE = 0;
@@ -989,7 +452,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
     public static final byte TNM_VERSION = 1;
 
-    public static void exportData(File f, boolean[][] a)
+    public static boolean exportData(File f, boolean[][] a)
     {
         // make a byte whichMaps. for each map if it is used set the bit at the
         // place equal to the map number to 1
@@ -1048,6 +511,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
             }
 
             out.close();
+            return true;
         }
         catch (FileNotFoundException e)
         {
@@ -1055,12 +519,14 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                 .println("File not found error exporting town map data to "
                     + f.getAbsolutePath() + ".");
             e.printStackTrace();
+            return false;
         }
         catch (IOException e)
         {
             System.err.println("IO error exporting town map data to "
                 + f.getAbsolutePath() + ".");
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -1164,7 +630,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         return null;
     }
 
-    private void exportData()
+    protected boolean exportData()
     {
         CheckNode topNode = new CheckNode("Town Maps", true, true);
         topNode.setSelectionMode(CheckNode.DIG_IN_SELECTION);
@@ -1194,7 +660,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
                 + "</html>"), new JScrollPane(checkTree), false),
             "Export What?", JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
-            return;
+            return false;
 
         boolean[][] a = new boolean[NUM_TOWN_MAPS][4];
         for (int m = 0; m < NUM_TOWN_MAPS; m++)
@@ -1203,7 +669,9 @@ public class TownMapEditor extends EbHackModule implements ActionListener
 
         File f = getFile(true, "tnm", "TowN Map");
         if (f != null)
-            exportData(f, a);
+            return exportData(f, a);
+        else
+            return false;
     }
 
     private static boolean[][] showCheckList(boolean[][] in, String text,
@@ -1258,7 +726,7 @@ public class TownMapEditor extends EbHackModule implements ActionListener
         return a;
     }
 
-    private boolean importData()
+    protected boolean importData()
     {
         File f = getFile(false, "tnm", "TowN Map");
         TownMapImportData[] tmid;

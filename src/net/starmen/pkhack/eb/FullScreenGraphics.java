@@ -13,13 +13,13 @@ public abstract class FullScreenGraphics
     protected boolean isInited = false;
 
     /** The <code>Color<code>'s of each palette. */
-    protected Color[][] palette;
+    protected Color[][] palette = new Color[getNumSubPalettes()][getSubPaletteSize()];
     /** List of all arrangements. */
-    protected short[] arrangementList;
+    protected short[] arrangementList = new short[getNumArrangements()];
     /** Two-dimentional array of arrangements used. */
-    protected short[][] arrangement;
+    protected short[][] arrangement = new short[32][28];;
     /** All tiles stored as pixels being found at [tile_num][x][y]. */
-    protected byte[][][] tiles;
+    protected byte[][][] tiles = new byte[getNumTiles()][8][8];
 
     public abstract int getNumSubPalettes();
 

@@ -6,15 +6,8 @@ package net.starmen.pkhack.eb;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,35 +17,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.SwingConstants;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.CheckNode;
 import net.starmen.pkhack.CheckRenderer;
-import net.starmen.pkhack.CopyAndPaster;
-import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IPSDatabase;
-import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.NodeSelectionListener;
-import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.SpritePalette;
-import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -60,9 +45,19 @@ import net.starmen.pkhack.XMLPreferences;
  * 
  * @author AnyoneEB
  */
-public class LogoScreenEditor extends EbHackModule implements ActionListener
+public class LogoScreenEditor extends FullScreenGraphicsEditor
 {
+    protected String getClassName()
+    {
+        return "eb.LogoScreenEditor";
+    }
+
     public static final int NUM_LOGO_SCREENS = 3;
+
+    public int getNumScreens()
+    {
+        return NUM_LOGO_SCREENS;
+    }
 
     public LogoScreenEditor(AbstractRom rom, XMLPreferences prefs)
     {
@@ -432,6 +427,28 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
 
     public static final LogoScreen[] logoScreens = new LogoScreen[NUM_LOGO_SCREENS];
 
+    public FullScreenGraphics getScreen(int i)
+    {
+        return logoScreens[i];
+    }
+
+    public String getScreenName(int i)
+    {
+        return logoScreenNames[i];
+    }
+
+    public String[] getScreenNames()
+    {
+        return logoScreenNames;
+    }
+
+    public void setScreenName(int i, String newName)
+    {
+        logoScreenNames[i] = newName;
+        notifyDataListeners(logoScreenNames, this, i);
+        writeArray("logoScreenNames.txt", false, logoScreenNames);
+    }
+
     public static void readFromRom(EbHackModule hm)
     {
         for (int i = 0; i < logoScreens.length; i++)
@@ -440,7 +457,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         }
     }
 
-    private void readFromRom()
+    protected void readFromRom()
     {
         readFromRom(this);
     }
@@ -461,361 +478,30 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         readFromRom();
     }
 
-    private boolean guiInited = false;
-
-    private class LogoScreenArrangementEditor extends ArrangementEditor
+    protected int getTileSelectorWidth()
     {
-        public LogoScreenArrangementEditor()
-        {
-            super();
-            this.setPreferredSize(new Dimension(getTilesWide()
-                * (getTileSize() * getZoom()), getTilesHigh()
-                * (getTileSize() * getZoom())));
-        }
-
-        public short makeArrangementNumber(int tile, int subPalette,
-            boolean hFlip, boolean vFlip)
-        {
-            return super.makeArrangementNumber(tile, subPalette - 2, hFlip,
-                vFlip);
-        }
-
-        public int getTileOfArr(int arr)
-        {
-            return arr & 0x00ff;
-        }
-
-        protected int getCurrentTile()
-        {
-            return tileSelector.getCurrentTile();
-        }
-
-        protected void setCurrentTile(int tile)
-        {
-            tileSelector.setCurrentTile(tile);
-        }
-
-        protected int getTilesWide()
-        {
-            return 32;
-        }
-
-        protected int getTilesHigh()
-        {
-            return 28;
-        }
-
-        protected int getTileSize()
-        {
-            return 8;
-        }
-
-        protected int getZoom()
-        {
-            return 2;
-        }
-
-        protected boolean isDrawGridLines()
-        {
-            try
-            {
-                return prefs
-                    .getValueAsBoolean("eb.LogoScreenEditor.arrEditor.gridLines");
-            }
-            catch (NullPointerException e)
-            {
-                return JHack.main.getPrefs().getValueAsBoolean(
-                    "eb.LogoScreenEditor.arrEditor.gridLines");
-            }
-        }
-
-        protected boolean isEditable()
-        {
-            return true;
-        }
-
-        protected boolean isGuiInited()
-        {
-            return guiInited;
-        }
-
-        protected int getCurrentSubPalette()
-        {
-            return LogoScreenEditor.this.getCurrentSubPalette();
-        }
-
-        protected short getArrangementData(int x, int y)
-        {
-            return getSelectedScreen().getArrangementData(x, y);
-        }
-
-        protected short[][] getArrangementData()
-        {
-            return getSelectedScreen().getArrangementData();
-        }
-
-        protected void setArrangementData(int x, int y, short data)
-        {
-            getSelectedScreen().setArrangementData(x, y, data);
-        }
-
-        protected void setArrangementData(short[][] data)
-        {
-            getSelectedScreen().setArrangementData(data);
-        }
-
-        // protected Image getArrangementImage(int[][] selection)
-        // {
-        // return getSelectedScreen().getArrangementImage(selection,
-        // getZoom(), isDrawGridLines());
-        // }
-
-        protected Image getTileImage(int tile, int subPal, boolean hFlip,
-            boolean vFlip)
-        {
-            return getSelectedScreen().getTileImage(tile, subPal, hFlip, vFlip);
-        }
+        return 16;
     }
 
-    private class FocusIndicator extends AbstractButton implements
-        FocusListener, MouseListener
+    protected int getTileSelectorHeight()
     {
-        // true = tile editor, false = arrangement editor
-        private boolean focus = true;
-
-        public Component getCurrentFocus()
-        {
-            return (focus ? (Component) da : (Component) arrangementEditor);
-        }
-
-        public Undoable getCurrentUndoable()
-        {
-            return (focus ? (Undoable) da : (Undoable) arrangementEditor);
-        }
-
-        public CopyAndPaster getCurrentCopyAndPaster()
-        {
-            return (focus
-                ? (CopyAndPaster) da
-                : (CopyAndPaster) arrangementEditor);
-        }
-
-        private void cycleFocus()
-        {
-            focus = !focus;
-            repaint();
-        }
-
-        private void setFocus(Component c)
-        {
-            focus = c == da;
-            repaint();
-        }
-
-        public void focusGained(FocusEvent fe)
-        {
-            System.out.println("FocusIndicator.focusGained(FocusEvent)");
-            setFocus(fe.getComponent());
-            repaint();
-        }
-
-        public void focusLost(FocusEvent arg0)
-        {}
-
-        public void mouseClicked(MouseEvent me)
-        {
-            cycleFocus();
-        }
-
-        public void mousePressed(MouseEvent arg0)
-        {}
-
-        public void mouseReleased(MouseEvent arg0)
-        {}
-
-        public void mouseEntered(MouseEvent arg0)
-        {}
-
-        public void mouseExited(MouseEvent arg0)
-        {}
-
-        public void paint(Graphics g)
-        {
-            int[] y = new int[]{40, 10, 10, 00, 10, 10, 40};
-            int[] x = new int[]{22, 22, 15, 25, 35, 28, 28};
-
-            if (!focus)
-                for (int i = 0; i < y.length; i++)
-                    y[i] = 50 - y[i];
-
-            g.fillPolygon(x, y, 7);
-        }
-
-        public FocusIndicator()
-        {
-            da.addFocusListener(this);
-            arrangementEditor.addFocusListener(this);
-
-            this.addMouseListener(this);
-
-            this.setPreferredSize(new Dimension(50, 50));
-
-            this
-                .setToolTipText("This arrow points to which component will recive menu commands. "
-                    + "Click to change.");
-        }
+        return 16;
     }
 
-    private LogoScreenArrangementEditor arrangementEditor;
-    private TileSelector tileSelector;
-    private IntArrDrawingArea da;
-    private SpritePalette pal;
-    private DrawingToolset dt;
-    private FocusIndicator fi;
-
-    private JComboBox mapSelector, subPalSelector;
-    private JTextField name;
-
-    protected void init()
+    protected int focusDaDir()
     {
-        mainWindow = createBaseWindow(this);
-        mainWindow.setTitle(getDescription());
+        return SwingConstants.TOP;
+    }
 
-        // menu
-        JMenuBar mb = new JMenuBar();
+    protected int focusArrDir()
+    {
+        return SwingConstants.BOTTOM;
+    }
 
-        JMenu fileMenu = new JMenu("File");
-        fileMenu.setMnemonic('f');
-
-        fileMenu.add(HackModule.createJMenuItem("Apply Changes", 'y', "ctrl S",
-            "apply", this));
-
-        fileMenu.addSeparator();
-
-        fileMenu.add(HackModule.createJMenuItem("Import...", 'i', null,
-            "import", this));
-        fileMenu.add(HackModule.createJMenuItem("Export...", 'e', null,
-            "export", this));
-
-        fileMenu.addSeparator();
-
-        fileMenu.add(HackModule.createJMenuItem("Import Image...", 'm', null,
-            "importImg", this));
-        // fileMenu.add(HackModule.createJMenuItem("Export Image...", 'x', null,
-        // "exportImg", this));
-
-        mb.add(fileMenu);
-
-        JMenu editMenu = HackModule.createEditMenu(this, true);
-
-        editMenu.addSeparator();
-
-        editMenu.add(HackModule.createJMenuItem("H-Flip", 'h', null, "hFlip",
-            this));
-        editMenu.add(HackModule.createJMenuItem("V-Flip", 'v', null, "vFlip",
-            this));
-
-        mb.add(editMenu);
-
-        JMenu optionsMenu = new JMenu("Options");
-        optionsMenu.setMnemonic('o');
-        optionsMenu.add(new PrefsCheckBox("Enable Tile Selector Grid Lines",
-            prefs, "eb.LogoScreenEditor.tileSelector.gridLines", false, 't',
-            null, "tileSelGridLines", this));
-        optionsMenu.add(new PrefsCheckBox(
-            "Enable Arrangement Editor Grid Lines", prefs,
-            "eb.LogoScreenEditor.arrEditor.gridLines", false, 'a', null,
-            "arrEdGridLines", this));
-        mb.add(optionsMenu);
-
-        mainWindow.setJMenuBar(mb);
-
-        // components
-        tileSelector = new TileSelector()
-        {
-            public int getTilesWide()
-            {
-                return 16;
-            }
-
-            public int getTilesHigh()
-            {
-                return 16;
-            }
-
-            public int getTileSize()
-            {
-                return 8;
-            }
-
-            public int getZoom()
-            {
-                return 2;
-            }
-
-            public boolean isDrawGridLines()
-            {
-                try
-                {
-                    return prefs
-                        .getValueAsBoolean("eb.LogoScreenEditor.tileSelector.gridLines");
-                }
-                catch (NullPointerException e)
-                {
-                    return JHack.main.getPrefs().getValueAsBoolean(
-                        "eb.LogoScreenEditor.tileSelector.gridLines");
-                }
-            }
-
-            public int getTileCount()
-            {
-                return LogoScreen.NUM_TILES;
-            }
-
-            public Image getTileImage(int tile)
-            {
-                return getSelectedScreen().getTileImage(tile,
-                    getCurrentSubPalette());
-            }
-
-            protected boolean isGuiInited()
-            {
-                return guiInited;
-            }
-        };
-        tileSelector.setActionCommand("tileSelector");
-        tileSelector.addActionListener(this);
-
-        arrangementEditor = new LogoScreenArrangementEditor();
-        arrangementEditor.setActionCommand("arrangementEditor");
-        arrangementEditor.addActionListener(this);
-
-        dt = new DrawingToolset(this);
-
-        pal = new SpritePalette(4, true);
-        pal.setActionCommand("paletteEditor");
-        pal.addActionListener(this);
-
-        da = new IntArrDrawingArea(dt, pal, this);
-        da.setActionCommand("drawingArea");
-        da.setZoom(10);
-        da.setPreferredSize(new Dimension(80, 80));
-
-        mapSelector = createComboBox(logoScreenNames, this);
-        mapSelector.setActionCommand("mapSelector");
-
-        name = new JTextField(15);
-
-        subPalSelector = createJComboBoxFromArray(
-            new Object[LogoScreen.NUM_PALETTES], false);
-        subPalSelector.setSelectedIndex(0);
-        subPalSelector.setActionCommand("subPalSelector");
-        subPalSelector.addActionListener(this);
-
-        fi = new FocusIndicator();
-
+    protected JComponent layoutComponents()
+    {
         Box center = new Box(BoxLayout.Y_AXIS);
-        center.add(getLabeledComponent("Screen: ", mapSelector));
+        center.add(getLabeledComponent("Screen: ", screenSelector));
         center.add(getLabeledComponent("Screen Name: ", name));
         center.add(getLabeledComponent("SubPalette: ", subPalSelector));
         center.add(Box.createVerticalStrut(15));
@@ -831,235 +517,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         display.add(pairComponents(pairComponents(tileSelector, center, true),
             arrangementEditor, false), BorderLayout.WEST);
 
-        mainWindow.getContentPane().add(new JScrollPane(display),
-            BorderLayout.CENTER);
-
-        mainWindow.pack();
-    }
-
-    public void show()
-    {
-        super.show();
-
-        readFromRom();
-        mapSelector.setSelectedIndex(mapSelector.getSelectedIndex() == -1
-            ? 0
-            : mapSelector.getSelectedIndex());
-
-        mainWindow.setVisible(true);
-    }
-
-    public void hide()
-    {
-        mainWindow.setVisible(false);
-    }
-
-    private void doLogoSelectAction()
-    {
-        if (!getSelectedScreen().readInfo())
-        {
-            guiInited = false;
-            Object opt = JOptionPane.showInputDialog(mainWindow,
-                "Error decompressing the "
-                    + logoScreenNames[getCurrentScreen()] + " screen (#"
-                    + getCurrentScreen() + ").", "Decompression Error",
-                JOptionPane.ERROR_MESSAGE, null, new String[]{"Abort", "Retry",
-                    "Fail"}, "Retry");
-            if (opt == null || opt.equals("Abort"))
-            {
-                mapSelector
-                    .setSelectedIndex((mapSelector.getSelectedIndex() + 1)
-                        % mapSelector.getItemCount());
-                doLogoSelectAction();
-                return;
-            }
-            else if (opt.equals("Retry"))
-            {
-                // mapSelector.setSelectedIndex(mapSelector.getSelectedIndex());
-                doLogoSelectAction();
-                return;
-            }
-            else if (opt.equals("Fail"))
-            {
-                getSelectedScreen().initToNull();
-            }
-        }
-        guiInited = true;
-        name.setText(logoScreenNames[getCurrentScreen()]);
-        updatePaletteDisplay();
-        tileSelector.repaint();
-        arrangementEditor.clearSelection();
-        arrangementEditor.repaint();
-        updateTileEditor();
-    }
-
-    public void actionPerformed(ActionEvent ae)
-    {
-        if (ae.getActionCommand().equals("drawingArea"))
-        {
-            getSelectedScreen().setTile(getCurrentTile(), da.getByteArrImage());
-            tileSelector.repaintCurrent();
-            arrangementEditor.repaintCurrentTile();
-            fi.setFocus(da);
-        }
-        else if (ae.getActionCommand().equals("arrangementEditor"))
-        {
-            fi.setFocus(arrangementEditor);
-        }
-        else if (ae.getActionCommand().equals("mapSelector"))
-        {
-            doLogoSelectAction();
-        }
-        else if (ae.getActionCommand().equals("tileSelector"))
-        {
-            updateTileEditor();
-        }
-        else if (ae.getActionCommand().equals("subPalSelector"))
-        {
-            updatePaletteDisplay();
-            tileSelector.repaint();
-            da.repaint();
-        }
-        else if (ae.getActionCommand().equals("paletteEditor"))
-        {
-            getSelectedScreen().setPaletteColor(pal.getSelectedColorIndex(),
-                getCurrentSubPalette(), pal.getNewColor());
-            updatePaletteDisplay();
-            da.repaint();
-            tileSelector.repaint();
-            arrangementEditor.repaint();
-        }
-        // flip
-        else if (ae.getActionCommand().equals("hFlip"))
-        {
-            da.doHFlip();
-        }
-        else if (ae.getActionCommand().equals("vFlip"))
-        {
-            da.doVFlip();
-        }
-        // edit menu
-        // undo
-        else if (ae.getActionCommand().equals("undo"))
-        {
-            fi.getCurrentUndoable().undo();
-        }
-        // copy&paste stuff
-        else if (ae.getActionCommand().equals("cut"))
-        {
-            fi.getCurrentCopyAndPaster().cut();
-        }
-        else if (ae.getActionCommand().equals("copy"))
-        {
-            fi.getCurrentCopyAndPaster().copy();
-        }
-        else if (ae.getActionCommand().equals("paste"))
-        {
-            fi.getCurrentCopyAndPaster().paste();
-        }
-        else if (ae.getActionCommand().equals("delete"))
-        {
-            fi.getCurrentCopyAndPaster().delete();
-        }
-        else if (ae.getActionCommand().equals("tileSelGridLines"))
-        {
-            mainWindow.getContentPane().invalidate();
-            tileSelector.invalidate();
-            tileSelector.resetPreferredSize();
-            tileSelector.validate();
-            tileSelector.repaint();
-            mainWindow.getContentPane().validate();
-        }
-        else if (ae.getActionCommand().equals("arrEdGridLines"))
-        {
-            mainWindow.getContentPane().invalidate();
-            arrangementEditor.invalidate();
-            arrangementEditor.resetPreferredSize();
-            arrangementEditor.validate();
-            arrangementEditor.repaint();
-            mainWindow.getContentPane().validate();
-        }
-        else if (ae.getActionCommand().equals("import"))
-        {
-            importData();
-
-            updatePaletteDisplay();
-            tileSelector.repaint();
-            arrangementEditor.clearSelection();
-            arrangementEditor.repaint();
-            updateTileEditor();
-        }
-        else if (ae.getActionCommand().equals("export"))
-        {
-            exportData();
-        }
-        else if (ae.getActionCommand().equals("importImg"))
-        {
-            FullScreenGraphicsImporter.importImg(getSelectedScreen(),
-                mainWindow);
-
-            updatePaletteDisplay();
-            tileSelector.repaint();
-            arrangementEditor.clearSelection();
-            arrangementEditor.repaint();
-            updateTileEditor();
-        }
-        else if (ae.getActionCommand().equals("apply"))
-        {
-            // TownMap.writeInfo() will only write if the map has been inited
-            for (int i = 0; i < logoScreens.length; i++)
-                logoScreens[i].writeInfo();
-            int m = getCurrentScreen();
-            logoScreenNames[m] = name.getText();
-            notifyDataListeners(logoScreenNames, this, m);
-            writeArray("logoScreenNames.txt", false, logoScreenNames);
-        }
-        else if (ae.getActionCommand().equals("close"))
-        {
-            hide();
-        }
-        else
-        {
-            System.err
-                .println("LogoScreenEditor.actionPerformed: ERROR: unhandled "
-                    + "action command: \"" + ae.getActionCommand() + "\"");
-        }
-    }
-
-    private int getCurrentScreen()
-    {
-        return mapSelector.getSelectedIndex();
-    }
-
-    private LogoScreen getSelectedScreen()
-    {
-        return logoScreens[getCurrentScreen()];
-    }
-
-    private int getCurrentSubPalette()
-    {
-        return subPalSelector.getSelectedIndex();
-    }
-
-    private Color[] getSelectedSubPalette()
-    {
-        return getSelectedScreen().getSubPal(getCurrentSubPalette());
-    }
-
-    private int getCurrentTile()
-    {
-        return tileSelector.getCurrentTile();
-    }
-
-    private void updatePaletteDisplay()
-    {
-        pal.setPalette(getSelectedSubPalette());
-        pal.repaint();
-    }
-
-    private void updateTileEditor()
-    {
-        da.setImage(getSelectedScreen().getTile(getCurrentTile()));
+        return display;
     }
 
     public static final int NODE_BASE = 0;
@@ -1304,7 +762,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         return a;
     }
 
-    private boolean exportData()
+    protected boolean exportData()
     {
         boolean[][] a = showCheckList(null, "<html>"
             + "Select which items you wish to export." + "</html>",
@@ -1318,7 +776,7 @@ public class LogoScreenEditor extends EbHackModule implements ActionListener
         return true;
     }
 
-    private boolean importData()
+    protected boolean importData()
     {
         File f = getFile(false, "lscn", "Logo SCreeN");
         LogoScreenImportData[] tmid;

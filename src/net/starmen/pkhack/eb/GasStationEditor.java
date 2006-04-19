@@ -5,16 +5,8 @@ package net.starmen.pkhack.eb;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,33 +16,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingConstants;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.CheckNode;
 import net.starmen.pkhack.CheckRenderer;
-import net.starmen.pkhack.CopyAndPaster;
-import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IPSDatabase;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.NodeSelectionListener;
-import net.starmen.pkhack.PrefsCheckBox;
 import net.starmen.pkhack.SpritePalette;
-import net.starmen.pkhack.Undoable;
 import net.starmen.pkhack.XMLPreferences;
 
 /**
@@ -58,9 +44,19 @@ import net.starmen.pkhack.XMLPreferences;
  * 
  * @author n42
  */
-public class GasStationEditor extends EbHackModule implements ActionListener
+public class GasStationEditor extends FullScreenGraphicsEditor
 {
+    protected String getClassName()
+    {
+        return "eb.GasStationEditor";
+    }
+
     public static final int NUM_GAS_STATIONS = 1;
+
+    public int getNumScreens()
+    {
+        return NUM_GAS_STATIONS;
+    }
 
     public GasStationEditor(AbstractRom rom, XMLPreferences prefs)
     {
@@ -418,13 +414,33 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
     public static final GasStation[] gasStations = new GasStation[NUM_GAS_STATIONS];
 
+    public FullScreenGraphics getScreen(int i)
+    {
+        return gasStations[i];
+    }
+
+    public String getScreenName(int i)
+    {
+        return "gas station";
+    }
+
+    public String[] getScreenNames()
+    {
+        return new String[]{"gas station"};
+    }
+
+    public void setScreenName(int i, String newName)
+    {
+        return;
+    }
+
     public static void readFromRom(EbHackModule hm)
     {
         gasStations[0] = new GasStation(hm);
         inited = true;
     }
 
-    private void readFromRom()
+    protected void readFromRom()
     {
         readFromRom(this);
     }
@@ -436,341 +452,51 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         inited = false;
     }
 
-    private class GasStationArrangementEditor extends ArrangementEditor
+    protected int getTileSelectorWidth()
     {
-        public GasStationArrangementEditor()
-        {
-            super();
-            // this.setPreferredSize(new Dimension(getTilesWide()
-            // * (getTileSize() * getZoom()), getTilesHigh()
-            // * (getTileSize() * getZoom())));
-        }
-
-        protected int getCurrentTile()
-        {
-            return tileSelector.getCurrentTile();
-        }
-
-        protected void setCurrentTile(int tile)
-        {
-            tileSelector.setCurrentTile(tile);
-        }
-
-        protected int getTilesWide()
-        {
-            return 32;
-        }
-
-        protected int getTilesHigh()
-        {
-            return 28;
-        }
-
-        protected int getTileSize()
-        {
-            return 8;
-        }
-
-        protected int getZoom()
-        {
-            return 2;
-        }
-
-        protected boolean isDrawGridLines()
-        {
-            try
-            {
-                return prefs
-                    .getValueAsBoolean("eb.GasStationEditor.arrEditor.gridLines");
-            }
-            catch (NullPointerException e)
-            {
-                return JHack.main.getPrefs().getValueAsBoolean(
-                    "eb.GasStationEditor.arrEditor.gridLines");
-            }
-        }
-
-        protected boolean isEditable()
-        {
-            return true;
-        }
-
-        protected boolean isGuiInited()
-        {
-            return true;
-        }
-
-        protected int getCurrentSubPalette()
-        {
-            return 0;
-        }
-
-        protected short getArrangementData(int x, int y)
-        {
-            return getSelectedStation().getArrangementData(x, y);
-        }
-
-        protected short[][] getArrangementData()
-        {
-            return getSelectedStation().getArrangementData();
-        }
-
-        protected void setArrangementData(int x, int y, short data)
-        {
-            getSelectedStation().setArrangementData(x, y, data);
-        }
-
-        protected void setArrangementData(short[][] data)
-        {
-            getSelectedStation().setArrangementData(data);
-        }
-
-        protected Image getTileImage(int tile, int subPal, boolean hFlip,
-            boolean vFlip)
-        {
-            return getSelectedStation().getTileImage(tile,
-                GasStationEditor.this.getCurrentSubPalette(), hFlip, vFlip);
-        }
+        return 36;
     }
 
-    private class FocusIndicator extends AbstractButton implements
-        FocusListener, MouseListener
+    protected int getTileSelectorHeight()
     {
-        // true = tile editor, false = arrangement editor
-        private boolean focus = true;
-
-        public Component getCurrentFocus()
-        {
-            return (focus ? (Component) da : (Component) arrangementEditor);
-        }
-
-        public Undoable getCurrentUndoable()
-        {
-            return (focus ? (Undoable) da : (Undoable) arrangementEditor);
-        }
-
-        public CopyAndPaster getCurrentCopyAndPaster()
-        {
-            return (focus
-                ? (CopyAndPaster) da
-                : (CopyAndPaster) arrangementEditor);
-        }
-
-        private void cycleFocus()
-        {
-            focus = !focus;
-            repaint();
-        }
-
-        private void setFocus(Component c)
-        {
-            focus = c == da;
-            repaint();
-        }
-
-        public void focusGained(FocusEvent fe)
-        {
-            System.out.println("FocusIndicator.focusGained(FocusEvent)");
-            setFocus(fe.getComponent());
-            repaint();
-        }
-
-        public void focusLost(FocusEvent arg0)
-        {}
-
-        public void mouseClicked(MouseEvent me)
-        {
-            cycleFocus();
-        }
-
-        public void mousePressed(MouseEvent arg0)
-        {}
-
-        public void mouseReleased(MouseEvent arg0)
-        {}
-
-        public void mouseEntered(MouseEvent arg0)
-        {}
-
-        public void mouseExited(MouseEvent arg0)
-        {}
-
-        public void paint(Graphics g)
-        {
-            int[] arrowX = new int[]{40, 10, 10, 00, 10, 10, 40};
-            int[] arrowY = new int[]{22, 22, 15, 25, 35, 28, 28};
-
-            if (focus) // switch X and Y for pointing up
-                g.fillPolygon(arrowY, arrowX, 7);
-            else
-                g.fillPolygon(arrowX, arrowY, 7);
-        }
-
-        public FocusIndicator()
-        {
-            da.addFocusListener(this);
-            arrangementEditor.addFocusListener(this);
-
-            this.addMouseListener(this);
-
-            this.setPreferredSize(new Dimension(50, 50));
-
-            this
-                .setToolTipText("This arrow points to which component will recive menu commands. "
-                    + "Click to change.");
-        }
+        return 18;
     }
 
-    private GasStationArrangementEditor arrangementEditor;
-    private TileSelector tileSelector;
-    private IntArrDrawingArea da;
-    private SpritePalette pal;
-    private DrawingToolset dt;
-    private FocusIndicator fi;
-
-    // private JComboBox mapSelector
-    private JComboBox palSelector;
-
-    // private JTextField name;
-
-    protected void init()
+    protected int focusDaDir()
     {
-        mainWindow = createBaseWindow(this);
-        mainWindow.setTitle(getDescription());
+        return SwingConstants.TOP;
+    }
 
-        // menu
-        JMenuBar mb = new JMenuBar();
+    protected int focusArrDir()
+    {
+        return SwingConstants.LEFT;
+    }
 
-        JMenu fileMenu = new JMenu("File");
-        fileMenu.setMnemonic('f');
-
-        fileMenu.add(HackModule.createJMenuItem("Apply Changes", 'y', "ctrl S",
-            "apply", this));
-
-        fileMenu.addSeparator();
-
-        fileMenu.add(HackModule.createJMenuItem("Import...", 'i', null,
-            "import", this));
-        fileMenu.add(HackModule.createJMenuItem("Export...", 'e', null,
-            "export", this));
-
-        fileMenu.addSeparator();
-
-        fileMenu.add(HackModule.createJMenuItem("Import Image...", 'm', null,
-            "importImg", this));
-        // fileMenu.add(HackModule.createJMenuItem("Export Image...", 'x', null,
-        // "exportImg", this));
-
-        mb.add(fileMenu);
-
-        JMenu editMenu = HackModule.createEditMenu(this, true);
-
-        editMenu.addSeparator();
-
-        editMenu.add(HackModule.createJMenuItem("H-Flip", 'h', null, "hFlip",
-            this));
-        editMenu.add(HackModule.createJMenuItem("V-Flip", 'v', null, "vFlip",
-            this));
-
-        mb.add(editMenu);
-
-        JMenu optionsMenu = new JMenu("Options");
-        optionsMenu.setMnemonic('o');
-        optionsMenu.add(new PrefsCheckBox("Enable Tile Selector Grid Lines",
-            prefs, "eb.GasStationEditor.tileSelector.gridLines", false, 't',
-            null, "tileSelGridLines", this));
-        optionsMenu.add(new PrefsCheckBox(
-            "Enable Arrangement Editor Grid Lines", prefs,
-            "eb.GasStationEditor.arrEditor.gridLines", false, 'a', null,
-            "arrEdGridLines", this));
-        mb.add(optionsMenu);
-
-        mainWindow.setJMenuBar(mb);
-
-        // components
-        tileSelector = new TileSelector()
-        {
-            public int getTilesWide()
-            {
-                return 36;
-            }
-
-            public int getTilesHigh()
-            {
-                return 18;
-            }
-
-            public int getTileSize()
-            {
-                return 6;
-            }
-
-            public int getZoom()
-            {
-                return 2;
-            }
-
-            public boolean isDrawGridLines()
-            {
-                try
-                {
-                    return prefs
-                        .getValueAsBoolean("eb.GasStationEditor.tileSelector.gridLines");
-                }
-                catch (NullPointerException e)
-                {
-                    return JHack.main.getPrefs().getValueAsBoolean(
-                        "eb.GasStationEditor.tileSelector.gridLines");
-                }
-            }
-
-            public int getTileCount()
-            {
-                return GasStation.NUM_TILES;
-            }
-
-            public Image getTileImage(int tile)
-            {
-                return getSelectedStation().getTileImage(tile,
-                    getCurrentSubPalette());
-            }
-
-            protected boolean isGuiInited()
-            {
-                return true;
-            }
-        };
-        tileSelector.setActionCommand("tileSelector");
-        tileSelector.addActionListener(this);
-
-        arrangementEditor = new GasStationArrangementEditor();
-        arrangementEditor.setActionCommand("arrangementEditor");
-        arrangementEditor.addActionListener(this);
-
-        dt = new DrawingToolset(this);
-
+    /** XXX: Does this work? */
+    protected void initComponents()
+    {
+        super.initComponents();
         pal = new SpritePalette(256, 8, 16);
         pal.setActionCommand("paletteEditor");
         pal.addActionListener(this);
-
+        
         da = new IntArrDrawingArea(dt, pal, this);
         da.setActionCommand("drawingArea");
         da.setZoom(10);
         da.setPreferredSize(new Dimension(81, 81));
 
-        // mapSelector = createComboBox(gasStationNames, this);
-        // mapSelector.setActionCommand("mapSelector");
+        screenSelector = null;
+        name = null;
 
-        // name = new JTextField(15);
+        subPalSelector = createJComboBoxFromArray(new String[]{"Regular",
+            "Flash", "Regular after 1st flash"}, false);
+        subPalSelector.setSelectedIndex(0);
+        subPalSelector.setActionCommand("subPalSelector");
+        subPalSelector.addActionListener(this);
+    }
 
-        palSelector = createJComboBoxFromArray(new String[]{"Regular", "Flash",
-            "Regular after 1st flash"}, false);
-        palSelector.setSelectedIndex(0);
-        palSelector.setActionCommand("palSelector");
-        palSelector.addActionListener(this);
-
-        fi = new FocusIndicator();
-
+    protected JComponent layoutComponents()
+    {
         JButton copyPal = new JButton("Copy Palette");
         copyPal.setActionCommand("copyPal");
         copyPal.addActionListener(this);
@@ -782,7 +508,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         Box center = new Box(BoxLayout.Y_AXIS);
         center.add(createFlowLayout(dt));
         center.add(Box.createVerticalStrut(10));
-        center.add(getLabeledComponent("Palette: ", palSelector));
+        center.add(getLabeledComponent("Palette: ", subPalSelector));
         center.add(Box.createVerticalStrut(10));
         center.add(createFlowLayout(da));
         center.add(Box.createVerticalStrut(5));
@@ -796,57 +522,15 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         display.add(pairComponents(center, null, false), BorderLayout.CENTER);
         display.add(pairComponents(tileSelector, arrangementEditor, false),
             BorderLayout.WEST);
-        mainWindow.getContentPane().add(new JScrollPane(display),
-            BorderLayout.CENTER);
 
-        mainWindow.pack();
+        return display;
     }
 
-    public void show()
-    {
-        super.show();
-
-        readFromRom();
-        if (doMapSelectAction())
-            mainWindow.setVisible(true);
-    }
-
-    public void hide()
-    {
-        mainWindow.setVisible(false);
-    }
-
-    private boolean doMapSelectAction()
-    {
-        // name.setText(gasStationNames[getCurrentStation()]);
-        if (!getSelectedStation().readInfo())
-        {
-            Object opt = JOptionPane.showInputDialog(mainWindow,
-                "Error decompressing the Gas Station (#" + getCurrentStation()
-                    + ").", "Decompression Error", JOptionPane.ERROR_MESSAGE,
-                null, new String[]{"Abort", "Retry", "Fail"}, "Retry");
-            if (opt == null || opt.equals("Abort"))
-            {
-                hide();
-                return false;
-            }
-            else if (opt.equals("Retry"))
-            {
-                return doMapSelectAction();
-            }
-            else if (opt.equals("Fail"))
-            {
-                getSelectedStation().initToNull();
-            }
-        }
-        updatePaletteDisplay();
-        tileSelector.repaint();
-        arrangementEditor.clearSelection();
-        arrangementEditor.repaint();
-        updateTileEditor();
-
-        return true;
-    }
+    /*
+     * public void show() { super.show();
+     * 
+     * readFromRom(); if (doMapSelectAction()) mainWindow.setVisible(true); }
+     */
 
     private Color[] palcb = null;
 
@@ -862,7 +546,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         {
             Color[] paltmp = new Color[256];
             System.arraycopy(palcb, 0, paltmp, 0, 256);
-            getSelectedStation().setSubPal(getCurrentSubPalette(), paltmp);
+            getSelectedScreen().setSubPal(getCurrentSubPalette(), paltmp);
 
             updatePaletteDisplay();
             da.repaint();
@@ -873,71 +557,11 @@ public class GasStationEditor extends EbHackModule implements ActionListener
 
     public void actionPerformed(ActionEvent ae)
     {
-        if (ae.getActionCommand().equals("drawingArea"))
-        {
-            getSelectedStation()
-                .setTile(getCurrentTile(), da.getByteArrImage());
-            tileSelector.repaintCurrent();
-            arrangementEditor.repaintCurrentTile();
-            fi.setFocus(da);
-        }
-        else if (ae.getActionCommand().equals("arrangementEditor"))
-        {
-            fi.setFocus(arrangementEditor);
-        }
-        else if (ae.getActionCommand().equals("tileSelector"))
-        {
-            updateTileEditor();
-        }
-        else if (ae.getActionCommand().equals("palSelector"))
-        {
-            updatePaletteDisplay();
-            tileSelector.repaint();
-            arrangementEditor.repaint();
-            da.repaint();
-        }
-        else if (ae.getActionCommand().equals("paletteEditor"))
-        {
-            getSelectedStation().setPaletteColor(pal.getSelectedColorIndex(),
-                getCurrentSubPalette(), pal.getNewColor());
-            updatePaletteDisplay();
-            da.repaint();
-            tileSelector.repaint();
-            arrangementEditor.repaint();
-        }
-        // flip
-        else if (ae.getActionCommand().equals("hFlip"))
-        {
-            da.doHFlip();
-        }
-        else if (ae.getActionCommand().equals("vFlip"))
-        {
-            da.doVFlip();
-        }
-        // edit menu
-        // undo
-        else if (ae.getActionCommand().equals("undo"))
-        {
-            fi.getCurrentUndoable().undo();
-        }
-        // copy&paste stuff
-        else if (ae.getActionCommand().equals("cut"))
-        {
-            fi.getCurrentCopyAndPaster().cut();
-        }
-        else if (ae.getActionCommand().equals("copy"))
-        {
-            fi.getCurrentCopyAndPaster().copy();
-        }
-        else if (ae.getActionCommand().equals("paste"))
-        {
-            fi.getCurrentCopyAndPaster().paste();
-        }
-        else if (ae.getActionCommand().equals("delete"))
-        {
-            fi.getCurrentCopyAndPaster().delete();
-        }
-        else if (ae.getActionCommand().equals("copyPal"))
+        /*
+         * if (ae.getActionCommand().equals("subPalSelector")) {
+         * updatePaletteDisplay(); tileSelector.repaint();
+         * arrangementEditor.repaint(); da.repaint(); } else
+         */if (ae.getActionCommand().equals("copyPal"))
         {
             copyPal();
         }
@@ -945,106 +569,32 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         {
             pastePal();
         }
-        else if (ae.getActionCommand().equals("tileSelGridLines"))
-        {
-            mainWindow.getContentPane().invalidate();
-            tileSelector.invalidate();
-            tileSelector.resetPreferredSize();
-            tileSelector.validate();
-            tileSelector.repaint();
-            mainWindow.getContentPane().validate();
-        }
-        else if (ae.getActionCommand().equals("arrEdGridLines"))
-        {
-            mainWindow.getContentPane().invalidate();
-            arrangementEditor.invalidate();
-            arrangementEditor.resetPreferredSize();
-            arrangementEditor.validate();
-            arrangementEditor.repaint();
-            mainWindow.getContentPane().validate();
-        }
-        else if (ae.getActionCommand().equals("import"))
-        {
-            importData();
-
-            updatePaletteDisplay();
-            tileSelector.repaint();
-            arrangementEditor.clearSelection();
-            arrangementEditor.repaint();
-            updateTileEditor();
-        }
-        else if (ae.getActionCommand().equals("export"))
-        {
-            exportData();
-        }
-        else if (ae.getActionCommand().equals("importImg"))
-        {
-            FullScreenGraphicsImporter.importImg(getSelectedStation(),
-                mainWindow, true);
-
-            updatePaletteDisplay();
-            tileSelector.repaint();
-            arrangementEditor.clearSelection();
-            arrangementEditor.repaint();
-            updateTileEditor();
-        }
-        else if (ae.getActionCommand().equals("apply"))
-        {
-            // TownMap.writeInfo() will only write if the map has been inited
-            for (int i = 0; i < gasStations.length; i++)
-                gasStations[i].writeInfo();
-            // int m = getCurrentStation();
-            // gasStationNames[m] = name.getText();
-            // notifyDataListeners(gasStationNames, this, m);
-            // writeArray("gasStationNames.txt", false, gasStationNames);
-        }
-        else if (ae.getActionCommand().equals("close"))
-        {
-            hide();
-        }
         else
         {
-            System.err
-                .println("GasStationEditor.actionPerformed: ERROR: unhandled "
-                    + "action command: \"" + ae.getActionCommand() + "\"");
+            super.actionPerformed(ae);
         }
     }
 
-    private int getCurrentStation()
+    protected int getCurrentScreen()
     {
         return 0;
     }
 
-    private GasStation getSelectedStation()
+    protected boolean isSinglePalImport()
     {
-        return gasStations[getCurrentStation()];
+        return true;
     }
 
-    private int getCurrentSubPalette()
-    {
-        return palSelector.getSelectedIndex();
-    }
-
-    private Color[] getSelectedSubPalette()
-    {
-        return getSelectedStation().getSubPal(getCurrentSubPalette());
-    }
-
-    private int getCurrentTile()
-    {
-        return tileSelector.getCurrentTile();
-    }
-
-    private void updatePaletteDisplay()
-    {
-        pal.setPalette(getSelectedSubPalette());
-        pal.repaint();
-    }
-
-    private void updateTileEditor()
-    {
-        da.setImage(getSelectedStation().getTile(getCurrentTile()));
-    }
+    /*
+     * private int getCurrentSubPalette() { return
+     * palSelector.getSelectedIndex(); }
+     * 
+     * private Color[] getSelectedSubPalette() { return
+     * getSelectedScreen().getSubPal(getCurrentSubPalette()); }
+     * 
+     * private void updatePaletteDisplay() {
+     * pal.setPalette(getSelectedSubPalette()); pal.repaint(); }
+     */
 
     public static final int NODE_BASE = 0;
     public static final int NODE_TILES = 1;
@@ -1240,7 +790,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         return null;
     }
 
-    private boolean exportData()
+    protected boolean exportData()
     {
         boolean[][] a = showCheckList(null, "<html>"
             + "Select which items you wish to export." + "</html>",
@@ -1310,7 +860,7 @@ public class GasStationEditor extends EbHackModule implements ActionListener
         return a;
     }
 
-    private boolean importData()
+    protected boolean importData()
     {
         File f = getFile(false, "gas", "Gas Station");
         GasImportData[] tmid;
