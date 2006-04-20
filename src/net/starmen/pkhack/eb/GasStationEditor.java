@@ -472,7 +472,6 @@ public class GasStationEditor extends FullScreenGraphicsEditor
         return SwingConstants.LEFT;
     }
 
-    /** XXX: Does this work? */
     protected void initComponents()
     {
         super.initComponents();

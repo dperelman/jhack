@@ -70,8 +70,8 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
         this.squareSize = size;
         this.rows = rows;
         this.cols = (int) Math.ceil((float) numCol / (float) rows);
-        //        System.out.println("SpritePalette(): numCol=" + numCol + ", rows="
-        //            + rows + ", cols=" + cols);
+        // System.out.println("SpritePalette(): numCol=" + numCol + ", rows="
+        // + rows + ", cols=" + cols);
         this.setPreferredSize(new Dimension((squareSize * (cols + 2)) + 1,
             (squareSize * rows) + 1));
         this.addMouseListener(this);
@@ -105,6 +105,7 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
         this.setPreferredSize(new Dimension(
             (squareSize * ((pal.length / rows) + 2)) + 1,
             (squareSize * rows) + 1));
+        this.cols = (int) Math.ceil((float) pal.length / (float) rows);
     }
 
     /**
@@ -178,26 +179,26 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
      */
     public void mouseClicked(MouseEvent me)
     {
-        //if out of range, don't even look at it
+        // if out of range, don't even look at it
         if (me.getX() < 0 || me.getX() > squareSize * cols || me.getY() < 0
             || me.getY() > squareSize * rows)
             return;
         int x = me.getX() - 1, y = me.getY() - 1;
         if (x < (squareSize * cols))
         {
-            //if in area with colors set color to clicked on one
+            // if in area with colors set color to clicked on one
 
             int newCol = (x / (this.squareSize)) + (y / this.squareSize) * cols;
-            //			System.out.println(
-            //				"X: " + me.getX() + " Y: " + me.getY() + " newCol: " + newCol);
+            // System.out.println(
+            // "X: " + me.getX() + " Y: " + me.getY() + " newCol: " + newCol);
             if (newCol < pal.length)
             {
                 this.setSelectedColorIndex(newCol);
-                if (editable && ((me.getButton() == 3) ||
-                		((me.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) == MouseEvent.CTRL_DOWN_MASK))
+                if (editable
+                    && ((me.getButton() == 3) || ((me.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) == MouseEvent.CTRL_DOWN_MASK))
                     && (this.getSelectedColorIndex() != 0 || zeroEditable))
                 {
-                    //if right mouse button clicked
+                    // if right mouse button clicked
                     Color cc = JColorChooser.showDialog(this,
                         "Select a new color", this.getSelectedColor());
                     if (cc == null)
@@ -242,17 +243,17 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
      */
     public void mouseDragged(MouseEvent me)
     {
-        //      if out of range, don't even look at it
+        // if out of range, don't even look at it
         if (me.getX() < 0 || me.getX() > squareSize * cols || me.getY() < 0
             || me.getY() > squareSize * rows)
             return;
         int x = me.getX() - 1, y = me.getY() - 1;
         if (x < squareSize * cols)
         {
-            //if in area with colors set color to clicked on one
+            // if in area with colors set color to clicked on one
 
             int newCol = (x / (this.squareSize)) + (y / this.squareSize) * cols;
-            //            System.out.println("Selected color #" + newCol);
+            // System.out.println("Selected color #" + newCol);
             if (newCol < pal.length)
                 this.setSelectedColorIndex(newCol);
         }

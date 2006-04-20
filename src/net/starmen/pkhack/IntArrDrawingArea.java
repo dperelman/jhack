@@ -243,7 +243,7 @@ public class IntArrDrawingArea extends ImageDrawingArea
         switch (tool)
         {
             case Toolset.TOOL_EYEDROPER:
-                pal.setSelectedColor(getPointColor(x2, y2));
+                pal.setSelectedColorIndex(getPoint(x2, y2));
                 // undo();
                 break;
             case Toolset.TOOL_PENCIL:

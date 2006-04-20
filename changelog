@@ -7,6 +7,7 @@ NEXT VERSION (after v0.5.11):
 # Text Editor: corrections to code list and raw text listing (thanks Goplat)
 # Pointer Editor v0.3: More user friendly error messages
 # Graphics editors now have a no diagonals fill mode option (suggested by Radiation)
+# Eyedropper tool works properly when a palette contains identical colors
 
 v0.5.11:
 # Flyover Editor v0.2: BUGFIX: 6MB ROM problem
