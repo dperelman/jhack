@@ -18,8 +18,8 @@ import javax.swing.filechooser.FileFilter;
  * 
  * @author AnyoneEB
  */
-//Made by AnyoneEB.
-//Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
+// Made by AnyoneEB.
+// Code released under the GPL - http://www.gnu.org/licenses/gpl.txt
 public abstract class AbstractRom
 {
     /** Size in bytes of a regular Earthbound ROM. */
@@ -29,7 +29,7 @@ public abstract class AbstractRom
     public final static long EB_ROM_SIZE_EXPANDED = 4194816;
 
     /** Path to the ROM. */
-    protected File path; //path to the rom
+    protected File path; // path to the rom
 
     /**
      * Returns the default directory for saving and loading.
@@ -51,10 +51,10 @@ public abstract class AbstractRom
         JHack.main.getPrefs().setValue("defaultDir", dir);
     }
 
-    //    /**
-    //     * True if ROM is expanded.
-    //     */
-    //    public boolean isExpanded;
+    // /**
+    // * True if ROM is expanded.
+    // */
+    // public boolean isExpanded;
     /**
      * True if ROM is a valid size. (Either exactly 3 Megabytes, or exactly 4
      * Megabytes)
@@ -137,7 +137,7 @@ public abstract class AbstractRom
                 + rompath.getAbsolutePath(), "Error Loading ROM",
                 JOptionPane.ERROR_MESSAGE);
             System.out.println("Error: File not loaded: File not found.");
-            //            e.printStackTrace();
+            // e.printStackTrace();
             return false;
         }
         catch (IOException e)
@@ -158,8 +158,8 @@ public abstract class AbstractRom
 
         this.isLoaded = true;
 
-        //set rom type
-        //first look for .romtype file
+        // set rom type
+        // first look for .romtype file
         if (!loadRomType())
         {
             setRomType(RomTypeFinder.getRomType(this));
@@ -184,10 +184,10 @@ public abstract class AbstractRom
             in.read(c);
             in.close();
             String type = new String(c);
-            //            for (int i = 0; i < TYPES.length; i++)
-            //            {
-            //                if (type.equals(TYPES[i])) setRomType(TYPES[i]);
-            //            }
+            // for (int i = 0; i < TYPES.length; i++)
+            // {
+            // if (type.equals(TYPES[i])) setRomType(TYPES[i]);
+            // }
             setRomType(type);
             return true;
         }
@@ -310,7 +310,7 @@ public abstract class AbstractRom
      */
     public boolean saveRomAs()
     {
-        if (!this.isLoaded) //don't try to save if nothing is loaded
+        if (!this.isLoaded) // don't try to save if nothing is loaded
         {
             return false;
         }
@@ -387,7 +387,7 @@ public abstract class AbstractRom
      * @see #write(int, char)
      * @see #write(int, char[])
      */
-    public abstract void write(int offset, int arg); //main write method
+    public abstract void write(int offset, int arg); // main write method
 
     /**
      * Writes the specified length multibyte value <code>arg</code> at
@@ -443,7 +443,8 @@ public abstract class AbstractRom
      * @see #write(int, char)
      * @see #write(int, char[])
      */
-    public void write(int offset, int[] arg) //write a [multibyte] string to a
+    public void write(int offset, int[] arg) // write a [multibyte] string to
+    // a
     // place
     {
         write(offset, arg, arg.length);
@@ -464,7 +465,7 @@ public abstract class AbstractRom
      * @see #write(int, char)
      * @see #write(int, char[])
      */
-    public void write(int offset, byte[] arg) //write a [multibyte] string to
+    public void write(int offset, byte[] arg) // write a [multibyte] string to
     // a place
     {
         write(offset, arg, arg.length);
@@ -487,19 +488,19 @@ public abstract class AbstractRom
      * @see #write(int, int)
      * @see #write(int, int[])
      */
-    public void write(int offset, byte[] arg, int len) //write a [multibyte]
+    public void write(int offset, byte[] arg, int len) // write a [multibyte]
     // string to a place
     {
         for (int i = 0; i < len; i++)
         {
             if (!(offset + i > this.length()))
-            //don't write past the end of the ROM
+            // don't write past the end of the ROM
             {
                 this.write(offset + i, arg[i]);
             }
             else
             {   /***/
-                //System.out.println("Error: attempted write past end of
+                // System.out.println("Error: attempted write past end of
                 // ROM.");
             }
         }
@@ -540,19 +541,19 @@ public abstract class AbstractRom
      * @see #write(int, char)
      * @see #write(int, char[])
      */
-    public void write(int offset, int[] arg, int len) //write a [multibyte]
+    public void write(int offset, int[] arg, int len) // write a [multibyte]
     // string to a place
     {
         for (int i = 0; i < len; i++)
         {
             if (!(offset + i > this.length()))
-            //don't write past the end of the ROM
+            // don't write past the end of the ROM
             {
                 this.write(offset + i, arg[i]);
             }
             else
             {   /***/
-                //System.out.println("Error: attempted write past end of
+                // System.out.println("Error: attempted write past end of
                 // ROM.");
             }
         }
@@ -573,7 +574,7 @@ public abstract class AbstractRom
      * @see #write(int, int, int)
      * @see #write(int, int[], int)
      */
-    public void write(int offset, int[] arg, int len, int bytes) //write a
+    public void write(int offset, int[] arg, int len, int bytes) // write a
     // [multibyte]
     // string to a
     // place
@@ -581,13 +582,13 @@ public abstract class AbstractRom
         for (int i = 0; i < len; i++)
         {
             if (!(offset + (i * bytes) > this.length()))
-            //don't write past the end of the ROM
+            // don't write past the end of the ROM
             {
                 this.write(offset + (i * bytes), arg[i], bytes);
             }
             else
             {   /***/
-                //System.out.println("Error: attempted write past end of
+                // System.out.println("Error: attempted write past end of
                 // ROM.");
             }
         }
@@ -740,7 +741,7 @@ public abstract class AbstractRom
      *         <code>length</code>. If
      *         <code>offset<code> is past the end of the rom then it is -1.
      */
-    public char[] readChar(int offset, int length) //read as a char[] instead
+    public char[] readChar(int offset, int length) // read as a char[] instead
     // of int[]
     {
         char[] returnValue = new char[length];
@@ -840,7 +841,7 @@ public abstract class AbstractRom
         writeAsmPointer(offset, HackModule.toSnesPointer(regPointer));
     }
 
-    //pallette
+    // pallette
     /**
      * Reads an SNES format palette color from the specificed place in the rom.
      * This reads one color of a palette, which is two bytes long. SNES palettes
@@ -1103,7 +1104,7 @@ public abstract class AbstractRom
         writeSeek(HackModule.writePalette(c));
     }
 
-    //seeking read/write
+    // seeking read/write
     /**
      * Places marks current place in ROM as <code>offset</code>.
      * 
@@ -1153,7 +1154,7 @@ public abstract class AbstractRom
      * @see #seek(int)
      * @see #write(int, int)
      */
-    public void writeSeek(int arg) //main write method
+    public void writeSeek(int arg) // main write method
     {
         write(seekOffset++, arg);
     }
@@ -1223,7 +1224,7 @@ public abstract class AbstractRom
      * @see #seek(int)
      * @see #writeSeek(int)
      */
-    public void writeSeek(byte[] arg) //write a [multibyte] string to a place
+    public void writeSeek(byte[] arg) // write a [multibyte] string to a place
     {
         writeSeek(arg, arg.length);
     }
@@ -1244,19 +1245,19 @@ public abstract class AbstractRom
      * @see #writeSeek(int)
      * @see #writeSeek(byte[])
      */
-    public void writeSeek(byte[] arg, int len) //write a [multibyte] string to
+    public void writeSeek(byte[] arg, int len) // write a [multibyte] string to
     // a place
     {
         for (int i = 0; i < len; i++)
         {
             if (!(seekOffset > this.length()))
-            //don't write past the end of the ROM
+            // don't write past the end of the ROM
             {
                 writeSeek(arg[i]);
             }
             else
             {   /***/
-                //System.out.println("Error: attempted write past end of
+                // System.out.println("Error: attempted write past end of
                 // ROM.");
             }
         }
@@ -1278,19 +1279,19 @@ public abstract class AbstractRom
      * @see #writeSeek(int)
      * @see #writeSeek(byte[])
      */
-    public void writeSeek(int[] arg, int len) //write a [multibyte] string to
+    public void writeSeek(int[] arg, int len) // write a [multibyte] string to
     // a place
     {
         for (int i = 0; i < len; i++)
         {
             if (!(seekOffset > this.length()))
-            //don't write past the end of the ROM
+            // don't write past the end of the ROM
             {
                 writeSeek(arg[i]);
             }
             else
             {   /***/
-                //System.out.println("Error: attempted write past end of
+                // System.out.println("Error: attempted write past end of
                 // ROM.");
             }
         }
@@ -1312,19 +1313,20 @@ public abstract class AbstractRom
      * @see #writeSeek(int)
      * @see #writeSeek(int, int)
      */
-    public void writeSeek(int[] arg, int len, int bytes) //write a [multibyte]
+    public void writeSeek(int[] arg, int len, int bytes) // write a
+    // [multibyte]
     // string to a place
     {
         for (int i = 0; i < len; i++)
         {
             if (!(seekOffset + (i * bytes) > this.length()))
-            //don't write past the end of the ROM
+            // don't write past the end of the ROM
             {
                 this.writeSeek(arg[i], bytes);
             }
             else
             {   /***/
-                //System.out.println("Error: attempted write past end of
+                // System.out.println("Error: attempted write past end of
                 // ROM.");
             }
         }
@@ -1364,19 +1366,19 @@ public abstract class AbstractRom
      * @see #writeSeek(char)
      * @see #writeSeek(char[])
      */
-    public void writeSeek(char[] arg, int len) //write a [multibyte] string to
+    public void writeSeek(char[] arg, int len) // write a [multibyte] string to
     // a place
     {
         for (int i = 0; i < len; i++)
         {
             if (!(seekOffset > this.length()))
-            //don't write past the end of the ROM
+            // don't write past the end of the ROM
             {
                 writeSeek(arg[i]);
             }
             else
             {   /***/
-                //System.out.println("Error: attempted write past end of
+                // System.out.println("Error: attempted write past end of
                 // ROM.");
             }
         }
@@ -1607,7 +1609,7 @@ public abstract class AbstractRom
     public boolean compare(int offset, int[] values, int len)
     {
         for (int i = 0; i < len; i++)
-            if (this.read(offset + i) != values[i])
+            if (this.read(offset + i) != (values[i] & 0xff))
                 return false;
         return true;
     }
@@ -1623,7 +1625,7 @@ public abstract class AbstractRom
      */
     public int find(int offset, int[] values, int len)
     {
-        int rl = length(); //rom length
+        int rl = length(); // rom length
         for (int i = offset; i < rl; i++)
         {
             if (compare(i, values, len))
@@ -1683,7 +1685,7 @@ public abstract class AbstractRom
      */
     public int find(int offset, byte[] values, int len)
     {
-        int rl = length(); //rom length
+        int rl = length(); // rom length
         for (int i = offset; i < rl; i++)
         {
             if (compare(i, values, len))
@@ -1716,7 +1718,7 @@ public abstract class AbstractRom
      */
     public boolean expand()
     {
-        //Only expand Earthbound ROMs that are unexpanded with a 0x200 header
+        // Only expand Earthbound ROMs that are unexpanded with a 0x200 header
         if ((getRomType().equals("Earthbound")) && length() == 0x300200)
             return _expand();
         else
@@ -1744,7 +1746,7 @@ public abstract class AbstractRom
      */
     public boolean expandEx()
     {
-        //Only expand Earthbound ROMs that are expanded to 32 megabits and
+        // Only expand Earthbound ROMs that are expanded to 32 megabits and
         // have a 0x200 header. Expand from 24 megabits to 32 megabits first.
         expand();
         if ((getRomType().equals("Earthbound")) && length() == 0x400200)
@@ -1763,13 +1765,13 @@ public abstract class AbstractRom
      */
     protected abstract boolean _expandEx();
 
-    //class info functions
+    // class info functions
     /**
      * Returns a description of this class.
      * 
      * @return A short (one-line) description of this class.
      */
-    public static String getDescription() //Return one line description of
+    public static String getDescription() // Return one line description of
     // class
     {
         return "Earthbound ROM wrapper class";
@@ -1781,7 +1783,7 @@ public abstract class AbstractRom
      * 
      * @return The version of this class.
      */
-    public static String getVersion() //Return version as a string that may
+    public static String getVersion() // Return version as a string that may
     // have more than one decimal point (.)
     {
         return "0.7";
@@ -1792,7 +1794,7 @@ public abstract class AbstractRom
      * 
      * @return The credits for this class.
      */
-    public static String getCredits() //Return who made it
+    public static String getCredits() // Return who made it
     {
         return "Written by AnyoneEB\n"
             + "Inspiration for faster file i/o from Cabbage\n"
@@ -1932,8 +1934,7 @@ public abstract class AbstractRom
                     {
                         for (int j = 0; j < ipsr.getRleSize(); j++)
                         {
-                            this.write(ipsr.getOffset() + j, ipsr
-                                .getRleInfo());
+                            this.write(ipsr.getOffset() + j, ipsr.getRleInfo());
                         }
                     }
                 }
