@@ -8,6 +8,9 @@ NEXT VERSION (after v0.5.11):
 # Pointer Editor v0.3: More user friendly error messages
 # Graphics editors now have a no diagonals fill mode option (suggested by Radiation)
 # Eyedropper tool works properly when a palette contains identical colors
+# AbstractRom: BUGFIX: compare() works correctly for int[]'s
+# TileEditor v0.8: BUGFIX: Tile properties incorrectly reporting not enough space
+# TileEditor v0.8: More efficient storage for tile properties
 
 v0.5.11:
 # Flyover Editor v0.2: BUGFIX: 6MB ROM problem

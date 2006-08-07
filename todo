@@ -13,6 +13,7 @@ NEXT v0.0.x (minor) RELEASE
 
 LONG TERM
 
+# Exp. Editor: .CSV import/export
 # Battle Background Editor: http://pkhax.elpenguino.net/ADEA1.txt
 # AbstractRom: React to loadRom() returning false better/in more places
 # Tile Editor: event flag based palette changes:

@@ -48,6 +48,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.CopyAndPaster;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
@@ -55,7 +56,6 @@ import net.starmen.pkhack.ImageDrawingArea;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.RomWriteOutOfRangeException;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.Undoable;
@@ -1117,7 +1117,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                     out += HackModule.addZeros(Integer.toHexString(this
                         .getArrangementData(arrangement, x, y)), 4);
                     out += HackModule.addZeros(Integer.toHexString(this
-                        .getCollisionData(arrangement, x, y)), 2);
+                        .getCollisionData(arrangement, x, y) & 0xff), 2);
                 }
             }
             return out;
@@ -1138,8 +1138,8 @@ public class TileEditor extends EbHackModule implements ActionListener
             {
                 for (int x = 0; x < 4; x++)
                 {
-                    this.setArrangementData(arrangement, x, y, Short
-                        .parseShort(arr.substring((y * 4 + x) * 6,
+                    this.setArrangementData(arrangement, x, y, (short) Integer
+                        .parseInt(arr.substring((y * 4 + x) * 6,
                             (y * 4 + x) * 6 + 4), 16));
                     this.setCollisionData(arrangement, x, y, (byte) Integer
                         .parseInt(arr.substring((y * 4 + x) * 6 + 4,
@@ -1198,7 +1198,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                 for (int x = 0; x < 4; x++)
                 {
                     out += HackModule.addZeros(Integer.toHexString(this
-                        .getCollisionData(arrangement, x, y)), 2);
+                        .getCollisionData(arrangement, x, y) & 0xff), 2);
                 }
             }
             return out;
@@ -1465,8 +1465,6 @@ public class TileEditor extends EbHackModule implements ActionListener
             return 0;
         }
 
-        // TODO Add methods to tell the tile, subPal, flip of an arrangement or
-        // make an object that holds it?
         /**
          * Returns which tile is at the specified position in the specified
          * arrangement. The number contains more than just the tile, see
@@ -1982,12 +1980,12 @@ public class TileEditor extends EbHackModule implements ActionListener
          * @see #getCollisionData(int)
          * @param arrangement Which arrangement to get collision data on
          *            (0-1023).
-         * @return An int[16] of collison bytes (0-255).
+         * @return A byte[16] of collison bytes (0-255).
          */
-        public int[] getCollisionDataFlat(int arrangement)
+        public byte[] getCollisionDataFlat(int arrangement)
         {
             // Make a new array so you don't have to worry about pointer stuff
-            int out[] = new int[16], i = 0;
+            byte out[] = new byte[16], i = 0;
 
             for (int y = 0; y < 4; y++)
             {
@@ -2410,6 +2408,25 @@ public class TileEditor extends EbHackModule implements ActionListener
         return false;
     }
 
+    /*
+     * private void printHexArr(byte[] b) { for (int i = 0; i < b.length; i++) {
+     * int x = b[i] & 0xff; System.out.print(addZeros(Integer.toHexString(x), 2) + "
+     * "); } }
+     * 
+     * 
+     * private void verifyCollision() { boolean good = true; for (int i = 0; i <
+     * NUM_TILESETS; i++) { Tileset t = new Tileset(i, "Unamed #" + i, this), l =
+     * tilesets[i]; t.readCollision();
+     * 
+     * for (int a = 0; a < l.getArrangementCount(); a++) { byte[] tc =
+     * t.getCollisionDataFlat(a), lc = l .getCollisionDataFlat(a); if
+     * (!Arrays.equals(tc, lc)) { good = false; System.out .println("Incorrectly
+     * saved collision data on tileset #" + i + ":"); printHexArr(lc);
+     * System.out.print("Arrangement #" + a + "\n"); printHexArr(tc);
+     * System.out.println("\n"); } } } if (good) { System.out.println("Collision
+     * data was saved correctly."); } }
+     */
+
     private static void writeCollision(AbstractRom rom)
     {
         // Collision info can not be written separately
@@ -2418,7 +2435,8 @@ public class TileEditor extends EbHackModule implements ActionListener
         if (!isCollisionChanged())
             return;
 
-        int cc = 0, l; // cc = number of collision sequences written so far
+        int l, lm = 0; // cc = number of collision sequences written so
+        // far
         int cp[] = new int[20480]; // cp = collision pointers
         int cpi = 0; // cp incrementer
         boolean tmp;
@@ -2437,9 +2455,9 @@ public class TileEditor extends EbHackModule implements ActionListener
                 {
                     // look through collision data written so far
                     tmp = true;
-                    colloop: for (l = 0; l < cc; l++)
-                        if (rom.compare(0x180200 + 16 * l, tilesets[i]
-                            .getCollisionDataFlat(k), 16))
+                    byte[] curCollision = tilesets[i].getCollisionDataFlat(k);
+                    colloop: for (l = 0; l < lm; l++)
+                        if (rom.compare(0x180200 + l, curCollision, 16))
                         {
                             // if collision data already written, use it
                             tmp = false;
@@ -2447,33 +2465,53 @@ public class TileEditor extends EbHackModule implements ActionListener
                         }
                     if (tmp) // if collision data not yet written, write it
                     {
-                        if (0x180200 + (16 * (cc + 2)) > 0x18F8B6)
-                            throw (new RomWriteOutOfRangeException(
-                                "No space for another collision sequence."));
-                        if (cc == 4092)
-                            throw (new RomWriteOutOfRangeException(
-                                "Someone should optimize this saving routine..."
-                                    + "(too many unique properties)"));
-                        rom.write(0x180200 + (16 * cc++), tilesets[i]
-                            .getCollisionDataFlat(k), 16);
+                        if (cpi == 0)
+                        {
+                            l = 0;
+                        }
+                        else
+                        {
+                            if (0x180200 + lm + 16 > 0x18F8B6)
+                                throw (new RomWriteOutOfRangeException(
+                                    "No space for another collision sequence."));
+                            if (lm >= 16 * 4092)
+                                throw (new RomWriteOutOfRangeException(
+                                    "Someone should optimize this saving routine..."
+                                        + " (too many unique properties)"));
+                            int overlap = 0;
+                            for (int ol = 15; ol > 0; ol--)
+                            {
+                                if (overlap == 0
+                                    && rom.compare(0x180200 + lm + (16 - ol),
+                                        curCollision, ol))
+                                {
+                                    overlap = ol;
+                                }
+                            }
+
+                            l = lm + (16 - overlap);
+                        }
+                        rom.write(0x180200 + l, curCollision, 16);
                         tmp = false;
                     }
-                    cp[cpi++] = l * 16; // pointer to where the data is
+                    cp[cpi++] = l; // pointer to where the data is
+                    lm = Math.max(l, lm);
                 }
             }
-            if (0x180200 + (16 * cc) + (cpi * 2) > 0x18F8B6)
+            lm += 16;
+            if (0x180200 + lm + (cpi * 2) > 0x18F8B6)
                 throw (new RomWriteOutOfRangeException(
                     "No space for collision pointers."));
-            rom.write(0x180200 + (16 * cc), cp, cpi, 2);
-            System.out.println("Collision stuff ends at: "
-                + (0x180200 + (16 * cc) + (cpi * 2)));
+            rom.write(0x180200 + lm, cp, cpi, 2);
+            System.out.println("Collision stuff ends at: 0x"
+                + Integer.toHexString(0x180200 + lm + (cpi * 2)));
             // write collision pointers after collision data
             for (int i = 0; i < 20; i++)
             {
                 // collisionAddress currently holds the offset of where the
                 // info is
                 // add the place of the start of the pointers
-                tilesets[i].collisionAddress += 0x180200 + (16 * cc);
+                tilesets[i].collisionAddress += 0x180200 + lm;
                 rom.write(0x2F137B + (4 * i), HackModule
                     .toSnesPointer(tilesets[i].collisionAddress), 4);
             }
@@ -2482,8 +2520,8 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             System.out.println("You have too much collision data.");
             JOptionPane.showMessageDialog(null,
-                "You have too much collision data.", "Error: Unable to Write",
-                JOptionPane.ERROR_MESSAGE);
+                "You have too much collision data:\n" + e.getMessage(),
+                "Error: Unable to Write", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -3517,7 +3555,7 @@ public class TileEditor extends EbHackModule implements ActionListener
      */
     public String getVersion()
     {
-        return "0.7";
+        return "0.8";
     }
 
     /*
@@ -3723,6 +3761,8 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             // writeInfo(true);
             writeInfo(rom);
+            /* Verify collision code works. Debug use only. */
+            // verifyCollision();
         }
         else if (ae.getActionCommand().equals("close"))
         {
@@ -3788,7 +3828,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             if (cbdia == null)
                 initCbDia();
-            cbdia.show();
+            cbdia.setVisible(true);
         }
         else if (ae.getActionCommand().equals("cb_copy"))
         {
@@ -4264,6 +4304,8 @@ public class TileEditor extends EbHackModule implements ActionListener
     // import and export stuff
     public static void importTile(int tileset, int tile, File f)
     {
+        if (f == null)
+            return;
         try
         {
             FileReader in = new FileReader(f);
@@ -4286,6 +4328,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     public static void exportTile(int tileset, int tile, File f)
     {
+        if (f == null)
+            return;
         try
         {
             FileWriter out = new FileWriter(f);
@@ -4302,6 +4346,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     public static void importTileset(int tileset, File f)
     {
+        if (f == null)
+            return;
         try
         {
             FileReader in = new FileReader(f);
@@ -4322,6 +4368,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     public static void exportTileset(int tileset, File f)
     {
+        if (f == null)
+            return;
         try
         {
             FileWriter out = new FileWriter(f);
@@ -4336,6 +4384,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     public static void importCollision(int tileset, File f)
     {
+        if (f == null)
+            return;
         try
         {
             FileReader in = new FileReader(f);
@@ -4358,6 +4408,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     public static void exportCollision(int tileset, File f)
     {
+        if (f == null)
+            return;
         try
         {
             FileWriter out = new FileWriter(f);
@@ -4373,6 +4425,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     public static void importAllTileset(int tileset, File f)
     {
+        if (f == null)
+            return;
         try
         {
             FileReader in = new FileReader(f);
@@ -4393,6 +4447,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     public static void exportAllTileset(int tileset, File f)
     {
+        if (f == null)
+            return;
         try
         {
             FileWriter out = new FileWriter(f);
@@ -4407,6 +4463,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     public static void importAll(File f)
     {
+        if (f == null)
+            return;
         try
         {
             FileReader in = new FileReader(f);
@@ -4432,6 +4490,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     public static void exportAll(File f)
     {
+        if (f == null)
+            return;
         try
         {
             FileWriter out = new FileWriter(f);
@@ -4452,6 +4512,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     public static void exportPalette(int tileset, int palette, File f)
     {
+        if (f == null)
+            return;
         try
         {
             FileWriter out = new FileWriter(f);
@@ -4466,6 +4528,8 @@ public class TileEditor extends EbHackModule implements ActionListener
 
     public static void importPalette(int tileset, int palette, File f)
     {
+        if (f == null)
+            return;
         try
         {
             FileReader in = new FileReader(f);
