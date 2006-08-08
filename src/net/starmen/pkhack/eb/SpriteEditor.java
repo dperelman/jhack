@@ -89,7 +89,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
 
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
-        //mainWindow.setSize(600, 510);
+        // mainWindow.setSize(600, 510);
 
         mainWindow.getContentPane().add(
             new JSearchableComboBox(selector = createJComboBoxFromArray(
@@ -155,7 +155,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
 
         mainWindow.getContentPane().add(entry, BorderLayout.CENTER);
 
-        //menu
+        // menu
         JMenuBar mb = new JMenuBar();
 
         JMenu fileMenu = new JMenu("File");
@@ -267,16 +267,16 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         mainWindow.setVisible(true);
         mainWindow.repaint();
 
-        //		//sprite dump (change dir :)
-        //		initSelector(true);
-        //		selector.updateUI();
-        //		for(int i = 0; i < selector.getItemCount(); i++)
-        //		{
-        //			selector.setSelectedIndex(i);
-        //			exportImg(new File("D:/Daniel/Earthbound/PKHack/spritedump/" +
+        // //sprite dump (change dir :)
+        // initSelector(true);
+        // selector.updateUI();
+        // for(int i = 0; i < selector.getItemCount(); i++)
+        // {
+        // selector.setSelectedIndex(i);
+        // exportImg(new File("D:/Daniel/Earthbound/PKHack/spritedump/" +
         // selector.getSelectedItem().toString().replace('?','
         // ').replaceAll("(w/|w\\\\)","with").replace('"','\'') + ".png"));
-        //		}
+        // }
     }
 
     /**
@@ -295,19 +295,19 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
      */
     public static SpriteInfo getSpriteInfo(int i)
     {
-        //return sib[(i - (i % 16)) / 16].getSpriteInfo(i % 16);
+        // return sib[(i - (i % 16)) / 16].getSpriteInfo(i % 16);
         return si[i];
     }
 
     private void showInfo(int i)
     {
         Sprite sp = new Sprite(getSpriteInfo(i), this);
-        //spriteDrawingArea.setImage(sp.getImage());
+        // spriteDrawingArea.setImage(sp.getImage());
         spriteDrawingArea.setImage(sp.getSpriteByte());
         palNum.setSelectedIndex(sp.si.getPalette());
         palNum.repaint();
-        //        spal.setPalette(sp.getPalette());
-        //        spal.repaint();
+        // spal.setPalette(sp.getPalette());
+        // spal.repaint();
 
         addressLabel.setText("0x"
             + HackModule.addZeros(
@@ -329,11 +329,11 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         sib[getSpriteInfo(i).sptNum].writeInfo();
     }
 
-    //	private int getSelectorNum(Object in)
-    //	{
-    //		StringTokenizer st = new StringTokenizer(in.toString(), "[]");
-    //		return Integer.parseInt(st.nextToken());
-    //	}
+    // private int getSelectorNum(Object in)
+    // {
+    // StringTokenizer st = new StringTokenizer(in.toString(), "[]");
+    // return Integer.parseInt(st.nextToken());
+    // }
 
     private void initSelector(boolean showRepeats)
     {
@@ -396,8 +396,8 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
                 selector.getSelectedItem().toString(), false)), this);
             try
             {
-                sp.setImage(ImageIO.read(f));
-                //this.spriteDrawingArea.setImage(sp.getImage());
+                sp.setImage(ImageIO.read(f), spal.getPalette());
+                // this.spriteDrawingArea.setImage(sp.getImage());
                 this.spriteDrawingArea.setImage(sp.getSpriteByte());
                 this.spriteDrawingArea.repaint();
             }
@@ -409,10 +409,11 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
                         + "and changing the size\n"
                         + "of the target sprite using the "
                         + "SPT editor if necessary.\n"
-                        + "Also note that this feature is only to be used\n"
-                        + "with sprite images exported by JHack and having\n"
-                        + "identical palettes.", "Error: Import Failed",
-                    JOptionPane.ERROR_MESSAGE);
+                        + "Previously this feature only\n"
+                        + "worked with sprites exported by JHack.\n"
+                        + "Now it will change the colors of any other\n"
+                        + "imported sprite to match the palette.",
+                    "Error: Import Failed", JOptionPane.ERROR_MESSAGE);
             }
         }
         catch (IOException e)
@@ -469,7 +470,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
 
     private void setBgCol(Color tc)
     {
-        //      TODO this needs to work for map palettes
+        // TODO this needs to work for map palettes
         if (tc == null)
             return;
         SpriteEditor.bgColor = new Color((tc.getRed() >= 255 ? 254 : tc
@@ -505,7 +506,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             {
                 tmp = spal.getPalette();
             }
-            tmp[0] = bgColor; //use user background col
+            tmp[0] = bgColor; // use user background col
             this.spal.setPalette(tmp);
         }
         else
@@ -536,7 +537,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             int pn = tilesetPal.getSelectedIndex();
             int subpal = (ts.getPaletteColor(0, pn, 2).getRed() >> 3) - 2;
             Color[] tmp = ts.getPaletteColors(pn, subpal);
-            tmp[0] = Sprite.pals[0][0]; //use user background col
+            tmp[0] = Sprite.pals[0][0]; // use user background col
             this.spal.setPalette(tmp);
         }
         else
@@ -717,7 +718,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         private void hFlip()
         {
             byte[] tmp;
-            int opp; //opposite
+            int opp; // opposite
             int max = si.width * 8;
             for (int x = 0; x < max / 2; x++)
             {
@@ -760,7 +761,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         public static Color[] getSpriteRGB(int pal, AbstractRom rom)
         {
             Color[] out = rom.readPalette(0x30200 + (pal * 32), 16);
-            out[0] = SpriteEditor.bgColor; //transparent
+            out[0] = SpriteEditor.bgColor; // transparent
 
             return out;
         }
@@ -989,7 +990,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
                     g.setColor(this.getPixelColor((si.isHFliped()
                         ? (sprite.length - 1) - x
                         : x), y, trans));
-                    g.drawLine(x, y, x, y); //there's no draw point, WHY?!?
+                    g.drawLine(x, y, x, y); // there's no draw point, WHY?!?
                 }
             }
 
@@ -997,18 +998,31 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         }
 
         /**
-         * Sets the contents of this Sprite based on an Image. Any pixels not
-         * exactly matching a color on this Sprite's palette will be assumed to
-         * be transparent. If anyone could write a method to "round" colors to
-         * the ones in a Sprite's palette, that would be greatly apprciated.
+         * Sets the contents of this Sprite based on an Image. The closest
+         * colors on the given palette will be used. Specify a palette for the
+         * tileset palettes used when palette #4 is selected.
          * 
          * @param in Image to set this Sprite to.
+         * @param palette Palette to use when choosing colors
+         * @see #getImage()
+         */
+        public void setImage(BufferedImage in, Color[] palette)
+        {
+            sprite = new byte[sprite.length][sprite[0].length];
+            convertImage(in, sprite, palette);
+        }
+
+        /**
+         * Sets the contents of this Sprite based on an Image. The closest
+         * colors on the sprite's palette will be used.
+         * 
+         * @param in Image to set this Sprite to.
+         * @param palette Palette to use when choosing colors
          * @see #getImage()
          */
         public void setImage(BufferedImage in)
         {
-            sprite = new byte[sprite.length][sprite[0].length];
-            convertImage(in, sprite, palette);
+            setImage(in, palette);
         }
 
         /**
@@ -1103,16 +1117,16 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             this.subDesc = subDesc;
             this.sibEntry = sibEntry;
 
-            //			if (flags > 1)
-            //			{
-            //				System.out.println(
-            //					"Flags: "
-            //						+ flags
-            //						+ " Address: "
-            //						+ address
-            //						+ " Name: "
-            //						+ name);
-            //			}
+            // if (flags > 1)
+            // {
+            // System.out.println(
+            // "Flags: "
+            // + flags
+            // + " Address: "
+            // + address
+            // + " Name: "
+            // + name);
+            // }
         }
 
         /**
@@ -1134,7 +1148,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         public boolean isHFliped()
         {
             return (flags & 1) == 1;
-            //sprite is h fliped if last address bit is 1
+            // sprite is h fliped if last address bit is 1
         }
 
         /**
@@ -1158,7 +1172,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
      */
     public static class SpriteInfoBlock implements Cloneable
     {
-        //ex first in a SIB is "up"
+        // ex first in a SIB is "up"
         private static String[] subNames = {"up, walking(L)", "up, walking(R)",
             "right, standing", "right, walking", "down, walking(L)",
             "down, walking(R)", "left, standing", "left, walking",
@@ -1186,8 +1200,8 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          * knowing the difference between this entry's pointer and the next. If
          * anyone knows a better way (using the unknowns?) please tell me.
          */
-        public int numSprites; //number of sprites
-        //s=shift left, a=and
+        public int numSprites; // number of sprites
+        // s=shift left, a=and
         /** String to identify this by. */
         public String name = new String();
 
@@ -1204,7 +1218,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             this.rom = rom;
             this.num = num;
             name = SpriteEditor.sptNames[num].toString();
-            //int temp;
+            // int temp;
             int offset = 3085635 + (4 * (num - 1));
 
             pointer = rom.read(offset++);
@@ -1217,11 +1231,11 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             this.height = (rom.read(offset++) >> hs) & ha;
 
             this.width = (rom.read(offset++) >> ws) & wa;
-            //mess with bit order?
+            // mess with bit order?
 
             this.unknown[0] = rom.read(offset++);
 
-            //this.palette = ((rom.read(offset++) & 0x1f) >> 2); //mess with
+            // this.palette = ((rom.read(offset++) & 0x1f) >> 2); //mess with
             // bit order?
             this.palette = (rom.read(offset++) >> ps) & pa;
 
@@ -1237,11 +1251,11 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
                 address[i] = rom.read(offset++);
                 address[i] += rom.read(offset++) << 8;
                 address[i] = (address[i] >> as);
-                //address[i] += bank << 16;
-                //address[i] = HackModule.toRegPointer(address[i]);
+                // address[i] += bank << 16;
+                // address[i] = HackModule.toRegPointer(address[i]);
             }
 
-            //mess with guessing the unknowns
+            // mess with guessing the unknowns
         }
 
         /**
@@ -1265,7 +1279,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
          */
         public SpriteInfo getSpriteInfo(int num)
         {
-            //System.out.println("Debug: getting sprite #" + ((this.num*16) +
+            // System.out.println("Debug: getting sprite #" + ((this.num*16) +
             // num));
             return new SpriteInfo(HackModule.toRegPointer(address[num]
                 + (bank << 16))
@@ -1287,8 +1301,8 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             rom.write(offset++, (this.width & wa) << ws);
             rom.write(offset++, this.unknown[0]);
             rom.write(offset++, (this.palette & pa) << ps);
-            //not 100% sure on palette
-            //offset++; //instead of ++ on palette
+            // not 100% sure on palette
+            // offset++; //instead of ++ on palette
             for (int i = 1; i < this.unknown.length; i++)
             {
                 rom.write(offset++, this.unknown[i]);
@@ -1372,11 +1386,11 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             this.bank = newsib.bank;
             this.height = newsib.height;
             this.width = newsib.width;
-            //this.name = new String(newsib.name);
-            //this.num = newsib.num;
-            //this.numSprites = newsib.numSprites;
+            // this.name = new String(newsib.name);
+            // this.num = newsib.num;
+            // this.numSprites = newsib.numSprites;
             this.palette = newsib.palette;
-            //this.pointer =newsib.pointer;
+            // this.pointer =newsib.pointer;
             for (int i = 0; i < unknown.length; i++)
             {
                 this.unknown[i] = newsib.unknown[i];
@@ -1401,8 +1415,8 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
     {
         int siNum = 0;
         int[][] tempSi;
-        //if (sib == null)
-        //{
+        // if (sib == null)
+        // {
         sib = new SpriteInfoBlock[NUM_ENTRIES];
         tempSi = new int[sib.length * 16][2];
         for (int i = 0; i < sib.length; i++)
@@ -1411,7 +1425,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         }
         for (int i = 0; i < sib.length; i++)
         {
-            //assume last is 8 sprites, may be changed?
+            // assume last is 8 sprites, may be changed?
             if (i == (sib.length - 1))
             {
                 sib[i].numSprites = 8;
@@ -1435,13 +1449,13 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             }
         }
 
-        //make si only as large as it needs to be
+        // make si only as large as it needs to be
         si = new SpriteInfo[siNum];
         for (int i = 0; i < si.length; i++)
         {
             si[i] = sib[tempSi[i][0]].getSpriteInfo(tempSi[i][1]);
         }
-        //}
+        // }
     }
 
     private void updateZoom()
@@ -1487,7 +1501,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
      */
     public static void writeSptNames(String romPath)
     {
-        //TODO use writeArray()?
+        // TODO use writeArray()?
         String output = new String();
         for (int i = 1; i < sptNames.length; i++)
         {
@@ -1499,8 +1513,8 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         {
             FileOutputStream out = new FileOutputStream(romPath
                 + ".sptNames.txt");
-            //FileOutputStream out =
-            //	new FileOutputStream("net/starmen/pkhack/sptNames.txt");
+            // FileOutputStream out =
+            // new FileOutputStream("net/starmen/pkhack/sptNames.txt");
             byte[] b = new byte[output.length()];
             for (int i = 0; i < b.length; i++)
             {
@@ -1575,7 +1589,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
                 if (si[i].sptNum == isi.sptNum
                     && si[i].subDesc.equals(isi.subDesc))
                 {
-                    //same
+                    // same
                     showRepeats.setSelected(true);
                     initSelector(true);
                     selector.setSelectedIndex(i);
