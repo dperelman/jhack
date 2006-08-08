@@ -515,7 +515,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
             ? 0
             : spriteSelector.getSelectedIndex());
 
-        mainWindow.show();
+        mainWindow.setVisible(true);
     }
 
     public void show(Object in) throws IllegalArgumentException
@@ -540,7 +540,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
      */
     public void hide()
     {
-        mainWindow.hide();
+        mainWindow.setVisible(false);
     }
 
     private void doSpriteSelectAction()
