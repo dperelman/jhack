@@ -301,7 +301,7 @@ public class FullScreenGraphicsImporter
     {
 
         Set pals = new HashSet();
-        int[][] tilepalhash = new int[32][28];
+        Set[][] tilepalhash = new Set[32][28];
         for (int yt = 0; yt < 28; yt++)
         {
             int js = yt * 8;
@@ -335,7 +335,7 @@ public class FullScreenGraphicsImporter
                     }
                 }
                 pals.add(pal);
-                tilepalhash[xt][yt] = pal.hashCode();
+                tilepalhash[xt][yt] = pal;
             }
         }
 
@@ -365,7 +365,7 @@ public class FullScreenGraphicsImporter
         {
             int cnum = 0;
             Set tmp = (Set) i.next();
-            palhash.put(new Integer(tmp.hashCode()), new Byte(pnum));
+            palhash.put(tmp, new Byte(pnum));
             for (Iterator j = tmp.iterator(); j.hasNext();)
             {
                 palarr[pnum][cnum++] = (Color) j.next();
@@ -388,10 +388,10 @@ public class FullScreenGraphicsImporter
         {
             for (int xt = 0; xt < 32; xt++)
             {
-                Integer phash = new Integer(tilepalhash[xt][yt]);
+                Set phash = tilepalhash[xt][yt];
                 while (hashhash.containsKey(phash))
                 {
-                    phash = (Integer) hashhash.get(phash);
+                    phash = (Set) hashhash.get(phash);
                 }
                 tilepal[xt][yt] = ((Byte) palhash.get(phash)).byteValue();
             }
@@ -407,8 +407,7 @@ public class FullScreenGraphicsImporter
             Set opal = (Set) j.next();
             if (!pal.equals(opal) && opal.containsAll(pal))
             {
-                out.put(new Integer(pal.hashCode()), new Integer(opal
-                    .hashCode()));
+                out.put(pal, opal);
                 return true;
             }
         }
@@ -429,10 +428,8 @@ public class FullScreenGraphicsImporter
                     pals.remove(pal);
                     pals.remove(opal);
                     pals.add(upal);
-                    out.put(new Integer(pal.hashCode()), new Integer(upal
-                        .hashCode()));
-                    out.put(new Integer(opal.hashCode()), new Integer(upal
-                        .hashCode()));
+                    out.put(pal, upal);
+                    out.put(opal, upal);
                     return true;
                 }
             }
