@@ -11,6 +11,8 @@ NEXT VERSION (after v0.5.11):
 # AbstractRom: BUGFIX: compare() works correctly for int[]'s
 # TileEditor v0.8: BUGFIX: Tile properties incorrectly reporting not enough space
 # TileEditor v0.8: More efficient storage for tile properties
+# Sprite Editor: BUGFIX: Image import selects colors properly when palette 4 is selected
+# Level-Up Experience Editor v0.3: Added import/export as .csv
 
 v0.5.11:
 # Flyover Editor v0.2: BUGFIX: 6MB ROM problem

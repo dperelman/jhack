@@ -1,10 +1,19 @@
 DONE? (CHANGES TO CONFIRM/DEBUG)
+# Check on bug where PointerEditor doesn't always save on apply changes
+# Other image import/export
+# [21:46:30] <BlueAntoid> Something for eventual implementation into JHack:
+  [21:46:30] <BlueAntoid> 1F8F6 - 1F8FC = Pointer to "Which style of windows do you prefer?"
+  [21:46:30] <BlueAntoid> 1F900 - 1F901 = Number of bytes to read for above text
+  [21:46:30] <BlueAntoid> 1F90F - 1F916 = Pointer to "Plain flavor"
+  [21:46:30] <BlueAntoid> 1F92A - 1F931 = Pointer to "Mint flavor"
+  [21:46:31] <BlueAntoid> 1F946 - 1F94C = Pointer to "Strawberry flavor"
+  [21:46:33] <BlueAntoid> 1F961 - 1F967 = Pointer to "Banana flavor"
+  [21:46:35] <BlueAntoid> 1F97B - 1F982 = Pointer to "Peanut flavor"
 
 NEXT v0.0.0.x (bugfix) RELEASE
 # Look into threading of error console GUI building (ERROR#65895)
 # Look into use of JOptionPane.showOptionDialog() for abort/retry/fail.
 	# In progress; better way?
-# Check on bug where PointerEditor doesn't always save on apply changes
 
 NEXT v0.0.x (minor) RELEASE
 
@@ -13,7 +22,6 @@ NEXT v0.0.x (minor) RELEASE
 
 LONG TERM
 
-# Exp. Editor: .CSV import/export
 # Battle Background Editor: http://pkhax.elpenguino.net/ADEA1.txt
 # AbstractRom: React to loadRom() returning false better/in more places
 # Tile Editor: event flag based palette changes:
@@ -33,7 +41,6 @@ LONG TERM
 	and the debug menu font to jhack's font editor if you can
 # Text Editor: Preview of next text block (optional) (in separate window?)
 # Font table: http://pkhax.elpenguino.info/03F254.txt
-# Other image import/export
 # IPSDatabase extensions?
 # Starting stat editor ( 1DAF1 = Value for Ness' starting stats )
 # Battle Animation editor ( http://pkhack.fobby.net/misc/txt/psi_animation_doc.txt )
@@ -45,12 +52,3 @@ LONG TERM
 	[16:55:03] <Chris_Davis|Away> It's probably an unknown.
 	[16:55:05] <Chris_Davis|Away> 21EB2A to 21EB49 = ***UNKNOWN (000020) - PALETTE***
 	[16:55:45] <AnyoneEB> heh
-# DONE?
-  [21:46:30] <BlueAntoid> Something for eventual implementation into JHack:
-  [21:46:30] <BlueAntoid> 1F8F6 - 1F8FC = Pointer to "Which style of windows do you prefer?"
-  [21:46:30] <BlueAntoid> 1F900 - 1F901 = Number of bytes to read for above text
-  [21:46:30] <BlueAntoid> 1F90F - 1F916 = Pointer to "Plain flavor"
-  [21:46:30] <BlueAntoid> 1F92A - 1F931 = Pointer to "Mint flavor"
-  [21:46:31] <BlueAntoid> 1F946 - 1F94C = Pointer to "Strawberry flavor"
-  [21:46:33] <BlueAntoid> 1F961 - 1F967 = Pointer to "Banana flavor"
-  [21:46:35] <BlueAntoid> 1F97B - 1F982 = Pointer to "Peanut flavor"
