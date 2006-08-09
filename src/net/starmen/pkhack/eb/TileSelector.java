@@ -147,7 +147,7 @@ public abstract class TileSelector extends AbstractButton implements
      */
     public void setCurrentTile(int newTile)
     {
-        //only fire ActionPerformed if new tile and valid tile number
+        // only fire ActionPerformed if new tile and valid tile number
         if (currentTile != newTile && isValidTile(newTile))
         {
             reHighlight(currentTile, newTile);
@@ -183,9 +183,13 @@ public abstract class TileSelector extends AbstractButton implements
      */
     protected void drawTile(Graphics g, int tile)
     {
-        g.drawImage(getTileImage(tile), (tile % getTilesWide())
-            * getDrawnTileSize(), (tile / getTilesWide()) * getDrawnTileSize(),
-            getDrawnTileSize(false), getDrawnTileSize(false), null);
+        if (tile >= 0 && tile < getTileCount())
+        {
+            g.drawImage(getTileImage(tile), (tile % getTilesWide())
+                * getDrawnTileSize(), (tile / getTilesWide())
+                * getDrawnTileSize(), getDrawnTileSize(false),
+                getDrawnTileSize(false), null);
+        }
     }
 
     /**
@@ -252,18 +256,18 @@ public abstract class TileSelector extends AbstractButton implements
         if (isGuiInited())
         {
             Dimension d = this.getPreferredSize();
-            //make image buffer so tile selector doesn't flash black
+            // make image buffer so tile selector doesn't flash black
             Image buffer = this.createImage(d.width, d.height);
             Graphics bg = buffer.getGraphics();
-            //black background so grid is black
-//            bg.setColor(Color.BLACK);
-//            bg.fillRect(0, 0, this.getWidth(), this.getHeight());
-            //draw tiles
+            // black background so grid is black
+            // bg.setColor(Color.BLACK);
+            // bg.fillRect(0, 0, this.getWidth(), this.getHeight());
+            // draw tiles
             for (int tile = 0; tile < getTileCount(); tile++)
                 drawTile(bg, tile);
-            //draw highlight on current tile
+            // draw highlight on current tile
             highlightTile(bg, currentTile);
-            //draw buffer to screen
+            // draw buffer to screen
             g.drawImage(buffer, 0, 0, this);
         }
     }

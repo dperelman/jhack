@@ -177,6 +177,12 @@ public abstract class FullScreenGraphicsEditor extends EbHackModule implements
 
     protected void doSelectAction()
     {
+        if (tileSelector.getCurrentTile() < 0
+            || tileSelector.getCurrentTile() >= getSelectedScreen()
+                .getNumTiles())
+        {
+            tileSelector.setCurrentTile(0);
+        }
         if (!getSelectedScreen().readInfo())
         {
             guiInited = false;
@@ -217,7 +223,14 @@ public abstract class FullScreenGraphicsEditor extends EbHackModule implements
 
     protected int getCurrentScreen()
     {
-        return screenSelector.getSelectedIndex();
+        if (screenSelector == null)
+        {
+            return 0;
+        }
+        else
+        {
+            return screenSelector.getSelectedIndex();
+        }
     }
 
     protected FullScreenGraphics getSelectedScreen()
@@ -694,7 +707,7 @@ public abstract class FullScreenGraphicsEditor extends EbHackModule implements
 
         public int getTileCount()
         {
-            return getScreen(0).getNumTiles();
+            return getSelectedScreen().getNumTiles();
         }
 
         public Image getTileImage(int tile)

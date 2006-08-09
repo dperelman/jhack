@@ -168,8 +168,7 @@ public abstract class FullScreenGraphics
      */
     public Image getTileImage(int tile, int subPal)
     {
-        readInfo();
-        return HackModule.drawImage(tiles[tile], palette[subPal]);
+        return getTileImage(tile, subPal, false, false);
     }
 
     /**

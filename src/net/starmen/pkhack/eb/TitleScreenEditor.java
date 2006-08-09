@@ -6,10 +6,15 @@ package net.starmen.pkhack.eb;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -74,33 +79,29 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
     public static class TitleScreen extends FullScreenGraphics
     {
         private EbHackModule hm;
-        private int num, tilePointer, tileLen, palPointer, palLen, arngPointer,
-                arngLen/*
-                         * , textTilePointer, textTileLen, textPalPointer,
-                         * textPalLen
-                         */;
+        private int num, tilePointer, tileLen, animPalPointer, palPointer,
+                palLen, animPalLen, arngPointer, arngLen;
 
         /** Number of palettes. */
         public static final int NUM_PALETTES = 1;
+        /** Number of animated palettes. */
+        public static final int NUM_ANIM_PALETTES = 20;
+        /** Number of animated palettes for the characters. */
+        public static final int NUM_CHAR_ANIM_PALETTES = 14;
         /**
          * Number of arrangements. Note that this is more than fits on the
          * screen, so the last 128 are unused.
          */
         public static final int NUM_ARRANGEMENTS = 1024;
 
-        /** Number of letter overlay tiles. */
-        /* public static final int NUM_TEXT_TILES = 128; */
-
-        // protected byte[][][] textTiles = new byte[NUM_TEXT_TILES][8][8];
-        // protected Color[][] textPalette = new
-        // Color[getNumSubPalettes()][getSubPaletteSize()];
         /** Pointers to ASM pointers * */
         public static final int[] tilePointerArray = new int[]{0xedf2, 0xee49};
-        // public static final int[] textTilePointerArray = new int[]{0xee49};
         public static final int[] palPointerArray = new int[]{0xeec6, 0x3f692};
-        /* XXX: Is this the right pointer? */
-        // public static final int[] textPalPointerArray = new int[]{0x3f692};
+        public static final int[] animPalPointerArray = new int[]{0xee9d,
+            0xee83};
         public static final int[] arngPointerArray = new int[]{0xee1d, 0xee1d};
+
+        public Color[][] animPal;
 
         /* private boolean showTextLayer = false; */
 
@@ -110,6 +111,7 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             this.num = i;
 
             palPointer = hm.rom.readRegAsmPointer(palPointerArray[num]);
+            animPalPointer = hm.rom.readRegAsmPointer(animPalPointerArray[num]);
             tilePointer = hm.rom.readRegAsmPointer(tilePointerArray[num]);
             arngPointer = hm.rom.readRegAsmPointer(arngPointerArray[num]);
         }
@@ -119,9 +121,51 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             return NUM_PALETTES;
         }
 
+        /* Animation is done via subpals. Need to force subpal 0. */
+        public Color[] getSubPal(int pal)
+        {
+            return super.getSubPal(0);
+        }
+
+        public void setPaletteColor(int col, int frame, Color color)
+        {
+            if (frame < 0 || frame > NUM_ANIM_PALETTES
+                || (num == 0 && (col < 112 || col >= 144)))
+            {
+                super.setPaletteColor(col, 0, color);
+            }
+            else if (num == 1)
+            {
+                animPal[frame][col] = color;
+            }
+            else if (col < 128)
+            {
+                animPal[frame][col - 112] = color;
+            }
+            else
+            {
+                titleScreens[1].animPal[frame][col - 128] = color;
+            }
+        }
+
+        public void setSubPal(int pal, Color[] subPal)
+        {
+            super.setSubPal(0, subPal);
+        }
+
         public int getSubPaletteSize()
         {
             return num == 0 ? 256 : 16;
+        }
+
+        public static int getNumAnimPalettes()
+        {
+            return NUM_ANIM_PALETTES;
+        }
+
+        public static int getAnimPaletteSize()
+        {
+            return 16;
         }
 
         public int getNumArrangements()
@@ -138,6 +182,28 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
          * public void setShowTextLayer(boolean b) { showTextLayer = b; } public
          * boolean isShowTextLayer() { return showTextLayer; }
          */
+
+        public Color[] getAnimPalette(int i)
+        {
+            readInfo();
+            Color[] out = new Color[getAnimPaletteSize()];
+            System.arraycopy(animPal[i], 0, out, 0, getAnimPaletteSize());
+            return out;
+        }
+
+        public void setAnimPalette(int i, Color[] newPal)
+        {
+            readInfo();
+            System.arraycopy(newPal, 0, animPal[i], 0, getAnimPaletteSize());
+        }
+
+        public Image getTileImage(int tile, int frame, boolean hFlip,
+            boolean vFlip)
+        {
+            readInfo();
+            return HackModule.drawImage(tiles[tile], getAnimatedPalette(num,
+                frame), hFlip, vFlip);
+        }
 
         private boolean readGraphics(boolean allowFailure, boolean readOrg)
         {
@@ -245,60 +311,54 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             return true;
         }
 
-        /*
-         * private boolean readTextGraphics(boolean allowFailure, boolean
-         * readOrg) { AbstractRom r = readOrg ?
-         * JHack.main.getOrginalRomFile(hm.rom .getRomType()) : hm.rom;
-         * 
-         * byte[] textTileBuffer = new byte[NUM_TEXT_TILES * 64];
-         * 
-         *//** * DECOMPRESS GRAPHICS ** */
-        /*
-         * System.out.println("About to attempt decompressing " +
-         * textTileBuffer.length + " bytes of title screen text #" + num + "
-         * graphics."); int[] tmp = EbHackModule.decomp( readOrg ?
-         * r.readRegAsmPointer(textTilePointerArray[num]) : textTilePointer,
-         * textTileBuffer, r); textTiles = new byte[NUM_TEXT_TILES][8][8]; if
-         * (tmp[0] < 0) { System.out .println("Error " + tmp[0] + "
-         * decompressing title screen text #" + num + " graphics."); if
-         * (allowFailure) { // EMPTY TEXT TILES for (int i = 0; i <
-         * textTiles.length; i++) for (int x = 0; x < textTiles[i].length; x++)
-         * Arrays.fill(textTiles[i][x], (byte) 0); textTileLen = 0; } else {
-         * return false; } } else { textTileLen = tmp[1];
-         * System.out.println("TitleScreen text graphics: Decompressed " +
-         * tmp[0] + " bytes from a " + tmp[1] + " byte compressed block.");
-         * 
-         * int gfxOffset = 0; for (int i = 0; i < NUM_TEXT_TILES; i++) {
-         * textTiles[i] = new byte[8][8]; gfxOffset +=
-         * HackModule.read8BPPArea(textTiles[i], textTileBuffer, gfxOffset, 0,
-         * 0); } } return true; }
-         * 
-         * private boolean readTextPalette(boolean allowFailure, boolean
-         * readOrg) { AbstractRom r = readOrg ?
-         * JHack.main.getOrginalRomFile(hm.rom .getRomType()) : hm.rom;
-         * 
-         * byte[] textPalBuffer = new byte[getNumSubPalettes()
-         * getSubPaletteSize() * 2];
-         *//** * DECOMPRESS PALETTE ** */
-        /*
-         * System.out.println("About to attempt decompressing " +
-         * textPalBuffer.length + " bytes of title screen #" + num + "
-         * textPalette."); int[] tmp = EbHackModule.decomp(readOrg ? r
-         * .readRegAsmPointer(textPalPointerArray[num]) : textPalPointer,
-         * textPalBuffer, r); textPalette = new
-         * Color[NUM_PALETTES][getSubPaletteSize()]; if (tmp[0] < 0) {
-         * System.out.println("Error " + tmp[0] + " decompressing title screen #" +
-         * num + " textPalette."); if (allowFailure) { // EMPTY PALETTES for
-         * (int i = 0; i < textPalette.length; i++) Arrays.fill(textPalette[i],
-         * Color.BLACK); textPalLen = 0; } else { return false; } } else {
-         * textPalLen = tmp[1]; System.out.println("TitleScreen textPalette:
-         * Decompressed " + tmp[0] + " bytes from a " + tmp[1] + " byte
-         * compressed block.");
-         * 
-         * int textPalOffset = 0; for (int i = 0; i < NUM_PALETTES; i++) {
-         * HackModule.readPalette(textPalBuffer, textPalOffset, textPalette[i]);
-         * textPalOffset += textPalette[i].length * 2; } } return true; }
-         */
+        private boolean readAnimPalette(boolean allowFailure, boolean readOrg)
+        {
+            AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(hm.rom
+                .getRomType()) : hm.rom;
+
+            byte[] palBuffer = new byte[getNumAnimPalettes()
+                * getAnimPaletteSize() * 2];
+            /** * DECOMPRESS PALETTE ** */
+            System.out.println("About to attempt decompressing "
+                + palBuffer.length + " bytes of title screen #" + num
+                + " animated palette.");
+            int[] tmp = EbHackModule.decomp(readOrg ? r
+                .readRegAsmPointer(animPalPointerArray[num]) : animPalPointer,
+                palBuffer, r);
+            animPal = new Color[NUM_ANIM_PALETTES][getAnimPaletteSize()];
+            if (tmp[0] < 0)
+            {
+                System.out.println("Error " + tmp[0]
+                    + " decompressing title screen #" + num
+                    + " animated palette.");
+                if (allowFailure)
+                { // EMPTY PALETTES
+                    for (int i = 0; i < animPal.length; i++)
+                        Arrays.fill(animPal[i], Color.BLACK);
+                    animPalLen = 0;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                animPalLen = tmp[1];
+                System.out
+                    .println("TitleScreen animated palette: Decompressed "
+                        + tmp[0] + " bytes from a " + tmp[1]
+                        + " byte compressed block.");
+
+                int palOffset = 0;
+                for (int i = 0; i < NUM_ANIM_PALETTES; i++)
+                {
+                    HackModule.readPalette(palBuffer, palOffset, animPal[i]);
+                    palOffset += animPal[i].length * 2;
+                }
+            }
+            return true;
+        }
 
         private boolean readArrangement(boolean allowFailure, boolean readOrg)
         {
@@ -362,12 +422,10 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
                 return false;
             if (!readPalette(allowFailure, false))
                 return false;
+            if (!readAnimPalette(allowFailure, false))
+                return false;
             if (!readArrangement(allowFailure, false))
                 return false;
-            /*
-             * if (!readTextGraphics(allowFailure, false)) return false; if
-             * (!readTextPalette(allowFailure, false)) return false;
-             */
 
             isInited = true;
             return true;
@@ -438,6 +496,34 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             return true;
         }
 
+        private boolean writeAnimPalette()
+        {
+            int numPals = num == 0 ? NUM_ANIM_PALETTES : NUM_CHAR_ANIM_PALETTES;
+            byte[] udataPal = new byte[getAnimPaletteSize() * numPals * 2];
+            int palOff = 0;
+            /* COMPRESS ANIM PALETTE */
+            for (int i = 0; i < numPals; i++)
+            {
+                HackModule.writePalette(udataPal, palOff, animPal[i]);
+                palOff += animPal[i].length * 2;
+            }
+
+            byte[] compPal;
+            int palCompLen = comp(udataPal, compPal = new byte[600]);
+            if (!hm.writeToFreeASMLink(compPal, animPalPointerArray[num],
+                animPalLen, palCompLen))
+                return false;
+            System.out.println("Wrote "
+                + (animPalLen = palCompLen)
+                + " bytes of the title screen #"
+                + num
+                + " animated palette at "
+                + Integer.toHexString(animPalPointer = hm.rom
+                    .readRegAsmPointer(animPalPointerArray[num])) + " to "
+                + Integer.toHexString(animPalPointer + palCompLen - 1) + ".");
+            return true;
+        }
+
         private boolean writeArrangement()
         {
             byte[] udataArng = new byte[getNumArrangements() * 2];
@@ -477,6 +563,8 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
 
             if (!writePalette())
                 return false;
+            if (!writeAnimPalette())
+                return false;
             if (!writeArrangement())
                 return false;
             if (!writeGraphics())
@@ -486,7 +574,153 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         }
     }
 
+    public static class TitleScreenAnimData
+    {
+        public static final int NUM_ENTRIES = 9;
+
+        public static final int TABLE_START = 0x21D008;
+        public static final int POINTER_OFF = 0x210200;
+
+        private EbHackModule hm;
+        private int num;
+        private List entries;
+
+        public TitleScreenAnimData(int i, EbHackModule hm)
+        {
+            this.num = i;
+            this.hm = hm;
+        }
+
+        protected void readInfo()
+        {
+            hm.rom.seek(hm.rom.readMulti(TABLE_START + num * 2, 2)
+                + POINTER_OFF);
+            entries = new ArrayList();
+            while (entries.size() == 0
+                || !((TitleScreenAnimEntry) entries.get(entries.size() - 1))
+                    .isFinalEntry())
+            {
+                entries.add(TitleScreenAnimEntry.readSeek(hm.rom));
+            }
+        }
+
+        public static class TitleScreenAnimEntry
+        {
+            private byte y, x, flags;
+            private short tile;
+
+            public TitleScreenAnimEntry(byte y, short tile, byte x, byte flags)
+            {
+                this.y = y;
+                this.tile = tile;
+                this.x = x;
+                this.flags = flags;
+            }
+
+            public static TitleScreenAnimEntry readSeek(AbstractRom rom)
+            {
+                return new TitleScreenAnimEntry(rom.readByteSeek(), (short) rom
+                    .readMultiSeek(2), rom.readByteSeek(), rom.readByteSeek());
+            }
+
+            public static TitleScreenAnimEntry read(AbstractRom rom, int offset)
+            {
+                rom.seek(offset);
+                return readSeek(rom);
+            }
+
+            public void writeSeek(AbstractRom rom)
+            {
+                rom.writeSeek(y);
+                rom.writeSeek(tile, 2);
+                rom.writeSeek(x);
+                rom.writeSeek(flags);
+            }
+
+            public void write(AbstractRom rom, int offset)
+            {
+                rom.seek(offset);
+                writeSeek(rom);
+            }
+
+            /**
+             * @return Returns the flags.
+             */
+            public byte getFlags()
+            {
+                return flags;
+            }
+
+            /**
+             * @param flags The flags to set.
+             */
+            public void setFlags(byte flags)
+            {
+                this.flags = flags;
+            }
+
+            /**
+             * Returns true if this ends a block of entries.
+             * 
+             * @return (getFlags() & 0x80) != 0
+             */
+            public boolean isFinalEntry()
+            {
+                return (flags & 0x80) != 0;
+            }
+
+            /**
+             * @return Returns the tile.
+             */
+            public short getTile()
+            {
+                return tile;
+            }
+
+            /**
+             * @param tile The tile to set.
+             */
+            public void setTile(short tile)
+            {
+                this.tile = tile;
+            }
+
+            /**
+             * @return Returns the x.
+             */
+            public byte getX()
+            {
+                return x;
+            }
+
+            /**
+             * @param x The x to set.
+             */
+            public void setX(byte x)
+            {
+                this.x = x;
+            }
+
+            /**
+             * @return Returns the y.
+             */
+            public byte getY()
+            {
+                return y;
+            }
+
+            /**
+             * @param y The y to set.
+             */
+            public void setY(byte y)
+            {
+                this.y = y;
+            }
+        }
+    }
+
     public static final TitleScreen[] titleScreens = new TitleScreen[NUM_TITLE_SCREENS];
+    public static final TitleScreenAnimData[] animData = new TitleScreenAnimData[TitleScreenAnimData.NUM_ENTRIES];
 
     public FullScreenGraphics getScreen(int i)
     {
@@ -514,6 +748,10 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         {
             titleScreens[i] = new TitleScreen(i, hm);
         }
+        for (int i = 0; i < animData.length; i++)
+        {
+            animData[i] = new TitleScreenAnimData(i, hm);
+        }
     }
 
     protected void readFromRom()
@@ -528,12 +766,12 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
 
     protected int getTileSelectorWidth()
     {
-        return 16;
+        return getCurrentScreen() == 0 ? 16 : 16;
     }
 
     protected int getTileSelectorHeight()
     {
-        return 16;
+        return getCurrentScreen() == 0 ? 16 : 64;
     }
 
     protected int focusDaDir()
@@ -553,13 +791,22 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         pal.setActionCommand("paletteEditor");
         pal.addActionListener(this);
 
+        subPalSelector = new JComboBox();
+        for (int i = 0; i < TitleScreen.NUM_ANIM_PALETTES; i++)
+        {
+            subPalSelector.addItem((i + 1) + "/"
+                + TitleScreen.NUM_ANIM_PALETTES);
+        }
+        subPalSelector.addItem("Final(?)");
+        subPalSelector.setActionCommand("subPalSelector");
+        subPalSelector.addActionListener(this);
+
         da = new IntArrDrawingArea(dt, pal, this);
         da.setActionCommand("drawingArea");
         da.setZoom(10);
         da.setPreferredSize(new Dimension(81, 81));
 
         name = null;
-        subPalSelector = null;
     }
 
     protected JComponent layoutComponents()
@@ -571,6 +818,7 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         center.add(Box.createVerticalStrut(15));
         center.add(createFlowLayout(da));
         center.add(Box.createVerticalStrut(5));
+        center.add(getLabeledComponent("Animation Frame: ", subPalSelector));
         center.add(createFlowLayout(pal));
         center.add(Box.createVerticalStrut(10));
         center.add(createFlowLayout(fi));
@@ -578,20 +826,88 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
 
         JPanel display = new JPanel(new BorderLayout());
         display.add(pairComponents(dt, null, false), BorderLayout.EAST);
-        display.add(pairComponents(pairComponents(tileSelector, center, true),
-            arrangementEditor, false), BorderLayout.WEST);
+        display.add(pairComponents(pairComponents(tileSelector,
+            createFlowLayout(center), true), arrangementEditor, false),
+            BorderLayout.WEST);
 
         return display;
     }
 
-    protected int getCurrentSubPalette()
+    /*
+     * protected int getCurrentSubPalette() { return 0; }
+     */
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see net.starmen.pkhack.eb.FullScreenGraphicsEditor#getSelectedSubPalette()
+     */
+    protected Color[] getSelectedSubPalette()
     {
-        return 0;
+        return getAnimatedPalette(getCurrentScreen(), subPalSelector
+            .getSelectedIndex());
+    }
+
+    public static Color[] getAnimatedPalette(int num, int i)
+    {
+        Color[] out = titleScreens[num].getSubPal(0);
+
+        if (i > 0 && i < TitleScreen.NUM_ANIM_PALETTES)
+        {
+            if (num == 0)
+            {
+                /*
+                 * Overwrite the "normal" colors with the correct animated
+                 * palettes.
+                 */
+                Color[] highlightAnimPal = titleScreens[0].getAnimPalette(i);
+                Color[] textAnimPal = titleScreens[1].getAnimPalette(i);
+                System.arraycopy(highlightAnimPal, 0, out, 112, TitleScreen
+                    .getAnimPaletteSize());
+                System.arraycopy(textAnimPal, 0, out, 128, TitleScreen
+                    .getAnimPaletteSize());
+            }
+            else
+            {
+                out = titleScreens[num].getAnimPalette(i);
+            }
+        }
+        /*
+         * Else: A animated palette was not selected. The original Color[] is
+         * fine.
+         */
+        return out;
     }
 
     protected boolean isSinglePalImport()
     {
         return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see net.starmen.pkhack.eb.FullScreenGraphicsEditor#actionPerformed(java.awt.event.ActionEvent)
+     */
+    public void actionPerformed(ActionEvent ae)
+    {
+        super.actionPerformed(ae);
+        if (ae.getActionCommand().equals("subPalSelector"))
+        {
+            tileSelector.repaint();
+            arrangementEditor.repaint();
+        }
+        else if (ae.getActionCommand().equals("mapSelector"))
+        {
+            mainWindow.getContentPane().invalidate();
+            tileSelector.invalidate();
+            tileSelector.resetPreferredSize();
+            tileSelector.validate();
+            tileSelector.repaint();
+            arrangementEditor
+                .setVisible(screenSelector.getSelectedIndex() == 0);
+            mainWindow.getContentPane().validate();
+        }
     }
 
     /** TODO: Import/export */
