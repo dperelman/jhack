@@ -1,7 +1,7 @@
 NEXT VERSION (after v0.5.11):
 # PSI Damage Editor: BUGFIX: writes properly
-# Fixed effects list: Offense up, Defense down, Hypnosis, Magnet, Paralysis, Brainshock
-	have Alpha and Omega forms, not Alpha and Beta
+# Fixed effects list: Offense up, Defense down, Hypnosis, Magnet, 
+	Paralysis, Brainshock have Alpha and Omega forms, not Alpha and Beta
 # Logo Screen Editor v0.2: Added image import.
 # Town Map Editor v0.2: Added image import.
 # Text Editor: corrections to code list and raw text listing (thanks Goplat)
@@ -11,8 +11,11 @@ NEXT VERSION (after v0.5.11):
 # AbstractRom: BUGFIX: compare() works correctly for int[]'s
 # TileEditor v0.8: BUGFIX: Tile properties incorrectly reporting not enough space
 # TileEditor v0.8: More efficient storage for tile properties
-# Sprite Editor: BUGFIX: Image import selects colors properly when palette 4 is selected
+# Sprite Editor: BUGFIX: Image import selects colors properly when 
+	palette 4 is selected
 # Level-Up Experience Editor v0.3: Added import/export as .csv
+# BUGFIX: extension appended in save dialog after user-entered extension 
+	in caps (thanks EBrent)
 
 v0.5.11:
 # Flyover Editor v0.2: BUGFIX: 6MB ROM problem

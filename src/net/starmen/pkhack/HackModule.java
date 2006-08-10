@@ -930,7 +930,8 @@ public abstract class HackModule
         {
             File out = jfc.getSelectedFile();
             // extension is forced on save.
-            if (!out.getPath().endsWith("." + ext) && save)
+            if (!out.getPath().toLowerCase().endsWith("." + ext.toLowerCase())
+                && save)
                 out = new File(out.getPath() + "." + ext);
             AbstractRom.setDefaultDir(out.getParent());
             return out;
@@ -979,7 +980,8 @@ public abstract class HackModule
             File out = jfc.getSelectedFile();
             // extension is forced on save.
             String exts = ((SimpleFileFilter) jfc.getFileFilter()).getExt();
-            if (!out.getPath().endsWith("." + exts) && save)
+            if (!out.getPath().toLowerCase().endsWith("." + exts.toLowerCase())
+                && save)
                 out = new File(out.getPath() + "." + exts);
             AbstractRom.setDefaultDir(out.getParent());
             return out;
