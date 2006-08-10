@@ -10,11 +10,8 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -26,12 +23,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.DrawingToolset;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.PrefsCheckBox;
-import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
 
@@ -69,9 +66,8 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
             subPalNums = new BitSet(NUM_CREDITS_CHARS);
             try
             {
-                InputStream in = ClassLoader
-                    .getSystemResourceAsStream(DEFAULT_BASE_DIR
-                        + "creditFPals.dat");
+                InputStream in = CreditsFontEditor.class
+                    .getResourceAsStream("creditFPals.dat");
                 int i = 0;
                 while (i < NUM_CREDITS_CHARS)
                 {
@@ -94,40 +90,23 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
         }
     }
 
-    private static void writeSubPalNums()
-    {
-        try
-        {
-            OutputStream out = new FileOutputStream("src" + File.separator
-                + DEFAULT_BASE_DIR + "creditFPals.dat");
-            int i = 0;
-            while (i < NUM_CREDITS_CHARS)
-            {
-                int r = 0;
-                for (int j = 0; j < 8; j++)
-                {
-                    if (subPalNums.get(i))
-                        r |= 1 << j;
-                    i++;
-                }
-                out.write(r);
-            }
-            out.close();
-        }
-        catch (IOException e)
-        {
-            System.err.println("Error writing subpalette numbers file "
-                + "(creditFPals.dat).");
-            e.printStackTrace();
-        }
-    }
+    /*
+     * private static void writeSubPalNums() { try { OutputStream out = new
+     * FileOutputStream("src" + File.separator + DEFAULT_BASE_DIR +
+     * "creditFPals.dat"); int i = 0; while (i < NUM_CREDITS_CHARS) { int r = 0;
+     * for (int j = 0; j < 8; j++) { if (subPalNums.get(i)) r |= 1 << j; i++; }
+     * out.write(r); } out.close(); } catch (IOException e) {
+     * System.err.println("Error writing subpalette numbers file " +
+     * "(creditFPals.dat)."); e.printStackTrace(); } }
+     */
 
     public static int oldPointer, oldLen;
 
     /**
      * Reads the credits font graphics from the ROM into {@link #tiles}.
      * 
-     * @param rom AbstractRom being edited to read from. Only used if readOrg is false.
+     * @param rom AbstractRom being edited to read from. Only used if readOrg is
+     *            false.
      * @param readOrg If true, reading is done from the orginal ROM instead of
      *            <code>rom</code>
      * @return Positive means success. On failure user is presented with option
@@ -139,7 +118,8 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
         tiles = new byte[NUM_CREDITS_CHARS][8][8];
         byte[] buffer = new byte[NUM_CREDITS_CHARS * 32];
         int[] tmp;
-        AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(rom.getRomType()) : rom;
+        AbstractRom r = readOrg ? JHack.main
+            .getOrginalRomFile(rom.getRomType()) : rom;
         int address = oldPointer = r.readRegAsmPointer(CREDITS_FONT_POINTER);
         System.out.println("Reading from address: 0x"
             + Integer.toHexString(address) + " (" + address + ")");
@@ -202,7 +182,7 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
     {
         if (oldLen < 0)
             return oldLen;
-        byte[] buffer = new byte[8192]; //new byte[num * 16];
+        byte[] buffer = new byte[8192]; // new byte[num * 16];
         int offset = 0;
         for (int i = 0; i < NUM_CREDITS_CHARS; i++)
             offset += HackModule.write2BPPArea(tiles[i], buffer, offset, 0, 0);
@@ -309,9 +289,9 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
             {
                 try
                 {
-                    //if tile row number is even and has the same palette
+                    // if tile row number is even and has the same palette
                     // as
-                    //the tile below it
+                    // the tile below it
                     if (tile + getTilesWide() < getTileCount()
                         && (tile / getTilesWide()) % 2 == 0
                         && getSubPalNum(tile) == getSubPalNum(tile
@@ -427,7 +407,7 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
 
     public void hide()
     {
-        mainWindow.hide();
+        mainWindow.setVisible(false);
     }
 
     public void show()
@@ -436,7 +416,7 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
         readFromRom();
         super.show();
 
-        mainWindow.show();
+        mainWindow.setVisible(true);
         tileSel.setCurrentTile(currTile, true);
     }
 
@@ -507,7 +487,7 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
         {
             tileSel.setCurrentTile(tileSel.getCurrentTile(), true);
         }
-        //edit menu
+        // edit menu
         else if (ae.getActionCommand().equals("undo"))
         {
             da.undo();
@@ -533,7 +513,7 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
             da.delete();
             da.repaint();
         }
-        //flipping
+        // flipping
         else if (ae.getActionCommand().equals("hFlip"))
         {
             da.doHFlip();
@@ -557,15 +537,14 @@ public class CreditsFontEditor extends EbHackModule implements ActionListener
         tiles[i] = tile;
     }
 
-    private byte[][] getTile(int i)
-    {
-        return tiles[i];
-    }
+    /*
+     * private byte[][] getTile(int i) { return tiles[i]; }
+     */
 
-    private byte[][] getSelectedTile()
-    {
-        return getTile(tileSel.getCurrentTile());
-    }
+    /*
+     * private byte[][] getSelectedTile() { return
+     * getTile(tileSel.getCurrentTile()); }
+     */
 
     private int getCurrentSubPal()
     {

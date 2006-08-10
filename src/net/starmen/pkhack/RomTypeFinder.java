@@ -42,11 +42,11 @@ public class RomTypeFinder
                 offset = Integer.parseInt(info[0].trim(), 16);
                 String[] data = info[1].trim().split("\\s+");
                 bytes = new byte[data.length];
-                //                System.out.println();
-                //                System.out.println("info[1] = " + info[1].trim());
+                // System.out.println();
+                // System.out.println("info[1] = " + info[1].trim());
                 for (int i = 0; i < data.length; i++)
                 {
-                    //                    System.out.println("data[" + i + "] = " + data[i]);
+                    // System.out.println("data[" + i + "] = " + data[i]);
                     bytes[i] = (byte) Integer.parseInt(data[i].trim(), 16);
                 }
             }
@@ -54,19 +54,19 @@ public class RomTypeFinder
             public boolean check(AbstractRom rom)
             {
                 return rom.compare(offset, bytes);
-                //                boolean tmp = rom.compare(offset, bytes);
-                //                for (int i = 0; i < bytes.length; i++)
-                //                    System.out.println("Checking 0x"
-                //                        + HackModule.addZeros(Integer.toHexString(offset), 6)
-                //                        + "... "
-                //                        + HackModule.addZeros(Integer.toHexString(rom
-                //                            .read(offset + i)), 2)
-                //                        + "... looking for: "
-                //                        + HackModule.addZeros(Integer
-                //                            .toHexString(bytes[i] & 0xff), 2));
-                //                System.out.println("ROM " + (tmp ? "passed" : "failed")
-                //                    + " test to check if ROM type is " + getName());
-                //                return tmp;
+                // boolean tmp = rom.compare(offset, bytes);
+                // for (int i = 0; i < bytes.length; i++)
+                // System.out.println("Checking 0x"
+                // + HackModule.addZeros(Integer.toHexString(offset), 6)
+                // + "... "
+                // + HackModule.addZeros(Integer.toHexString(rom
+                // .read(offset + i)), 2)
+                // + "... looking for: "
+                // + HackModule.addZeros(Integer
+                // .toHexString(bytes[i] & 0xff), 2));
+                // System.out.println("ROM " + (tmp ? "passed" : "failed")
+                // + " test to check if ROM type is " + getName());
+                // return tmp;
             }
         }
 
@@ -104,24 +104,22 @@ public class RomTypeFinder
 
     public static void loadRomTypeFile()
     {
-        //if already done this, don't do it again
+        // if already done this, don't do it again
         if (loaded)
             return;
 
-        RomType crt = null; //current RomType
-        String[] rtlist; //rom type list
+        RomType crt = null; // current RomType
+        String[] rtlist; // rom type list
         try
         {
-            rtlist = new CommentedLineNumberReader(
-                new InputStreamReader(
-                    ClassLoader
-                        .getSystemResourceAsStream("net/starmen/pkhack/romtypes.txt")))
+            rtlist = new CommentedLineNumberReader(new InputStreamReader(
+                RomTypeFinder.class.getResourceAsStream("romtypes.txt")))
                 .readUsedLines();
         }
         catch (IOException e)
         {
             e.printStackTrace();
-            //default list marks all ROMs as the ROM type "Unknown"
+            // default list marks all ROMs as the ROM type "Unknown"
             rtlist = new String[]{"Unknown"};
             JOptionPane.showMessageDialog(null,
                 "Error loading ROM type identification file"
@@ -132,12 +130,12 @@ public class RomTypeFinder
         }
         for (int i = 0; i < rtlist.length; i++)
         {
-            String cline = rtlist[i].trim(); //current line
+            String cline = rtlist[i].trim(); // current line
             if (cline.startsWith("*"))
             {
-                //if it starts with a *, it's a check
-                //make sure crt has been set to something
-                //and then add the check to the current RomType
+                // if it starts with a *, it's a check
+                // make sure crt has been set to something
+                // and then add the check to the current RomType
                 if (crt != null)
                     crt.addCheck(cline);
                 else
@@ -150,21 +148,21 @@ public class RomTypeFinder
             }
             else
             {
-                //if it does not start with a *, it's a ROM type name
-                //set the current RomType to that name
+                // if it does not start with a *, it's a ROM type name
+                // set the current RomType to that name
                 crt = new RomType(cline);
-                //and add that RomType to the list of all RomType's
+                // and add that RomType to the list of all RomType's
                 romTypes.add(crt);
             }
         }
 
-        //mark that ROM type info has been loaded
+        // mark that ROM type info has been loaded
         loaded = true;
     }
 
     public static String getRomType(AbstractRom rom)
     {
-        //make sure ROM types are loaded
+        // make sure ROM types are loaded
         loadRomTypeFile();
 
         RomType rt;
@@ -179,7 +177,7 @@ public class RomTypeFinder
 
     public static String[] getRomTypeNames()
     {
-        //make sure ROM types are loaded
+        // make sure ROM types are loaded
         loadRomTypeFile();
 
         String[] out = new String[romTypes.size()];

@@ -38,7 +38,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
     private static PSI[] psis = new PSI[NUM_PSI];
     private static MiscText[] PSIText = new MiscText[17];
 
-    //GUI components
+    // GUI components
     private JComboBox PSISel, nameSel, letterSel, typeSel, animSel, hPosSel;
     private AutoSearchBox letterBox, hPosBox;
     private JTextField nessLevelBox, paulaLevelBox, pooLevelBox, nameBox,
@@ -51,11 +51,11 @@ public class PSIEditor extends EbHackModule implements ActionListener
     {
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
-        //mainWindow.setSize(400, 250);
+        // mainWindow.setSize(400, 250);
         mainWindow.setResizable(true);
 
         readFromRom();
-        //      initEffectsList();
+        // initEffectsList();
 
         JPanel entry = new JPanel();
         entry.setLayout(new BoxLayout(entry, BoxLayout.Y_AXIS));
@@ -78,7 +78,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
         nameSel.addActionListener(this);
 
         nameBox = new JTextField(25);
-        //      nameSel.setEditable(true);
+        // nameSel.setEditable(true);
         entry.add(pairComponents(getLabeledComponent("Name:", nameSel),
             nameBox, true, true, "Name Selector", "Name Box"));
 
@@ -88,8 +88,8 @@ public class PSIEditor extends EbHackModule implements ActionListener
         letterSel.addItem("3 \u03B3 (Gamma)");
         letterSel.addItem("4 \u03A3 (Sigma)");
         letterSel.addItem("5 \u03A9 (Omega)");
-        //		letterSel.setActionCommand("letterSel");
-        //		letterSel.addActionListener(this);
+        // letterSel.setActionCommand("letterSel");
+        // letterSel.addActionListener(this);
         letterBox = new AutoSearchBox(letterSel, "Power:", 3, false, true);
         entry.add(letterBox);
 
@@ -112,12 +112,13 @@ public class PSIEditor extends EbHackModule implements ActionListener
         hPosSel.addItem("13 Third");
         hPosSel.addItem("15 Fourth");
         JTextField hPos = createSizedJTextField(2, true);
-        hPosBox = new AutoSearchBox(hPosSel, hPos, "Horizontal Position:", false, true,
-        		true);
+        hPosBox = new AutoSearchBox(hPosSel, hPos, "Horizontal Position:",
+            false, true, true);
         entry.add(hPosBox);
 
         vPosBox = createSizedJTextField(2, true);
-        entry.add(getLabeledComponent("Vertical Position (00 is top):", vPosBox));
+        entry
+            .add(getLabeledComponent("Vertical Position (00 is top):", vPosBox));
 
         nessLevelBox = new JTextField(3);
         entry.add(getLabeledComponent("Ness Level", nessLevelBox));
@@ -197,7 +198,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
     /**
      * Updates the PSI name selector to reflect changes.
-     *  
+     * 
      */
     private void nameUpdate()
     {
@@ -321,8 +322,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
     public void reset()
     {
         super.reset();
-        readArray(DEFAULT_BASE_DIR, "psiNames.txt", rom.getPath(), false,
-            psiNames);
+        readArray("psiNames.txt", false, psiNames);
     }
 
     public static class PSI
@@ -354,13 +354,13 @@ public class PSIEditor extends EbHackModule implements ActionListener
         }
         /**
          * Name of PSI (uses name table)
-         *  
+         * 
          */
         private int name;
 
         /**
          * Gets name of PSI (uses name table)
-         *  
+         * 
          */
         public int getName()
         {
@@ -369,7 +369,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
         /**
          * Sets name of PSI (uses name table)
-         *  
+         * 
          */
         public void setName(int i)
         {
@@ -378,14 +378,14 @@ public class PSIEditor extends EbHackModule implements ActionListener
         /**
          * Greek letter of the PSI(1 = alpha, 2 = beta, 3 = gamma, 4 = sigma, 5 =
          * omega)
-         *  
+         * 
          */
         private int letter;
 
         /**
          * Gets Greek letter of the PSI(1 = alpha, 2 = beta, 3 = gamma, 4 =
          * sigma, 5 = omega)
-         *  
+         * 
          */
         public int getLetter()
         {
@@ -395,7 +395,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
         /**
          * Sets Greek letter of the PSI(1 = alpha, 2 = beta, 3 = gamma, 4 =
          * sigma, 5 = omega)
-         *  
+         * 
          */
         public void setLetter(int i)
         {
@@ -403,13 +403,13 @@ public class PSIEditor extends EbHackModule implements ActionListener
         }
         /**
          * Type of PSI (1 = Offense, 2 = Recover, 4 = Assist, 8 = Other)
-         *  
+         * 
          */
         private int type;
 
         /**
          * Gets type of PSI (1 = Offense, 2 = Recover, 4 = Assist, 8 = Other)
-         *  
+         * 
          */
         public int getType()
         {
@@ -418,7 +418,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
         /**
          * Sets type of PSI (1 = Offense, 2 = Recover, 4 = Assist, 8 = Other)
-         *  
+         * 
          */
         public void setType(int i)
         {
@@ -426,13 +426,13 @@ public class PSIEditor extends EbHackModule implements ActionListener
         }
         /**
          * Animation style
-         *  
+         * 
          */
         private int anim;
 
         /**
          * Gets animation style
-         *  
+         * 
          */
         public int getAnim()
         {
@@ -441,7 +441,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
         /**
          * Sets animation style
-         *  
+         * 
          */
         public void setAnim(int i)
         {
@@ -449,13 +449,13 @@ public class PSIEditor extends EbHackModule implements ActionListener
         }
         /**
          * Action this PSI uses
-         *  
+         * 
          */
         private int action;
 
         /**
          * Gets action this PSI uses
-         *  
+         * 
          */
         public int getAction()
         {
@@ -464,7 +464,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
         /**
          * Sets action this PSI uses
-         *  
+         * 
          */
         public void setAction(int i)
         {
@@ -472,13 +472,13 @@ public class PSIEditor extends EbHackModule implements ActionListener
         }
         /**
          * Level at which Ness learns this PSI
-         *  
+         * 
          */
         private int nessLevel;
 
         /**
          * Gets level at which Ness learns this PSI
-         *  
+         * 
          */
         public int getNessLevel()
         {
@@ -487,7 +487,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
         /**
          * Sets level at which Ness learns this PSI
-         *  
+         * 
          */
         public void setNessLevel(int i)
         {
@@ -495,13 +495,13 @@ public class PSIEditor extends EbHackModule implements ActionListener
         }
         /**
          * Level at which Paula learns this PSI
-         *  
+         * 
          */
         private int paulaLevel;
 
         /**
          * Gets level at which Paula learns this PSI
-         *  
+         * 
          */
         public int getPaulaLevel()
         {
@@ -510,7 +510,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
         /**
          * Sets level at which Paula learns this PSI
-         *  
+         * 
          */
         public void setPaulaLevel(int i)
         {
@@ -518,13 +518,13 @@ public class PSIEditor extends EbHackModule implements ActionListener
         }
         /**
          * Level at which Poo learns this PSI
-         *  
+         * 
          */
         private int pooLevel;
 
         /**
          * Gets level at which Poo learns this PSI
-         *  
+         * 
          */
         public int getPooLevel()
         {
@@ -533,7 +533,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
         /**
          * Sets level at which Poo learns this PSI
-         *  
+         * 
          */
         public void setPooLevel(int i)
         {
@@ -541,13 +541,13 @@ public class PSIEditor extends EbHackModule implements ActionListener
         }
         /**
          * Horizontal position (9 = 1st, 11 = 2nd, 13 = 3rd, 15 = 4th)
-         *  
+         * 
          */
         private int hPos;
 
         /**
          * Gets horizontal position (9 = 1st, 11 = 2nd, 13 = 3rd, 15 = 4th)
-         *  
+         * 
          */
         public int getHPos()
         {
@@ -556,7 +556,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
         /**
          * Sets horizontal position (9 = 1st, 11 = 2nd, 13 = 3rd, 15 = 4th)
-         *  
+         * 
          */
         public void setHPos(int i)
         {
@@ -564,13 +564,13 @@ public class PSIEditor extends EbHackModule implements ActionListener
         }
         /**
          * Vertical position (0 = top, 1 = mid, 2 = bot)
-         *  
+         * 
          */
         private int vPos;
 
         /**
          * Gets vertical position (0 = top, 1 = mid, 2 = bot)
-         *  
+         * 
          */
         public int getVPos()
         {
@@ -579,7 +579,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
         /**
          * Sets vertical position (0 = top, 1 = mid, 2 = bot)
-         *  
+         * 
          */
         public void setVPos(int i)
         {
@@ -587,13 +587,13 @@ public class PSIEditor extends EbHackModule implements ActionListener
         }
         /**
          * SNES address of help text
-         *  
+         * 
          */
         private int helpAdd;
 
         /**
          * Gets SNES address of help text
-         *  
+         * 
          */
         public int getHelpAdd()
         {
@@ -602,7 +602,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
         /**
          * Sets SNES address of help text
-         *  
+         * 
          */
         public void setHelpAdd(int i)
         {
@@ -639,7 +639,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
 
         /**
          * Writes entry's info to the ROM
-         *  
+         * 
          */
         public void writeInfo()
         {
@@ -676,7 +676,8 @@ public class PSIEditor extends EbHackModule implements ActionListener
          * @param address Where to read from.
          * @param len How many characters to read.
          */
-        public MiscText(int address, int len, HackModule hm) //desc could be a
+        public MiscText(int address, int len, HackModule hm) // desc could be
+                                                                // a
         // description or the
         // default text
         {
@@ -702,7 +703,7 @@ public class PSIEditor extends EbHackModule implements ActionListener
          * 
          * @param title Title to use
          */
-        public MiscText(String title) //make a fake entry for a separator
+        public MiscText(String title) // make a fake entry for a separator
         {
             title = "_" + title.toUpperCase() + "_";
             this.info = new char[title.length()];

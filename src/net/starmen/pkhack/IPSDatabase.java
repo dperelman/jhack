@@ -63,12 +63,12 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         }
         catch (SecurityException e)
         {
-            //no security model, shouldn't have to worry about this
+            // no security model, shouldn't have to worry about this
             e.printStackTrace();
         }
         catch (NoSuchMethodException e)
         {
-            //I just wrote the methods, I'm pretty sure they exist ^_^
+            // I just wrote the methods, I'm pretty sure they exist ^_^
             e.printStackTrace();
         }
     }
@@ -87,13 +87,12 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
             this.filename = filename;
             file = new byte[filesize + 1];
             byte[] bss = new byte[sssize + 1];
-            //			ClassLoader
-            //				.getSystemResourceAsStream("net/starmen/pkhack/ips/" + filename)
-            //				.read(bips);
-            readAll(file,
-                ClassLoader.getSystemResourceAsStream("net/starmen/pkhack/ips/"
-                    + filename));
-            //this.checkApplied(rom);
+            // ClassLoader
+            // .getSystemResourceAsStream("net/starmen/pkhack/ips/" + filename)
+            // .read(bips);
+            readAll(file, this.getClass()
+                .getResourceAsStream("ips/" + filename));
+            // this.checkApplied(rom);
             this.name = name;
             this.author = author;
             this.sdesc = sdesc;
@@ -101,8 +100,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
                 this.ss = null;
             else
             {
-                readAll(bss, ClassLoader
-                    .getSystemResourceAsStream("net/starmen/pkhack/ips/" + ss));
+                readAll(bss, this.getClass().getResourceAsStream("ips/" + ss));
                 this.ss = new ImageIcon(bss);
             }
             this.romType = romType;
@@ -244,16 +242,16 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
     {
         if (xmlInited)
             return;
-        //This is the slow way, the fast way (SAX) looks like too much work.
+        // This is the slow way, the fast way (SAX) looks like too much work.
         Document dom;
-        if ((dom = parseFile(ClassLoader
-            .getSystemResourceAsStream("net/starmen/pkhack/ips/ipslisting.xml"))) == null)
+        if ((dom = parseFile(IPSDatabase.class
+            .getResourceAsStream("ips/ipslisting.xml"))) == null)
         {
             System.out.println("Error reading ipslisting.xml!");
         }
         else
         {
-            //put the xml elements as java objects into entries ArrayList
+            // put the xml elements as java objects into entries ArrayList
             NodeList nl = dom.getElementsByTagName("ips");
             for (int i = 0; i < nl.getLength(); i++)
             {
@@ -346,7 +344,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
                 try
                 {
                     DatabaseEntry e = getRow(row);
-                    //(IPSDatabaseEntry) entries.get(row);
+                    // (IPSDatabaseEntry) entries.get(row);
                     switch (col)
                     {
                         case 0:
@@ -423,7 +421,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
     {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setValidating(true);
-        //factory.setNamespaceAware(true);
+        // factory.setNamespaceAware(true);
         try
         {
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -576,7 +574,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
         if (!hm.rom.apply(ips))
         {
             hm.askExpandType();
-            //if still unable to apply, force 6MB and try again
+            // if still unable to apply, force 6MB and try again
             if (!hm.rom.apply(ips))
             {
                 if (hm.rom.length() == 0x400200)
@@ -609,7 +607,7 @@ public class IPSDatabase extends GeneralHackModule implements ActionListener
             if (!hm.rom.unapply(ips, orgRom))
             {
                 hm.askExpandType();
-                //if still unable to apply, force 6MB and try again
+                // if still unable to apply, force 6MB and try again
                 if (!hm.rom.unapply(ips, orgRom))
                 {
                     if (hm.rom.length() == 0x400200)

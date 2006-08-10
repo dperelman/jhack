@@ -3329,6 +3329,8 @@ public abstract class HackModule
             + File.separator;
     }
 
+    // TODO proper way to handle this? Maybe just get the URLClassLoader from
+    // MainGUI?
     /**
      * Reads a file into an array. The existance of a ROM-specific file will be
      * checked before reading the default file. First
@@ -3339,6 +3341,7 @@ public abstract class HackModule
      * allowed within <code>Entry</code>.<code>EntryNum</code> will be
      * read as decimal or hexidecimal depending on <code>hexNum</code>.
      * 
+     * @param cl <code>ClassLoader</code> to use to find the default file
      * @param filename where to look for the file. (rompath.filename or
      *            /net/starmen/pkhack/filename will be used)
      * @param hexNum if true entry numbers in the file will be interpreted as
@@ -3349,8 +3352,8 @@ public abstract class HackModule
      * @see #readArray(String, boolean, String[])
      * @see #writeArray(String, boolean, String[])
      */
-    public static void readArray(String baseDir, String filename,
-        String romPath, boolean hexNum, String[] out, int size)
+    public static void readArray(ClassLoader cl, String baseDir,
+        String filename, String romPath, boolean hexNum, String[] out, int size)
     {
         if (out == null)
             out = new String[size];
@@ -3375,9 +3378,8 @@ public abstract class HackModule
                 System.out.println("No ROM specific " + filename
                     + " file was found, using default (" + baseDir + filename
                     + ").");
-                list = new CommentedLineNumberReader(new InputStreamReader(
-                    ClassLoader.getSystemResourceAsStream(baseDir + filename)))
-                    .readUsedLines();
+                list = new CommentedLineNumberReader(new InputStreamReader(cl
+                    .getResourceAsStream(baseDir + filename))).readUsedLines();
             }
             String[] tempStr;
             for (int i = 0; i < list.length; i++)
@@ -3402,6 +3404,33 @@ public abstract class HackModule
     }
 
     /**
+     * Reads a file into an array. The existance of a ROM-specific file will be
+     * checked before reading the default file. First
+     * <code>rompath.filename</code> will be searched for a ROM-specific file.
+     * If there is no ROM specific file, the default file at net/starmen/pkhack/
+     * <code>filename</code> will be used. The array should be in the format
+     * <code>EntryNum - Entry\n</code>. All whitespace is ignored (spaces are
+     * allowed within <code>Entry</code>.<code>EntryNum</code> will be
+     * read as decimal or hexidecimal depending on <code>hexNum</code>.
+     * 
+     * @param filename where to look for the file. (rompath.filename or
+     *            /net/starmen/pkhack/filename will be used)
+     * @param hexNum if true entry numbers in the file will be interpreted as
+     *            hex
+     * @param out array data will be read into, this same array will be returned
+     * @param size size of array to create if <code>out</code> is null
+     * @see #readArray(String, boolean, int)
+     * @see #readArray(String, boolean, String[])
+     * @see #writeArray(String, boolean, String[])
+     */
+    private static void readArray(String baseDir, String filename,
+        String romPath, boolean hexNum, String[] out, int size)
+    {
+        readArray(HackModule.class.getClassLoader(), baseDir, filename,
+            romPath, hexNum, out, size);
+    }
+
+    /**
      * Reads a file into an array. See
      * {@link #readArray(String, String, String, boolean, String[], int)}for
      * more information.
@@ -3415,10 +3444,53 @@ public abstract class HackModule
      * @see #readArray(String, String, String, boolean, String[], int)
      * @see #writeArray(String, boolean, String[])
      */
-    public static void readArray(String baseDir, String filename,
+    private static void readArray(String baseDir, String filename,
         String romPath, boolean hexNum, String[] out)
     {
         readArray(baseDir, filename, romPath, hexNum, out, out.length);
+    }
+    
+    /**
+     * Reads a file into an array. See
+     * {@link #readArray(String, String, String, boolean, String[], int)}for
+     * more information.
+     * 
+     * @param cl <code>ClassLoader</code> to use to find the default file
+     * @param filename where to look for the file. (rompath.filename or
+     *            /net/starmen/pkhack/filename will be used)
+     * @param hexNum if true entry numbers in the file will be interpreted as
+     *            hex
+     * @param out array data will be read into, this same array will be returned
+     * @see #readArray(String, boolean, int)
+     * @see #readArray(String, String, String, boolean, String[], int)
+     * @see #writeArray(String, boolean, String[])
+     */
+    public static void readArray(ClassLoader cl, String baseDir, String filename,
+        String romPath, boolean hexNum, String[] out)
+    {
+        readArray(cl, baseDir, filename, romPath, hexNum, out, out.length);
+    }
+
+    /**
+     * Reads a file into an array. See
+     * {@link #readArray(String, String, String, boolean, String[], int)}for
+     * more information.
+     * 
+     * @param cl <code>ClassLoader</code> to use to find the default file
+     * @param baseDir directory to look in for file
+     * @param filename where to look for the file. (<code>baseDir</code>+
+     *            <code>filename</code> will be used)
+     * @param hexNum if true entry numbers in the file will be interpreted as
+     *            hex
+     * @param out array data will be read into, this same array will be returned
+     * @see #readArray(String, String, boolean, int)
+     * @see #readArray(String, String, String, boolean, String[], int)
+     * @see #writeArray(String, boolean, String[])
+     */
+    public static void readArray(ClassLoader cl, String baseDir,
+        String filename, boolean hexNum, String[] out)
+    {
+        readArray(cl, baseDir, filename, null, hexNum, out, out.length);
     }
 
     /**
@@ -3436,7 +3508,7 @@ public abstract class HackModule
      * @see #readArray(String, String, String, boolean, String[], int)
      * @see #writeArray(String, boolean, String[])
      */
-    public static void readArray(String baseDir, String filename,
+    private static void readArray(String baseDir, String filename,
         boolean hexNum, String[] out)
     {
         readArray(baseDir, filename, null, hexNum, out, out.length);
@@ -3458,7 +3530,8 @@ public abstract class HackModule
      */
     public void readArray(String filename, boolean hexNum, String[] out)
     {
-        readArray(getDefaultBaseDir(), filename, null, hexNum, out, out.length);
+        readArray(this.getClass().getClassLoader(), getDefaultBaseDir(),
+            filename, null, hexNum, out, out.length);
     }
 
     /**
@@ -3477,7 +3550,7 @@ public abstract class HackModule
      * @see #readArray(String, String, String, boolean, String[], int)
      * @see #writeArray(String, boolean, String[])
      */
-    public static String[] readArray(String baseDir, String filename,
+    private static String[] readArray(String baseDir, String filename,
         String romPath, boolean hexNum, int size)
     {
         String[] out = new String[size];
@@ -3502,7 +3575,7 @@ public abstract class HackModule
      * @see #readArray(String, String, String, boolean, String[], int)
      * @see #writeArray(String, boolean, String[])
      */
-    public static String[] readArray(String baseDir, String filename,
+    private static String[] readArray(String baseDir, String filename,
         boolean hexNum, int size)
     {
         String[] out = new String[size];
@@ -3531,7 +3604,8 @@ public abstract class HackModule
     public String[] readArray(String filename, boolean hexNum, int size)
     {
         String[] out = new String[size];
-        readArray(getDefaultBaseDir(), filename, null, hexNum, out, size);
+        readArray(this.getClass().getClassLoader(), getDefaultBaseDir(),
+            filename, null, hexNum, out, size);
         return out;
     }
 

@@ -34,11 +34,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 
+import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.CommentedLineNumberReader;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.IPSFile;
 import net.starmen.pkhack.JHack;
-import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.RomMem;
 import net.starmen.pkhack.XMLPreferences;
 
@@ -83,7 +83,7 @@ public class ResetButton extends EbHackModule implements ActionListener
     private JTextField startTF, endTF, lenTF;
     private JComboBox rangeSelector, subrangeSelector;
     private JButton decomp, comp;
-    private boolean isCustom = true; //false = preset range
+    private boolean isCustom = true; // false = preset range
     private boolean changingTF = false, changingSlider = false;
 
     private AbstractRom orgRom = null;
@@ -198,7 +198,7 @@ public class ResetButton extends EbHackModule implements ActionListener
             IPSFile ips = rom.createIPS(orgRom, getStart(), getStart()
                 + getLen() - 1);
 
-            if (ips.getRecordCount() == 0) //no changes
+            if (ips.getRecordCount() == 0) // no changes
             {
                 JOptionPane.showMessageDialog(null,
                     "Cannot create patch. ROMs are identical.", "Error!",
@@ -238,9 +238,8 @@ public class ResetButton extends EbHackModule implements ActionListener
         try
         {
             String[] ranges = new CommentedLineNumberReader(
-                new InputStreamReader(ClassLoader
-                    .getSystemResourceAsStream(DEFAULT_BASE_DIR
-                        + "resetranges.txt"))).readUsedLines();
+                new InputStreamReader(this.getClass().getResourceAsStream(
+                    "resetranges.txt"))).readUsedLines();
 
             ResetRange lastRange = new ResetRange(0, 0, "");
             for (int i = 0; i < ranges.length; i++)
@@ -257,14 +256,14 @@ public class ResetButton extends EbHackModule implements ActionListener
 
                 if (split[0].charAt(0) == '_')
                 {
-                    //stuff that should already be somewhere else
+                    // stuff that should already be somewhere else
                     split[0] = split[0].substring(1).trim();
                     if (split[0].equalsIgnoreCase("items"))
                     {
                         ItemEditor.readFromRom(this);
                         for (int j = 0; j < ItemEditor.items.length; j++)
                         {
-                            //Item entries are 39 bytes long
+                            // Item entries are 39 bytes long
                             lastRange.addSubRange(new ResetRange(
                                 ItemEditor.items[j].address, 39,
                                 ItemEditor.items[j].toString()));
@@ -330,7 +329,7 @@ public class ResetButton extends EbHackModule implements ActionListener
                         EnemyEditor.readFromRom(this);
                         for (int j = 0; j < EnemyEditor.enemies.length; j++)
                         {
-                            //Enemy entries are 94 bytes long
+                            // Enemy entries are 94 bytes long
                             lastRange.addSubRange(new ResetRange(
                                 EnemyEditor.enemies[j].getAddress(), 94,
                                 EnemyEditor.enemies[j].toString()));
@@ -346,7 +345,7 @@ public class ResetButton extends EbHackModule implements ActionListener
                         len = (Integer.parseInt(sp[1].trim(), 16) - st) + 1;
                     }
                     else
-                    //if (split[0].indexOf("len") != -1)
+                    // if (split[0].indexOf("len") != -1)
                     {
                         String[] sp = split[0].split("len");
                         if (sp[0].trim().length() == 0)
@@ -421,7 +420,7 @@ public class ResetButton extends EbHackModule implements ActionListener
 
         mainWindow.getContentPane().setLayout(new BorderLayout());
 
-        //start bottom buttons
+        // start bottom buttons
         JPanel buttons = new JPanel();
         buttons.setLayout(new FlowLayout());
 
@@ -455,7 +454,7 @@ public class ResetButton extends EbHackModule implements ActionListener
         buttons.add(close);
 
         mainWindow.getContentPane().add(buttons, BorderLayout.SOUTH);
-        //end bottom buttons
+        // end bottom buttons
 
         Box entry = new Box(BoxLayout.Y_AXIS);
 
@@ -500,7 +499,7 @@ public class ResetButton extends EbHackModule implements ActionListener
             }
         });
 
-        //slider ChangeListener
+        // slider ChangeListener
         ChangeListener scl = new ChangeListener()
         {
             public void stateChanged(ChangeEvent arg0)
@@ -525,13 +524,13 @@ public class ResetButton extends EbHackModule implements ActionListener
                     }
                     catch (IllegalStateException e)
                     {
-                        //e.printStackTrace();
+                        // e.printStackTrace();
                     }
                     changingSlider = false;
                 }
             }
         };
-        //TextField DocumentListner
+        // TextField DocumentListner
         DocumentListener tdl = new DocumentListener()
         {
             public void doStuff()
@@ -558,8 +557,8 @@ public class ResetButton extends EbHackModule implements ActionListener
                         start.setValue(Math.min(st, e));
                         end.setValue(Math.max(st, e));
                     }
-                    //                    lenTF.setText(Integer.toString(end.getValue()
-                    //                        - start.getValue() + 1, 16));
+                    // lenTF.setText(Integer.toString(end.getValue()
+                    // - start.getValue() + 1, 16));
                     changingTF = false;
                 }
             }
@@ -592,14 +591,14 @@ public class ResetButton extends EbHackModule implements ActionListener
         end.addChangeListener(scl);
         startTF.getDocument().addDocumentListener(tdl);
         endTF.getDocument().addDocumentListener(tdl);
-        //lenTF.getDocument().addDocumentListener(tdl);
+        // lenTF.getDocument().addDocumentListener(tdl);
         scl.stateChanged(new ChangeEvent(this));
 
         mainWindow.getContentPane().add(
             HackModule.pairComponents(new JLabel(), entry, false),
             BorderLayout.CENTER);
 
-        //load ROM stuff
+        // load ROM stuff
         orgRom = JHack.main.getOrginalRomFile(rom.getRomType());
         JButton loadb;
         JPanel loadPane = HackModule.pairComponents(
@@ -646,7 +645,7 @@ public class ResetButton extends EbHackModule implements ActionListener
     {
         return "Written by AnyoneEB\n"
             + "Idea based on Dr Andount's Reset Button";
-        //			+ "\nRanges from the PK AbstractRom Map";
+        // + "\nRanges from the PK AbstractRom Map";
     }
 
     /**
@@ -706,13 +705,13 @@ public class ResetButton extends EbHackModule implements ActionListener
     {
         if (ae.getActionCommand().equals("load"))
         {
-            //don't overwrite orginal ROM file
+            // don't overwrite orginal ROM file
             AbstractRom tmpRom = orgRom;
             if (orgRom == JHack.main.getOrginalRomFile(rom.getRomType()))
             {
                 orgRom = new RomMem();
             }
-            //if user cancels load, use previously loaded ROM
+            // if user cancels load, use previously loaded ROM
             if (orgRom.loadRom())
                 path.setText(orgRom.getPath());
             else
@@ -768,7 +767,7 @@ public class ResetButton extends EbHackModule implements ActionListener
                 }
                 catch (NullPointerException e)
                 {
-                    //User canceled
+                    // User canceled
                 }
                 catch (FileNotFoundException e)
                 {
@@ -799,7 +798,7 @@ public class ResetButton extends EbHackModule implements ActionListener
                 int tmp = comp(udata, buffer);
                 if (tmp > this.getSelectedRange().getLen())
                 {
-                    //longer than selected area
+                    // longer than selected area
                     if (JOptionPane.showConfirmDialog(this.mainWindow,
                         "Compressed data is larger than the selected range.\n"
                             + "Do you wish to write past selected range?",
@@ -814,7 +813,7 @@ public class ResetButton extends EbHackModule implements ActionListener
             }
             catch (NullPointerException e)
             {
-                //User canceled
+                // User canceled
             }
             catch (FileNotFoundException e)
             {
@@ -864,7 +863,7 @@ public class ResetButton extends EbHackModule implements ActionListener
 
         mainWindow.setVisible(true);
 
-        //IPSInfo.main(this);
+        // IPSInfo.main(this);
     }
 
     public void reset()

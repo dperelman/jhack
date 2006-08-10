@@ -42,7 +42,7 @@ public class ActionEditor extends EbHackModule implements ActionListener
     private static boolean asmEffectsInited;
     private static String[] asmEffects;
 
-    //GUI components
+    // GUI components
     private JComboBox actionSel, targetSel, effectSel, dirSel;
     private JTextField actionName, ppBox, unknownBox;
     private AutoSearchBox asmAddBox;
@@ -52,9 +52,9 @@ public class ActionEditor extends EbHackModule implements ActionListener
     {
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
-        //mainWindow.setSize(400, 250);
+        // mainWindow.setSize(400, 250);
         mainWindow.setResizable(true);
-        
+
         readFromRom();
         initEffectsList();
 
@@ -65,7 +65,7 @@ public class ActionEditor extends EbHackModule implements ActionListener
 
         actionSel = HackModule.createComboBox(effects, null, this);
         actionSel.setActionCommand("actionSel");
-        //actionSel.addActionListener(this);
+        // actionSel.addActionListener(this);
         mainWindow.getContentPane().add(
             new JSearchableComboBox(actionSel, "Action: "), BorderLayout.NORTH);
 
@@ -75,8 +75,8 @@ public class ActionEditor extends EbHackModule implements ActionListener
         dirSel = new JComboBox();
         dirSel.addItem("Enemy");
         dirSel.addItem("Self/Party");
-        //		dirSel.setActionCommand("dirSel");
-        //		dirSel.addActionListener(this);
+        // dirSel.setActionCommand("dirSel");
+        // dirSel.addActionListener(this);
         entry.add(getLabeledComponent("Direction:", dirSel));
 
         targetSel = new JComboBox();
@@ -85,27 +85,27 @@ public class ActionEditor extends EbHackModule implements ActionListener
         targetSel.addItem("Random one");
         targetSel.addItem("Row");
         targetSel.addItem("All");
-        //		targetSel.setActionCommand("targetSel");
-        //		targetSel.addActionListener(this);
+        // targetSel.setActionCommand("targetSel");
+        // targetSel.addActionListener(this);
         entry.add(getLabeledComponent("Target:", targetSel));
 
         unknownBox = new JTextField(10);
-        //		unknownBox.setActionCommand("unknownBox");
-        //		unknownBox.addActionListener(this);
+        // unknownBox.setActionCommand("unknownBox");
+        // unknownBox.addActionListener(this);
         entry.add(getLabeledComponent("Unknown (Miss Rate?):", unknownBox));
 
         ppBox = new JTextField(10);
-        //		ppBox.setActionCommand("ppBox");
-        //		ppBox.addActionListener(this);
+        // ppBox.setActionCommand("ppBox");
+        // ppBox.addActionListener(this);
         entry.add(getLabeledComponent("PP Cost:", ppBox));
 
         entry.add(Box.createVerticalStrut(5));
 
-        //		textAdd = new TextEditor.TextOffsetEntry();
-        //		textAddBox.setActionCommand("textAddBox");
-        //		textAddBox.addActionListener(this);
-        entry.add(textAdd = new TextEditor.TextOffsetEntry("Text Address",
-            true));
+        // textAdd = new TextEditor.TextOffsetEntry();
+        // textAddBox.setActionCommand("textAddBox");
+        // textAddBox.addActionListener(this);
+        entry
+            .add(textAdd = new TextEditor.TextOffsetEntry("Text Address", true));
 
         effectSel = new JComboBox(asmEffects);
         effectSel.addItem("UNKNOWN");
@@ -119,22 +119,22 @@ public class ActionEditor extends EbHackModule implements ActionListener
         actionSel.setSelectedIndex(0);
 
         mainWindow.pack();
-    }  
-    
-    public void show(Object object)
-	{
-    	super.show();
-    	readFromRom();
-    	this.actionSel.setSelectedIndex(Integer.parseInt(object.toString()));
-    	mainWindow.setVisible(true);
     }
-    
+
+    public void show(Object object)
+    {
+        super.show();
+        readFromRom();
+        this.actionSel.setSelectedIndex(Integer.parseInt(object.toString()));
+        mainWindow.setVisible(true);
+    }
+
     public void show()
-	{
-    	super.show();
-    	readFromRom();
-    	
-    	mainWindow.setVisible(true);
+    {
+        super.show();
+        readFromRom();
+
+        mainWindow.setVisible(true);
     }
 
     public static void readFromRom(HackModule hm)
@@ -154,18 +154,19 @@ public class ActionEditor extends EbHackModule implements ActionListener
     {
         asmEffectsInited = true;
         asmEffects = new String[300];
-        readArray(DEFAULT_BASE_DIR, "asmEffects.txt", true, asmEffects);
-       
+        readArray(ActionEditor.class.getClassLoader(), DEFAULT_BASE_DIR,
+            "asmEffects.txt", true, asmEffects);
+
         String[] tempArray;
-        for(int i = 0; i < asmEffects.length; i++)
+        for (int i = 0; i < asmEffects.length; i++)
         {
-        	if (asmEffects[i]==asmEffects[299])
-        	{
-        		tempArray = new String[i];
-        		for(int j = 0; j < i; j++)
-        			tempArray[j] = asmEffects[j];
-        		asmEffects = tempArray;
-        	}
+            if (asmEffects[i] == asmEffects[299])
+            {
+                tempArray = new String[i];
+                for (int j = 0; j < i; j++)
+                    tempArray[j] = asmEffects[j];
+                asmEffects = tempArray;
+            }
         }
     }
 
@@ -183,7 +184,7 @@ public class ActionEditor extends EbHackModule implements ActionListener
         {
             hide();
         }
-   }
+    }
 
     public void saveInfo(int i)
     {
@@ -204,7 +205,8 @@ public class ActionEditor extends EbHackModule implements ActionListener
     public void showInfo(int i)
     {
         if (!search(addZeros(Integer.toString(actions[i].getASMAdd(), 16), 6),
-            effectSel, true, false)) effectSel.setSelectedIndex(0);
+            effectSel, true, false))
+            effectSel.setSelectedIndex(0);
 
         actionName.setText(effects[i]);
 
@@ -216,83 +218,84 @@ public class ActionEditor extends EbHackModule implements ActionListener
         asmAddBox.setText(addZeros(
             Integer.toString(actions[i].getASMAdd(), 16), 6));
     }
-    
+
     /**
-     * JPanel containing combobox and hyperlink label that 
-     * calls the Action Editor and sets the data being edited
-     * to the data in the combobox when clicked
-     *
+     * JPanel containing combobox and hyperlink label that calls the Action
+     * Editor and sets the data being edited to the data in the combobox when
+     * clicked
+     * 
      */
     public static class ActionEntry extends JPanel
-	{
-    	protected JComboBox cb;
-    	protected JLabel t;
+    {
+        protected JComboBox cb;
+        protected JLabel t;
 
-    	/**
-    	 * Creates a new <code>ActionEntry</code> component.
-    	 * 
-    	 * @param label words to identify this component with
-    	 */
-    	public ActionEntry(final String label) {
-    		super(new BorderLayout());
+        /**
+         * Creates a new <code>ActionEntry</code> component.
+         * 
+         * @param label words to identify this component with
+         */
+        public ActionEntry(final String label)
+        {
+            super(new BorderLayout());
 
-    		cb = HackModule.createComboBox(effects);
+            cb = HackModule.createComboBox(effects);
 
-    		this.add(cb, BorderLayout.EAST);
+            this.add(cb, BorderLayout.EAST);
 
-    		t = new JLabel("<html><font color = \"blue\"><u>" + label
-    				+ "</u></font>" + ":" + "</html>");
-    		t.addMouseListener(
-    		new MouseListener()
-    		{
-    			public void mouseClicked(MouseEvent arg0)
-				{
-    				int index = cb.getSelectedIndex();
-    				JHack.main.showModule(ActionEditor.class, new Integer(index));
-    			}
+            t = new JLabel("<html><font color = \"blue\"><u>" + label
+                + "</u></font>" + ":" + "</html>");
+            t.addMouseListener(new MouseListener()
+            {
+                public void mouseClicked(MouseEvent arg0)
+                {
+                    int index = cb.getSelectedIndex();
+                    JHack.main.showModule(ActionEditor.class,
+                        new Integer(index));
+                }
 
-    			public void mouseEntered(MouseEvent arg0)
-				{}
+                public void mouseEntered(MouseEvent arg0)
+                {}
 
-    			public void mouseExited(MouseEvent arg0)
-				{}
+                public void mouseExited(MouseEvent arg0)
+                {}
 
-    			public void mousePressed(MouseEvent arg0)
-				{}
+                public void mousePressed(MouseEvent arg0)
+                {}
 
-    			public void mouseReleased(MouseEvent arg0)
-				{}
-    		});
-    		t.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                public void mouseReleased(MouseEvent arg0)
+                {}
+            });
+            t.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-    		this.add(t, BorderLayout.WEST);
-    	}
+            this.add(t, BorderLayout.WEST);
+        }
 
-    	public int getSelectedIndex()
-		{
-    		return cb.getSelectedIndex();
-    	}
+        public int getSelectedIndex()
+        {
+            return cb.getSelectedIndex();
+        }
 
-    	public void setSelectedIndex(int index)
-		{
-    		cb.setSelectedIndex(index);
-    		cb.repaint();
-    	}
-    	
-    	public void setActionCommand(String s)
-    	{
-    		cb.setActionCommand(s);
-    	}
-    	
-    	public void addActionListener(ActionListener al)
-    	{
-    		cb.addActionListener(al);
-    	}
-    	
-    	public String getActionCommand()
-		{
-    		return cb.getActionCommand();
-    	}
+        public void setSelectedIndex(int index)
+        {
+            cb.setSelectedIndex(index);
+            cb.repaint();
+        }
+
+        public void setActionCommand(String s)
+        {
+            cb.setActionCommand(s);
+        }
+
+        public void addActionListener(ActionListener al)
+        {
+            cb.addActionListener(al);
+        }
+
+        public String getActionCommand()
+        {
+            return cb.getActionCommand();
+        }
     }
 
     public String getDescription()
@@ -316,7 +319,9 @@ public class ActionEditor extends EbHackModule implements ActionListener
         mainWindow.setVisible(false);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see net.starmen.pkhack.HackModule#reset()
      */
     public void reset()
@@ -348,7 +353,7 @@ public class ActionEditor extends EbHackModule implements ActionListener
         }
         /**
          * Direction of the attack (0 = party, 1 = enemy)
-         *
+         * 
          */
         private int direction;
 
@@ -362,8 +367,9 @@ public class ActionEditor extends EbHackModule implements ActionListener
             this.direction = i;
         }
         /**
-         * Target of the attack (0 = none, 1 = one, 2 = random one, 3 = row, 4 = all)
-         *
+         * Target of the attack (0 = none, 1 = one, 2 = random one, 3 = row, 4 =
+         * all)
+         * 
          */
         private int target;
 
@@ -393,7 +399,7 @@ public class ActionEditor extends EbHackModule implements ActionListener
         }
         /**
          * PP cost
-         *
+         * 
          */
         private int ppCost;
 
@@ -467,7 +473,9 @@ public class ActionEditor extends EbHackModule implements ActionListener
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
      */
 }

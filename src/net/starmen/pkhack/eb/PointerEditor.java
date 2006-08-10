@@ -115,9 +115,8 @@ public class PointerEditor extends EbHackModule implements ActionListener
         try
         {
             String[] pointerList = new CommentedLineNumberReader(
-                new InputStreamReader(ClassLoader
-                    .getSystemResourceAsStream(DEFAULT_BASE_DIR
-                        + "pointerList.txt"))).readUsedLines();
+                new InputStreamReader(this.getClass().getResourceAsStream(
+                    "pointerList.txt"))).readUsedLines();
 
             for (int i = 0; i < pointerList.length; i++)
             {
@@ -242,12 +241,12 @@ public class PointerEditor extends EbHackModule implements ActionListener
     {
         super.show();
         showInfo();
-        mainWindow.show();
+        mainWindow.setVisible(true);
     }
 
     public void hide()
     {
-        mainWindow.hide();
+        mainWindow.setVisible(false);
     }
 
     /*

@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -105,10 +106,10 @@ public class TextEditor extends EbHackModule implements ActionListener
     public static final int NUM_CC_TYPES = 3;
     public static final boolean[] ALLOW_COMP = new boolean[]{true, false, false};
     public static final boolean[] IS_CREDITS = new boolean[]{false, false, true};
-    public static final String[] CODELIST_LOCS = new String[]{
-        DEFAULT_BASE_DIR + "codelist.txt",
-        DEFAULT_BASE_DIR + "teacodelist.txt",
-        DEFAULT_BASE_DIR + "creditcodelist.txt"};
+    public static final URL[] CODELIST_LOCS = new URL[]{
+        TextEditor.class.getResource("codelist.txt"),
+        TextEditor.class.getResource("teacodelist.txt"),
+        TextEditor.class.getResource("creditcodelist.txt")};
     public static final int[] TEXT_CC_TYPE = new int[]{CC_MAIN, CC_MAIN,
         CC_MAIN, CC_TEA, CC_CRD};
 

@@ -68,7 +68,8 @@ public class StoreEditor extends EbHackModule implements ActionListener
         if (!storeNamesInited)
         {
             storeNamesInited = true;
-            readArray(DEFAULT_BASE_DIR, "storeNames.txt", false, storeNames);
+            readArray(StoreEditor.class.getClassLoader(), DEFAULT_BASE_DIR,
+                "storeNames.txt", false, storeNames);
         }
     }
 
@@ -76,7 +77,7 @@ public class StoreEditor extends EbHackModule implements ActionListener
     {
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
-        //mainWindow.setSize(350, 300);
+        // mainWindow.setSize(350, 300);
         mainWindow.setResizable(true);
 
         initStoreNames();
@@ -203,7 +204,7 @@ public class StoreEditor extends EbHackModule implements ActionListener
             int j = Integer.parseInt(ae.getActionCommand().substring(13, 14));
             if (item[j].getSelectedIndex() < 0)
                 return;
-            //last char
+            // last char
             money[j].setText(Integer.toString(ItemEditor.items[item[j]
                 .getSelectedIndex()].cost));
         }
@@ -255,7 +256,7 @@ public class StoreEditor extends EbHackModule implements ActionListener
                 items[i] = rom.readSeek();
             }
         }
-        
+
         /**
          * Returns which store number this is.
          * 

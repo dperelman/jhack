@@ -5,6 +5,7 @@ package net.starmen.pkhack;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -122,7 +123,7 @@ public class CCInfo
     private boolean allowComp = false, crdChr = false;
     private static final int asciiOff = 0x30;
 
-    public CCInfo(String codefile, AbstractRom rom, boolean allowComp,
+    public CCInfo(URL codefile, AbstractRom rom, boolean allowComp,
         boolean crdChr)
     {
         this.rom = rom;
@@ -137,7 +138,7 @@ public class CCInfo
         createCompressionTable(comprTable);
     }
 
-    public CCInfo(String codefile, AbstractRom rom)
+    public CCInfo(URL codefile, AbstractRom rom)
     {
         this(codefile, rom, true, false);
     }
@@ -1251,7 +1252,7 @@ public class CCInfo
         // System.out.println("Created compression table!");
     }
 
-    protected void createCCTable(CCNode table, String filename)
+    protected void createCCTable(CCNode table, URL url)
     {
         int[] nodestr;
         String descstr;
@@ -1259,8 +1260,7 @@ public class CCInfo
         try
         {
             String[] file = new CommentedLineNumberReader(
-                new InputStreamReader(ClassLoader
-                    .getSystemResourceAsStream(filename))).readLines();
+                new InputStreamReader(url.openStream())).readLines();
 
             /*
              * if(file) { fseek(file, 0, SEEK_SET); while(!feof(file))

@@ -64,7 +64,7 @@ public class XMLPreferences
         {
             try
             {
-                copy(ClassLoader.getSystemResourceAsStream("preferences.dtd"),
+                copy(this.getClass().getResourceAsStream("/preferences.dtd"),
                     new FileOutputStream(preferencesDTD),
                     PREFERENCES_DTD_FILESIZE);
             }
@@ -86,8 +86,8 @@ public class XMLPreferences
                     g.renameTo(new File(g.toString() + ".old"));
                 try
                 {
-                    copy(ClassLoader
-                        .getSystemResourceAsStream("emptyPrefs.xml"),
+                    copy(
+                        this.getClass().getResourceAsStream("/emptyPrefs.xml"),
                         new FileOutputStream(f), EMPTY_PREFS_XML_FILESIZE);
                 }
                 catch (NullPointerException e)
@@ -103,8 +103,8 @@ public class XMLPreferences
                 }
                 try
                 {
-                    copy(ClassLoader
-                        .getSystemResourceAsStream("preferences.dtd"),
+                    copy(this.getClass()
+                        .getResourceAsStream("/preferences.dtd"),
                         new FileOutputStream(new File(f.getAbsoluteFile()
                             .getParent()
                             + File.separatorChar + "preferences.dtd")),

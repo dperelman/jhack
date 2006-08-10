@@ -468,8 +468,8 @@ public class LogoScreenEditor extends FullScreenGraphicsEditor
      */
     public static void initLogoScreenNames(String romPath)
     {
-        readArray(DEFAULT_BASE_DIR, "logoScreenNames.txt", romPath, false,
-            logoScreenNames);
+        readArray(LogoScreenEditor.class.getClassLoader(), DEFAULT_BASE_DIR,
+            "logoScreenNames.txt", romPath, false, logoScreenNames);
     }
 
     public void reset()

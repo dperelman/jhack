@@ -365,8 +365,8 @@ public class TownMapEditor extends FullScreenGraphicsEditor
      */
     public static void initTownMapNames(String romPath)
     {
-        readArray(DEFAULT_BASE_DIR, "townMapNames.txt", romPath, false,
-            townMapNames);
+        readArray(TownMapEditor.class.getClassLoader(), DEFAULT_BASE_DIR,
+            "townMapNames.txt", romPath, false, townMapNames);
     }
 
     public FullScreenGraphics getScreen(int num)

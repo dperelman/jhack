@@ -1106,8 +1106,8 @@ public class FlyoverEditor extends EbHackModule implements ActionListener,
     protected void init()
     {
         scene = new Flyover[NUM_SCENES];
-        textParser = new CCInfo(DEFAULT_BASE_DIR + "teacodelist.txt", rom,
-            false, false);
+        textParser = new CCInfo(this.getClass().getResource("teacodelist.txt"),
+            rom, false, false);
         textPointerField = new JTextField[NUM_SCENES];
         sceneArea = new JTextArea[NUM_SCENES];
         originalSizeSceneField = new JTextField[NUM_SCENES];

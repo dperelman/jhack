@@ -112,10 +112,8 @@ public class MainGUI implements ActionListener, WindowListener
 
         try
         {
-            moduleNames = new CommentedLineNumberReader(
-                new InputStreamReader(
-                    ClassLoader
-                        .getSystemResourceAsStream("net/starmen/pkhack/modulelist.txt")))
+            moduleNames = new CommentedLineNumberReader(new InputStreamReader(
+                this.getClass().getResourceAsStream("modulelist.txt")))
                 .readUsedLines();
         }
         catch (IOException e)

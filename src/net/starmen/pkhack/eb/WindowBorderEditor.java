@@ -222,9 +222,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
             subPalNums = new byte[423];
             try
             {
-                InputStream in = ClassLoader
-                    .getSystemResourceAsStream(DEFAULT_BASE_DIR
-                        + "windowGPals.dat");
+                InputStream in = WindowBorderEditor.class
+                    .getResourceAsStream("windowGPals.dat");
                 int i = 0;
                 while (i < 423)
                 {
@@ -488,9 +487,8 @@ public class WindowBorderEditor extends EbHackModule implements ActionListener
                 return;
             try
             {
-                DataInputStream in = new DataInputStream((ClassLoader
-                    .getSystemResourceAsStream(DEFAULT_BASE_DIR
-                        + "windowPrevArr.dat")));
+                DataInputStream in = new DataInputStream((this.getClass()
+                    .getResourceAsStream("windowPrevArr.dat")));
                 for (int x = 0; x < arrangement.length; x++)
                     for (int y = 0; y < arrangement[0].length; y++)
                         arrangement[x][y] = in.readShort();

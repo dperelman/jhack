@@ -51,9 +51,9 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
     {
         mainWindow = createBaseWindow(this);
         mainWindow.setTitle(this.getDescription());
-        //mainWindow.setSize(300, 120);
+        // mainWindow.setSize(300, 120);
 
-        //make a JComboBox to select entry, and a JTextField to edit it
+        // make a JComboBox to select entry, and a JTextField to edit it
         JPanel entry = new JPanel();
         entry.setLayout(new BoxLayout(entry, BoxLayout.Y_AXIS));
 
@@ -112,13 +112,14 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
      */
     public static void readFromRom(HackModule hm)
     {
-        String[] miscTextList = new String[0]; //list of misc. text entries
+        String[] miscTextList = new String[0]; // list of misc. text entries
 
         try
         {
             miscTextList = new CommentedLineNumberReader(new InputStreamReader(
-                ClassLoader.getSystemResourceAsStream(DEFAULT_BASE_DIR
-                    + "miscTextLocations.txt"))).readUsedLines();
+                MiscTextEditor.class
+                    .getResourceAsStream("miscTextLocations.txt")))
+                .readUsedLines();
         }
         catch (IOException e)
         {
@@ -183,7 +184,7 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
             tf.setText(miscText[i].toString());
         }
         else
-        //note: two titles next to each other _WILL_ cause a crash
+        // note: two titles next to each other _WILL_ cause a crash
         {
             if (this.initing)
             {
@@ -194,14 +195,14 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
             {
                 selector.setSelectedIndex(current + 1);
             }
-            catch (IllegalArgumentException e) //if it's the last then try one
+            catch (IllegalArgumentException e) // if it's the last then try one
             // before
             {
                 try
                 {
                     selector.setSelectedIndex(current - 1);
                 }
-                catch (IllegalArgumentException iae) //if it's the only then
+                catch (IllegalArgumentException iae) // if it's the only then
                 // leave it
                 {
                     selector.setSelectedIndex(current);
@@ -256,7 +257,8 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
          * @param address Where to read from.
          * @param len How many characters to read.
          */
-        public MiscText(int address, int len, HackModule hm) //desc could be a
+        public MiscText(int address, int len, HackModule hm) // desc could be
+        // a
         // description or the
         // default text
         {
@@ -282,7 +284,7 @@ public class MiscTextEditor extends EbHackModule implements ActionListener
          * 
          * @param title Title to use
          */
-        public MiscText(String title) //make a fake entry for a separator
+        public MiscText(String title) // make a fake entry for a separator
         {
             title = "_" + title.toUpperCase() + "_";
             this.info = new char[title.length()];

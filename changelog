@@ -17,6 +17,8 @@ NEXT VERSION (after v0.5.11):
 # BUGFIX: extension appended in save dialog after user-entered extension 
 	in caps (thanks EBrent)
 # BUGFIX: Tile Selector stretched 8x8 tiles to 17x17 instead of 16x16 (thanks n42)
+# Some reworking done so classes do not care how they were loaded - 
+	to be used in the future to support by-module updates of PK Hack
 
 v0.5.11:
 # Flyover Editor v0.2: BUGFIX: 6MB ROM problem

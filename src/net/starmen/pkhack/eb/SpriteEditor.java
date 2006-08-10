@@ -1406,7 +1406,8 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
     public static void initSptNames(String romPath)
     {
         String[] tmp = new String[sptNames.length - 1];
-        readArray(DEFAULT_BASE_DIR, "sptNames.txt", romPath, false, tmp);
+        readArray(SpriteEditor.class.getClassLoader(), DEFAULT_BASE_DIR,
+            "sptNames.txt", romPath, false, tmp);
         System.arraycopy(tmp, 0, sptNames, 1, tmp.length);
         sptNames[0] = "Null";
     }

@@ -832,8 +832,7 @@ public class BattleSpriteEditor extends EbHackModule implements ActionListener,
     public void reset()
     {
         super.reset();
-        readArray(DEFAULT_BASE_DIR, "insideSprites.txt", rom.getPath(), false,
-            battleSpriteNames);
+        readArray("insideSprites.txt", false, battleSpriteNames);
     }
 
     private final static Color[] BITMAP_PAL = new Color[]{new Color(0, 0, 0),
