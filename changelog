@@ -16,6 +16,7 @@ NEXT VERSION (after v0.5.11):
 # Level-Up Experience Editor v0.3: Added import/export as .csv
 # BUGFIX: extension appended in save dialog after user-entered extension 
 	in caps (thanks EBrent)
+# BUGFIX: Tile Selector stretched 8x8 tiles to 17x17 instead of 16x16 (thanks n42)
 
 v0.5.11:
 # Flyover Editor v0.2: BUGFIX: 6MB ROM problem

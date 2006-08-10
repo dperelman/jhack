@@ -81,7 +81,7 @@ public abstract class TileSelector extends AbstractButton implements
     public int getDrawnTileSize(boolean includeGrid)
     {
         return (getTileSize() * getZoom())
-            + (isDrawGridLines() && includeGrid ? 1 : 0) + 1;
+            + (isDrawGridLines() && includeGrid ? 1 : 0);
     }
 
     /**
