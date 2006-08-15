@@ -510,7 +510,7 @@ public class DoorEditor extends EbHackModule
 			}
 		}
 
-		destPreview.remoteRepaint();
+		destPreview.repaint();
 		muteDL = false;
 	}
 
