@@ -104,13 +104,13 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
                                 .parseInt(tfs[i][3].getText());
                             if (ppuBox.getSelectedIndex() == 0)
                             {
+                            	preview.setPreviewBoxXY(x, y);
                                 preview.setMapXY(x, y);
-                                preview.setPreviewBoxXY(x, y);
                             }
                             else
                             {
-                                preview.setMapXY(x, y, 1);
                                 preview.disablePreviewBox();
+                                preview.setMapXY(x, y, 1);
                             }
                             return;
                         }
@@ -139,7 +139,7 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
         Box mapStuff = new Box(BoxLayout.Y_AXIS);
         mapStuff.add(Box.createVerticalGlue());
         JPanel prev = new JPanel(new BorderLayout());
-        preview = new MapGraphics(this, 4, 4, 5, false, false, true);
+        preview = new MapGraphics(this, 4, 4, 5, false, false, true, 8, false);
         preview.setPreferredSize(new Dimension((MapEditor.tileWidth * preview
             .getScreenWidth()), (MapEditor.tileHeight * preview
             .getScreenHeight())));
@@ -267,11 +267,12 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
                 tfs[i][3].setText(Integer.toString(td[i].y / 4));
             }
         rbs[0].setSelected(true);
+
+        preview.setMapXY(td[0].x, td[0].y);
         if (ppuBox.getSelectedIndex() == 0)
             preview.setPreviewBoxXY(td[0].x, td[0].y);
         else
             preview.disablePreviewBox();
-        preview.setMapXY(td[0].x / 4, td[0].y / 4);
     }
 
     private void saveInfo()
@@ -343,12 +344,12 @@ public class TeleportEditor extends EbHackModule implements ActionListener,
                     if (ppuBox.getSelectedIndex() == 0)
                     {
                     	preview.setPreviewBoxXY(x, y);
-                        preview.setMapXY(x / 4, y / 4);
+                        preview.setMapXY(x, y);
                     }
                     else
                     {
                     	preview.disablePreviewBox();
-                        preview.setMapXY(x, y);
+                        preview.setMapXY(x, y, 0.25);
                     }
                     return;
                 }
