@@ -71,7 +71,7 @@ public abstract class AbstractRom
      * 
      * @see #seek(int)
      */
-    private int seekOffset;
+    private int seekOffset = 0;
 
     /**
      * Stores the type of ROM.

@@ -19,6 +19,8 @@ NEXT VERSION (after v0.5.11):
 # BUGFIX: Tile Selector stretched 8x8 tiles to 17x17 instead of 16x16 (thanks n42)
 # Some reworking done so classes do not care how they were loaded - 
 	to be used in the future to support by-module updates of PK Hack
+# Hex Editor: BUGFIX: Checks that searches are entered correctly
+# BUGIX: RomFileIO now properly implements readByteSeek(); effects unknown (none?)
 
 v0.5.11:
 # Flyover Editor v0.2: BUGFIX: 6MB ROM problem

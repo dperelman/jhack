@@ -9,6 +9,7 @@ import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
+import java.awt.image.WritableRaster;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -1259,16 +1260,17 @@ public abstract class HackModule
     {
         BufferedImage out = new BufferedImage(image.length, image[0].length,
             BufferedImage.TYPE_INT_ARGB);
-        Graphics g = out.getGraphics();
+        WritableRaster r = out.getRaster();
         for (int x = 0; x < image.length; x++)
         {
             for (int y = 0; y < image[0].length; y++)
             {
-                g
-                    .setColor(palette[image[hFlip ? image.length - x - 1 : x][vFlip
-                        ? image[0].length - y - 1
-                        : y] & 0xff]);
-                g.drawLine(x, y, x, y);
+                int colIndex = image[hFlip ? image.length - x - 1 : x][vFlip
+                    ? image[0].length - y - 1
+                    : y] & 0xff;
+                Color c = palette[colIndex];
+                r.setPixel(x, y, new int[]{c.getRed(), c.getGreen(),
+                    c.getBlue(), c.getAlpha()});
             }
         }
         return out;
@@ -3449,7 +3451,7 @@ public abstract class HackModule
     {
         readArray(baseDir, filename, romPath, hexNum, out, out.length);
     }
-    
+
     /**
      * Reads a file into an array. See
      * {@link #readArray(String, String, String, boolean, String[], int)}for
@@ -3465,8 +3467,8 @@ public abstract class HackModule
      * @see #readArray(String, String, String, boolean, String[], int)
      * @see #writeArray(String, boolean, String[])
      */
-    public static void readArray(ClassLoader cl, String baseDir, String filename,
-        String romPath, boolean hexNum, String[] out)
+    public static void readArray(ClassLoader cl, String baseDir,
+        String filename, String romPath, boolean hexNum, String[] out)
     {
         readArray(cl, baseDir, filename, romPath, hexNum, out, out.length);
     }

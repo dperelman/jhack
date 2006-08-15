@@ -139,7 +139,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
      */
     protected abstract boolean isGuiInited();
 
-    //protected abstract int getCurrentPalette();
+    // protected abstract int getCurrentPalette();
 
     /**
      * Returns the current sub-palette. This is stored in the arrangement data
@@ -149,7 +149,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
      */
     protected abstract int getCurrentSubPalette();
 
-    //protected abstract int getCurrentArrangement();
+    // protected abstract int getCurrentArrangement();
 
     /**
      * Returns the arrangement data for the specified point. Note that point
@@ -213,7 +213,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
      *            to be highlighted
      * @return an <code>Image</code> of the arrangement this is editing
      */
-    //protected abstract Image getArrangementImage(int[][] selection);
+    // protected abstract Image getArrangementImage(int[][] selection);
     /**
      * Returns an actual size image of the specificed tile. This should be
      * {@link #getTileSize()}pixels square in size.
@@ -227,6 +227,22 @@ public abstract class ArrangementEditor extends AbstractButton implements
      */
     protected abstract Image getTileImage(int tile, int subPal, boolean hFlip,
         boolean vFlip);
+
+    /**
+     * Returns an actual size image of the specificed tile. This should be
+     * {@link #getTileSize()}pixels square in size. This is just a convenience
+     * method for calling {@link getTileImage(int, int, boolean, boolean)}.
+     * 
+     * @param tile number of the tile to get the image of
+     * @param subPal subPalette to use when drawing tile
+     * @return <code>Image</code> of tile number <code>tile</code> in the
+     *         current palette
+     * @see #getTileImage(int, int, boolean, boolean)
+     */
+    protected Image getTileImage(int tile, int subPal)
+    {
+        return getTileImage(tile, subPal, false, false);
+    }
 
     /**
      * Describes the currently selected area. This is the same size of the
@@ -249,8 +265,8 @@ public abstract class ArrangementEditor extends AbstractButton implements
      * V = vertical flip flag (1 = flip) <br>
      * H = horizonal flip flag (1 = flip) <br>
      * S = sub-palette + 2 (2-7) <br>
-     * T = tile number (0-1023) for the lower tiles depending on collision byte.
-     * ? = unkown purpose, always 0
+     * T = tile number (0-1023) for the lower tiles depending on collision byte. ? =
+     * unkown purpose, always 0
      * 
      * @param tile Number tile (0-1023).
      * @param subPalette Number of the subpalette to use (0-5).
@@ -261,7 +277,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
     public short makeArrangementNumber(int tile, int subPalette, boolean hFlip,
         boolean vFlip)
     {
-        return (short)((tile & 0x03ff) | (((subPalette + 2) & 7) << 10)
+        return (short) ((tile & 0x03ff) | (((subPalette + 2) & 7) << 10)
             | (hFlip ? 0x4000 : 0) | (vFlip ? 0x8000 : 0));
     }
 
@@ -302,7 +318,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
             leftShiftClickAction(x, y);
             return;
         }
-        //put current tile with current subPalette with no flip at clicked
+        // put current tile with current subPalette with no flip at clicked
         // on location
         if (isSelectionNull())
         {
@@ -326,7 +342,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
         }
         if (isSelectionNull())
         {
-            //add one to flip of current tile (sorta rotation)
+            // add one to flip of current tile (sorta rotation)
             if (isTile(x, y))
                 setArrangementData(x, y, rotateArr(getArrangementData(x, y)));
         }
@@ -339,7 +355,7 @@ public abstract class ArrangementEditor extends AbstractButton implements
 
     private void leftShiftClickAction(int x, int y)
     {
-        //set tile editor to current tile
+        // set tile editor to current tile
         if (isTile(x, y))
             setCurrentTile(getTileOfArr(getArrangementData(x, y)));
     }
@@ -368,7 +384,8 @@ public abstract class ArrangementEditor extends AbstractButton implements
 
     public void mouseClicked(MouseEvent me)
     {
-        if ((me.getModifiers() & MouseEvent.ALT_MASK) != 0) return;
+        if ((me.getModifiers() & MouseEvent.ALT_MASK) != 0)
+            return;
         addUndo();
         int x = me.getX()
             / (getTileSize() * getZoom() + (isDrawGridLines() ? 1 : 0));
@@ -474,16 +491,16 @@ public abstract class ArrangementEditor extends AbstractButton implements
             if (isGuiInited())
             {
                 short[][] newSel = createNewSelection(x, y);
-                //draw x, draw y
+                // draw x, draw y
                 for (int dx = 0; dx < getTilesWide(); dx++)
                     for (int dy = 0; dy < getTilesHigh(); dy++)
                         if (newSel[dx][dy] != drawnSelection[dx][dy])
                             drawTile(dx, dy, newSel[dx][dy] == -1
                                 ? getArrangementData(dx, dy)
                                 : newSel[dx][dy], newSel[dx][dy] != -1);
-                //                this.getGraphics().drawImage(
-                //                    getArrangementImage(newSel), 0, 0,
-                //                    Color.BLACK, null);
+                // this.getGraphics().drawImage(
+                // getArrangementImage(newSel), 0, 0,
+                // Color.BLACK, null);
                 drawnSelection = newSel;
             }
         }
@@ -513,8 +530,8 @@ public abstract class ArrangementEditor extends AbstractButton implements
         g.drawImage(getTileImage(getTileOfArr(arr), getSubPalOfArr(arr),
             isArrHFlip(arr), isArrVFlip(arr)), (x * 8 * getZoom())
             + (isDrawGridLines() ? x : 0), (y * 8 * getZoom())
-            + (isDrawGridLines() ? y : 0), (8 * getZoom()),
-            (8 * getZoom()), null);
+            + (isDrawGridLines() ? y : 0), (8 * getZoom()), (8 * getZoom()),
+            null);
         if (highlight)
         {
             g.setColor(new Color(255, 255, 0, 128));
@@ -586,9 +603,9 @@ public abstract class ArrangementEditor extends AbstractButton implements
             for (int x = 0; x < getTilesWide(); x++)
                 for (int y = 0; y < getTilesHigh(); y++)
                     drawTile(g, x, y);
-            //            g
-            //                .drawImage(getArrangementImage(selection), 0, 0, Color.BLACK,
-            //                    null);
+            // g
+            // .drawImage(getArrangementImage(selection), 0, 0, Color.BLACK,
+            // null);
         }
     }
     private String actionCommand = new String();
@@ -611,17 +628,17 @@ public abstract class ArrangementEditor extends AbstractButton implements
     public void resetPreferredSize()
     {
         this.setPreferredSize(new Dimension(
-            (getTilesWide() * (getDrawnTileSize() )) - 1,
-            (getTilesHigh() * (getDrawnTileSize() )) - 1));
+            (getTilesWide() * (getDrawnTileSize())) - 1,
+            (getTilesHigh() * (getDrawnTileSize())) - 1));
     }
 
     public ArrangementEditor()
     {
         clearSelection();
 
-//        this.setPreferredSize(new Dimension((getTilesWide() * (getTileSize()
-//            * getZoom() + 1)) - 1,
-//            (getTilesHigh() * (getTileSize() * getZoom() + 1)) - 1));
+        // this.setPreferredSize(new Dimension((getTilesWide() * (getTileSize()
+        // * getZoom() + 1)) - 1,
+        // (getTilesHigh() * (getTileSize() * getZoom() + 1)) - 1));
         resetPreferredSize();
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -661,14 +678,15 @@ public abstract class ArrangementEditor extends AbstractButton implements
         undoList = new ArrayList();
     }
 
-    //clipboard stuff
+    // clipboard stuff
     private short[][] cb = null;
 
     private boolean isSelectionNull()
     {
         for (int x = 0; x < getTilesWide(); x++)
             for (int y = 0; y < getTilesHigh(); y++)
-                if (selection[x][y] != -1) return false;
+                if (selection[x][y] != -1)
+                    return false;
         return true;
     }
 
@@ -707,7 +725,8 @@ public abstract class ArrangementEditor extends AbstractButton implements
     {
         for (int x = 0; x < getTilesWide(); x++)
             for (int y = 0; y < getTilesHigh(); y++)
-                if (cb[x][y] == -1) return true;
+                if (cb[x][y] == -1)
+                    return true;
         return false;
     }
 

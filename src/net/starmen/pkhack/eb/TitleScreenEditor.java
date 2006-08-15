@@ -6,10 +6,13 @@ package net.starmen.pkhack.eb;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.Box;
@@ -25,6 +28,7 @@ import net.starmen.pkhack.IntArrDrawingArea;
 import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.SpritePalette;
 import net.starmen.pkhack.XMLPreferences;
+import net.starmen.pkhack.eb.TitleScreenEditor.TitleScreenAnimData.TitleScreenAnimEntry;
 
 /**
  * TODO Write javadoc for this class
@@ -317,7 +321,7 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
                 .getRomType()) : hm.rom;
 
             byte[] palBuffer = new byte[getNumAnimPalettes()
-                * getAnimPaletteSize() * 2];
+                * getAnimPaletteSize() * 2 * 2];
             /** * DECOMPRESS PALETTE ** */
             System.out.println("About to attempt decompressing "
                 + palBuffer.length + " bytes of title screen #" + num
@@ -565,7 +569,8 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
                 return false;
             if (!writeAnimPalette())
                 return false;
-            if (!writeArrangement())
+            /* Only #0 has an arrangement to write. */
+            if (num == 0 && !writeArrangement())
                 return false;
             if (!writeGraphics())
                 return false;
@@ -578,7 +583,7 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
     {
         public static final int NUM_ENTRIES = 9;
 
-        public static final int TABLE_START = 0x21D008;
+        public static final int TABLE_START = 0x21D19D;
         public static final int POINTER_OFF = 0x210200;
 
         private EbHackModule hm;
@@ -589,6 +594,8 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         {
             this.num = i;
             this.hm = hm;
+
+            readInfo();
         }
 
         protected void readInfo()
@@ -602,6 +609,16 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             {
                 entries.add(TitleScreenAnimEntry.readSeek(hm.rom));
             }
+        }
+
+        public Iterator getIterator()
+        {
+            return entries.iterator();
+        }
+
+        public List getEntries()
+        {
+            return entries;
         }
 
         public static class TitleScreenAnimEntry
@@ -719,8 +736,102 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         }
     }
 
+    private class LetterPositionEditor extends JComponent
+    {
+        public LetterPositionEditor()
+        {
+            this.setPreferredSize(arrangementEditor.getPreferredSize());
+        }
+
+        public int getZoom()
+        {
+            return arrangementEditor.getZoom();
+        }
+
+        public void paint(Graphics g)
+        {
+            if (arrImg != null)
+            {
+                g.drawImage(arrImg, 0, 0, null);
+            }
+
+            // TODO Read Anim Data properly
+            int[] xOffs = {0, 0, 2, 0, -2, 26, 26, 27, 28};
+            // System.out.println();
+            for (int i = 0; i < animData.length; i++)
+            {
+                // System.out.println();
+                int xOff = xOffs[i] + 34 + i * 20, yOff = 100;
+                /*
+                 * System.out.println("LPE: xOff for [" + i + "] = 0x" +
+                 * Integer.toHexString(xOff));
+                 */
+                for (Iterator j = animData[i].getIterator(); j.hasNext();)
+                {
+                    TitleScreenAnimEntry entry = (TitleScreenAnimEntry) j
+                        .next();
+                    int usedTile = entry.getTile()
+                        & (tileSelector.getTileCount() - 1);
+
+                    /*
+                     * System.out.println("LPE: animData[" + i + "]:
+                     * usedTile=0x" + Integer.toHexString(usedTile) + " tile=0x" +
+                     * Integer.toHexString(entry.getTile() & 0xffffffff) + " X=" +
+                     * entry.getX() + " Y=" + entry.getY() + " flags=0x" +
+                     * Integer.toHexString(entry.getFlags() & 0xff));
+                     */
+
+                    Color[] pal = getSelectedSubPalette();
+                    pal[0] = new Color(0, 0, 0, 0);
+                    Image img = HackModule.drawImage(titleScreens[1]
+                        .getTile(usedTile), pal);
+
+                    g.drawImage(img, (entry.getX() + xOff) * getZoom(), (entry
+                        .getY() + yOff)
+                        * getZoom(), arrangementEditor.getTileSize()
+                        * getZoom(), arrangementEditor.getTileSize()
+                        * getZoom(), null);
+                    /*
+                     * Flag 0x01 = draw square with first tile number as
+                     * top-left.
+                     */
+                    if ((entry.getFlags() & 0x01) != 0)
+                    {
+                        g.drawImage(drawImage(titleScreens[1]
+                            .getTile(usedTile + 1), pal),
+                            (entry.getX() + xOff + arrangementEditor
+                                .getTileSize())
+                                * getZoom(), (entry.getY() + yOff) * getZoom(),
+                            arrangementEditor.getTileSize() * getZoom(),
+                            arrangementEditor.getTileSize() * getZoom(), null);
+                        g.drawImage(drawImage(titleScreens[1]
+                            .getTile(usedTile + 16), pal),
+                            (entry.getX() + xOff) * getZoom(), (entry.getY()
+                                + yOff + arrangementEditor.getTileSize())
+                                * getZoom(), arrangementEditor.getTileSize()
+                                * getZoom(), arrangementEditor.getTileSize()
+                                * getZoom(), null);
+                        g.drawImage(drawImage(titleScreens[1]
+                            .getTile(usedTile + 17), pal),
+                            (entry.getX() + xOff + arrangementEditor
+                                .getTileSize())
+                                * getZoom(),
+                            (entry.getY() + yOff + arrangementEditor
+                                .getTileSize())
+                                * getZoom(), arrangementEditor.getTileSize()
+                                * getZoom(), arrangementEditor.getTileSize()
+                                * getZoom(), null);
+                    }
+                }
+            }
+        }
+    }
+
     public static final TitleScreen[] titleScreens = new TitleScreen[NUM_TITLE_SCREENS];
     public static final TitleScreenAnimData[] animData = new TitleScreenAnimData[TitleScreenAnimData.NUM_ENTRIES];
+
+    private BufferedImage arrImg;
+    private LetterPositionEditor lpe;
 
     public FullScreenGraphics getScreen(int i)
     {
@@ -797,7 +908,7 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             subPalSelector.addItem((i + 1) + "/"
                 + TitleScreen.NUM_ANIM_PALETTES);
         }
-        subPalSelector.addItem("Final(?)");
+        subPalSelector.addItem("Initial(?)");
         subPalSelector.setActionCommand("subPalSelector");
         subPalSelector.addActionListener(this);
 
@@ -805,6 +916,9 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         da.setActionCommand("drawingArea");
         da.setZoom(10);
         da.setPreferredSize(new Dimension(81, 81));
+
+        lpe = new LetterPositionEditor();
+        lpe.setVisible(false);
 
         name = null;
     }
@@ -822,12 +936,14 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         center.add(createFlowLayout(pal));
         center.add(Box.createVerticalStrut(10));
         center.add(createFlowLayout(fi));
+        center.add(Box.createVerticalStrut(10));
+        center.add(lpe);
         center.add(Box.createVerticalGlue());
 
         JPanel display = new JPanel(new BorderLayout());
         display.add(pairComponents(dt, null, false), BorderLayout.EAST);
-        display.add(pairComponents(pairComponents(tileSelector,
-            createFlowLayout(center), true), arrangementEditor, false),
+        display.add(pairComponents(pairComponents(tileSelector, pairComponents(
+            center, null, true), true), arrangementEditor, false),
             BorderLayout.WEST);
 
         return display;
@@ -891,11 +1007,32 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
      */
     public void actionPerformed(ActionEvent ae)
     {
+        if (ae.getActionCommand().equals("mapSelector")
+            || ae.getActionCommand().equals("subPalSelector"))
+        {
+            if (screenSelector.getSelectedIndex() != 0)
+            {
+                arrImg = new BufferedImage(arrangementEditor.getWidth(),
+                    arrangementEditor.getHeight(), BufferedImage.TYPE_INT_RGB);
+                screenSelector.removeActionListener(this);
+                int realSelectedScreen = screenSelector.getSelectedIndex();
+                screenSelector.setSelectedIndex(0);
+                arrangementEditor.paint(arrImg.getGraphics());
+                screenSelector.setSelectedIndex(realSelectedScreen);
+                screenSelector.addActionListener(this);
+            }
+        }
         super.actionPerformed(ae);
         if (ae.getActionCommand().equals("subPalSelector"))
         {
             tileSelector.repaint();
-            arrangementEditor.repaint();
+            (screenSelector.getSelectedIndex() == 0
+                ? (JComponent) arrangementEditor
+                : (JComponent) lpe).repaint();
+        }
+        else if (ae.getActionCommand().equals("paletteEditor"))
+        {
+            lpe.repaint();
         }
         else if (ae.getActionCommand().equals("mapSelector"))
         {
@@ -906,6 +1043,7 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             tileSelector.repaint();
             arrangementEditor
                 .setVisible(screenSelector.getSelectedIndex() == 0);
+            lpe.setVisible(screenSelector.getSelectedIndex() == 1);
             mainWindow.getContentPane().validate();
         }
     }
