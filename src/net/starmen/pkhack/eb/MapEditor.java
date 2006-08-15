@@ -892,7 +892,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		 * 9 - enemies (0=no,1=view,2=edit)
 		 * 10 - the grid unit size in tiles (it's always a square)
 		 * 11 - tilechooser style (0=none,1=text,2=map gfx,3=text&color)
-		 * 12 - ppu
+		 * 12 - upt - units per tile
 		 */
 				{ 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1 }, // map edit
 				{ 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 1, 0, 1 }, // sprite edit
@@ -1753,9 +1753,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
 			repaint();
 		}
 		
-		public void setMapXY(int x, int y, int ppu) {
-			this.x = x / ppu;
-			this.y = y / ppu;
+		public void setMapXY(int x, int y, double upt) { // upt = units per tile
+			this.x = (int) (x / upt);
+			this.y = (int) (y / upt);
 			if ((getModeProps()[7] & 1) == 1)
 				setPreviewBoxXY(x, y);
 			updateComponents();
@@ -1918,7 +1918,6 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		public void setPreviewBoxXY(int x, int y) {
 			previewBoxX = (x - (getMapTileX() * 4)) * 8;
 			previewBoxY = (y - (getMapTileY() * 4)) * 8;
-			System.out.println("preview box x,y: " + previewBoxX + "," + previewBoxY);
 		}
 
 		public void disablePreviewBox() {
