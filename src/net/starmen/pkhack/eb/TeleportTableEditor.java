@@ -276,10 +276,8 @@ public class TeleportTableEditor extends EbHackModule implements
                 {
                     int newX = Integer.parseInt(x.getText()), newY = Integer
                         .parseInt(y.getText());
-                    preview.setMapXY(newX / 4, newY / 4);
                     preview.setPreviewBoxXY(newX, newY);
-                    preview.reloadMap();
-                    preview.remoteRepaint();
+                    preview.setMapXY(newX, newY);
                 }
             }
 
@@ -308,7 +306,7 @@ public class TeleportTableEditor extends EbHackModule implements
             entry.add(HackModule.getLabeledComponent("Unknown #" + i + ": ",
                 unknown[i] = HackModule.createSizedJTextField(3, true)));
 
-        preview = new MapGraphics(this, 4, 4, 5, false, false, true);
+        preview = new MapGraphics(this, 4, 4, 5, false, false, true, 8, false);
         preview.setPreferredSize(new Dimension(MapEditor.tileWidth
             * preview.getScreenWidth(), MapEditor.tileHeight
             * preview.getScreenHeight()));
@@ -356,11 +354,9 @@ public class TeleportTableEditor extends EbHackModule implements
     private void showInfo()
     {
         TeleportTableEntry t = ttentries[selector.getSelectedIndex()];
-
-        preview.setMapXY(t.getX() / 4, t.getY() / 4);
+        
         preview.setPreviewBoxXY(t.getX(), t.getY());
-        preview.reloadMap();
-        preview.remoteRepaint();
+        preview.setMapXY(t.getX(), t.getY());
         x.setText(Integer.toString(t.getX()));
         y.setText(Integer.toString(t.getY()));
         dir.setSelectedIndex(t.getDirection() - 1);
@@ -417,9 +413,7 @@ public class TeleportTableEditor extends EbHackModule implements
             + (y / 8);
         this.x.setText(Integer.toString(newX));
         this.y.setText(Integer.toString(newY));
-        preview.setMapXY(newX / 4, newY / 4);
         preview.setPreviewBoxXY(newX, newY);
-        preview.reloadMap();
-        preview.remoteRepaint();
+        preview.setMapXY(newX, newY);
     }
 }
