@@ -147,24 +147,35 @@ public class HexEditor extends GeneralHackModule implements ActionListener
 
     protected void find()
     {
-        String[] f = findTA.getText().split(" ");
-        byte[] s = new byte[f.length];
-        for (int i = 0; i < f.length; i++)
+        try
         {
-            s[i] = (byte) Integer.parseInt(f[i], 16);
+            String[] f = findTA.getText().split(" ");
+            byte[] s = new byte[f.length];
+            for (int i = 0; i < f.length; i++)
+            {
+                s[i] = (byte) Integer.parseInt(f[i], 16);
+            }
+            int off = rom.find(findOff, s);
+            if (off == -1)
+            {
+                JOptionPane.showMessageDialog(findWindow,
+                    "The search you entered\n" + "is not in the ROM.",
+                    "Unable to find", JOptionPane.ERROR_MESSAGE);
+                findOff = 0;
+            }
+            else
+            {
+                findOff = off + 1;
+                gotoOffset(off);
+            }
         }
-        int off = rom.find(findOff, s);
-        if (off == -1)
+        catch (Exception e)
         {
             JOptionPane.showMessageDialog(findWindow,
-                "The search you entered\n" + "is not in the ROM.",
-                "Unable to find", JOptionPane.ERROR_MESSAGE);
-            findOff = 0;
-        }
-        else
-        {
-            findOff = off + 1;
-            gotoOffset(off);
+                "Your input was found invalid for the following reason:\n"
+                    + e.getClass().getSimpleName() + ": " + e.getMessage()
+                    + "\n\nSearches must be space-separated hex bytes.",
+                "Invalid Search String", JOptionPane.ERROR_MESSAGE);
         }
     }
 
