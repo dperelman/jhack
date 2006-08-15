@@ -754,7 +754,6 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
             super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g;
             
-            EbMap.loadTileImage(tileset, tile, palette);
             g.drawImage(
                     EbMap.getTileImage(tileset, tile, palette),
                     1, 1, MapEditor.tileWidth, MapEditor.tileHeight, this);
