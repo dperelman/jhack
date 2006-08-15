@@ -8,4 +8,5 @@ package net.starmen.pkhack.eb;
 public interface MapGraphicsListener {
 	void changedMode(int newMode, int oldMode);
 	void changedSector(boolean knowsSector, int sectorX, int sectorY);
+	void enableUndo(boolean enable);
 }
