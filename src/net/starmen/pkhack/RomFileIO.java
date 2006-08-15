@@ -38,7 +38,7 @@ public class RomFileIO extends AbstractRom
         try
         {
             if (offset >= this.length()) // don't write past the end of the
-                                            // ROM
+            // ROM
             {
                 // System.out.println(
                 // "Attempted read past end of rom, (0x"
@@ -48,6 +48,19 @@ public class RomFileIO extends AbstractRom
             }
             rom.seek(offset);
             return rom.readUnsignedByte();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    public byte readByteSeek()
+    {
+        try
+        {
+            return rom.readByte();
         }
         catch (IOException e)
         {
