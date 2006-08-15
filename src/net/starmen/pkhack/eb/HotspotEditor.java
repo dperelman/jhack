@@ -141,17 +141,11 @@ public class HotspotEditor extends EbHackModule implements ActionListener, SeekL
 	{
 		Hotspot entry = entries[entryChooser.getSelectedIndex()];
 		
-		preview1.setMapXY(entry.getX1() & 0xffff, entry.getY1() & 0xffff);
 		preview1.setPreviewBoxXY(entry.getX1() & 0xffff, entry.getY1() & 0xffff);
-		preview1.reloadMap();
-		preview1.updateComponents();
-		preview1.remoteRepaint();
+		preview1.setMapXY(entry.getX1() & 0xffff, entry.getY1() & 0xffff);
 		
-		preview2.setMapXY(entry.getX2(), entry.getY2());
 		preview2.setPreviewBoxXY(entry.getX2(), entry.getY2());
-		preview2.reloadMap();
-		preview2.updateComponents();
-		preview2.remoteRepaint();
+		preview2.setMapXY(entry.getX2(), entry.getY2());
 	}
 	
 	public void saveInfo()
@@ -324,9 +318,6 @@ public class HotspotEditor extends EbHackModule implements ActionListener, SeekL
 			target = preview2;
 		target.setMapXY(x / 8 + tileX * MapEditor.tileWidth / 8,
 				y / 8 + tileY * MapEditor.tileHeight / 8);
-		target.updateComponents();
-		target.reloadMap();
-		target.remoteRepaint();
 		seek1.setEnabled(true);
 		seek2.setEnabled(true);
 	}
