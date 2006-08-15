@@ -203,7 +203,7 @@ public class EbMap {
 		spriteImages = new Image[SpriteEditor.NUM_ENTRIES][8];
 	}
 
-	public static void loadTileImage(int loadtset, int loadtile,
+	private static void loadTileImage(int loadtset, int loadtile,
 			int loadpalette) {
 		if (tileImages == null)
 			tileImages = new Image[MapEditor.drawTsetNum][1024][MapEditor.palsNum];
@@ -216,6 +216,7 @@ public class EbMap {
 
 	public static Image getTileImage(int loadtset, int loadtile,
 			int loadpalette) {
+		loadTileImage(loadtset, loadtile, loadpalette);
 		return tileImages[loadtset][loadtile][loadpalette];
 	}
 
@@ -223,7 +224,7 @@ public class EbMap {
 		tileImages = new Image[TileEditor.TILESET_NAMES.length][1024][MapEditor.palsNum];
 	}
 
-	public static void changeTile(int x, int y, byte tile) {
+	public static void changeTile(int x, int y, int tile) {
 		for (int i = 0; i < mapChanges.size(); i++) {
 			MapChange change = (MapChange) mapChanges.get(i);
 			if ((x == change.getX()) && (y == change.getY())) {
@@ -238,63 +239,68 @@ public class EbMap {
 		for (int i = 0; i < mapChanges.size(); i++) {
 			MapChange change = (MapChange) mapChanges.get(i);
 			if ((x == change.getX()) && (y == change.getY()))
-				return (change.getValue() & 0xff)
-						| (getLocalTileset(rom, x, y) << 8);
+				return change.getValue();
 		}
 
-		return rom.read(getMapAddress(y) + x)
-				| (getLocalTileset(rom, x, y) << 8);
+		return rom.read(getMapAddress(y) + x) | (getLocalTilesetROM(rom, x, y) << 8);
 	}
 
-	public static int[] getTiles(AbstractRom rom, int y, int x, int length) {
+	/*public static int[] getTiles(AbstractRom rom, int y, int x, int length) {
 		int[] output = new int[length];
 		for (int i = 0; i < output.length; i++)
 			output[i] = getTile(rom, x + i, y);
 		return output;
-	}
+	}*/
 
 	public static void writeMapChanges(AbstractRom rom) {
+		int addr;
+		
 		for (int i = 0; i < mapChanges.size(); i++) {
 			MapChange change = (MapChange) mapChanges.get(i);
 			rom.write(getMapAddress(change.getY()) + change.getX(), change
 					.getValue());
+			
+			addr = localTsetAddress + ((change.getY() / 8) * (MapEditor.width + 1)) + change.getX();
+			if (((change.getY() / 4) % 2) == 1)
+				addr += 0x3000;
+			rom.write(addr, (rom.read(addr) & (~ (3 << ((change.getY() % 4) * 2)))) + (rom.read(addr) << ((change.getY() % 4) * 2))); 
 		}
-		mapChanges = new ArrayList();
+		mapChanges.clear();	
 	}
 
-	public static boolean isSectorDataLoaded(int sectorX, int sectorY) {
-		return (sectorData[sectorX + (sectorY * MapEditor.widthInSectors)] != null);
-	}
-
-	public static void loadSectorData(AbstractRom rom, int sectorX,
+	private static void loadSectorData(AbstractRom rom, int sectorX,
 			int sectorY) {
-		int sectorNum = sectorX + (sectorY * MapEditor.widthInSectors);
-		if (sectorData[sectorNum] == null) {
-			int address = tsetpalAddress
-					+ (sectorY * ((MapEditor.width + 1) / MapEditor.sectorWidth))
-					+ sectorX;
-			byte tsetpal_data = rom.readByte(address);
-			short music = (short) ((rom
-					.read(musicAddress
-							+ (sectorY * ((MapEditor.width + 1) / MapEditor.sectorWidth))
-							+ sectorX) - 1) & 0xff);
+		if (sectorData[sectorX + (sectorY * MapEditor.widthInSectors)] == null) {
+			int sectorNum = sectorX + (sectorY * MapEditor.widthInSectors);
+			if (sectorData[sectorNum] == null) {
+				int address = tsetpalAddress
+						+ (sectorY * ((MapEditor.width + 1) / MapEditor.sectorWidth))
+						+ sectorX;
+				byte tsetpal_data = rom.readByte(address);
+				short music = (short) ((rom
+						.read(musicAddress
+								+ (sectorY * ((MapEditor.width + 1) / MapEditor.sectorWidth))
+								+ sectorX) - 1) & 0xff);
 
-			byte byte1 = rom.readByte(sectorPropsAddress + 2 * sectorNum);
-			boolean canTeleport = (byte1 & 0x80) > 0;
-			boolean unknown = (byte1 & 0x40) > 0;
-			byte townmap = (byte) ((byte1 & 0x38) >> 3);
-			byte misc = (byte) (byte1 & 0x7);
-			byte item = rom
-					.readByte(sectorPropsAddress + 2 * sectorNum + 1);
+				byte byte1 = rom.readByte(sectorPropsAddress + 2 * sectorNum);
+				boolean canTeleport = (byte1 & 0x80) > 0;
+				boolean unknown = (byte1 & 0x40) > 0;
+				byte townmap = (byte) ((byte1 & 0x38) >> 3);
+				byte misc = (byte) (byte1 & 0x7);
+				byte item = rom
+						.readByte(sectorPropsAddress + 2 * sectorNum + 1);
 
-			sectorData[sectorNum] = new Sector(
-					(byte) ((tsetpal_data & 0xf8) >> 3),
-					(byte) (tsetpal_data & 0x7), music, canTeleport,
-					unknown, townmap, misc, item);
+				sectorData[sectorNum] = new Sector(
+						(byte) ((tsetpal_data & 0xf8) >> 3),
+						(byte) (tsetpal_data & 0x7), music, canTeleport,
+						unknown, townmap, misc, item);
+			}
 		}
+		
 	}
 
-	public static Sector getSectorData(int sectorX, int sectorY) {
+	public static Sector getSectorData(AbstractRom rom, int sectorX, int sectorY) {
+		loadSectorData(rom, sectorX, sectorY);
 		return sectorData[sectorX + (sectorY * MapEditor.widthInSectors)];
 	}
 
@@ -327,8 +333,15 @@ public class EbMap {
 	public static int getDrawTileset(int mapTset) {
 		return drawingTilesets[mapTset];
 	}
-
-	public static int getLocalTileset(AbstractRom rom, int gltx, int glty) {
+	
+	public static int getLocalTilesetROM(AbstractRom rom, int x, int y) {
+		int address = localTsetAddress + ((y / 8) * (MapEditor.width + 1)) + x;
+		if (((y / 4) % 2) == 1)
+			address += 0x3000;
+		return ((rom.read(address) >> ((y % 4) * 2)) & 3);
+	}
+	
+	/*public static int getLocalTileset(AbstractRom rom, int gltx, int glty) {
 		for (int i = 0; i < localTilesetChanges.size(); i++) {
 			LocalTilesetChange change = (LocalTilesetChange) localTilesetChanges
 					.get(i);
@@ -381,7 +394,7 @@ public class EbMap {
 			}
 			rom.write(address, newLtsetData);
 		}
-	}
+	}*/
 
 	public static boolean isSpriteDataLoaded(int areaNum) {
 		return (spData[areaNum] != null);
@@ -930,11 +943,9 @@ public class EbMap {
 	}
 
 	public static class MapChange {
-		private int x, y;
+		private int x, y, value;
 
-		private byte value;
-
-		public MapChange(int x, int y, byte value) {
+		public MapChange(int x, int y, int value) {
 			this.x = x;
 			this.y = y;
 			this.value = value;
@@ -948,16 +959,16 @@ public class EbMap {
 			return y;
 		}
 
-		public byte getValue() {
+		public int getValue() {
 			return value;
 		}
 
-		public void setValue(byte value) {
+		public void setValue(int value) {
 			this.value = value;
 		}
 	}
 
-	public static class LocalTilesetChange {
+	/*public static class LocalTilesetChange {
 		public int x, y, ltset;
 
 		public LocalTilesetChange(int x, int y, int ltset) {
@@ -965,7 +976,7 @@ public class EbMap {
 			this.y = y;
 			this.ltset = ltset;
 		}
-	}
+	}*/
 
 	public static class SpriteLocation {
 		private short x, y, tpt;
