@@ -40,6 +40,7 @@ import net.starmen.pkhack.XMLPreferences;
  * @author Mr. Tenda
  *
  * TODO Write javadoc for this class
+ * TODO This doesn't use EbMap or MapEditor.MapGraphics... should it?
  */
 public class PhotoEditor extends EbHackModule 
 	implements ActionListener, DocumentListener, SeekListener
@@ -1126,9 +1127,9 @@ public class PhotoEditor extends EbHackModule
 					- (previewHeight / 2);
                 if (y2 < 0)
                 	y2 = 0;
-                maparray[i] = EbMap.getTiles(rom,
-                		y2, tileX,
-						previewWidth);
+                for (int j = 0; j < previewWidth; j++)
+                	maparray[i][j] = EbMap.getTile(rom, tileX + j, y2);
+                //maparray[i] = EbMap.getTiles(rom, y2, tileX, previewWidth);
             }
             tileY = (centerY * 8) / MapEditor.tileHeight
 				- (previewHeight / 2);
@@ -1205,15 +1206,10 @@ public class PhotoEditor extends EbHackModule
                 for (int j = 0; j < mapArray[i].length; j++)
                 {
                 	int sectorX = (tileX + j) / MapEditor.sectorWidth;
-                	if (! EbMap.isSectorDataLoaded(sectorX, sectorY))
-                		EbMap.loadSectorData(rom, sectorX, sectorY);
-                	EbMap.Sector sector = EbMap.getSectorData(sectorX, sectorY);
+                	EbMap.Sector sector = EbMap.getSectorData(rom, sectorX, sectorY);
                 	
                     tile_set = EbMap.getDrawTileset(sector.getTileset());
-                    tile_tile = mapArray[i][j]
-                        | (EbMap.getLocalTileset(rom,
-                        		tileX + j,
-								tileY + i) << 8);
+                    tile_tile = mapArray[i][j];
 
                     g.drawImage(TileEditor.tilesets[tile_set].getArrangementImage(tile_tile, palColors),
                     		j * MapEditor.tileWidth + 1, i * MapEditor.tileHeight + 1,

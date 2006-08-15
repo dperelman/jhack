@@ -178,16 +178,12 @@ public class MapSectorPropertiesEditor extends EbHackModule implements ActionLis
 		
 		preview.setEnabled(ok);
 		if (ok)
-		{
-			if (! EbMap.isSectorDataLoaded(sectorX, sectorY))
-				EbMap.loadSectorData(rom, sectorX, sectorY);
 			preview.setMapXY(sectorX * MapEditor.sectorWidth,
 					sectorY * MapEditor.sectorHeight);
-			preview.reloadMap();
-		}
-		preview.repaint();
+		else
+			preview.repaint();
 		
-		EbMap.Sector sector = (ok ? EbMap.getSectorData(sectorX, sectorY) : null);
+		EbMap.Sector sector = (ok ? EbMap.getSectorData(rom, sectorX, sectorY) : null);
 		cantTeleport.setSelected(ok ? sector.cantTeleport() : false);
 		unknown.setSelected(ok ? sector.isUnknownEnabled() : false);
 		townMap.setSelectedIndex(ok ? sector.getTownMap() : -1);
@@ -200,7 +196,7 @@ public class MapSectorPropertiesEditor extends EbHackModule implements ActionLis
 	{
 		int sectorX = Integer.parseInt(this.sectorX.getText()),
 			sectorY = Integer.parseInt(this.sectorY.getText());
-		EbMap.Sector sector = EbMap.getSectorData(sectorX, sectorY);
+		EbMap.Sector sector = EbMap.getSectorData(rom, sectorX, sectorY);
 		sector.setCantTeleport(cantTeleport.isSelected());
 		sector.setUnknown(unknown.isSelected());
 		sector.setTownMap((byte) (townMap.getSelectedIndex() & 0xff));
