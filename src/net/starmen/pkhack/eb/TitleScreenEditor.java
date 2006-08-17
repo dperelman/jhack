@@ -133,7 +133,8 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
 
         public void setPaletteColor(int col, int frame, Color color)
         {
-            if (frame < 0 || frame > NUM_ANIM_PALETTES
+            if (frame < 0 || (num == 0 && frame >= NUM_ANIM_PALETTES)
+                || (num == 1 && frame >= NUM_CHAR_ANIM_PALETTES)
                 || (num == 0 && (col < 112 || col >= 144)))
             {
                 super.setPaletteColor(col, 0, color);
@@ -750,7 +751,10 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
 
         public void paint(Graphics g)
         {
-            if (arrImg != null)
+            if (arrImg != null
+            // && subPalSelector.getSelectedIndex() >=
+            // TitleScreen.NUM_CHAR_ANIM_PALETTES
+            )
             {
                 g.drawImage(arrImg, 0, 0, null);
             }
@@ -903,10 +907,11 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         pal.addActionListener(this);
 
         subPalSelector = new JComboBox();
-        for (int i = 0; i < TitleScreen.NUM_ANIM_PALETTES; i++)
+        int totAnimFrames = TitleScreen.NUM_CHAR_ANIM_PALETTES
+            + TitleScreen.NUM_ANIM_PALETTES;
+        for (int i = 0; i < totAnimFrames; i++)
         {
-            subPalSelector.addItem((i + 1) + "/"
-                + TitleScreen.NUM_ANIM_PALETTES);
+            subPalSelector.addItem((i + 1) + "/" + totAnimFrames);
         }
         subPalSelector.addItem("Initial(?)");
         subPalSelector.setActionCommand("subPalSelector");
@@ -966,9 +971,9 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
 
     public static Color[] getAnimatedPalette(int num, int i)
     {
-        Color[] out = titleScreens[num].getSubPal(0);
-
-        if (i > 0 && i < TitleScreen.NUM_ANIM_PALETTES)
+        if (i >= 0
+            && i < TitleScreen.NUM_CHAR_ANIM_PALETTES
+                + TitleScreen.NUM_ANIM_PALETTES)
         {
             if (num == 0)
             {
@@ -976,23 +981,45 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
                  * Overwrite the "normal" colors with the correct animated
                  * palettes.
                  */
-                Color[] highlightAnimPal = titleScreens[0].getAnimPalette(i);
-                Color[] textAnimPal = titleScreens[1].getAnimPalette(i);
-                System.arraycopy(highlightAnimPal, 0, out, 112, TitleScreen
-                    .getAnimPaletteSize());
+
+                Color[] textAnimPal, out;
+                if (i < TitleScreen.NUM_CHAR_ANIM_PALETTES)
+                {
+                    out = new Color[titleScreens[0].getSubPaletteSize()];
+                    for (int j = 0; j < out.length; j++)
+                    {
+                        out[j] = new Color(0, 0, 0);
+                    }
+                    textAnimPal = titleScreens[1].getAnimPalette(i);
+                }
+                else
+                {
+                    out = titleScreens[num].getSubPal(0);
+
+                    textAnimPal = titleScreens[1]
+                        .getAnimPalette(TitleScreen.NUM_CHAR_ANIM_PALETTES - 1);
+
+                    Color[] highlightAnimPal = titleScreens[0].getAnimPalette(i
+                        - TitleScreen.NUM_CHAR_ANIM_PALETTES);
+                    System.arraycopy(highlightAnimPal, 0, out, 112, TitleScreen
+                        .getAnimPaletteSize());
+                }
                 System.arraycopy(textAnimPal, 0, out, 128, TitleScreen
                     .getAnimPaletteSize());
+
+                return out;
             }
             else
             {
-                out = titleScreens[num].getAnimPalette(i);
+                return titleScreens[num].getAnimPalette(Math.min(i,
+                    TitleScreen.NUM_CHAR_ANIM_PALETTES - 1));
             }
         }
         /*
          * Else: A animated palette was not selected. The original Color[] is
          * fine.
          */
-        return out;
+        return titleScreens[num].getSubPal(0);
     }
 
     protected boolean isSinglePalImport()
