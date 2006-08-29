@@ -1233,9 +1233,9 @@ public class TextEditor extends EbHackModule implements ActionListener
         // check exp first
         if (offset >= 0x300200 && gotoRaw(EXP, offset))
             return true;
-        // then raw (text from 0x51D12 - 0x08BE2D, 0x8DC31 - 0x0A012E,
-        // 0x2F5020 - 0x2FA57A)
-        else if (((offset >= 0x51d12 && offset <= 0x08be2d)
+        // then raw (text from 0x50200 - 0x08BE2D, 0x8DC31 - 0x0A012E, 0x2F5020
+        // - 0x2FA57A)
+        else if (((offset >= 0x50200 && offset <= 0x08be2d)
             || (offset >= 0x8DC31 && offset <= 0x0A012E) || (offset >= 0x2F5020 && offset <= 0x2FA57A))
             && gotoRaw(RAW, offset))
             return true;
