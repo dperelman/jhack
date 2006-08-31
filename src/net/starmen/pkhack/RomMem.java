@@ -37,13 +37,13 @@ public class RomMem extends AbstractRom
 
     public boolean saveRom(File rompath)
     {
-        if (!this.isLoaded) //don't try to save if nothing is loaded
+        if (!this.isLoaded) // don't try to save if nothing is loaded
         {
             return false;
         }
         this.path = rompath;
         setDefaultDir(rompath.getParent());
-        //ensure mirror for ExHiRom
+        // ensure mirror for ExHiRom
         if (length() == 0x600200)
         {
             rom[0x0101d5] = 0x25;
@@ -76,7 +76,7 @@ public class RomMem extends AbstractRom
 
     public void write(int offset, int arg)
     {
-        if (offset > this.rom.length) //don't write past the end of the ROM
+        if (offset > this.rom.length) // don't write past the end of the ROM
         {
             return;
         }
@@ -90,19 +90,21 @@ public class RomMem extends AbstractRom
 
     public void write(int offset, byte[] arg, int len)
     {
-        //OK to use this instead of write()?
+        // OK to use this instead of write()?
         System.arraycopy(arg, 0, rom, offset, len);
     }
 
     public int read(int offset)
     {
-        if ((offset & 0x7fffffff) >= this.length()) //don't write past the end
+        /* Kill the sign bit so the offset is positive. */
+        offset &= 0x7fffffff;
+        if (offset >= this.length()) // don't write past the end
         // of the ROM
         {
-            //			System.out.println(
-            //				"Attempted read past end of rom, (0x"
-            //					+ Integer.toHexString(offset)
-            //					+ ")");
+            // System.out.println(
+            // "Attempted read past end of rom, (0x"
+            // + Integer.toHexString(offset)
+            // + ")");
             return -1;
         }
         return this.rom[offset] & 255;
@@ -113,44 +115,44 @@ public class RomMem extends AbstractRom
         byte[] returnValue = new byte[length];
         try
         {
-            //OK to not end up going to read function?
+            // OK to not end up going to read function?
             System.arraycopy(rom, offset, returnValue, 0, length);
         }
         catch (IndexOutOfBoundsException e)
         {
-            return null;
+            return super.readByte(offset, length);
         }
         return returnValue;
     }
 
     public void resetArea(int offset, int len, AbstractRom orgRom)
     {
-        //only works if neither is direct file IO
+        // only works if neither is direct file IO
         if (orgRom instanceof RomMem)
             System.arraycopy(((RomMem) orgRom).rom, offset, rom, offset, len);
-        //otherwise, use normal methods to read/write
+        // otherwise, use normal methods to read/write
         else
             super.resetArea(offset, len, orgRom);
     }
 
-    //TODO check _expand()
+    // TODO check _expand()
     protected boolean _expand()
     {
         int rl = length();
         byte[] out = new byte[rl + (4096 * 256)];
-        //        for (int i = 0; i < rl; i++)
-        //        {
-        //            out[i] = (byte) read(i);
-        //        }
+        // for (int i = 0; i < rl; i++)
+        // {
+        // out[i] = (byte) read(i);
+        // }
         Arrays.fill(out, rl, out.length, (byte) 0);
         System.arraycopy(rom, 0, out, 0, rl);
         for (int j = 0; j < 4096; j++)
         {
-            //            for (int i = 0; i < 255; i++)
-            //            {
-            //                out[((j * 256) + i) + rl] = 0;
-            //            }
-            //Arrays.fill(out, (j * 256) + rl, (j * 256) + rl + 255, (byte) 0);
+            // for (int i = 0; i < 255; i++)
+            // {
+            // out[((j * 256) + i) + rl] = 0;
+            // }
+            // Arrays.fill(out, (j * 256) + rl, (j * 256) + rl + 255, (byte) 0);
             out[((j * 256) + 255) + rl] = 2;
         }
 
@@ -181,7 +183,7 @@ public class RomMem extends AbstractRom
         rom = newRom;
         return true;
     }
-    
+
     public int length()
     {
         return rom.length;
@@ -228,7 +230,7 @@ public class RomMem extends AbstractRom
         try
         {
             ips.apply(this.rom);
-            //ensure mirror for ExHiRom
+            // ensure mirror for ExHiRom
             if (length() == 0x600200)
                 System.arraycopy(rom, 0x008200, rom, 0x408200, 0x8000);
             return true;

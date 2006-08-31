@@ -324,6 +324,11 @@ public abstract class EbHackModule extends HackModule
         byte tmp;
         while (rom.read(cdata) != 0xFF)
         {
+            if (cdata >= rom.length())
+            {
+                return new int[]{-8, cdata - start + 1};
+            }
+
             int cmdtype = rom.read(cdata) >> 5;
             int len = (rom.read(cdata) & 0x1F) + 1;
             if (cmdtype == 7)
