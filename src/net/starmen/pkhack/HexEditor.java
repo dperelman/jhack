@@ -173,7 +173,7 @@ public class HexEditor extends GeneralHackModule implements ActionListener
         {
             JOptionPane.showMessageDialog(findWindow,
                 "Your input was found invalid for the following reason:\n"
-                    + e.getClass().getSimpleName() + ": " + e.getMessage()
+                    + e.getClass().getName() + ": " + e.getMessage()
                     + "\n\nSearches must be space-separated hex bytes.",
                 "Invalid Search String", JOptionPane.ERROR_MESSAGE);
         }
