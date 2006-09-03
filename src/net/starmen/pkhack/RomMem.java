@@ -201,11 +201,10 @@ public class RomMem extends AbstractRom
             IPSFile out = new IPSFile();
 
             int cStart = -1;
-            int len = end - start + 1;
 
-            for (int i = 0; i < len; i++)
+            for (int i = start; i < end; i++)
             {
-                if (rom[i] != orgRom.readByte(i + start))
+                if (rom[i] != orgRom.readByte(i))
                 {
                     if (cStart == -1)
                         cStart = i;
@@ -214,8 +213,8 @@ public class RomMem extends AbstractRom
                 {
                     if (cStart != -1)
                     {
-                        out.addRecord(cStart + start, ByteBlock.wrap(rom,
-                            cStart, i - cStart));
+                        out.addRecord(cStart, ByteBlock.wrap(rom, cStart, i
+                            - cStart));
                         cStart = -1;
                     }
                 }
