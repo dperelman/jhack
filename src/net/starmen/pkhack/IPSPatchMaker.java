@@ -75,7 +75,7 @@ public class IPSPatchMaker extends GeneralHackModule
         {
             orgRom = JHack.main.getOrginalRomFile(rom.getRomType());
         }
-        else if (!(orgRom = new RomFileIO()).loadRom())
+        else if (!(orgRom = new RomMem()).loadRom())
         {
             return;
         }

@@ -494,7 +494,7 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public static String getVersion()
     {
-        return "0.5.12";
+        return "0.5.12.1";
     }
 
     /**
@@ -800,7 +800,7 @@ public class MainGUI implements ActionListener, WindowListener
 
         String dd = AbstractRom.getDefaultDir();
 
-        AbstractRom r = new RomFileIO();
+        AbstractRom r = new RomMem();
         r.loadRom(new File(orgRom));
         r.expandEx();
         r.saveRom(new File(expRom));
@@ -885,7 +885,7 @@ public class MainGUI implements ActionListener, WindowListener
             return orgRom = out;
         else
         {
-            out = new RomFileIO();
+            out = new RomMem();
             String dd = AbstractRom.getDefaultDir();
             out.loadRom(new File(this.getPrefs().getValue(
                 romType + ".expRomPath")));

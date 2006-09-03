@@ -1,4 +1,10 @@
-NEXT VERSION (after v0.5.11):
+NEXT VERSION (after v0.5.12.1):
+
+v0.5.12.1:
+# BUGFIX: Fix RomMem.createIPS(). Buggy section only used in v0.5.12.
+# Switched original ROM back to memory instead of file IO for speed reasons.
+
+v0.5.12:
 # PSI Damage Editor: BUGFIX: writes properly
 # Fixed effects list: Offense up, Defense down, Hypnosis, Magnet, 
 	Paralysis, Brainshock have Alpha and Omega forms, not Alpha and Beta
