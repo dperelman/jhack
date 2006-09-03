@@ -19,6 +19,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
@@ -67,7 +68,7 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
 
     public String getVersion()
     {
-        return "0.0";
+        return "0.1";
     }
 
     public String getDescription()
@@ -105,7 +106,10 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             0xee83};
         public static final int[] arngPointerArray = new int[]{0xee1d, 0xee1d};
 
-        public Color[][] animPal;
+        private Color[][] animPal;
+        private Color[] palette;
+        /* True if the background static palette only has 128 colors. */
+        private boolean isOrgTitleScreen;
 
         /* private boolean showTextLayer = false; */
 
@@ -133,23 +137,84 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
 
         public void setPaletteColor(int col, int frame, Color color)
         {
-            if (frame < 0 || (num == 0 && frame >= NUM_ANIM_PALETTES)
-                || (num == 1 && frame >= NUM_CHAR_ANIM_PALETTES)
-                || (num == 0 && (col < 112 || col >= 144)))
+            /* "Initial Flash" not editable */
+            if (frame == TitleScreen.NUM_CHAR_ANIM_PALETTES
+                + TitleScreen.NUM_ANIM_PALETTES + 1)
             {
-                super.setPaletteColor(col, 0, color);
+                return;
             }
-            else if (num == 1)
+            /*
+             * Just go straight to the regular, nonanimated palette if the frame
+             * is out of range.
+             */
+            else if (frame < 0
+                || frame >= NUM_CHAR_ANIM_PALETTES + NUM_ANIM_PALETTES)
             {
-                animPal[frame][col] = color;
-            }
-            else if (col < 128)
-            {
-                animPal[frame][col - 112] = color;
+                if (num == 0 && col >= 128 && col < 144)
+                {
+                    titleScreens[1].setPaletteColor(col - 128, -1, color);
+                }
+                else
+                {
+                    super.setPaletteColor(col, 0, color);
+                }
             }
             else
+            /* Valid animated frame number. */
             {
-                titleScreens[1].animPal[frame][col - 128] = color;
+                /*
+                 * If we are looking at the letters, only look at the animated
+                 * palette.
+                 */
+                if (num == 1)
+                {
+                    if (frame >= NUM_CHAR_ANIM_PALETTES)
+                    {
+                        /*
+                         * Not animated there, so the other static palette gets
+                         * used.
+                         */
+                        titleScreens[0].palette[col + 128] = color;
+                    }
+                    else
+                    {
+                        animPal[frame][col] = color;
+                    }
+                }
+                else
+                /* num == 0 */
+                {
+                    if (col >= 112 && col < 128)
+                    {
+                        /*
+                         * The 16 colors 112-127 are the background animated
+                         * palette. It is animated after the letters.
+                         */
+                        if (frame >= NUM_CHAR_ANIM_PALETTES)
+                        {
+                            animPal[frame - NUM_CHAR_ANIM_PALETTES][col - 112] = color;
+                        }
+                        else
+                        {
+                            super.setPaletteColor(col, 0, color);
+                        }
+                    }
+                    else if (col >= 128 && col < 144)
+                    {
+                        /*
+                         * The 16 colors 128-143 are the letters animated
+                         * palette. It is animated first. Let the above "if (num ==
+                         * 1)" line do the work of choosing the correct place to
+                         * save to.
+                         */
+                        titleScreens[1]
+                            .setPaletteColor(col - 128, frame, color);
+                    }
+                    else
+                    {
+                        super.setPaletteColor(col, 0, color);
+                    }
+                }
             }
         }
 
@@ -163,9 +228,9 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             return num == 0 ? 256 : 16;
         }
 
-        public static int getNumAnimPalettes()
+        public int getNumAnimPalettes()
         {
-            return NUM_ANIM_PALETTES;
+            return num == 0 ? NUM_ANIM_PALETTES : NUM_CHAR_ANIM_PALETTES;
         }
 
         public static int getAnimPaletteSize()
@@ -274,6 +339,7 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(hm.rom
                 .getRomType()) : hm.rom;
 
+            isOrgTitleScreen = readOrg;
             byte[] palBuffer = new byte[getNumSubPalettes()
                 * getSubPaletteSize() * 2];
             /** * DECOMPRESS PALETTE ** */
@@ -283,15 +349,16 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             int[] tmp = EbHackModule.decomp(readOrg ? r
                 .readRegAsmPointer(palPointerArray[num]) : palPointer,
                 palBuffer, r);
-            palette = new Color[NUM_PALETTES][getSubPaletteSize()];
+            palette = new Color[getSubPaletteSize()];
+            /* Make superclass's methods work. */
+            super.palette[0] = palette;
             if (tmp[0] < 0)
             {
                 System.out.println("Error " + tmp[0]
                     + " decompressing title screen #" + num + " palette.");
                 if (allowFailure)
                 { // EMPTY PALETTES
-                    for (int i = 0; i < palette.length; i++)
-                        Arrays.fill(palette[i], Color.BLACK);
+                    Arrays.fill(palette, Color.BLACK);
                     palLen = 0;
                 }
                 else
@@ -305,15 +372,28 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
                 System.out.println("TitleScreen palette: Decompressed "
                     + tmp[0] + " bytes from a " + tmp[1]
                     + " byte compressed block.");
-
-                int palOffset = 0;
-                for (int i = 0; i < NUM_PALETTES; i++)
+                if (num == 0 && tmp[0] == 256)
                 {
-                    HackModule.readPalette(palBuffer, palOffset, palette[i]);
-                    palOffset += palette[i].length * 2;
+                    isOrgTitleScreen = true;
                 }
+
+                HackModule.readPalette(palBuffer, 0, palette);
             }
             return true;
+        }
+
+        /**
+         * Returns true if the most recently loaded static palette had 128
+         * colors. This means that the next 16 colors must be filled in with the
+         * last animated palette for the foreground in order to correctly
+         * display the screen.
+         * 
+         * @return true if this is in the original EB title screen format, false
+         *         if it was created by this editor
+         */
+        public boolean isOrgTitleScreen()
+        {
+            return isOrgTitleScreen;
         }
 
         private boolean readAnimPalette(boolean allowFailure, boolean readOrg)
@@ -321,8 +401,9 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             AbstractRom r = readOrg ? JHack.main.getOrginalRomFile(hm.rom
                 .getRomType()) : hm.rom;
 
+            /* Extra large buffer in case of bad writes. */
             byte[] palBuffer = new byte[getNumAnimPalettes()
-                * getAnimPaletteSize() * 2 * 2];
+                * getAnimPaletteSize() * 2];
             /** * DECOMPRESS PALETTE ** */
             System.out.println("About to attempt decompressing "
                 + palBuffer.length + " bytes of title screen #" + num
@@ -330,7 +411,7 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
             int[] tmp = EbHackModule.decomp(readOrg ? r
                 .readRegAsmPointer(animPalPointerArray[num]) : animPalPointer,
                 palBuffer, r);
-            animPal = new Color[NUM_ANIM_PALETTES][getAnimPaletteSize()];
+            animPal = new Color[getNumAnimPalettes()][getAnimPaletteSize()];
             if (tmp[0] < 0)
             {
                 System.out.println("Error " + tmp[0]
@@ -356,7 +437,7 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
                         + " byte compressed block.");
 
                 int palOffset = 0;
-                for (int i = 0; i < NUM_ANIM_PALETTES; i++)
+                for (int i = 0; i < animPal.length; i++)
                 {
                     HackModule.readPalette(palBuffer, palOffset, animPal[i]);
                     palOffset += animPal[i].length * 2;
@@ -433,6 +514,16 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
                 return false;
 
             isInited = true;
+            /*
+             * Copy the last frame of the character animated palette into the
+             * background static palette if it was 128 colors so it does not
+             * have it.
+             */
+            if (num == 1 && titleScreens[0].isOrgTitleScreen())
+            {
+                System.arraycopy(animPal[NUM_CHAR_ANIM_PALETTES - 1], 0,
+                    titleScreens[0].palette, 128, 16);
+            }
             return true;
         }
 
@@ -477,13 +568,14 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         {
             byte[] udataPal = new byte[getSubPaletteSize()
                 * getNumSubPalettes() * 2];
-            int palOff = 0;
             /* COMPRESS PALETTE */
-            for (int i = 0; i < NUM_PALETTES; i++)
-            {
-                HackModule.writePalette(udataPal, palOff, palette[i]);
-                palOff += palette[i].length * 2;
-            }
+            /* Hmm... we only read 128 colors for palette 0, I wonder why... */
+            /*
+             * Color[] pal; if (num == 0) { pal = new Color[128];
+             * System.arraycopy(palette, 0, pal, 0, 128); } else { pal =
+             * palette; }
+             */
+            HackModule.writePalette(udataPal, 0, palette);
 
             byte[] compPal;
             int palCompLen = comp(udataPal, compPal = new byte[600]);
@@ -503,11 +595,11 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
 
         private boolean writeAnimPalette()
         {
-            int numPals = num == 0 ? NUM_ANIM_PALETTES : NUM_CHAR_ANIM_PALETTES;
-            byte[] udataPal = new byte[getAnimPaletteSize() * numPals * 2];
+            byte[] udataPal = new byte[getAnimPaletteSize()
+                * getNumAnimPalettes() * 2];
             int palOff = 0;
             /* COMPRESS ANIM PALETTE */
-            for (int i = 0; i < numPals; i++)
+            for (int i = 0; i < animPal.length; i++)
             {
                 HackModule.writePalette(udataPal, palOff, animPal[i]);
                 palOff += animPal[i].length * 2;
@@ -563,7 +655,8 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
 
         public boolean writeInfo()
         {
-            if (!isInited)
+            /* If not read yet, read and then write. */
+            if (!isInited && !readInfo())
                 return false;
 
             if (!writePalette())
@@ -913,7 +1006,8 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         {
             subPalSelector.addItem((i + 1) + "/" + totAnimFrames);
         }
-        subPalSelector.addItem("Initial(?)");
+        subPalSelector.addItem("Initial");
+        subPalSelector.addItem("Initial Flash");
         subPalSelector.setActionCommand("subPalSelector");
         subPalSelector.addActionListener(this);
 
@@ -932,8 +1026,6 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
     {
         Box center = new Box(BoxLayout.Y_AXIS);
         center.add(getLabeledComponent("Screen: ", screenSelector));
-        // center.add(getLabeledComponent("Screen Name: ", name));
-        // center.add(getLabeledComponent("SubPalette: ", subPalSelector));
         center.add(Box.createVerticalStrut(15));
         center.add(createFlowLayout(da));
         center.add(Box.createVerticalStrut(5));
@@ -943,12 +1035,12 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         center.add(createFlowLayout(fi));
         center.add(Box.createVerticalStrut(10));
         center.add(lpe);
-        center.add(Box.createVerticalGlue());
+        // center.add(Box.createVerticalGlue());
 
         JPanel display = new JPanel(new BorderLayout());
         display.add(pairComponents(dt, null, false), BorderLayout.EAST);
-        display.add(pairComponents(pairComponents(tileSelector, pairComponents(
-            center, null, true), true), arrangementEditor, false),
+        display.add(pairComponents(pairComponents(tileSelector,
+            createFlowLayout(center), true), arrangementEditor, false),
             BorderLayout.WEST);
 
         return display;
@@ -965,14 +1057,19 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
      */
     protected Color[] getSelectedSubPalette()
     {
-        return getAnimatedPalette(getCurrentScreen(), subPalSelector
+        Color[] out = getAnimatedPalette(getCurrentScreen(), subPalSelector
             .getSelectedIndex());
+        if (out == null)
+        {
+            throw new NullPointerException("Null palette.");
+        }
+        return out;
     }
 
-    public static Color[] getAnimatedPalette(int num, int i)
+    public static Color[] getAnimatedPalette(int num, int frame)
     {
-        if (i >= 0
-            && i < TitleScreen.NUM_CHAR_ANIM_PALETTES
+        if (frame >= 0
+            && frame < TitleScreen.NUM_CHAR_ANIM_PALETTES
                 + TitleScreen.NUM_ANIM_PALETTES)
         {
             if (num == 0)
@@ -983,48 +1080,91 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
                  */
 
                 Color[] textAnimPal, out;
-                if (i < TitleScreen.NUM_CHAR_ANIM_PALETTES)
+                if (frame < TitleScreen.NUM_CHAR_ANIM_PALETTES)
                 {
                     out = new Color[titleScreens[0].getSubPaletteSize()];
                     for (int j = 0; j < out.length; j++)
                     {
                         out[j] = new Color(0, 0, 0);
                     }
-                    textAnimPal = titleScreens[1].getAnimPalette(i);
+                    textAnimPal = titleScreens[1].getAnimPalette(frame);
+                    System.arraycopy(textAnimPal, 0, out, 128, TitleScreen
+                        .getAnimPaletteSize());
                 }
                 else
                 {
                     out = titleScreens[num].getSubPal(0);
 
-                    textAnimPal = titleScreens[1]
-                        .getAnimPalette(TitleScreen.NUM_CHAR_ANIM_PALETTES - 1);
-
-                    Color[] highlightAnimPal = titleScreens[0].getAnimPalette(i
-                        - TitleScreen.NUM_CHAR_ANIM_PALETTES);
+                    Color[] highlightAnimPal = titleScreens[0]
+                        .getAnimPalette(frame
+                            - TitleScreen.NUM_CHAR_ANIM_PALETTES);
                     System.arraycopy(highlightAnimPal, 0, out, 112, TitleScreen
                         .getAnimPaletteSize());
                 }
-                System.arraycopy(textAnimPal, 0, out, 128, TitleScreen
-                    .getAnimPaletteSize());
 
                 return out;
             }
             else
             {
-                return titleScreens[num].getAnimPalette(Math.min(i,
-                    TitleScreen.NUM_CHAR_ANIM_PALETTES - 1));
+                if (frame < TitleScreen.NUM_CHAR_ANIM_PALETTES)
+                {
+                    return titleScreens[num].getAnimPalette(frame);
+                }
+                else
+                {
+                    Color[] out = new Color[16];
+                    System.arraycopy(titleScreens[0].getSubPal(0), 128, out, 0,
+                        16);
+                    return out;
+                }
+            }
+        }
+        else if (frame == TitleScreen.NUM_CHAR_ANIM_PALETTES
+            + TitleScreen.NUM_ANIM_PALETTES + 1)
+        {
+            /* "Initial Flash" */
+            if (num == 0)
+            {
+                Color[] out = new Color[256];
+                Arrays.fill(out, 0, 128, Color.WHITE);
+                Arrays.fill(out, 128, 256, Color.BLACK);
+                return out;
+            }
+            else
+            /* if(num == 1) */
+            {
+                Color[] out = new Color[16];
+                Arrays.fill(out, Color.BLACK);
+                return out;
             }
         }
         /*
          * Else: A animated palette was not selected. The original Color[] is
          * fine.
          */
-        return titleScreens[num].getSubPal(0);
+        Color[] out = titleScreens[num].getSubPal(0);
+        if (num == 0)
+        {
+            System.arraycopy(titleScreens[1].getSubPal(0), 0, out, 128, 16);
+        }
+        return out;
     }
 
     protected boolean isSinglePalImport()
     {
         return true;
+    }
+
+    private void cacheArrImg()
+    {
+        arrImg = new BufferedImage(arrangementEditor.getWidth(),
+            arrangementEditor.getHeight(), BufferedImage.TYPE_INT_RGB);
+        screenSelector.removeActionListener(this);
+        int realSelectedScreen = screenSelector.getSelectedIndex();
+        screenSelector.setSelectedIndex(0);
+        arrangementEditor.paint(arrImg.getGraphics());
+        screenSelector.setSelectedIndex(realSelectedScreen);
+        screenSelector.addActionListener(this);
     }
 
     /*
@@ -1039,14 +1179,34 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         {
             if (screenSelector.getSelectedIndex() != 0)
             {
-                arrImg = new BufferedImage(arrangementEditor.getWidth(),
-                    arrangementEditor.getHeight(), BufferedImage.TYPE_INT_RGB);
-                screenSelector.removeActionListener(this);
-                int realSelectedScreen = screenSelector.getSelectedIndex();
-                screenSelector.setSelectedIndex(0);
-                arrangementEditor.paint(arrImg.getGraphics());
-                screenSelector.setSelectedIndex(realSelectedScreen);
-                screenSelector.addActionListener(this);
+                cacheArrImg();
+            }
+        }
+        else if (ae.getActionCommand().equals("paletteEditor"))
+        {
+            int frame = getCurrentSubPalette();
+            int col = pal.getSelectedColorIndex();
+            if (screenSelector.getSelectedIndex() == 0 && frame >= 0
+                && frame < TitleScreen.NUM_CHAR_ANIM_PALETTES
+                && (col < 128 || col >= 144))
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Sorry, at this point in the animation,\n"
+                        + "that color is always black.\n"
+                        + "Try editing that color later on in the animation\n"
+                        + "or edit the graphics/arrangement so that you are\n"
+                        + "using one of the letters animated palette colors.",
+                    "Unable to edit color", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            else if (frame == TitleScreen.NUM_CHAR_ANIM_PALETTES
+                + TitleScreen.NUM_ANIM_PALETTES + 1)
+            {
+                JOptionPane.showMessageDialog(mainWindow,
+                    "Sorry, the \"Initial Flash\" colors\n"
+                        + "are hardcoded and cannot be changed.",
+                    "Unable to edit color", JOptionPane.INFORMATION_MESSAGE);
+                return;
             }
         }
         super.actionPerformed(ae);
@@ -1059,11 +1219,42 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
         }
         else if (ae.getActionCommand().equals("paletteEditor"))
         {
-            lpe.repaint();
+            if (screenSelector.getSelectedIndex() == 1)
+            {
+                cacheArrImg();
+                lpe.repaint();
+            }
         }
         else if (ae.getActionCommand().equals("mapSelector"))
         {
+            /* Correctly change color selection when changing modes. */
+            int col = pal.getSelectedColorIndex();
+            if (screenSelector.getSelectedIndex() == 1)
+            {
+                if (col >= 128 && col < 144)
+                {
+                    col -= 128;
+                }
+                else
+                {
+                    col = 0;
+                }
+            }
+            else
+            {
+                /* Shift the color up to where it is on the big palette. */
+                col += 128;
+            }
             mainWindow.getContentPane().invalidate();
+            pal.setSelectedColorIndex(col);
+            if (screenSelector.getSelectedIndex() == 0)
+            {
+                pal.changeSize(8, 16);
+            }
+            else
+            {
+                pal.changeSize(20, 2);
+            }
             tileSelector.invalidate();
             tileSelector.resetPreferredSize();
             tileSelector.validate();
@@ -1078,11 +1269,21 @@ public class TitleScreenEditor extends FullScreenGraphicsEditor
     /** TODO: Import/export */
     protected boolean importData()
     {
+        JOptionPane.showMessageDialog(mainWindow,
+            "Sorry, import and export have not yet\n"
+                + "been implemented. Look forward to them\n"
+                + "in a future version.", "Import not implemented yet",
+            JOptionPane.INFORMATION_MESSAGE);
         return false;
     }
 
     protected boolean exportData()
     {
+        JOptionPane.showMessageDialog(mainWindow,
+            "Sorry, import and export have not yet\n"
+                + "been implemented. Look forward to them\n"
+                + "in a future version.", "Export not implemented yet",
+            JOptionPane.INFORMATION_MESSAGE);
         return false;
     }
 }

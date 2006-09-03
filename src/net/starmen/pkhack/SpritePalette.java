@@ -67,13 +67,7 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
     public SpritePalette(int numCol, int size, int rows)
     {
         super();
-        this.squareSize = size;
-        this.rows = rows;
-        this.cols = (int) Math.ceil((float) numCol / (float) rows);
-        // System.out.println("SpritePalette(): numCol=" + numCol + ", rows="
-        // + rows + ", cols=" + cols);
-        this.setPreferredSize(new Dimension((squareSize * (cols + 2)) + 1,
-            (squareSize * rows) + 1));
+        this.changeSize(size, rows, numCol);
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
         this.setToolTipText("Right-click on a color to change it");
@@ -92,6 +86,37 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
     }
 
     /**
+     * Updates the size of this palette for the new parameters.
+     * 
+     * @param numCol number of colors; default is 16
+     * @param size Size of each palette square; default is 20
+     * @param rows number of rows; default is 2
+     * @see #changeSize(int, int)
+     */
+    public void changeSize(int size, int rows, int numCol)
+    {
+        this.squareSize = size;
+        this.rows = rows;
+        this.cols = (int) Math.ceil((float) numCol / (float) rows);
+        this.setPreferredSize(new Dimension((squareSize * (cols + 2)) + 1,
+            (squareSize * rows) + 1));
+        repaint();
+    }
+
+    /**
+     * Updates the size of this palette for the new parameters. This assumes the
+     * current palette size is the number of colors.
+     * 
+     * @param size Size of each palette square; default is 20
+     * @param rows number of rows; default is 2
+     * @see #changeSize(int, int, int)
+     */
+    public void changeSize(int size, int rows)
+    {
+        changeSize(size, rows, pal.length);
+    }
+
+    /**
      * Sets the palette of this to the specified colors. Results may be
      * unpredictable for an array with an odd number of colors. The array index
      * of each color will be it's color number. Two of the same color in the
@@ -101,6 +126,10 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
      */
     public void setPalette(Color[] c)
     {
+        if (getSelectedColorIndex() >= c.length)
+        {
+            setSelectedColorIndex(0);
+        }
         this.pal = c;
         this.setPreferredSize(new Dimension(
             (squareSize * ((pal.length / rows) + 2)) + 1,
@@ -170,8 +199,11 @@ public class SpritePalette extends AbstractButton implements ColorPalette,
      */
     public void setSelectedColorIndex(int c)
     {
-        this.selectedColor = c;
-        repaint();
+        if (c >= 0 && pal != null && c < pal.length)
+        {
+            this.selectedColor = c;
+            repaint();
+        }
     }
 
     /**

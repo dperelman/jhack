@@ -26,6 +26,7 @@ NEXT VERSION (after v0.5.11):
 	(thanks Spooky Mook and MrTenda)
 # BUGFIX: RomMem does not react as badly to attempted reads past the end of the ROM
 	(related to above BUGFIX)
+# Added Title Screen Editor without import/export or letter position editing
 
 v0.5.11:
 # Flyover Editor v0.2: BUGFIX: 6MB ROM problem
