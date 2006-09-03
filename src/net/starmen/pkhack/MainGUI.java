@@ -494,7 +494,7 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public static String getVersion()
     {
-        return "0.5.11";
+        return "0.5.12";
     }
 
     /**
@@ -800,7 +800,7 @@ public class MainGUI implements ActionListener, WindowListener
 
         String dd = AbstractRom.getDefaultDir();
 
-        AbstractRom r = new RomMem();
+        AbstractRom r = new RomFileIO();
         r.loadRom(new File(orgRom));
         r.expandEx();
         r.saveRom(new File(expRom));
@@ -852,12 +852,6 @@ public class MainGUI implements ActionListener, WindowListener
                 return orgRomToExp(romType);
             }
         }
-        System.out.println((new File(getPrefs().getValue(
-            romType + ".expRomPath")).length())
-            + " == "
-            + AbstractRom.EB_ROM_SIZE_REGULAR
-            + "; romType = "
-            + romType);
         long expromlen = new File(getPrefs().getValue(romType + ".expRomPath"))
             .length();
         if (romType.equals("Earthbound")
@@ -891,7 +885,7 @@ public class MainGUI implements ActionListener, WindowListener
             return orgRom = out;
         else
         {
-            out = new RomMem();
+            out = new RomFileIO();
             String dd = AbstractRom.getDefaultDir();
             out.loadRom(new File(this.getPrefs().getValue(
                 romType + ".expRomPath")));
@@ -906,24 +900,20 @@ public class MainGUI implements ActionListener, WindowListener
             + "backup");
     }
 
-    private void writeBackup() throws FileNotFoundException, IOException
+    private void writeBackup()
     {
         if (rom.isLoaded)
         {
             File backupDir = getBackupDir();
             backupDir.mkdir();
             getOrginalRomFile(rom.getRomType());
-            // byte[] orgRomArr = new byte[rom.length()];
-            // new FileInputStream(getOrginalRomFile()).read(orgRomArr);
             System.out.println("About to write backup .ips...");
             IPSFile ips = rom.createIPS(orgRom);
             if (ips == null)
             {
-                System.out.println("Failed writting backup .ips.");
+                System.out.println("Failed writing backup .ips.");
                 return;
             }
-            // FileOutputStream out =
-            // new FileOutputStream(
             File f = new File(backupDir.toString()
                 + File.separator
                 + rom.getFilePath().getName()
@@ -931,12 +921,7 @@ public class MainGUI implements ActionListener, WindowListener
                 + new SimpleDateFormat(DATE_FORMAT)
                     .format(new java.util.Date()) + ".bak.ips");
             ips.saveIPSFile(f);
-            // for (int i = 0; i < ips.length(); i++)
-            // {
-            // out.write(ips.charAt(i));
-            // }
-            // out.close();
-            System.out.println("Completed writting backup .ips.");
+            System.out.println("Completed writing backup .ips.");
 
             this.refreshRevertMenu();
         }
@@ -955,22 +940,10 @@ public class MainGUI implements ActionListener, WindowListener
             return;
         }
 
-        try
-        {
-            writeBackup();
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        writeBackup();
     }
 
-    private void readBackup(String date) throws FileNotFoundException,
-        IOException
+    private void readBackup(String date)
     {
         if (rom.isLoaded)
         {
@@ -1020,20 +993,9 @@ public class MainGUI implements ActionListener, WindowListener
     private void restoreFromBackup(String date)
     {
         doBackup();
-        try
-        {
-            System.out.println("About to restore from backup .ips");
-            readBackup(date);
-            System.out.println("Completed restored from backup .ips");
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        System.out.println("About to restore from backup .ips from " + date);
+        readBackup(date);
+        System.out.println("Completed restored from backup .ips from " + date);
     }
 
     private void refreshRevertMenu()

@@ -153,8 +153,8 @@ public abstract class AbstractRom
 
         this.path = rompath;
 
-        System.out.println("Opened ROM: " + rompath.toString());
-        System.out.println("AbstractRom size is: " + rompath.length());
+        System.out.println("Loaded " + rompath.length() + " byte ROM at "
+            + rompath.toString() + " using " + getClass());
 
         this.isLoaded = true;
 
