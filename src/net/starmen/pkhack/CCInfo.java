@@ -169,7 +169,8 @@ public class CCInfo
         int ch;
 
         /* XXX: Correct loop? */
-        while (true)
+        /* End if we are about to read from the next block. */
+        while (((offset - 0x200) & 0xffff) != 0 || len == 0)
         {
             ch = rom.readChar(offset++);
             len++;

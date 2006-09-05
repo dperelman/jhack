@@ -1,7 +1,11 @@
-NEXT VERSION (after v0.5.12.1):
+NEXT VERSION (after v0.5.12.2):
+
+v0.5.12.2:
 # Map Editor: Dragging aligned with user's cursor
 # Map Editor: BUGFIX: Manual coordinate entry works
 # Map Editor: Added "Undo" button for tile changes
+# Text Editor: BUGFIX: Will not read text across bank boundaries. 
+	(EB will wrap around to the start of the bank.)
 
 v0.5.12.1:
 # BUGFIX: Fix RomMem.createIPS(). Buggy section only used in v0.5.12.

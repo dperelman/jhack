@@ -15,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.AbstractButton;
@@ -437,7 +438,6 @@ public class TextEditor extends EbHackModule implements ActionListener
 
                 address += s.str.length();
                 istr++;
-
             }
             while (address < 0x400200);
 
@@ -540,19 +540,11 @@ public class TextEditor extends EbHackModule implements ActionListener
 
         for (int i = 0; i < NUM_TEXT_TYPES; i++)
         {
-            // System.out.println(
-            // "("
-            // + new Date().toGMTString()
-            // + ") Going to read "
-            // + tabShortNames[i]
-            // + " text.");
+            // System.out.println("(" + new Date().toGMTString()
+            // + ") Going to read " + tabShortNames[i] + " text.");
             loadText(i, hm);
-            // System.out.println(
-            // "("
-            // + new Date().toGMTString()
-            // + ") Finished reading "
-            // + tabShortNames[i]
-            // + " text.");
+            // System.out.println("(" + new Date().toGMTString()
+            // + ") Finished reading " + tabShortNames[i] + " text.");
         }
     }
 
