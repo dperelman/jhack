@@ -1,4 +1,7 @@
 NEXT VERSION (after v0.5.12.1):
+# Map Editor: Dragging aligned with user's cursor
+# Map Editor: BUGFIX: Manual coordinate entry works
+# Map Editor: Added "Undo" button for tile changes
 
 v0.5.12.1:
 # BUGFIX: Fix RomMem.createIPS(). Buggy section only used in v0.5.12.
