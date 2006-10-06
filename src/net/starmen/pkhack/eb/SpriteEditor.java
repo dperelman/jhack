@@ -1412,6 +1412,55 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         sptNames[0] = "Null";
     }
 
+    /*   private static class UnknownZeroCheck implements Comparable
+     {
+     private int width, height, u0, sp;
+
+     public UnknownZeroCheck(int w, int h, int u)
+     {
+     width = w;
+     height = h;
+     u0 = u;
+     }
+
+     public UnknownZeroCheck(SpriteInfoBlock sib)
+     {
+     this(sib.width, sib.height, sib.unknown[0]);
+     sp = sib.num;
+     }
+
+     public String toString()
+     {
+     return width + "x" + height + ", u0=" + u0 + ", w+h="
+     + (width + height) + ", ex. spt #" + sp;
+     }
+
+     public boolean equals(Object obj)
+     {
+     if (obj instanceof UnknownZeroCheck)
+     {
+     UnknownZeroCheck uzc = (UnknownZeroCheck) obj;
+     return uzc.width == width && uzc.height == height
+     && uzc.u0 == u0;
+     }
+     else
+     {
+     return false;
+     }
+     }
+
+     public int compareTo(Object obj)
+     {
+     UnknownZeroCheck uzc = (UnknownZeroCheck) obj;
+     return hashCode() - uzc.hashCode();
+     }
+
+     public int hashCode()
+     {
+     return u0 | width << 16 | height << 8;
+     }
+     }
+     */
     private static void initSpriteInfo(AbstractRom rom)
     {
         int siNum = 0;
@@ -1420,10 +1469,16 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
         // {
         sib = new SpriteInfoBlock[NUM_ENTRIES];
         tempSi = new int[sib.length * 16][2];
+        //Set uzcs = new TreeSet();
         for (int i = 0; i < sib.length; i++)
         {
             sib[i] = new SpriteInfoBlock(i, rom);
+            //uzcs.add(new UnknownZeroCheck(sib[i]));
         }
+        /*for (Iterator i = uzcs.iterator(); i.hasNext(); System.out.println(i
+         .next()))
+         ;*/
+
         for (int i = 0; i < sib.length; i++)
         {
             // assume last is 8 sprites, may be changed?
