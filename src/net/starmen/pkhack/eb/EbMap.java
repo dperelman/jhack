@@ -263,7 +263,7 @@ public class EbMap {
 			if (((change.getY() / 4) % 2) == 1)
 				addr += 0x3000;
 			// To future self: Yes, you did in fact write this code! (two times!) 
-			rom.write(addr, (rom.read(addr) & (~ (3 << ((change.getY() % 4) * 2)))) | (change.getValue() >> 2) << ((change.getY() % 4) * 2));
+			rom.write(addr, (rom.read(addr) & (~ (3 << ((change.getY() % 4) * 2)))) | (change.getValue() / 0x100) << ((change.getY() % 4) * 2));
 		}
 		mapChanges.clear();	
 	}
