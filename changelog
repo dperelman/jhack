@@ -1,4 +1,5 @@
 NEXT VERSION (after v0.5.12.2):
+# Map Editor: BUGFIX: Local tileset data is saved correctly (thanks SilverFang)
 
 v0.5.12.2:
 # Map Editor: Dragging aligned with user's cursor
