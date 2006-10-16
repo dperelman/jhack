@@ -257,13 +257,13 @@ public class EbMap {
 		
 		for (int i = 0; i < mapChanges.size(); i++) {
 			MapChange change = (MapChange) mapChanges.get(i);
-			rom.write(getMapAddress(change.getY()) + change.getX(), change
-					.getValue());
+			rom.write(getMapAddress(change.getY()) + change.getX(), change.getValue() & 0xff);
 			
 			addr = localTsetAddress + ((change.getY() / 8) * (MapEditor.width + 1)) + change.getX();
 			if (((change.getY() / 4) % 2) == 1)
 				addr += 0x3000;
-			rom.write(addr, (rom.read(addr) & (~ (3 << ((change.getY() % 4) * 2)))) + (rom.read(addr) << ((change.getY() % 4) * 2))); 
+			// To future self: Yes, you did in fact write this code! (two times!) 
+			rom.write(addr, (rom.read(addr) & (~ (3 << ((change.getY() % 4) * 2)))) | (change.getValue() >> 2) << ((change.getY() % 4) * 2));
 		}
 		mapChanges.clear();	
 	}
