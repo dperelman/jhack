@@ -326,7 +326,13 @@ public abstract class EbHackModule extends HackModule
         {
             if (cdata >= rom.length())
             {
-                return new int[]{-8, cdata - start + 1};
+                /* No +1 because rom.length() is not a valid index. 
+                 * Don't use cdata here because it could be even further 
+                 * out of range. */
+                //return new int[]{-8, rom.length() - start};
+                /* Actually, if we got to the end of the ROM, 
+                 * something probably went wrong earlier. */
+                return new int[]{-8, 0};
             }
 
             int cmdtype = rom.read(cdata) >> 5;
@@ -711,11 +717,13 @@ public abstract class EbHackModule extends HackModule
             {
                 e.printStackTrace();
             }
-            DONE:
-            /* Can't compress, so just use 0 (raw) */
-            bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
-            if (pos < pos2)
-                pos = pos2;
+            finally
+            {
+                /* Can't compress, so just use 0 (raw) */
+                bpos = rencode(pos2 - pos, buffer, bpos, udata, pos);
+                if (pos < pos2)
+                    pos = pos2;
+            }
         }
         buffer[bpos++] = (byte) 0xFF;
         // sw.stop();

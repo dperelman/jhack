@@ -1,5 +1,9 @@
 NEXT VERSION (after v0.5.12.2):
 # Map Editor: BUGFIX: Local tileset data is saved correctly (thanks SilverFang)
+# BUGFIX: decomp returns the right length for compressed data that goes 
+	past the end of the ROM (thanks Spooky Mook)
+# Tile Editor: BUGFIX: import/export of arrangements worked incorrectly 
+	since v0.5.12
 
 v0.5.12.2:
 # Map Editor: Dragging aligned with user's cursor

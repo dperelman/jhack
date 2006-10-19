@@ -134,6 +134,18 @@ public class TileEditor extends EbHackModule implements ActionListener
             this.num = num;
             this.name = name;
             this.palettes = new ArrayList();
+            readAddresses();
+        }
+
+        private void readAddresses()
+        {
+            this.tileAddress = HackModule.toRegPointer(hm.rom.readMulti(
+                0x2F125B + (num * 4), 4));
+            this.tilesChanged = tileAddress > 0x3001ff;
+
+            this.arrangmentsAddress = HackModule.toRegPointer(hm.rom.readMulti(
+                0x2F12AB + (num * 4), 4));
+            this.arrangementsChanged = arrangmentsAddress > 0x3001ff;
         }
 
         /**
@@ -145,6 +157,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             if (!isInited)
             {
+                readAddresses();
                 if (!readTiles())
                     return false;
                 if (!readArrangements())
@@ -162,6 +175,7 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             if (!isInited)
             {
+                readAddresses();
                 readTiles();
                 readArrangements();
                 readCollision();
@@ -185,24 +199,12 @@ public class TileEditor extends EbHackModule implements ActionListener
          */
         private boolean readTiles()
         {
-            this.tileAddress = HackModule.toRegPointer(hm.rom.readMulti(
-                0x2F125B + (num * 4), 4));
-            this.tilesChanged = tileAddress > 0x3001ff;
-
-            // System.out.println(
-            // "About to read tileset #"
-            // + num
-            // + " tiles from 0x"
-            // + Integer.toHexString(tileAddress));
-
             byte[] buffer = new byte[28673]; // int[] to decompress into
             int[] tmp;
             if ((tmp = hm.decomp(tileAddress, buffer, 28673))[0] != 28673)
             {
                 System.out.println("Error bad compressed data on tileset #"
                     + num + " tiles. (" + tmp[0] + ")");
-                // if (tmp[0] < 0)
-                // return false;
             }
             tileOldCompLen = tmp[1];
 
@@ -227,23 +229,12 @@ public class TileEditor extends EbHackModule implements ActionListener
 
         private boolean readArrangements()
         {
-            this.arrangmentsAddress = HackModule.toRegPointer(hm.rom.readMulti(
-                0x2F12AB + (num * 4), 4));
-            this.arrangementsChanged = arrangmentsAddress > 0x3001ff;
-
-            // System.out.println(
-            // "About to read tileset #"
-            // + num
-            // + " arrangements from 0x"
-            // + Integer.toHexString(arrangmentsAddress));
-
             byte arrBuffer[] = new byte[32768];
             int[] tmp;
             if ((tmp = hm.decomp(this.arrangmentsAddress, arrBuffer, 32768))[0] < 0)
             {
                 System.out.println("Error bad compressed data on tileset #"
-                    + num + " arrangments. (" + tmp + ")");
-                // return false;
+                    + num + " arrangments. (" + tmp[0] + ")");
             }
             arrOldCompLen = tmp[1];
 
@@ -903,7 +894,8 @@ public class TileEditor extends EbHackModule implements ActionListener
             {
                 for (int x = 0; x < 8; x++)
                 {
-                    out += Integer.toHexString(this.getTilePixel(tile, x, y));
+                    out += Integer
+                        .toHexString(this.getTilePixel(tile, x, y) & 0xff);
                 }
             }
 
@@ -1115,7 +1107,7 @@ public class TileEditor extends EbHackModule implements ActionListener
                 for (int x = 0; x < 4; x++)
                 {
                     out += HackModule.addZeros(Integer.toHexString(this
-                        .getArrangementData(arrangement, x, y)), 4);
+                        .getArrangementData(arrangement, x, y) & 0xffff), 4);
                     out += HackModule.addZeros(Integer.toHexString(this
                         .getCollisionData(arrangement, x, y) & 0xff), 2);
                 }
@@ -1162,7 +1154,7 @@ public class TileEditor extends EbHackModule implements ActionListener
             String out = new String();
             for (int i = 0; i < 1024; i++)
             {
-                out += (i != 0 ? "\n" : "") + this.getArrangementAsString(i);
+                out += (i == 0 ? "" : "\n") + this.getArrangementAsString(i);
             }
             return out;
         }
@@ -2597,16 +2589,17 @@ public class TileEditor extends EbHackModule implements ActionListener
     public static int writeInfo(AbstractRom rom)
     {
         int len = 0, tmp;
-        boolean exp = rom.length() != 0x300200, inited[] = new boolean[20];
+        boolean exp = rom.length() != AbstractRom.EB_ROM_SIZE_REGULAR;
         for (int i = 0; i < tilesets.length; i++)
         {
-            inited[i] = tilesets[i].isInited();
-            tilesets[i].init();
-        }
-        for (int i = 0; i < tilesets.length; i++)
-        {
-            if (!(!inited[i] && (!exp || (tilesets[i].tileAddress < 0x300200 && tilesets[i].arrangmentsAddress < 0x300200))))
+            /* Write tilesets which have been inited */
+            if (tilesets[i].isInited()
+                || (exp && (tilesets[i].tilesChanged || tilesets[i].arrangementsChanged)))
             {
+                if (!tilesets[i].isInited())
+                {
+                    tilesets[i].init();
+                }
                 if ((tmp = tilesets[i].writeInfo()) != -1)
                     len += tmp;
                 else
