@@ -10,7 +10,7 @@ import net.starmen.pkhack.HackModule;
 
 // Represents the whole EarthBound map and map-related data in the rom.
 public class EbMap {
-	private static final int[] doorDestTypes = { 1, -1, 0, -2, -2, 2, 2 };
+	public static final int[] DOOR_DEST_TYPES = { 1, -1, 0, -2, -2, 2, 2 };
 
 	private static final int mapAddressesPtr = 0xa3db;
 
@@ -88,6 +88,8 @@ public class EbMap {
 		for (int i = 0; i < mapAddresses.length; i++)
 			mapAddresses[i] = -1;
 		enemyLocChanges = new ArrayList();*/
+		
+		//return;
 		mapChanges = null;
 		spData = null;
 		sectorData = null;
@@ -646,10 +648,43 @@ public class EbMap {
 
 		return retVal;
 	}
+	
+	public static void nullMapData(AbstractRom rom, boolean nullMap, boolean nullSectors) {
+		if (nullMap)
+			mapChanges.clear();	
+		
+		int addr;
+		for (int i = 0; i <= MapEditor.height; i++)
+			for (int j = 0; j <= MapEditor.width; j++) {
+				if (nullSectors && (i % MapEditor.sectorHeight == 0) && (j % MapEditor.sectorWidth == 0)) {
+					// sectorData[(i / MapEditor.sectorHeight) * MapEditor.widthInSectors + (j / MapEditor.sectorWidth)].clear();
+				}
+				if (nullMap && (i % 8 == 0)) {
+					System.out.println(j + "," + i);
+					addr = localTsetAddress + ((i / 8) * (MapEditor.width + 1)) + j + ((i / 4) % 2 == 1 ? 0x3000 : 0);
+					rom.write(addr, 0);
+				}
+					
+				if (nullMap) {
+					rom.write(getMapAddress(i) + j, 0);
+				}
+			}
+	}
 
 	public static void nullSpriteData() {
 		for (int i = 0; i < spData.length; i++)
 			spData[i] = new ArrayList();
+	}
+	
+	public static void nullDoorData() {
+		for (int i = 0; i < doorData.length; i++)
+			doorData[i] = new ArrayList();
+	}
+	
+	public static void nullEnemyData() {
+		for (int i = 0; i < MapEditor.height / 2; i++)
+			for (int j = 0; j < MapEditor.width / 2; j++)
+				changeEnemyLoc(i, j, (byte) 0);
 	}
 
 	public static void loadDoorData(AbstractRom rom) {
@@ -677,7 +712,7 @@ public class EbMap {
 			byte doorType = rom.readByte(ptr + 4 + (i * 5));
 			short doorPtr = (short) rom.readMulti(ptr + 5 + (i * 5), 2);
 			try {
-				if (doorDestTypes[doorType] < 0)
+				if (DOOR_DEST_TYPES[doorType] < 0)
 					doorData[areaNum].add(new DoorLocation(doorX, doorY,
 							doorType, doorPtr));
 				else {
@@ -812,7 +847,7 @@ public class EbMap {
 					allRawDoorData[i][3 + (j * 5)] = (byte) doorLocation
 							.getX();
 					allRawDoorData[i][4 + (j * 5)] = doorLocation.getType();
-					if (doorDestTypes[doorLocation.getType()] < 0) {
+					if (DOOR_DEST_TYPES[doorLocation.getType()] < 0) {
 						short data = (short) (doorLocation.getMisc() & 0xffff);
 						allRawDoorData[i][5 + (j * 5)] = (byte) (data & 0xff);
 						allRawDoorData[i][6 + (j * 5)] = (byte) (((data & 0xff00) / 0x100) & 0xff);
@@ -853,7 +888,7 @@ public class EbMap {
 	private static int loadDestData(AbstractRom rom, int address, int type) {
 		if (!destsLoaded.contains(new Integer(address))) {
 			Destination dest = null;
-			if (doorDestTypes[type] == 0) {
+			if (DOOR_DEST_TYPES[type] == 0) {
 				int pointer = rom.readMulti(address, 4);
 				int flag = rom.readMulti(address + 4, 2);
 				boolean flagReversed;
@@ -869,7 +904,7 @@ public class EbMap {
 				byte direction = (byte) ((rom.read(address + 7) & 0xC0) >> 6);
 				dest = new Destination(pointer, (short) flag, flagReversed,
 						xCoord, yCoord, style, direction);
-			} else if (doorDestTypes[type] == 1) {
+			} else if (DOOR_DEST_TYPES[type] == 1) {
 				short flag = (short) (rom.readMulti(address, 2));
 				boolean flagReversed;
 				if (flag > 0x8000) {
@@ -879,7 +914,7 @@ public class EbMap {
 					flagReversed = false;
 				int pointer = rom.readMulti(address + 2, 4);
 				dest = new Destination(flag, flagReversed, pointer);
-			} else if (doorDestTypes[type] == 2) {
+			} else if (DOOR_DEST_TYPES[type] == 2) {
 				int pointer = rom.readMulti(address, 4);
 				dest = new Destination(pointer);
 			}
@@ -903,10 +938,6 @@ public class EbMap {
 	
 	public static int getNumDests() {
 		return destData.size();
-	}
-
-	public static int getDoorDestType(int doorType) {
-		return doorDestTypes[doorType];
 	}
 
 	public static void changeEnemyLoc(int x, int y, byte enemy) {
@@ -934,10 +965,8 @@ public class EbMap {
 		MapChange change;
 		for (int i = 0; i < enemyLocChanges.size(); i++) {
 			change = (MapChange) enemyLocChanges.get(i);
-			rom.write(
-					enemyLocsAddress
-							+ (change.getY() * (MapEditor.width + 1) / 2 + change
-									.getX()) * 2, change.getValue());
+			rom.write(enemyLocsAddress
+					+ (change.getY() * (MapEditor.width + 1) / 2 + change.getX()) * 2, change.getValue());
 		}
 		enemyLocChanges.clear();
 	}
@@ -1140,6 +1169,17 @@ public class EbMap {
 			this.misc = misc;
 			this.item = item;
 		}
+		
+		public void clear() {
+			this.tileset = 0;
+			this.palette = 0;
+			this.music = 0;
+			this.cantTeleport = false;
+			this.unknown = false;
+			this.townmap = 0;
+			this.misc = 0;
+			this.item = 0;
+		}
 
 		public void setTileset(byte tileset) {
 			this.tileset = tileset;
@@ -1310,6 +1350,17 @@ public class EbMap {
 
 		public void setFlagReversed(boolean flagReversed) {
 			this.flagReversed = flagReversed;
+		}
+		
+		public String toString() {
+			if (type == 0)
+				return "Door - (" + xCoord + "," + yCoord + ")";
+			else if (type == 1)
+				return "Switch - 0x" + HackModule.addZeros(Integer.toHexString(flag + (flagReversed ? 0x8000 : 0)), 4);
+			else if (type == 2)
+				return "Object - $" + Integer.toHexString(pointer);
+			else
+				return "Invalid Type";
 		}
 
 		public byte[] toByteArray() {
