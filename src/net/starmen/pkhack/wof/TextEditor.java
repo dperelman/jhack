@@ -147,10 +147,10 @@ public class TextEditor extends WofHackModule implements ActionListener, ListSel
 		menu.add(createJMenuItem("Export Text", 'e', null,
 	            "exportText", this));
 		menu.add(new JSeparator());
-		menu.add(createJMenuItem("Export Names", 'x', null,
-	            "exportNames", this));
 		menu.add(createJMenuItem("Import Names", 'm', null,
 	            "importNames", this));
+		menu.add(createJMenuItem("Export Names", 'x', null,
+	            "exportNames", this));
 		mb.add(menu);
 		menu = new JMenu("Edit");
 		menu.setMnemonic('e');
@@ -588,6 +588,11 @@ public class TextEditor extends WofHackModule implements ActionListener, ListSel
 			JOptionPane.showMessageDialog(
 					mainWindow, "File not found.", "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
+		} catch (NullPointerException e) {
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(
+					mainWindow, "Error.", "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
 		}
 	}
 	
@@ -600,6 +605,11 @@ public class TextEditor extends WofHackModule implements ActionListener, ListSel
 		} catch (FileNotFoundException e) {
 			JOptionPane.showMessageDialog(
 					mainWindow, "File not found.", "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		} catch (NullPointerException e) {
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(
+					mainWindow, "Error.", "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 	}
@@ -647,6 +657,13 @@ public class TextEditor extends WofHackModule implements ActionListener, ListSel
 					mainWindow, "Could not read file.", "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			return false;
+		} catch (NullPointerException e) {
+			return false;
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(
+					mainWindow, "Error.", "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			return false;
 		}
 		
 		for (int i = 0; i < NUM_NAMES; i++)
@@ -669,6 +686,13 @@ public class TextEditor extends WofHackModule implements ActionListener, ListSel
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(
 					mainWindow, "Could not read file.", "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			return false;
+		} catch (NullPointerException e) {
+			return false;
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(
+					mainWindow, "Error.", "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			return false;
 		}
