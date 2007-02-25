@@ -75,7 +75,7 @@ public class DoorEditor extends EbHackModule
 	 */
 	public String getVersion()
 	{
-		return "0.2";
+		return "0.3";
 	}
 
 	/* (non-Javadoc)
@@ -489,7 +489,8 @@ public class DoorEditor extends EbHackModule
 
 	public void actionPerformed(ActionEvent e) {
 	    if (e.getActionCommand().equals("apply")) {
-	    	if (EbMap.DOOR_DEST_TYPES[typeBox.getSelectedIndex()] != typeDestBox.getSelectedIndex()) {
+	    	if ((EbMap.DOOR_DEST_TYPES[typeBox.getSelectedIndex()] != -1)
+	    			&& (EbMap.DOOR_DEST_TYPES[typeBox.getSelectedIndex()] != typeDestBox.getSelectedIndex())) {
 	    		JOptionPane.showMessageDialog(mainWindow,
 	    				"The types of the door entry and the destination\n"
 	    				+ "are not compatible. Please adjust this so that\n"
