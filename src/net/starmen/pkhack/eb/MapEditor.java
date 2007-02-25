@@ -43,6 +43,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -122,8 +123,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		tilesetLabel.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
 				if ((e.getButton() == 1)
-						&& (gfxcontrol.getTilesetList().getSelectedIndex() > 0)
-						&& (gfxcontrol.getPaletteBox().getSelectedIndex() > 0)) {
+						&& (gfxcontrol.knowsSector())) {
+					System.out.println("test");
 					int tileset = EbMap.getDrawTileset(gfxcontrol
 							.getTilesetList().getSelectedIndex()), palette = TileEditor.tilesets[tileset]
 							.getPaletteNum(gfxcontrol.getTilesetList()
@@ -132,7 +133,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 					net.starmen.pkhack.JHack.main.showModule(TileEditor.class,
 							new int[] { tileset, palette, 0 });
 				} else if ((e.getButton() == 3)
-						&& (gfxcontrol.getTilesetList().getSelectedIndex() > 0))
+						&& (gfxcontrol.knowsSector()))
 					net.starmen.pkhack.JHack.main.showModule(
 							MapEventEditor.class, new Integer(EbMap
 									.getDrawTileset(gfxcontrol.getTilesetList()
@@ -285,11 +286,19 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		findSprite = EbHackModule.createJMenuItem("Find Sprite Entry", 'f',
 				null, MenuListener.FIND_SPRITE, menuListener);
 		menu.add(findSprite);
-		menu.add(EbHackModule.createJMenuItem("Delete All Sprites", 'd', null,
+		menu.add(new JSeparator());
+		//menu.add(EbHackModule.createJMenuItem("Clear Map", 'm', null,
+		//		MenuListener.DEL_ALL_MAP, menuListener));
+		menu.add(EbHackModule.createJMenuItem("Delete All Sprites", 's', null,
 				MenuListener.DEL_ALL_SPRITES, menuListener));
+		menu.add(EbHackModule.createJMenuItem("Delete All Doors", 'o', null,
+				MenuListener.DEL_ALL_DOORS, menuListener));
+		menu.add(EbHackModule.createJMenuItem("Clear Enemy Placements", 'e', null,
+				MenuListener.DEL_ALL_ENEMIES, menuListener));
+		menu.add(new JSeparator());
 		menu.add(EbHackModule.createJMenuItem("Clear Tile Image Cache", 't',
 				null, MenuListener.RESET_TILE_IMAGES, menuListener));
-		menu.add(EbHackModule.createJMenuItem("Clear Sprite Image Cache", 's',
+		menu.add(EbHackModule.createJMenuItem("Clear Sprite Image Cache", 'c',
 				null, MenuListener.RESET_SPRITE_IMAGES, menuListener));
 		menu.add(EbHackModule.createJMenuItem("Reload Music Names", 'm', null,
 				MenuListener.MUSIC_NAMES, menuListener));
@@ -529,6 +538,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
 			MODE6 = "mode6",
 			MODE7 = "mode7",
 			DEL_ALL_SPRITES = "delAllSprites",
+			DEL_ALL_MAP = "delAllMap",
+			DEL_ALL_ENEMIES = "delAllEnemies",
+			DEL_ALL_DOORS = "delAllDoors",
 			RESET_TILE_IMAGES = "resetTileImages",
 			RESET_SPRITE_IMAGES = "resetSpriteImages",
 			GRIDLINES = "gridLines",
@@ -573,6 +585,30 @@ public class MapEditor extends EbHackModule implements ActionListener,
 						"Are you sure?", JOptionPane.YES_NO_OPTION);
 				if (sure == JOptionPane.YES_OPTION) {
 					EbMap.nullSpriteData();
+					gfxcontrol.repaint();
+				}
+			} else if (ac.equals(DEL_ALL_MAP)) {
+				int sure = JOptionPane.showConfirmDialog(mainWindow,
+						"Are you sure you want to clear the map and sector data?",
+						"Are you sure?", JOptionPane.YES_NO_OPTION);
+				if (sure == JOptionPane.YES_OPTION) {
+					EbMap.nullMapData(rom, true, true);
+					gfxcontrol.repaint();
+				}
+			} else if (ac.equals(DEL_ALL_DOORS)) {
+				int sure = JOptionPane.showConfirmDialog(mainWindow,
+						"Are you sure you want to delete the door placement data?",
+						"Are you sure?", JOptionPane.YES_NO_OPTION);
+				if (sure == JOptionPane.YES_OPTION) {
+					EbMap.nullDoorData();
+					gfxcontrol.repaint();
+				}
+			} else if (ac.equals(DEL_ALL_ENEMIES)) {
+				int sure = JOptionPane.showConfirmDialog(mainWindow,
+						"Are you sure you want to clear the enemy data?",
+						"Are you sure?", JOptionPane.YES_NO_OPTION);
+				if (sure == JOptionPane.YES_OPTION) {
+					EbMap.nullEnemyData();
 					gfxcontrol.repaint();
 				}
 			} else if (ac.equals(RESET_TILE_IMAGES)) {
@@ -898,7 +934,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 				{ 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 1, 0, 1 }, // sprite edit
 				{ 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 1, 0, 1 }, // door edit
 				{ 0, 2, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 4 },
-				{ 0, 2, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 4 },
+				{ 0, 2, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1 }, // for seeking
 				{ 0, 2, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1 }, // for previewing
 				{ 0, 2, 0, 1, 1, 0, 0, 0, 2, 0, 1, 0, 1 }, // hotspot edit
 				{ 0, 2, 0, 1, 1, 0, 0, 0, 1, 2, 2, 3, 1 } // enemy edit
@@ -932,8 +968,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
 				addMouseWheelListener(this);
 			}
 
-			setPreferredSize(new Dimension(screenWidth * MapEditor.tileWidth,
-					screenHeight * MapEditor.tileHeight));
+			setPreferredSize(new Dimension(
+					screenWidth * MapEditor.tileWidth + 2,
+					screenHeight * MapEditor.tileHeight + 2));
 		}
 
 		public MapGraphics(HackModule hm, int screenWidth, int screenHeight,
@@ -999,8 +1036,9 @@ public class MapEditor extends EbHackModule implements ActionListener,
 			//updateComponents();
 			//reloadMap();
 
-			setPreferredSize(new Dimension(screenWidth * MapEditor.tileWidth
-					+ 2, screenHeight * MapEditor.tileHeight + 2));
+			setPreferredSize(new Dimension(
+					screenWidth * MapEditor.tileWidth + 2,
+					screenHeight * MapEditor.tileHeight + 2));
 			addMouseListener(this);
 			addMouseMotionListener(this);
 			addMouseWheelListener(this);
@@ -2051,8 +2089,8 @@ public class MapEditor extends EbHackModule implements ActionListener,
 			if ((mx >= getPreferredSize().width - 2)
 					|| (my >= getPreferredSize().height - 2))
 				return;
-			else if ((getModeProps()[3] >= 2) && (getSpriteNum(mx, my) != -1))
-				setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+			//else if ((getModeProps()[3] >= 2) && (getSpriteNum(mx, my) != -1))
+			//	setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 			else if ((getModeProps()[8] >= 2) && (visibleHotspots.size() > 0)) {
 				int tileX = getMapTileX(), tileY = getMapTileY();
 				for (int i = 0; i < visibleHotspots.size(); i++) {
@@ -2121,7 +2159,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 						
 						movingData = new int[] { 0, e.getX(), e.getY(), e.getX() - spriteDrawX, e.getY() - spriteDrawY };
 						EbMap.removeSprite(areaXY[0], areaXY[1], spNum);
-						setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+						//setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 					}
 				} else if ((getModeProps()[4] >= 2) && (movingData[0] == -1)) {
 					int doorNum = getDoorNum(mx, my);
@@ -2139,7 +2177,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 						
 						movingData = new int[] { 1, e.getX(), e.getY(), 0, 0 };
 						EbMap.removeDoor(areaXY[0], areaXY[1], doorNum);
-						setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+						//setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 					}
 				}
 			}
@@ -2160,12 +2198,10 @@ public class MapEditor extends EbHackModule implements ActionListener,
 						else {
 							if ((xDiff >= ((spot.getX2() - spot.getX1() - 1) * 8))
 									&& (yDiff >= ((spot.getY2() - spot.getY1() - 1) * 8))) {
-								setCursor(Cursor
-										.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+								setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
 								movingData = new int[] { 3, e.getX(), e.getY(), num };
 							} else {
-								setCursor(Cursor
-										.getPredefinedCursor(Cursor.MOVE_CURSOR));
+								setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 								movingData = new int[] { 2, e.getX(), e.getY(), num, xDiff, yDiff };
 							}
 							movingObject = spot;
@@ -2327,7 +2363,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 								.getDoorLocation(doorCoords[0], doorCoords[1],
 										num);
 						String dest;
-						if (EbMap.getDoorDestType(doorLocation.getType()) >= 0)
+						if (EbMap.DOOR_DEST_TYPES[doorLocation.getType()] >= 0)
 							dest = "Destination #"
 									+ Integer.toString(doorLocation
 											.getDestIndex());
@@ -2336,7 +2372,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 						popup.add(EbHackModule.createJMenuItem("Edit entry ("
 								+ dest + ")", 's', null,
 								PopupListener.EDIT_DEST, popupListener));
-						if (EbMap.getDoorDestType(doorLocation.getType()) == 0)
+						if (EbMap.DOOR_DEST_TYPES[doorLocation.getType()] == 0)
 							popup.add(EbHackModule.createJMenuItem(
 									"Jump to destination", 'j', null,
 									PopupListener.JUMP_DEST, popupListener));
