@@ -59,8 +59,6 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 	private static int oldStartAddress, oldLength;
 
 	private static int[][] oldEntryLocs = new int[ENEMY_GROUPS_COUNT][2];
-	
-	private int tmp = 0;
 
 	/*
 	 * (non-Javadoc)
@@ -332,8 +330,8 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 				startFrom += entryData.length;
 			}
 
-			hm.writetoFree(data, enemyGroupsPtrsAddress, 4, 0, data.length,
-					true);
+			hm.writetoFree(data, enemyGroupsPtrsAddress, 4, 0, data.length, true);
+			
 			startFrom = hm.rom.readMulti(enemyGroupsPtrsAddress, 4);
 			for (int i = 1; i < enemyPlGroups.length; i++)
 				hm.rom.write(enemyGroupsPtrsAddress + 4 * i,
@@ -653,7 +651,7 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 		public byte[] toByteArray() {
 			byte[] out = new byte[getSize()];
 			out[0] = (byte) (flag & 0xff);
-			out[1] = (byte) ((flag & 0xff00) >> 2);
+			out[1] = (byte) ((flag & 0xff00) / 0x100);
 			out[2] = eRate1;
 			out[3] = eRate2;
 			int startFrom = 4;
@@ -665,7 +663,7 @@ public class EnemyPlacementGroupsEditor extends EbHackModule implements
 							out[startFrom + 1] = (byte) (subgroups[i][j]
 									.getEnemy() & 0xff);
 							out[startFrom + 2] = (byte) ((subgroups[i][j]
-									.getEnemy() & 0xff00) >> 2);
+									.getEnemy() & 0xff00) / 0x100);
 							startFrom += 3;
 						}
 
