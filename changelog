@@ -4,6 +4,11 @@ NEXT VERSION (after v0.5.12.2):
 	past the end of the ROM (thanks Spooky Mook)
 # Tile Editor: BUGFIX: import/export of arrangements worked incorrectly 
 	since v0.5.12
+# Enemy Placement Groups Editor: BUGFIX: Fixed bug with saving
+# Door Entry/Destination Editor: Improvement in GUI
+# Map Editor: BUGFIX: Scrolling during seeking fixed
+# Map Editor: BUGFIX: Tileset/palette link fixed
+# Map Editor: Added shortcuts to clear doors and enemies under "Tools"
 
 v0.5.12.2:
 # Map Editor: Dragging aligned with user's cursor
