@@ -1,13 +1,17 @@
 package net.starmen.pkhack.eb;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -62,7 +66,7 @@ public class DoorEditor extends EbHackModule
 	protected void init()
 	{
 		TeleportTableEditor.initWarpStyleNames();
-		destPreview = new MapEditor.MapGraphics(this, 5, 5, 5, false, false, true, 8, true);
+		destPreview = new MapEditor.MapGraphics(this, 4, 2, 5, false, false, true, 8, true);
 		createGUI();
 	}
 
@@ -102,6 +106,7 @@ public class DoorEditor extends EbHackModule
 	{
 		super.show();
 		readFromRom();
+		reloadDestChooser();
 		if (entryNumBox.getSelectedIndex() < 0) {
 			updateComponents(false, false, false);
 			if (entryNumBox.getItemCount() > 0)
@@ -115,6 +120,7 @@ public class DoorEditor extends EbHackModule
 	{
 		super.show();
 		readFromRom();
+		reloadDestChooser();
 		mainWindow.setVisible(true);
 		int[] data = (int[]) obj;
 		muteDL = true;
@@ -137,10 +143,6 @@ public class DoorEditor extends EbHackModule
 	{
 		mainWindow = createBaseWindow(this);
 		mainWindow.setTitle(this.getDescription());
-		
-		JPanel entryPanel = new JPanel();
-		entryPanel.setLayout(
-				new BoxLayout(entryPanel, BoxLayout.Y_AXIS));
 		
 		DocumentListener listener = new DocumentListener()
 		{
@@ -165,148 +167,118 @@ public class DoorEditor extends EbHackModule
 	        }
 		};
 		
-		JPanel entryLoc = new JPanel();
+		//HackModule.createFlowLayout(comps)
+		
+		JComponent tmp;
+		
+		JPanel doorInfo = new JPanel();
+		doorInfo.setLayout(new BoxLayout(doorInfo, BoxLayout.Y_AXIS));
+		doorInfo.setBorder(BorderFactory.createTitledBorder("Door information"));
+		
 		areaXField = HackModule.createSizedJTextField(2, true);
 		areaXField.getDocument().addDocumentListener(listener);
-		entryLoc.add(HackModule.getLabeledComponent("Area X: ", areaXField));
 		areaYField = HackModule.createSizedJTextField(2, true);
 		areaYField.getDocument().addDocumentListener(listener);
-		entryLoc.add(HackModule.getLabeledComponent("Area Y: ", areaYField));
-		/*entryNumField = HackModule.createSizedJTextField(3, true);
-		entryNumField.getDocument().addDocumentListener(listener);
-		entryLoc.add(HackModule.getLabeledComponent("Num: ", entryNumField));*/
 		entryNumBox = new JComboBox();
 		entryNumBox.addActionListener(this);
-		entryLoc.add(HackModule.getLabeledComponent("Num: ", entryNumBox));
-		
 		JButton button = new JButton("Add");
 		button.addActionListener(this);
 		button.setActionCommand("addDoor");
-		entryLoc.add(button);
 		delDoorButton = new JButton("Delete");
 		delDoorButton.addActionListener(this);
 		delDoorButton.setActionCommand("delDoor");
-		entryLoc.add(delDoorButton);
-		entryPanel.add(entryLoc);
-		
-		ropeCheck = new JCheckBox();
-		entryPanel.add(HackModule.getLabeledComponent("Rope: ", ropeCheck));
-		
-		dirClimbBox = new JComboBox(climbDirections);
-		entryPanel.add(HackModule.getLabeledComponent("Escalator/Stair Direction: ", dirClimbBox));
-		
-		numBox = new JComboBox();
-		numBox.addActionListener(this);
-		entryPanel.add(
-				HackModule.getLabeledComponent(
-						"Destination: ", numBox));
-				
+		doorInfo.add(HackModule.createFlowLayout(
+				new Component[] {
+						new JLabel("Area X:"), areaXField, 
+						new JLabel("Area Y:"), areaYField,
+						new JLabel("Num:"), entryNumBox,
+						button, delDoorButton
+				}));
+
 		typeBox = new JComboBox(typeNames);
 		typeBox.addActionListener(this);
-		entryPanel.add(
-				HackModule.getLabeledComponent(
-						"Type: ", typeBox));
+		tmp = HackModule.createFlowLayout(new Component[] { new JLabel("Type:"), typeBox });
+		((FlowLayout) tmp.getLayout()).setAlignment(FlowLayout.LEFT);
+		doorInfo.add(tmp);
 		
-		JPanel destPanel = new JPanel();
-		destPanel.setLayout(
-				new BoxLayout(destPanel, BoxLayout.Y_AXIS));
+		ropeCheck = new JCheckBox();
+		dirClimbBox = new JComboBox(climbDirections);
+		tmp = HackModule.createFlowLayout(new Component[] {
+				new JLabel("Rope:"), ropeCheck,
+				new JLabel("Stairs direction:"), dirClimbBox });
+		((FlowLayout) tmp.getLayout()).setAlignment(FlowLayout.LEFT);
+		doorInfo.add(tmp);
+		
+		numBox = new JComboBox(); // the destination's number
+		numBox.addActionListener(this);
+		tmp = HackModule.createFlowLayout(new Component[] { new JLabel("Destination:"), numBox });
+		((FlowLayout) tmp.getLayout()).setAlignment(FlowLayout.LEFT);
+		doorInfo.add(tmp);
+		
+		JPanel destInfo = new JPanel();
+		destInfo.setLayout(new BoxLayout(destInfo, BoxLayout.Y_AXIS));
+		destInfo.setBorder(BorderFactory.createTitledBorder("Destination information"));
 		
 		typeDestBox = new JComboBox(typeDestNames);
 		typeDestBox.addActionListener(this);
-		destPanel.add(
-				HackModule.getLabeledComponent(
-						"Type: ", typeDestBox));
+		tmp = HackModule.createFlowLayout(new Component[] { new JLabel("Type:"), typeDestBox });
+		((FlowLayout) tmp.getLayout()).setAlignment(FlowLayout.LEFT);
+		destInfo.add(tmp);
 		
-		//ptrField = HackModule.createSizedJTextField(6, false);
-		ptrField = new TextEditor.TextOffsetEntry("Text", true);
+		tmp = HackModule.createFlowLayout(new Component[] {
+					new JLabel("X:"), destPreview.getXField(),
+					new JLabel("Y:"), destPreview.getYField()
+				});
+		((FlowLayout) tmp.getLayout()).setAlignment(FlowLayout.LEFT);
+		destInfo.add(tmp);
 		
-		destPanel.add(
-				HackModule.getLabeledComponent(
-						"Pointer: ", ptrField));
+		dirBox = new JComboBox(new String[] { "Down", "Up", "Right", "Left" });
+		tmp = HackModule.createFlowLayout(new Component[] { new JLabel("Direction:"), dirBox });
+		((FlowLayout) tmp.getLayout()).setAlignment(FlowLayout.LEFT);
+		destInfo.add(tmp);
+		
+		styleBox = HackModule.createJComboBoxFromArray(TeleportTableEditor.warpStyleNames);
+		tmp = HackModule.createFlowLayout(new Component[] { new JLabel("Style:"), styleBox });
+		((FlowLayout) tmp.getLayout()).setAlignment(FlowLayout.LEFT);
+		destInfo.add(tmp);
 		
 		flagField = HackModule.createSizedJTextField(4, false);
-		destPanel.add(
-				HackModule.getLabeledComponent(
-						"Event flag: ", flagField));
-		
 		reverseCheck = new JCheckBox();
-		destPanel.add(
-				HackModule.getLabeledComponent(
-						"Reverse event flag effect: ",
-						reverseCheck));
+		tmp = HackModule.createFlowLayout(new Component[] {
+				new JLabel("Flag:"), flagField,
+				reverseCheck, new JLabel("Reverse") });
+		((FlowLayout) tmp.getLayout()).setAlignment(FlowLayout.LEFT);
+		destInfo.add(tmp);
 		
-		JPanel buttonPanel = new JPanel();
-		setXYButton = new JButton("Set X&Y using Map Editor");
+		ptrField = new TextEditor.TextOffsetEntry("Text", true);
+		tmp = HackModule.createFlowLayout(ptrField);
+		((FlowLayout) tmp.getLayout()).setAlignment(FlowLayout.LEFT);
+		destInfo.add(tmp);
+		
+		destInfo.add(HackModule.createFlowLayout(destPreview));
+		
+		setXYButton = new JButton("Seek");
 		setXYButton.addActionListener(this);
-		buttonPanel.add(setXYButton);
-		jumpButton = new JButton("Go to in Map Editor");
+		jumpButton = new JButton("Go");
 		jumpButton.addActionListener(this);
-		buttonPanel.add(jumpButton);
-		destPanel.add(buttonPanel);
-		
-		destPanel.add(
-				HackModule.getLabeledComponent(
-						"X: ", destPreview.getXField()));
-		
-		destPanel.add(
-				HackModule.getLabeledComponent(
-						"Y: ", destPreview.getYField()));
-		
-		dirBox = new JComboBox(new String[] {
-				"Down", "Up", "Right", "Left"
-		});
-		destPanel.add(
-				HackModule.getLabeledComponent(
-						"Direction:  ", dirBox));
-		
-		// styleBox = new JComboBox(TeleportTableEditor.warpStyleNames);
-		styleBox = HackModule.createJComboBoxFromArray(TeleportTableEditor.warpStyleNames);
-		destPanel.add(
-				HackModule.getLabeledComponent(
-						"Style: ", styleBox));
-		
-		JPanel previewPanel = new JPanel();
-		previewPanel.setLayout(
-				new BoxLayout(previewPanel, BoxLayout.Y_AXIS));
-		previewPanel.add(new JLabel("Destination Preview",0));
-		/*destPreview.setPreferredSize(
-				new Dimension(
-						destPreview.getWidthTiles() * MapEditor.tileWidth + 2,
-						destPreview.getHeightTiles() * MapEditor.tileHeight + 2));*/
-		destPreview.setAlignmentX(0);
-		previewPanel.add(destPreview);
+		destInfo.add(HackModule.createFlowLayout(new Component[] {
+				setXYButton, jumpButton
+		}));
 		
 		JPanel contentPanel = new JPanel();
-		contentPanel.setLayout(
-				new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-		contentPanel.add(new JLabel("Entry Properties:",0));
-		entryPanel.setAlignmentX(0);
-		contentPanel.add(entryPanel);
-		contentPanel.add(new JLabel("Destination Properties:",0));
-		destPanel.setAlignmentX(0);
-		contentPanel.add(destPanel);
-		warnLabel = new JLabel("<html>Type match.</html>");
-		warnLabel.setHorizontalAlignment(0);
-		contentPanel.add(warnLabel);
+		contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+		contentPanel.add(doorInfo);
+		contentPanel.add(destInfo);
+		warnLabel = new JLabel("Types match.");
+		contentPanel.add(HackModule.createFlowLayout(warnLabel));
 		
-		this.mainWindow.getContentPane().add(
-				contentPanel, BorderLayout.CENTER);
-		this.mainWindow.getContentPane().add(
-				previewPanel, BorderLayout.LINE_START);
+		this.mainWindow.getContentPane().add(contentPanel, BorderLayout.CENTER);
 		this.mainWindow.pack();
 	}
 	
 	private void disableDestGUI()
 	{
-		//ptrField.setText(null);
-		dirBox.setSelectedIndex(0);
-		flagField.setText(null);
-		reverseCheck.setSelected(false);
-		styleBox.setSelectedIndex(0);
-		typeDestBox.removeActionListener(this);
 		typeDestBox.setEnabled(false);
-		typeDestBox.setSelectedIndex(-1);
-		typeDestBox.addActionListener(this);
 		ptrField.setEnabled(false);
 		setXYButton.setEnabled(false);
 		jumpButton.setEnabled(false);
@@ -316,22 +288,19 @@ public class DoorEditor extends EbHackModule
 		styleBox.setEnabled(false);
 		destPreview.setEnabled(false); 
 	}
+	
+	private void reloadDestChooser() {
+		numBox.removeActionListener(this);
+		numBox.removeAllItems();
+		for (int i = 0; i < EbMap.getNumDests(); i++)
+			numBox.addItem(getNumberedString(EbMap.getDestination(i).toString(), i));
+		numBox.addActionListener(this);
+	}
 
-	private void updateComponents(boolean loadDest, boolean loadEntry, 
-			boolean loadDestType)
-	{
-		if (numBox.getItemCount() != EbMap.getNumDests()) {
-			numBox.removeActionListener(this);
-			numBox.removeAllItems();
-			for (int i = 0; i < EbMap.getNumDests(); i++)
-				numBox.addItem(getNumberedString("", i));
-			numBox.addActionListener(this);
-		}
-		
-		muteDL = true;
+	private void updateComponents(boolean loadDest, boolean loadEntry, boolean loadDestType) {
+		//muteDL = true;
 		int x = Integer.parseInt(areaXField.getText()),
 			y = Integer.parseInt(areaYField.getText()),
-			// num = Integer.parseInt(entryNumField.getText());
 			num = entryNumBox.getSelectedIndex();
 
     	if (EbMap.getDoorsNum(x,y) != entryNumBox.getItemCount()) {
@@ -354,8 +323,7 @@ public class DoorEditor extends EbHackModule
 				|| (y >= MapEditor.heightInSectors / 2)
 				|| (x < 0) || (y < 0)
 				|| (num >= EbMap.getDoorsNum(x,y))
-				|| (num < 0))
-		{
+				|| (num < 0)) {
 			//disable everything if trying to show an invalid entry
 			numBox.removeActionListener(this);
 			numBox.setSelectedIndex(-1);
@@ -371,10 +339,10 @@ public class DoorEditor extends EbHackModule
 			dirClimbBox.setSelectedIndex(0);
 			delDoorButton.setEnabled(false);
 			disableDestGUI();
-		}
-		else
-		{
-			EbMap.DoorLocation doorLocation = EbMap.getDoorLocation(x,y,num);
+		} else {
+			EbMap.DoorLocation doorLocation = null;
+			if (loadEntry)
+				doorLocation = EbMap.getDoorLocation(x,y,num);
 			delDoorButton.setEnabled(true);
 			// update entry stuff?
 			typeBox.removeActionListener(this);
@@ -385,46 +353,49 @@ public class DoorEditor extends EbHackModule
 				typeBox.removeActionListener(this);
 				typeBox.setSelectedIndex(doorLocation.getType());
 				typeBox.addActionListener(this);
-				int doorDestType = EbMap.getDoorDestType(doorLocation.getType());
-				if (doorDestType == -1)
-				{
-					ropeCheck.setEnabled(true);
+			}
+			
+			if (EbMap.DOOR_DEST_TYPES[typeBox.getSelectedIndex()] == -1)
+			{
+				ropeCheck.setEnabled(true);
+				if (loadEntry)
 					ropeCheck.setSelected(doorLocation.isMiscRope());
-					dirClimbBox.setEnabled(false);
-					dirClimbBox.setSelectedIndex(0);
-					numBox.removeActionListener(this);
-					numBox.setEnabled(false);
-					numBox.setSelectedIndex(-1);
-					numBox.addActionListener(this);
-				}
-				else if (doorDestType == -2)
-				{
-					ropeCheck.setEnabled(false);
+				else
 					ropeCheck.setSelected(false);
-					dirClimbBox.setEnabled(true);
+				dirClimbBox.setEnabled(false);
+				dirClimbBox.setSelectedIndex(-1);
+				numBox.removeActionListener(this);
+				numBox.setEnabled(false);
+				numBox.addActionListener(this);
+			}
+			else if (EbMap.DOOR_DEST_TYPES[typeBox.getSelectedIndex()] == -2)
+			{
+				ropeCheck.setEnabled(false);
+				ropeCheck.setSelected(false);
+				dirClimbBox.setEnabled(true);
+				if (loadEntry)
 					dirClimbBox.setSelectedIndex(doorLocation.getMiscDirection());
-					numBox.removeActionListener(this);
-					numBox.setEnabled(false);
-					numBox.setSelectedIndex(-1);
-					numBox.addActionListener(this);
-				}
-				else if (doorDestType >= 0)
-				{
-					ropeCheck.setEnabled(false);
-					ropeCheck.setSelected(false);
-					dirClimbBox.setEnabled(false);
+				else
 					dirClimbBox.setSelectedIndex(0);
-					numBox.removeActionListener(this);
-					numBox.setEnabled(true);
+				numBox.removeActionListener(this);
+				numBox.setEnabled(false);
+				numBox.addActionListener(this);
+			}
+			else if (EbMap.DOOR_DEST_TYPES[typeBox.getSelectedIndex()] >= 0)
+			{
+				ropeCheck.setEnabled(false);
+				ropeCheck.setSelected(false);
+				dirClimbBox.setEnabled(false);
+				dirClimbBox.setSelectedIndex(-1);
+				numBox.removeActionListener(this);
+				numBox.setEnabled(true);
+				if (loadEntry)
 					numBox.setSelectedIndex(doorLocation.getDestIndex());
-					numBox.addActionListener(this);
-				}
+				numBox.addActionListener(this);
 			}
 			
 			//update destination's type?
-			if (loadDestType
-					&& (EbMap.getDoorDestType(typeBox.getSelectedIndex()) >= 0))
-			{
+			if (loadDestType && (EbMap.DOOR_DEST_TYPES[typeBox.getSelectedIndex()] >= 0)) {
 				EbMap.Destination dest = EbMap.getDestination(numBox.getSelectedIndex());
 				typeDestBox.removeActionListener(this);
 				typeDestBox.setEnabled(true);
@@ -433,17 +404,14 @@ public class DoorEditor extends EbHackModule
 			}
 			
 			//update destination properties?
-			if (EbMap.getDoorDestType(typeBox.getSelectedIndex()) < 0)
-			{
-				warnLabel.setText("Type match.");
+			if (EbMap.DOOR_DEST_TYPES[typeBox.getSelectedIndex()] < 0) {
+				warnLabel.setText("Types match.");
 				disableDestGUI();
-			}
-			else
-			{
-				if (EbMap.getDoorDestType(typeBox.getSelectedIndex()) == typeDestBox.getSelectedIndex())
-					warnLabel.setText("<html>Type match.</html>");
+			} else {
+				if (EbMap.DOOR_DEST_TYPES[typeBox.getSelectedIndex()] == typeDestBox.getSelectedIndex())
+					warnLabel.setText("Types match.");
 				else
-					warnLabel.setText("<html><font color = \"red\"><u>TYPE MISMATCH!</u></font></html>");
+					warnLabel.setText("<html><font color = \"red\">Types do not match.</font></html>");
 				EbMap.Destination dest = EbMap.getDestination(numBox.getSelectedIndex());
 				
 				destPreview.setEnabled(typeDestBox.getSelectedIndex() == 0);
@@ -473,9 +441,7 @@ public class DoorEditor extends EbHackModule
 				}
 				else if (typeDestBox.getSelectedIndex() == 1)
 				{
-					dirBox.setSelectedIndex(0);
 					dirBox.setEnabled(false);
-					styleBox.setSelectedIndex(0);
 					styleBox.setEnabled(false);
 					ptrField.setEnabled(true);
 					setXYButton.setEnabled(false);
@@ -485,17 +451,17 @@ public class DoorEditor extends EbHackModule
 					
 					if (loadDest)
 					{
+						dirBox.setSelectedIndex(0);
+						styleBox.setSelectedIndex(0);
 						ptrField.setOffset(dest.getPointer());
 						flagField.setText(Integer.toHexString(dest.getFlag()));
 		    			reverseCheck.setSelected(dest.isFlagReversed());
+		    			destPreview.setMapXY(0,0);
+		    			destPreview.reloadMap();
 					}
 				}
 				else
 				{
-					dirBox.setSelectedIndex(0);
-					flagField.setText(null);
-					reverseCheck.setSelected(false);
-					styleBox.setSelectedIndex(0);
 					ptrField.setEnabled(true);
 					setXYButton.setEnabled(false);
 					jumpButton.setEnabled(false);
@@ -504,73 +470,100 @@ public class DoorEditor extends EbHackModule
 					reverseCheck.setEnabled(false);
 					styleBox.setEnabled(false);
 					
-					if (loadDest)
+					if (loadDest) {
+						dirBox.setSelectedIndex(0);
+						flagField.setText("0");
+						reverseCheck.setSelected(false);
+						styleBox.setSelectedIndex(0);
 						ptrField.setOffset(dest.getPointer());
+						destPreview.setMapXY(0,0);
+		    			destPreview.reloadMap();
+					}
 				}
 			}
 		}
 
 		destPreview.repaint();
-		muteDL = false;
+		//muteDL = false;
 	}
 
-	public void actionPerformed(ActionEvent e)
-	{
-	    if (e.getActionCommand().equals("apply"))
-	    {
-	    	int x = Integer.parseInt(areaXField.getText()),
+	public void actionPerformed(ActionEvent e) {
+	    if (e.getActionCommand().equals("apply")) {
+	    	if (EbMap.DOOR_DEST_TYPES[typeBox.getSelectedIndex()] != typeDestBox.getSelectedIndex()) {
+	    		JOptionPane.showMessageDialog(mainWindow,
+	    				"The types of the door entry and the destination\n"
+	    				+ "are not compatible. Please adjust this so that\n"
+	    				+ "the editor reports that the \"Types match.\"\n"
+	    				+ "at the bottom of the window.");
+	    	} else if (rom.length() == AbstractRom.EB_ROM_SIZE_REGULAR) {
+				int sure = JOptionPane.showConfirmDialog(mainWindow,
+						"You need to expand your ROM to apply changes in the Map Editor.\n"
+								+ "Do you want to?", "This ROM is not expanded",
+						JOptionPane.YES_NO_OPTION);
+				if (sure == JOptionPane.YES_OPTION) {
+					this.askExpandType();
+					actionPerformed(e);
+				} else
+					JOptionPane.showMessageDialog(mainWindow, "Changes were not applied.");
+	    	} else {
+	    		int x = Integer.parseInt(areaXField.getText()),
 				y = Integer.parseInt(areaYField.getText()),
 				//num = Integer.parseInt(entryNumField.getText());
 				num = entryNumBox.getSelectedIndex();
-	    	if (EbMap.getDoorsNum(x,y) > num)
-			{
-	    		EbMap.DoorLocation doorLocation = EbMap.getDoorLocation(x,y,num);
-	    		doorLocation.setType(
-						(byte) typeBox.getSelectedIndex());
-				if (ropeCheck.isEnabled())
-	    			doorLocation.setMiscRope(ropeCheck.isSelected());
-				else if (dirClimbBox.isEnabled())
-					doorLocation.setMiscDirection(dirClimbBox.getSelectedIndex());
-				if (numBox.isEnabled())
+	    		if (EbMap.getDoorsNum(x,y) > num)
 				{
-					doorLocation.setDestIndex(numBox.getSelectedIndex());
-		    		EbMap.Destination dest =
-		    			EbMap.getDestination(
-		    					doorLocation.getDestIndex());
-		    		if (typeDestBox.isEnabled())
-		    			dest.setType((byte) 
-								typeDestBox.getSelectedIndex());
-		    		if (ptrField.isEnabled())
-		    			dest.setPointer(ptrField.getOffset());
-		    		if (flagField.isEditable())
-		    			dest.setFlag(
-		        				(short) Integer.parseInt(
-		        						flagField.getText(),16));
-		    		if (reverseCheck.isEnabled())
-		    			dest.setFlagReversed(reverseCheck.isSelected());
-		    		if (destPreview.isEnabled())
-		    		{
-		    			dest.setX((short) destPreview.getMapX());
-		    			dest.setY((short) destPreview.getMapY());
-		    		}
-		    		if (styleBox.isEnabled())
-		    			dest.setStyle(
-		        				(byte) styleBox.getSelectedIndex());
-		    		if (dirBox.isEnabled())
-		    			dest.setDirection(
-		        				(byte) dirBox.getSelectedIndex());
+		    		EbMap.DoorLocation doorLocation = EbMap.getDoorLocation(x,y,num);
+		    		doorLocation.setType(
+							(byte) typeBox.getSelectedIndex());
+					if (ropeCheck.isEnabled())
+		    			doorLocation.setMiscRope(ropeCheck.isSelected());
+					else if (dirClimbBox.isEnabled())
+						doorLocation.setMiscDirection(dirClimbBox.getSelectedIndex());
+					if (numBox.isEnabled())
+					{
+						doorLocation.setDestIndex(numBox.getSelectedIndex());
+			    		EbMap.Destination dest =
+			    			EbMap.getDestination(
+			    					doorLocation.getDestIndex());
+			    		if (typeDestBox.isEnabled())
+			    			dest.setType((byte) 
+									typeDestBox.getSelectedIndex());
+			    		if (ptrField.isEnabled())
+			    			dest.setPointer(ptrField.getOffset());
+			    		if (flagField.isEditable())
+			    			dest.setFlag(
+			        				(short) Integer.parseInt(
+			        						flagField.getText(),16));
+			    		if (reverseCheck.isEnabled())
+			    			dest.setFlagReversed(reverseCheck.isSelected());
+			    		if (destPreview.isEnabled())
+			    		{
+			    			dest.setX((short) destPreview.getMapX());
+			    			dest.setY((short) destPreview.getMapY());
+			    		}
+			    		if (styleBox.isEnabled())
+			    			dest.setStyle(
+			        				(byte) styleBox.getSelectedIndex());
+			    		if (dirBox.isEnabled())
+			    			dest.setDirection(
+			        				(byte) dirBox.getSelectedIndex());
+					}
+					reloadDestChooser();
+					updateComponents(true, true, true);
+					boolean doorWrite = EbMap.writeDoors(this, false);
+					if (! doorWrite)
+		        		JOptionPane.showMessageDialog(mainWindow,
+		        				"I can not save the door data.\n"
+		        				+ "This is usually because there is not enough space\n"
+		        				+ "in the expanded area of your ROM. If this is so,\n"
+		        				+ "either you have filled it up for a program has used\n"
+		        				+ "up more space than it should have.\n"
+		        				+ "If you have a recent backup or revert patch, you should\n"
+		        				+ "try to use that and figure out what went wrong, then report\n"
+		        				+ "it to a PK Hack developer.");
 				}
-				updateComponents(true, true, true);
-				boolean doorWrite = EbMap.writeDoors(this, false);
-				if (! doorWrite)
-	        		JOptionPane.showMessageDialog(mainWindow,
-	            			"This is so embarassing!\n"
-	            			+ "For some reason, I could not save "
-	    					+ "the door data?\nThis shouldn't happen...");
-			}
-	    }
-	    else if (e.getActionCommand().equals("close"))
-	    {
+	    	}
+	    } else if (e.getActionCommand().equals("close")) {
 	        hide();
 	    }
 	    else if (e.getSource() == setXYButton)
@@ -589,7 +582,7 @@ public class DoorEditor extends EbHackModule
 		else if (e.getSource() == typeBox)
 		{
 			if ((! numBox.isEnabled())
-					&& (EbMap.getDoorDestType(typeBox.getSelectedIndex()) >= 0))
+					&& (EbMap.DOOR_DEST_TYPES[typeBox.getSelectedIndex()] >= 0))
 			{
 				numBox.removeActionListener(this);
 				numBox.setEnabled(true);
