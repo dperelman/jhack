@@ -2543,7 +2543,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 					gfxcontrol.repaint();
 				} else if (ac.equals(ADD_DOOR)) {
 					EbMap.addDoor(areaX, areaY, (short) (coordX / 8),
-							(short) (coordY / 8), (byte) 0, (byte) 0);
+							(short) (coordY / 8), (byte) 1, (byte) 0);
 					gfxcontrol.repaint();
 				} else if (ac.equals(DEL_DOOR)) {
 					EbMap.removeDoor(areaX, areaY, num);
