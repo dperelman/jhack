@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jardesc>
+<jar path="/home/anyoneeb/workspace/jhack/jar/JHack.05x.jar"/>
+<options buildIfNeeded="true" compress="false" descriptionLocation="/jhack/jhack.jardesc" exportErrors="false" exportWarnings="true" includeDirectoryEntries="true" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+<storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+<selectedProjects/>
+<manifest generateManifest="true" mainClassHandleIdentifier="=jhack/src&lt;net.starmen.pkhack{JHack.java[JHack" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+<sealing sealJar="false">
+<packagesToSeal/>
+<packagesToUnSeal/>
+</sealing>
+</manifest>
+<selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
+<file path="/jhack/.project"/>
+<file path="/jhack/.classpath"/>
+<file path="/jhack/changelog"/>
+<javaElement handleIdentifier="=jhack/src"/>
+<file path="/jhack/todo"/>
+</selectedElements>
+</jardesc>
