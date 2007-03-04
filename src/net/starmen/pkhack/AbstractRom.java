@@ -505,6 +505,34 @@ public abstract class AbstractRom
             }
         }
     }
+    
+    /**
+     * Writes <code>len</code> bytes of <code>arg</code> at
+     * <code>offset</code> in the rom. This writes more than one byte to
+     * <code>offset</code>. The first byte is written to <code>offset</code>,
+     * next to <code>offset</code>+ 1, etc. It is suggested that this is
+     * overrided in order to provide a faster way to do this. The default
+     * implementation uses a for loop, which is universal, but slow. This does
+     * not actually write to the filesystem. {@link #saveRom(File)}writes to
+     * the filesystem.
+     * 
+     * @param offset Where in the ROM to write the value. Counting starts at
+     *            zero, as normal.
+     * @param arg What to write at <code>offset</code>.
+     * @param len Number of bytes to write
+     * @see #write(int, byte)
+     * @see #write(int, byte[], len)
+     */
+    public void write(int offset, byte[][] arg, int len) {
+    	int addr = 0, i = 0;
+    	while ((i < arg.length) && (addr < len)) {
+    		if ((arg[i] != null) && (arg[i].length > 0)) {
+    			this.write(offset + addr, arg[i], ((arg[i].length < len) ? arg[i].length : len));
+    			addr += arg[i].length;
+    		}
+    		i++;
+    	}
+    }
 
     /**
      * Writes arg at offset 0.
