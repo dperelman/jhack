@@ -1418,46 +1418,24 @@ public abstract class HackModule
      * scatter FF bytes around the expanded area, effectively filling it up, if
      * it were used repeately. -MrTenda
      */
-    public boolean writetoFree(byte[] rawData, int[] pointerLoc,
+    public boolean writetoFree(byte[] data, int[] pointerLoc,
         int pointerBase, int pointerLen, int oldLen, int newLen, int beginAt,
         boolean mustBeInExpanded)
     {
-        if (rawData == null || pointerLoc == null)
+        if (data == null || pointerLoc == null)
             return false;
-        int pointerDelay = 0;
-        int orgNewLen = newLen;
-        byte[] data;
+        boolean shield1 = false, shield2 = false;
+        
         // 0xff shielding if the new data starts or ends with 0
-        if ((rawData[0] == 0) && (rawData[rawData.length - 1] == 0))
-        {
-            data = new byte[rawData.length + 2];
-            data[0] = (byte) 0xff;
-            data[data.length - 1] = (byte) 0xff;
-            System.arraycopy(rawData, 0, data, 1, rawData.length);
-            newLen += 2;
-            pointerDelay = 1;
-        }
-        else if (rawData[0] == 0)
-        {
-            data = new byte[rawData.length + 1];
-            data[0] = (byte) 0xff;
-            System.arraycopy(rawData, 0, data, 1, rawData.length);
-            newLen++;
-            pointerDelay = 1;
-        }
-        else if (rawData[rawData.length - 1] == 0)
-        {
-            data = new byte[rawData.length + 1];
-            data[data.length - 1] = (byte) 0xff;
-            System.arraycopy(rawData, 0, data, 0, rawData.length);
-            newLen++;
-        }
-        else
-            data = rawData;
+        shield1 = (data[0] == 0);
+        shield2 = (data[data.length - 1] == 0);
 
         // make sure ROM is expanded if needed
+        boolean tmp = beginAt == rom.length();
         if ((newLen > oldLen) || mustBeInExpanded)
             askExpandType();
+        if (tmp)
+        	beginAt = rom.length();
 
         // store old pointer for use later
         int oldPointer;
@@ -1467,25 +1445,28 @@ public abstract class HackModule
             oldPointer = toRegPointer(rom.readMulti(pointerLoc[0], pointerLen)
                 + pointerBase);
         // do not bother with shielding before 0x300200.
-        if ((newLen <= oldLen)
+        if ((newLen + (oldPointer < 0x300200 ? 0 : ((shield1 ? 1 : 0) + (shield2 ? 1 : 0))) <= oldLen)
             && !(mustBeInExpanded && (oldPointer < 0x300200))
             && (oldPointer + oldLen <= beginAt))
         {
             // if it fits in the same place, then write there
             nullifyArea(oldPointer, oldLen);
             if (oldPointer < 0x300200)
-                rom.write(oldPointer, rawData, orgNewLen);
+                rom.write(oldPointer, data, newLen);
             else
             {
                 if (pointerLen < 0)
                     for (int i = 0; i < pointerLoc.length; i++)
-                        rom.writeRegAsmPointer(pointerLoc[i], oldPointer
-                            + pointerDelay);
+                        rom.writeRegAsmPointer(pointerLoc[i], oldPointer + (shield1 ? 1 : 0));
                 else
                     for (int i = 0; i < pointerLoc.length; i++)
-                        rom.write(pointerLoc[i], toSnesPointer(oldPointer
-                            + pointerDelay), pointerLen);
-                rom.write(oldPointer, data, newLen);
+                        rom.write(pointerLoc[i], toSnesPointer(oldPointer + (shield1 ? 1 : 0)), pointerLen);
+                // shield if after 0x300200
+                if (shield1)
+                	rom.write(oldPointer, 0xff);
+                rom.write(oldPointer + (shield1 ? 1 : 0), data, newLen);
+                if (shield2)
+                	rom.write(oldPointer + (shield1 ? 1 : 0) + newLen, 0xff);
             }
             return true;
         }
@@ -1500,11 +1481,15 @@ public abstract class HackModule
             try
             {
                 // look for space...
-                int newPointer = findFreeRange(beginAt, newLen);
+                int newPointer = findFreeRange(beginAt, newLen + (shield1 ? 1 : 0) + (shield2 ? 1 : 0));
                 // write data there
-                rom.write(newPointer, data, newLen);
+                rom.write(newPointer + (shield1 ? 1 : 0), data, newLen);
+                if (shield1)
+                	rom.write(newPointer, 0xff);
+                if (shield2)
+                	rom.write(newPointer + (shield1 ? 1 : 0) + newLen, 0xff);
                 // change pointer
-                newPointer = newPointer - pointerBase + pointerDelay;
+                newPointer = newPointer - pointerBase + (shield1 ? 1 : 0);
                 // write pointer
                 if (pointerLen > 0)
                     for (int i = 0; i < pointerLoc.length; i++)
@@ -1524,7 +1509,106 @@ public abstract class HackModule
             }
         }
     }
+    
+    public boolean writetoFree(byte[][] data, int[] pointerLoc,
+            int pointerBase, int pointerLen, int oldLen, int newLen, int beginAt,
+            boolean mustBeInExpanded)
+        {
+            if (data == null || pointerLoc == null)
+                return false;
+            boolean shield1 = false, shield2 = false;
+            
+            // 0xff shielding if the new data starts or ends with 0
+            boolean tmp = true;
+            for (int i = 0; i < data.length; i++) {
+            	if (tmp && (data[i] != null) && (data[i].length > 0)) {
+                	shield1 = data[i][0] == 0;
+            		tmp = false;
+            	}
+            	if ((data[i] != null) && (data[i].length > 0) && (data[i][data[i].length - 1] == 0))
+            		shield2 = true;
+            }
 
+            // make sure ROM is expanded if needed
+            tmp = beginAt == rom.length();
+            if ((newLen > oldLen) || mustBeInExpanded)
+                askExpandType();
+            if (tmp)
+            	beginAt = rom.length();
+
+            // store old pointer for use later
+            int oldPointer;
+            if (pointerLen < 0)
+                oldPointer = rom.readRegAsmPointer(pointerLoc[0]);
+            else
+                oldPointer = toRegPointer(rom.readMulti(pointerLoc[0], pointerLen)
+                    + pointerBase);
+            // do not bother with shielding before 0x300200.
+            if ((newLen + (oldPointer < 0x300200 ? 0 : ((shield1 ? 1 : 0) + (shield2 ? 1 : 0))) <= oldLen)
+                && !(mustBeInExpanded && (oldPointer < 0x300200))
+                && (oldPointer + oldLen <= beginAt))
+            {
+                // if it fits in the same place, then write there
+                nullifyArea(oldPointer, oldLen);
+                if (oldPointer < 0x300200)
+                    rom.write(oldPointer, data, newLen);
+                else
+                {
+                    if (pointerLen < 0)
+                        for (int i = 0; i < pointerLoc.length; i++)
+                            rom.writeRegAsmPointer(pointerLoc[i], oldPointer + (shield1 ? 1 : 0));
+                    else
+                        for (int i = 0; i < pointerLoc.length; i++)
+                            rom.write(pointerLoc[i], toSnesPointer(oldPointer + (shield1 ? 1 : 0)), pointerLen);
+                    // shield if after 0x300200
+                    if (shield1)
+                    	rom.write(oldPointer, 0xff);
+                    rom.write(oldPointer + (shield1 ? 1 : 0), data, newLen);
+                    if (shield2)
+                    	rom.write(oldPointer + (shield1 ? 1 : 0) + newLen, 0xff);
+                }
+                return true;
+            }
+            else
+            {
+                // if it's too big to fit in the same place...
+                // back-up old data in case there isn't enough space
+                byte[] oldData = rom.readByte(oldPointer, oldLen);
+                // delete old data from ROM, it may be part of the empty space
+                // found
+                nullifyArea(oldPointer, oldLen);
+                try
+                {
+                    // look for space...
+                    int newPointer = findFreeRange(beginAt, newLen + (shield1 ? 1 : 0) + (shield2 ? 1 : 0));
+                    // write data there
+                    rom.write(newPointer + (shield1 ? 1 : 0), data, newLen);
+                    if (shield1)
+                    	rom.write(newPointer, 0xff);
+                    if (shield2)
+                    	rom.write(newPointer + (shield1 ? 1 : 0) + newLen, 0xff);
+                    // change pointer
+                    newPointer = newPointer - pointerBase + (shield1 ? 1 : 0);
+                    // write pointer
+                    if (pointerLen > 0)
+                        for (int i = 0; i < pointerLoc.length; i++)
+                            rom.write(pointerLoc[i], toSnesPointer(newPointer),
+                                pointerLen);
+                    else
+                        for (int i = 0; i < pointerLoc.length; i++)
+                            rom.writeRegAsmPointer(pointerLoc[i], newPointer);
+                    // success!
+                    return true;
+                }
+                catch (EOFException e)
+                {
+                    // if there isn't space, rewrite old data, and return failure
+                    rom.write(oldPointer, oldData);
+                    return false;
+                }
+            }
+        }
+    
     /**
      * Writes the specified data into a free spot in the ROM and nulls the
      * previous copy. If a free spot large enough cannot be found, false will be
