@@ -1,4 +1,5 @@
 NEXT VERSION (after v0.5.13):
+# Event-Based Map Changes Editor: Can write changes data to the expanded area (thanks HyperBound, Michael1)
 
 v0.5.13:
 # Map Editor: BUGFIX: Local tileset data is saved correctly (thanks SilverFang)
