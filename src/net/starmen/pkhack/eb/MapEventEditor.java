@@ -47,6 +47,11 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 	}
 	
 	public static int asmPointer = 0x90d;
+	public static int asmBankByte = 0x904; // thanks Michael1 (:
+	public static int pointersAddr = 0x101798;
+	public static int defaultDataAddr = 0x1017c0;
+	
+	private static int origDataLen;
 	
 	private ButtonGroup group;
 	private JPanel tilesPanel;
@@ -332,10 +337,16 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 	{
 		if (entries == null) {
 			entries = new ArrayList[MapEditor.drawTsetNum];
+			int bank = rom.read(asmBankByte) - 0xc0;
+			int address = 0;
+			int highest = 0, lowest = 0;
 			for (int i = 0; i < entries.length; i++)
 			{
 				entries[i] = new ArrayList();
-				int address = 0x100200 + rom.readMulti(toRegPointer(rom.readMulti(asmPointer,3)) + (i * 2), 2);
+				address = 0x200 + (bank * 0x10000)
+					+ rom.readMulti(toRegPointer(rom.readMulti(asmPointer,3)) + (i * 2), 2);
+				if ((lowest == 0) || (address < lowest))
+					lowest = address;
 				while (rom.readMulti(address, 2) != 0)
 				{
 					boolean reverse = false;
@@ -356,7 +367,10 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 					entries[i].add(tilesetChange);
 					address += (num + 1) * 4;
 				}
+				if ((highest == 0) || (address > highest))
+					highest = address;
 			}
+			origDataLen = highest - lowest;
 		}
 	}
 	
@@ -387,8 +401,8 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 	public static boolean writeToRom(HackModule hm)
 	{
 		byte[][] data = new byte[entries.length][];
-		byte[] pointers = new byte[2 * entries.length];
-		int pointer = 0x101798, nullAddress = -1;
+		int[] pointers = new int[entries.length];
+		int pointer = 0, nullAddress = -1, origPtrsAddr, tmp;
 		for (int i = 0; i < entries.length; i++)
 		{
 			if (entries[i].size() == 0)
@@ -401,8 +415,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 					data[i] = new byte[] { 0, 0 };
 					pointer += data[i].length;
 				}
-				pointers[i * 2] = (byte) ((nullAddress - 0x100200) & 0xff);
-				pointers[i * 2 + 1] = (byte) (((nullAddress - 0x100200) & 0xff00) / 0x100);
+				pointers[i] = nullAddress;
 			}
 			else
 			{
@@ -422,21 +435,52 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 				}
 				System.arraycopy(new byte[] { 0, 0 }, 0, entryData, pos, 2);
 				
-				if (pointer + entryData.length >= end)
-					return false;
 				data[i] = entryData;
-				pointers[i * 2] = (byte) ((pointer - 0x100200) & 0xff);
-				pointers[i * 2 + 1] = (byte) (((pointer - 0x100200) & 0xff00) / 0x100);
+				pointers[i] = pointer;
 				pointer += entryData.length;
 			}
 		}
 		
-		hm.writetoFree(pointers, asmPointer, 3, pointers.length, pointers.length, true);
+		// record the original ptr table addr, in case if we need to delete it later
+		origPtrsAddr = toRegPointer(hm.rom.readMulti(asmPointer, 3));
+		// find the original data location, make a backup in case of failure, and nullify it
+		tmp = toRegPointer(hm.rom.read(asmBankByte) * 0x10000 + hm.rom.readMulti(toRegPointer(hm.rom.readMulti(asmPointer, 3)), 2));
+		if (tmp == pointersAddr)
+			tmp = defaultDataAddr; 	// change the pointer to the default data addr if it was to the pointer data
+									// because of an older PK Hack version
+		byte[] oldData = hm.rom.readByte(tmp, origDataLen);
+		byte[] oldPointers = hm.rom.readByte(origPtrsAddr, pointers.length * 2);
+
+		// if pointer table is in expanded area (from an older PK Hack version), clear it
+		hm.nullifyArea(tmp, origDataLen);
+		if (origPtrsAddr > 0x300200)
+			hm.nullifyArea(origPtrsAddr, pointers.length * 2);
+		// write the pointer to the default tile change data location to asmPointer temporarily
+		hm.rom.write(asmPointer, toSnesPointer(defaultDataAddr), 3);
+		// write the tile change data to the ROM, in the expanded area if necessary, or to the default data addr if possible
+		// and temporary write the pointer to the asmPointer address
+		if (!hm.writetoFree(data, new int[] { asmPointer }, 0, 3, 0x101a7f-defaultDataAddr, pointer, hm.rom.length(), false)) {
+			hm.rom.write(asmPointer, toSnesPointer(pointersAddr), 3); // write pointer back if data write fails
+			if (origPtrsAddr > 0x300200)
+				hm.rom.write(origPtrsAddr, oldPointers);
+			hm.rom.write(tmp, oldData, origDataLen);
+			return false;
+		}
+		// read the temporary pointer at asmPointer
+		pointer = hm.rom.readMulti(asmPointer, 3);
+		// write over asmPointer with the real pointer table address
+		hm.rom.write(asmPointer, toSnesPointer(pointersAddr), 3);
+		// write the correct bank byte for the tile change data to asmBankByte
+		hm.rom.write(asmBankByte, (pointer / 0x10000) & 0xff, 1);
+		// increase all the two-byte pointers by the internal bank address and write them
+		pointer = pointer % 0x10000;
+		for (int i = 0; i < pointers.length; i++) {
+			pointers[i] += pointer;
+			hm.rom.write(pointersAddr + i * 2, pointers[i], 2);
+		}
 		
-		for (int i = 0; i < data.length; i++)
-			if (data[i] != null)
-				hm.rom.write(0x100200 + hm.rom.readMulti(
-						toRegPointer(hm.rom.readMulti(asmPointer, 3)) + (i * 2), 2), data[i]);
+		entries = null;
+		readFromRom(hm.rom);
 		
 		return true;
 	}
@@ -468,12 +512,12 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
             if (status < 1)
             	JOptionPane.showMessageDialog(mainWindow,
             		    "ERROR: " + errorMessages[status * -1],
-            		    "Error saving changes!",
+            		    "Error: Could not save changes",
             		    JOptionPane.ERROR_MESSAGE);
             else if (! writeToRom(this))
             	JOptionPane.showMessageDialog(mainWindow,
-            		    "ERROR: Not enough space for changes, so remove some!",
-            		    "Error writing!",
+            		    "ERROR: Not enough space for changes in expanded area.",
+            		    "Error: Could not write to ROM",
             		    JOptionPane.ERROR_MESSAGE);
         }
         else if (e.getActionCommand().equals("close"))
