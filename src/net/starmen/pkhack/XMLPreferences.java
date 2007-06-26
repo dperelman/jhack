@@ -42,7 +42,7 @@ public class XMLPreferences
     private File f = null;
 
     /** Filesize of the emptyPrefs.xml file. */
-    protected static int EMPTY_PREFS_XML_FILESIZE = 122;
+    protected static int EMPTY_PREFS_XML_FILESIZE = 117;
     /** Filesize of the preferences.dtd file. */
     protected static int PREFERENCES_DTD_FILESIZE = 157;
 
