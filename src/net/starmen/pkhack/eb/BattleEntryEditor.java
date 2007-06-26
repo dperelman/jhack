@@ -490,8 +490,8 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 					.setBoxSize((byte) (boxSize.getSelectedIndex() & 0xff));
 			ArrayList group = new ArrayList();
 			for (int i = 0; i < enemies.length; i++)
-				group.add(new EnemyEntry((byte) Integer.parseInt(amounts[i]
-						.getText()),
+				if (!deletedEnemies[i])
+					group.add(new EnemyEntry((byte) Integer.parseInt(amounts[i].getText()),
 						useGameOrder ? EnemyEditor.gameOrder[enemies[i]
 								.getSelectedIndex()] : (short) enemies[i]
 								.getSelectedIndex()));
@@ -552,11 +552,9 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 		} else if (e.getSource().equals(addEnemy)) {
 			addedEnemies.add(new EnemyEntry((byte) 0, (short) 0));
 			updateGroupDisplay(false);
-		} else if (e.getActionCommand().substring(0, 4).equals(
-				DEL_ENEMY_COMMAND)) {
+		} else if (e.getActionCommand().substring(0, 4).equals(DEL_ENEMY_COMMAND)) {
 			int num = Integer.parseInt(e.getActionCommand().substring(4));
-			ArrayList group = (ArrayList) enemyGroups.get(groupSelector
-					.getSelectedIndex());
+			ArrayList group = (ArrayList) enemyGroups.get(groupSelector.getSelectedIndex());
 			int numDeleted = 0;
 			for (int i = 0; i < deletedEnemies.length; i++)
 				if (deletedEnemies[i])
