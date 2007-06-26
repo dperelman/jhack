@@ -1,5 +1,7 @@
 NEXT VERSION (after v0.5.13):
 # Event-Based Map Changes Editor: Can write changes data to the expanded area (thanks HyperBound, Michael1)
+# Battle Entry Editor: BUGFIX: Does not break if user deletes and enemy then saves (thanks The_Kirby)
+# BUGFIX: PK Hack can create valid empty preferences file (thanks Erik500002 et al.)
 
 v0.5.13:
 # Map Editor: BUGFIX: Local tileset data is saved correctly (thanks SilverFang)
