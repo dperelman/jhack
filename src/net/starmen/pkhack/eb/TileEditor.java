@@ -9,6 +9,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -24,11 +25,14 @@ import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -608,6 +612,11 @@ public class TileEditor extends EbHackModule implements ActionListener
         public String getPaletteName(int palette)
         {
             return getPalette(palette).toString();
+        }
+        
+        public String getPaletteName2(int palette)
+        {
+            return getPalette(palette).getMapTileset() + "-" + getPalette(palette).getMapPalette();
         }
 
         /**
@@ -2337,6 +2346,84 @@ public class TileEditor extends EbHackModule implements ActionListener
         {
             return tilesChanged;
         }
+    }
+    
+    public void dumpPalettesTxt() {
+    	File f = getFile(true, "txt", "Plaintext");
+    	try {
+			PrintStream ps = new PrintStream(new FileOutputStream(f));
+			int k;
+			String subpal;
+			Color c;
+			for (int i = 0; i < tilesets.length; i++) {
+				k = tilesets[i].getPaletteCount();
+				for (int j = 0; j < k; j++) {
+					ps.println(tilesets[i].getPaletteName(j));
+					for (int m = 0; m < 6; m++) {
+						subpal = "";
+						for (int n = 0; n < 16; n++) {
+							c = tilesets[i].getPaletteColor(n, j, m);
+							subpal += HackModule.addZeros(Integer.toHexString(c.getRGB()).substring(2),6) + " ";
+						}
+						ps.println("  sub" + m + ": " + subpal);
+					}
+				}
+			}
+    	} catch (FileNotFoundException e) {
+			JOptionPane.showMessageDialog(
+					mainWindow, "File not found.", "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		} catch (NullPointerException e) {
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(
+					mainWindow, "Error.", "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
+    }
+    
+    public void dumpPalettesImg() {
+    	int boxSize = 16;
+		
+    	BufferedImage out = null;
+		Graphics2D g;
+    	
+    	File f = null;
+    	try {
+    		int k;
+			//String subpal;
+			Color c;
+			for (int i = 0; i < tilesets.length; i++) {
+				k = tilesets[i].getPaletteCount();
+				for (int j = 0; j < k; j++) {
+					//ps.println(tilesets[i].getPaletteName(j));
+					out = new BufferedImage(8*boxSize, 6*boxSize*3 - boxSize, BufferedImage.TYPE_4BYTE_ABGR_PRE);
+					g = out.createGraphics();
+					g.setColor(Color.WHITE);
+					g.fillRect(0, 0, 8*boxSize, 6*boxSize*3 - boxSize);
+					for (int m = 0; m < 6; m++) {
+						//subpal = "";
+						for (int n = 0; n < 16; n++) {
+							c = tilesets[i].getPaletteColor(n, j, m);
+							g.setColor(c);
+							g.fillRect((n%8)*boxSize, 3*m*boxSize + (n/8>=1 ? boxSize : 0), boxSize, boxSize);
+						}
+						//ps.println("  sub" + m + ": " + subpal);
+					}
+					f = new File("/home/max/pals/" + tilesets[i].getPaletteName2(j) + ".png");
+					ImageIO.write(out, "png", f);
+				}
+			}
+			ImageIO.write(out, "png", f);
+		} catch (FileNotFoundException e) {
+			JOptionPane.showMessageDialog(
+					mainWindow, "File not found.", "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		} catch (NullPointerException e) {
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(
+					mainWindow, "Error.", "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
     }
 
     /**
