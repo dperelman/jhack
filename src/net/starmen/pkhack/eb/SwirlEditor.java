@@ -35,7 +35,7 @@ import net.starmen.pkhack.JHack;
 import net.starmen.pkhack.XMLPreferences;
 
 public class SwirlEditor extends EbHackModule implements ActionListener, DocumentListener, ChangeListener {
-	public class SwirlPreview extends AbstractButton implements MouseListener, MouseMotionListener {
+	private class SwirlPreview extends AbstractButton implements MouseListener, MouseMotionListener {
 		private Swirl swirl;
 		private int frame = 0, selectedRow = 0;
 		
@@ -95,9 +95,10 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 	
 	public static class Swirl {
 		int[][][] swirlData;
-		int speed;
+		int speed, swirlNum;
 		
-		public Swirl(AbstractRom rom, int speed, int startEntry, int numFrames, int swirlEffectAddr) {
+		public Swirl(AbstractRom rom, int swirlNum, int speed, int startEntry, int numFrames, int swirlEffectAddr) {
+			this.swirlNum = swirlNum;
 			this.speed = speed;
 			swirlData = new int[numFrames][224][4];
 			
@@ -110,7 +111,7 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 		}
 		
 		public String toString() {
-			return "Swirl";
+			return SwirlEditor.SWIRL_NAMES[swirlNum];
 		}
 		
 		public int getSpeed() {
@@ -299,6 +300,14 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 	public static final int swirlTable = 0xedf41 + 4; // first entry is null? 
 	public static final int swirlEffectPtrTable = 0xede45;
 	public static final int[] asmHackPtrs = new int[] { 0x4ac8f, 0x4ac95, 0x4acdc, 0x4ace4 };
+	public static final String[] SWIRL_NAMES = new String[] {
+		"Normal Battle Swirl",
+		"Phase Distorter Swirl",
+		"Boss Battle Swirl",
+		"Shield Swirl",
+		"Enemy PSI Swirl",
+		"Giygas Phase Shift Swirl"
+	};
 	
 	private static IPSDatabase.DatabaseEntry swirlRelocateHack = null;
 	private static Swirl[] swirls = new Swirl[6];
@@ -389,7 +398,7 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 			oldAddr = 0xe0200 + rom.readMulti(swirlEffectPtrTable,2);
 		}
 		for (int i = 0; i < swirls.length; i++) {
-			swirls[i] = new Swirl(rom, rom.read(swirlTable + i * 4),
+			swirls[i] = new Swirl(rom, i, rom.read(swirlTable + i * 4),
 					rom.read(swirlTable + i * 4 + 1),
 					rom.read(swirlTable + i * 4 + 2),
 					(isSwirlRelocateHacked(rom) ?
