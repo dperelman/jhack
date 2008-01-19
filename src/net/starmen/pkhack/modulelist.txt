@@ -61,6 +61,7 @@ eb.TownMapEditor		#Edits town maps
 eb.LogoScreenEditor		#Edits logo screens at start of game (Nitendo, HAL, APE)
 eb.GasStationEditor		#Edits the gas station screen at the start of the game
 eb.TitleScreenEditor	#Edits (part of) the title screen at the start of the game
+eb.SwirlEditor			#Edits battle swirls
 ----------------------Maps-----------------------------------------------------
 eb.TileEditor		#Edits map tiles, tile arrangements, and collision info,
 					#map tile palette editing may be added
