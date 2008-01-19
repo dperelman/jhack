@@ -533,6 +533,97 @@ public abstract class AbstractRom
     		i++;
     	}
     }
+    
+    /**
+     * Writes <code>len</code> bytes of <code>arg</code> at
+     * <code>offset</code> in the rom. This writes more than one byte to
+     * <code>offset</code>. The first byte is written to <code>offset</code>,
+     * next to <code>offset</code>+ 1, etc. It is suggested that this is
+     * overrided in order to provide a faster way to do this. The default
+     * implementation uses a for loop, which is universal, but slow. This does
+     * not actually write to the filesystem. {@link #saveRom(File)}writes to
+     * the filesystem.
+     * 
+     * @param offset Where in the ROM to write the value. Counting starts at
+     *            zero, as normal.
+     * @param arg What to write at <code>offset</code>.
+     * @param len Number of bytes to write
+     * @see #write(int, byte)
+     * @see #write(int, byte[], len)
+     */
+    public void write(int offset, int[][] arg, int len) {
+    	int addr = 0, i = 0;
+    	while ((i < arg.length) && (addr < len)) {
+    		if ((arg[i] != null) && (arg[i].length > 0)) {
+    			write(offset + addr, arg[i], ((arg[i].length < len) ? arg[i].length : len));
+    			addr += arg[i].length;
+    		}
+    		i++;
+    	}
+    }
+    
+    /**
+     * Writes <code>len</code> bytes of <code>arg</code> at
+     * <code>offset</code> in the rom. This writes more than one byte to
+     * <code>offset</code>. The first byte is written to <code>offset</code>,
+     * next to <code>offset</code>+ 1, etc. It is suggested that this is
+     * overrided in order to provide a faster way to do this. The default
+     * implementation uses a for loop, which is universal, but slow. This does
+     * not actually write to the filesystem. {@link #saveRom(File)}writes to
+     * the filesystem.
+     * 
+     * @param offset Where in the ROM to write the value. Counting starts at
+     *            zero, as normal.
+     * @param arg What to write at <code>offset</code>.
+     * @param len Number of bytes to write
+     * @see #write(int, byte)
+     * @see #write(int, byte[], len)
+     */
+    public void write(int offset, int[][][] arg, int len) {
+    	int addr = 0, i = 0, tmplen;
+    	while ((i < arg.length) && (addr < len)) {
+    		if ((arg[i] != null) && (arg[i].length > 0)) {
+    			tmplen = 0;
+    			for (int j = 0; j < arg[i].length; j++)
+    				tmplen += arg[i][j].length;
+    			write(offset + addr, arg[i], tmplen);
+    			addr += tmplen;
+    		}
+    		i++;
+    	}
+    }
+    
+    /**
+     * Writes <code>len</code> bytes of <code>arg</code> at
+     * <code>offset</code> in the rom. This writes more than one byte to
+     * <code>offset</code>. The first byte is written to <code>offset</code>,
+     * next to <code>offset</code>+ 1, etc. It is suggested that this is
+     * overrided in order to provide a faster way to do this. The default
+     * implementation uses a for loop, which is universal, but slow. This does
+     * not actually write to the filesystem. {@link #saveRom(File)}writes to
+     * the filesystem.
+     * 
+     * @param offset Where in the ROM to write the value. Counting starts at
+     *            zero, as normal.
+     * @param arg What to write at <code>offset</code>.
+     * @param len Number of bytes to write
+     * @see #write(int, byte)
+     * @see #write(int, byte[], len)
+     */
+    public void write(int offset, Object arg, int len) {
+    	if (arg instanceof Integer)
+    		write(offset, ((Integer) arg).intValue(), len);
+    	else if (arg instanceof int[])
+    		write(offset, (int[]) arg, len);
+    	else if (arg instanceof int[][])
+    		write(offset, (int[][]) arg, len);
+    	else if (arg instanceof int[][][])
+    		write(offset, (int[][][]) arg, len);
+    	else if (arg instanceof byte[])
+    		write(offset, (byte[]) arg, len);
+    	else if (arg instanceof byte[][])
+    		write(offset, (byte[][]) arg, len);
+    }
 
     /**
      * Writes arg at offset 0.
@@ -1144,7 +1235,20 @@ public abstract class AbstractRom
     {
         this.seekOffset = offset;
     }
-
+    
+    /**
+     * Returns <code>seekOffset</code>
+     * 
+     * @return <code>seekOffset</code>
+     * @see #seek(int)
+     * @see #writeSeek(int)
+     * @see #readSeek()
+     */
+    public int getSeek()
+    {
+        return seekOffset;
+    }
+    
     /**
      * Reads the <code>int</code> at
      * <code>seekOffset<code> and increments <code>seekOffset</code>.
