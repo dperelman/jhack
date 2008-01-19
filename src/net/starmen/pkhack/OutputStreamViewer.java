@@ -234,7 +234,7 @@ public class OutputStreamViewer
     {
         try
         {
-            URL url = new URL("http://anyoneeb.ath.cx:83/jhack/reporterror");
+            URL url = new URL("http://anyoneeb.net:83/jhack/reporterror");
             URLConnection connection = url.openConnection();
             connection.setDoOutput(true);
 
@@ -321,7 +321,7 @@ public class OutputStreamViewer
                 if (sendi)
                 {
                     URL urlu = new URL(
-                        "http://anyoneeb.ath.cx:83/jhack/updateerror");
+                        "http://anyoneeb.net:83/jhack/updateerror");
                     URLConnection connectionu = urlu.openConnection();
                     connectionu.setDoOutput(true);
 
