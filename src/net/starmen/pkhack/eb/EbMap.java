@@ -11,85 +11,35 @@ import net.starmen.pkhack.HackModule;
 // Represents the whole EarthBound map and map-related data in the rom.
 public class EbMap {
 	public static final int[] DOOR_DEST_TYPES = { 1, -1, 0, -2, -2, 2, 2 };
-
 	private static final int mapAddressesPtr = 0xa3db;
-
 	private static final int tsetpalAddress = 0x17AA00;
-
 	private static final int musicAddress = 0x1cd837;
-
 	private static final int dPointersAddress = 0x100200;
-
 	private static final int tsetTblAddress = 0x2F121B;
-
 	private static final int localTsetAddress = 0x175200;
-
 	private static final int spDataEnd = 0xf8b91;
-
 	private static final int spAsmPointer = 0x2461;
-
 	private static final int spDataBase = 0xf0200; // 2 byte ptr + 0xf0200
-
 	private static final int sectorPropsAddress = 0x17b400;
-
 	private static final int enemyLocsAddress = 0x101a80;
 
 	private static int[] mapAddresses;
-
 	private static ArrayList mapChanges;
-
 	private static ArrayList[] spData;
-
 	private static Sector[] sectorData;
-
 	private static int[] drawingTilesets;
-
 	private static ArrayList localTilesetChanges;
-
 	private static ArrayList[] doorData;
-
 	private static int[] oldDoorEntryLengths;
-
 	private static ArrayList destData;
-
-	private static ArrayList destsLoaded;
-
-	private static ArrayList destsIndexes;
-
+	//private static ArrayList destsLoaded;
+	//private static ArrayList destsIndexes;
 	private static ArrayList errors;
-
 	private static Image[][][] tileImages;
-
 	private static Image[][] spriteImages;
-
 	private static ArrayList enemyLocChanges;
 
 	public static void reset() {
-		/*mapChanges = new ArrayList();
-		spData = new ArrayList[(MapEditor.heightInSectors / 2)
-				* MapEditor.widthInSectors];
-		sectorData = new Sector[MapEditor.heightInSectors
-				* MapEditor.widthInSectors];
-		drawingTilesets = new int[MapEditor.mapTsetNum];
-		for (int i = 0; i < drawingTilesets.length; i++)
-			drawingTilesets[i] = -1;
-		localTilesetChanges = new ArrayList();
-		doorData = new ArrayList[(MapEditor.heightInSectors / 2)
-				* MapEditor.widthInSectors];
-		oldDoorEntryLengths = new int[(MapEditor.heightInSectors / 2)
-				* MapEditor.widthInSectors];
-		destData = new ArrayList();
-		destsLoaded = new ArrayList();
-		destsIndexes = new ArrayList();
-		errors = new ArrayList();
-		tileImages = new Image[MapEditor.drawTsetNum][1024][MapEditor.palsNum];
-		spriteImages = new Image[SpriteEditor.NUM_ENTRIES][8];
-		mapAddresses = new int[8];
-		for (int i = 0; i < mapAddresses.length; i++)
-			mapAddresses[i] = -1;
-		enemyLocChanges = new ArrayList();*/
-		
-		//return;
 		mapChanges = null;
 		spData = null;
 		sectorData = null;
@@ -98,8 +48,8 @@ public class EbMap {
 		doorData = null;
 		oldDoorEntryLengths = null;
 		destData = null;
-		destsLoaded = null;
-		destsIndexes = null;
+		//destsLoaded = null;
+		//destsIndexes = null;
 		errors = null;
 		tileImages = null;
 		spriteImages = null;
@@ -136,21 +86,15 @@ public class EbMap {
 		}
 		
 		if (sprites && (spData == null)) {
-			spData = new ArrayList[(MapEditor.heightInSectors / 2)
-			       				* MapEditor.widthInSectors];
-			
+			spData = new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
 			TPTEditor.readFromRom(hm);
 			SpriteEditor.readFromRom(hm.rom);
 			loadSpriteData(hm.rom);
 		}
 		if (doors && (doorData == null)) {
-			doorData = new ArrayList[(MapEditor.heightInSectors / 2)
-			         				* MapEditor.widthInSectors];
-			oldDoorEntryLengths = new int[(MapEditor.heightInSectors / 2)
-			                              * MapEditor.widthInSectors];
+			doorData = new ArrayList[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
+			oldDoorEntryLengths = new int[(MapEditor.heightInSectors / 2) * MapEditor.widthInSectors];
 			destData = new ArrayList();
-			destsLoaded = new ArrayList();
-			destsIndexes = new ArrayList();
 			         		
 			loadDoorData(hm.rom);
 		}
@@ -706,20 +650,20 @@ public class EbMap {
 				+ (areaNum * 4), 4)), numErrors = 0;
 		doorData[areaNum] = new ArrayList();
 		oldDoorEntryLengths[areaNum] = rom.read(ptr);
+		short doorX, doorY, doorPtr;
+		byte doorType;
 		for (byte i = 0; i < rom.readByte(ptr); i++) {
-			short doorX = (short) rom.read(ptr + 3 + (i * 5));
-			short doorY = (short) rom.read(ptr + 2 + (i * 5));
-			byte doorType = rom.readByte(ptr + 4 + (i * 5));
-			short doorPtr = (short) rom.readMulti(ptr + 5 + (i * 5), 2);
+			doorX = (short) rom.read(ptr + 3 + (i * 5));
+			doorY = (short) rom.read(ptr + 2 + (i * 5));
+			doorType = rom.readByte(ptr + 4 + (i * 5));
+			doorPtr = (short) rom.readMulti(ptr + 5 + (i * 5), 2);
 			try {
 				if (DOOR_DEST_TYPES[doorType] < 0)
 					doorData[areaNum].add(new DoorLocation(doorX, doorY,
 							doorType, doorPtr));
 				else {
-					int destIndex = loadDestData(rom, 0xf0200 + doorPtr,
-							doorType);
 					doorData[areaNum].add(new DoorLocation(doorX, doorY,
-							doorType, doorPtr, destIndex));
+							doorType, doorPtr, loadDestData(rom, 0xf0200 + doorPtr, doorType)));
 				}
 			} catch (ArrayIndexOutOfBoundsException e) {
 				errors.add(new ErrorRecord(ErrorRecord.DOOR_ERROR,
@@ -811,16 +755,17 @@ public class EbMap {
 	public static boolean writeDoors(HackModule hm, boolean oldCompatability) {
 		AbstractRom rom = hm.rom;
 		if (oldCompatability) {
-			rom.write(0x2e9430,
-					new int[] { 0, 0x96, 0x2e, 0x00, 0xe1, 0x03 });
+			rom.write(0x2e9430, new int[] { 0, 0x96, 0x2e, 0x00, 0xe1, 0x03 });
 			rom.write(0x2e9600, destData.size(), 2);
 		}
 
 		ArrayList destPointers = new ArrayList();
 		int address = 0;
+		Destination dest;
+		byte[] destBytes;
 		for (int i = 0; i < destData.size(); i++) {
-			Destination dest = ((Destination) destData.get(i));
-			byte[] destBytes = dest.toByteArray();
+			dest = (Destination) destData.get(i);
+			destBytes = dest.toByteArray();
 			rom.write(0xf0200 + address, destBytes);
 			destPointers.add(new Integer(address));
 			address += destBytes.length;
@@ -830,22 +775,20 @@ public class EbMap {
 
 		byte[][] allRawDoorData = new byte[doorData.length][];
 		int totalLength = 0;
-
+		DoorLocation doorLocation;
 		for (int i = 0; i < doorData.length; i++) {
-			hm.nullifyArea(dPointersAddress + (i * 4),
+			hm.nullifyArea(HackModule.toRegPointer(rom.readMulti(dPointersAddress + (i * 4),4)),
 					(oldDoorEntryLengths[i] * 5) + 2);
 			if (doorData[i].size() > 0) {
+				oldDoorEntryLengths[i] = doorData[i].size();
 				allRawDoorData[i] = new byte[(doorData[i].size() * 5) + 2];
 				totalLength += allRawDoorData[i].length;
 				allRawDoorData[i][0] = (byte) doorData[i].size();
 				allRawDoorData[i][1] = 0;
 				for (int j = 0; j < doorData[i].size(); j++) {
-					DoorLocation doorLocation = (DoorLocation) doorData[i]
-							.get(j);
-					allRawDoorData[i][2 + (j * 5)] = (byte) doorLocation
-							.getY();
-					allRawDoorData[i][3 + (j * 5)] = (byte) doorLocation
-							.getX();
+					doorLocation = (DoorLocation) doorData[i].get(j);
+					allRawDoorData[i][2 + (j * 5)] = (byte) doorLocation.getY();
+					allRawDoorData[i][3 + (j * 5)] = (byte) doorLocation.getX();
 					allRawDoorData[i][4 + (j * 5)] = doorLocation.getType();
 					if (DOOR_DEST_TYPES[doorLocation.getType()] < 0) {
 						short data = (short) (doorLocation.getMisc() & 0xffff);
@@ -860,9 +803,9 @@ public class EbMap {
 					}
 				}
 			} else {
+				oldDoorEntryLengths[i] = 0;
 				// TODO check if someone hasn't written to 0xA012F...
-				rom.write(dPointersAddress + (i * 4), HackModule
-						.toSnesPointer(0xA012F), 4);
+				rom.write(dPointersAddress + (i * 4), HackModule.toSnesPointer(0xA012F), 4);
 			}
 		}
 
@@ -871,14 +814,12 @@ public class EbMap {
 			for (int i = 0; i < allRawDoorData.length; i++)
 				if (allRawDoorData[i] != null) {
 					rom.write(address, allRawDoorData[i]);
-					rom.write(dPointersAddress + (i * 4),
-							HackModule.toSnesPointer(address), 4);
+					rom.write(dPointersAddress + (i * 4), HackModule.toSnesPointer(address), 4);
 					address += allRawDoorData[i].length;
 				}
 			return true;
 		} catch (EOFException e) {
-			System.out
-					.println("ERROR: findFreeRange: Not enough space found in ROM to write doors!");
+			System.out.println("ERROR: findFreeRange: Not enough space found in ROM to write doors!");
 			e.printStackTrace();
 			return false;
 		}
@@ -886,50 +827,47 @@ public class EbMap {
 	}
 
 	private static int loadDestData(AbstractRom rom, int address, int type) {
-		if (!destsLoaded.contains(new Integer(address))) {
-			Destination dest = null;
-			if (DOOR_DEST_TYPES[type] == 0) {
-				int pointer = rom.readMulti(address, 4);
-				int flag = rom.readMulti(address + 4, 2);
-				boolean flagReversed;
-				if (flag > 0x8000) {
-					flag -= 0x8000;
-					flagReversed = true;
-				} else
-					flagReversed = false;
-				short yCoord = (short) rom.read(address + 6);
-				yCoord += (short) ((rom.read(address + 7) & 0x3F) << 8);
-				short xCoord = (short) (rom.readMulti(address + 8, 2));
-				byte style = rom.readByte(address + 10);
-				byte direction = (byte) ((rom.read(address + 7) & 0xC0) >> 6);
-				dest = new Destination(pointer, (short) flag, flagReversed,
-						xCoord, yCoord, style, direction);
-			} else if (DOOR_DEST_TYPES[type] == 1) {
-				short flag = (short) (rom.readMulti(address, 2));
-				boolean flagReversed;
-				if (flag > 0x8000) {
-					flag -= 0x8000;
-					flagReversed = true;
-				} else
-					flagReversed = false;
-				int pointer = rom.readMulti(address + 2, 4);
-				dest = new Destination(flag, flagReversed, pointer);
-			} else if (DOOR_DEST_TYPES[type] == 2) {
-				int pointer = rom.readMulti(address, 4);
-				dest = new Destination(pointer);
-			}
-
-			if (dest != null) {
-				destData.add(dest);
-				int destIndex = destData.indexOf(dest);
-				destsLoaded.add(new Integer(address));
-				destsIndexes.add(new Integer(destIndex));
-				return destIndex;
+		for (int i = 0; i < destData.size(); i++) {
+			if (((Destination) destData.get(i)).getAddress() == address)
+				return i;
+		}
+		Destination dest = null;
+		if (DOOR_DEST_TYPES[type] == 0) {
+			int pointer = rom.readMulti(address, 4);
+			int flag = rom.readMulti(address + 4, 2);
+			boolean flagReversed;
+			if (flag > 0x8000) {
+				flag -= 0x8000;
+				flagReversed = true;
 			} else
-				return -1;
+				flagReversed = false;
+			short yCoord = (short) rom.read(address + 6);
+			yCoord += (short) ((rom.read(address + 7) & 0x3F) << 8);
+			short xCoord = (short) (rom.readMulti(address + 8, 2));
+			byte style = rom.readByte(address + 10);
+			byte direction = (byte) ((rom.read(address + 7) & 0xC0) >> 6);
+			dest = new Destination(address, pointer, (short) flag, flagReversed,
+					xCoord, yCoord, style, direction);
+		} else if (DOOR_DEST_TYPES[type] == 1) {
+			short flag = (short) (rom.readMulti(address, 2));
+			boolean flagReversed;
+			if (flag > 0x8000) {
+				flag -= 0x8000;
+				flagReversed = true;
+			} else
+				flagReversed = false;
+			int pointer = rom.readMulti(address + 2, 4);
+			dest = new Destination(address, flag, flagReversed, pointer);
+		} else if (DOOR_DEST_TYPES[type] == 2) {
+			int pointer = rom.readMulti(address, 4);
+			dest = new Destination(address, pointer);
+		}
+
+		if (dest != null) {
+			destData.add(dest);
+			return destData.size() - 1;
 		} else
-			return ((Integer) (destsIndexes.get(destsLoaded
-					.indexOf(new Integer(address))))).intValue();
+			return -1;
 	}
 
 	public static Destination getDestination(int index) {
@@ -1256,16 +1194,14 @@ public class EbMap {
 	}
 
 	public static class Destination {
-		private int pointer;
-
+		private int address, pointer;
 		private short flag, yCoord, xCoord;
-
 		private byte style, direction, type;
-
 		private boolean flagReversed;
 
-		public Destination(int pointer, short flag, boolean flagReversed,
+		public Destination(int address, int pointer, short flag, boolean flagReversed,
 				short xCoord, short yCoord, byte style, byte direction) {
+			this.address = address;
 			this.pointer = pointer;
 			this.flag = flag;
 			this.flagReversed = flagReversed;
@@ -1276,16 +1212,22 @@ public class EbMap {
 			this.type = 0;
 		}
 
-		public Destination(short flag, boolean flagReversed, int pointer) {
+		public Destination(int address, short flag, boolean flagReversed, int pointer) {
+			this.address = address;
 			this.flag = flag;
 			this.flagReversed = flagReversed;
 			this.pointer = pointer;
 			this.type = 1;
 		}
 
-		public Destination(int pointer) {
+		public Destination(int address, int pointer) {
+			this.address = address;
 			this.pointer = pointer;
 			this.type = 2;
+		}
+		
+		public int getAddress() {
+			return address;
 		}
 
 		public void setType(byte type) {
@@ -1295,7 +1237,7 @@ public class EbMap {
 		public byte getType() {
 			return type;
 		}
-
+		
 		public int getPointer() {
 			return pointer;
 		}
