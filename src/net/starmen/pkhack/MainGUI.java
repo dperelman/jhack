@@ -1669,8 +1669,8 @@ public class MainGUI implements ActionListener, WindowListener
     /**
      * Returns the latest version number or null if current version is latest.
      * Also returns null on failure. Uses the site <a href =
-     * "http://anyoneeb.ath.cx:83/jhack/checkversion?ver=0.3.6.5">
-     * http://anyoneeb.ath.cx:83/jhack/checkversion?ver=0.3.6.5 </a> to check.
+     * "http://anyoneeb.net:83/jhack/checkversion?ver=0.3.6.5">
+     * http://anyoneeb.net:83/jhack/checkversion?ver=0.3.6.5 </a> to check.
      * 
      * @see #getChangeLog(String)
      * @see #askToUpdate()
@@ -1681,7 +1681,7 @@ public class MainGUI implements ActionListener, WindowListener
         try
         {
             URL checkSite = new URL(
-                "http://anyoneeb.ath.cx:83/jhack/checkversion?ver="
+                "http://anyoneeb.net:83/jhack/checkversion?ver="
                     + MainGUI.getVersion());
             String ver = new String();
             InputStreamReader in = new InputStreamReader(checkSite.openStream());
@@ -1712,8 +1712,8 @@ public class MainGUI implements ActionListener, WindowListener
     /**
      * Returns the changelog entry for the specified version. Returns null on
      * failure. Uses the website <a href =
-     * "http://anyoneeb.ath.cx:83/jhack/changelog?ver=0.3.6.5">
-     * http://anyoneeb.ath.cx:83/jhack/changelog?ver=0.3.6.5 </a> for info.
+     * "http://anyoneeb.net:83/jhack/changelog?ver=0.3.6.5">
+     * http://anyoneeb.net:83/jhack/changelog?ver=0.3.6.5 </a> for info.
      * 
      * @see #getVersion()
      * @see #checkVersion()
@@ -1726,7 +1726,7 @@ public class MainGUI implements ActionListener, WindowListener
         try
         {
             URL clogSite = new URL(
-                "http://anyoneeb.ath.cx:83/jhack/changelog?ver=" + version);
+                "http://anyoneeb.net:83/jhack/changelog?ver=" + version);
             String out = new String();
             InputStreamReader in = new InputStreamReader(clogSite.openStream());
             char[] cbuf = new char[1024];
@@ -1766,7 +1766,7 @@ public class MainGUI implements ActionListener, WindowListener
                 if (ver.equals(getPrefs().getValue("ignoreUpdateVer")))
                     return false;
                 JEditorPane clogDisplay = new JEditorPane(new URL(
-                    "http://anyoneeb.ath.cx:83/jhack/changelog?ver=" + ver));
+                    "http://anyoneeb.net:83/jhack/changelog?ver=" + ver));
                 clogDisplay.setEditable(false);
                 JScrollPane clogScroll = new JScrollPane(clogDisplay);
                 clogScroll.setPreferredSize(new Dimension(250, 150));
@@ -1790,7 +1790,7 @@ public class MainGUI implements ActionListener, WindowListener
                         filever += fileverarr[i];
                     String ext = prefs.hasValue("updateFormat") ? prefs
                         .getValue("updateFormat") : "zip";
-                    URL dl = new URL("http://anyoneeb.ath.cx:83/jhack/JHack."
+                    URL dl = new URL("http://anyoneeb.net:83/jhack/JHack."
                         + filever + ".jar." + ext);
                     InputStream in = dl.openStream();
                     FileOutputStream out = new FileOutputStream(new File(
