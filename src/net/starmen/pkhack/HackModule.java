@@ -1609,6 +1609,127 @@ public abstract class HackModule
             }
         }
     
+    public boolean writetoFree(Object data, int[] pointerLoc,
+            int pointerBase, int pointerLen, int oldLen, int newLen, int beginAt,
+            boolean mustBeInExpanded)
+        {
+            if (data == null || pointerLoc == null)
+                return false;
+            boolean shield1 = false, shield2 = false;
+            
+            // 0xff shielding if the new data starts or ends with 0
+            boolean tmp = true;
+            if ((data instanceof int[]) || (data instanceof byte[])) {
+            	int[] data2 = (int[]) data;
+                shield1 = (data2[0] == 0);
+                shield2 = (data2[data2.length - 1] == 0);
+            } else if ((data instanceof int[][]) || (data instanceof byte[][])) {
+            	int[][] data2 = (int[][]) data;
+                for (int i = 0; i < data2.length; i++) {
+                	if (tmp && (data2[i] != null) && (data2[i].length > 0)) {
+                    	shield1 = data2[i][0] == 0;
+                		tmp = false;
+                	}
+                	if ((data2[i] != null) && (data2[i].length > 0) && (data2[i][data2[i].length - 1] == 0))
+                		shield2 = true;
+                }
+            } else if ((data instanceof int[][][]) || (data instanceof byte[][][])) {
+            	int[][][] data2 = (int[][][]) data;
+            	for (int i = 0; i < data2.length; i++) {
+                	for (int j = 0; j < data2[i].length; j++) {
+                		if (tmp && (data2[i][j] != null) && (data2[i][j].length > 0)) {
+                        	shield1 = data2[i][j][0] == 0;
+                    		tmp = false;
+                    	}
+                    	if ((data2[i] != null) && (data2[i].length > 0)
+                    			&& (data2[i][data2[i].length - 1][data2[i][data2[i].length - 1].length - 1] == 0))
+                    		shield2 = true;
+                	}
+                }
+            }
+
+            // make sure ROM is expanded if needed
+            tmp = beginAt == rom.length();
+            if ((newLen > oldLen) || mustBeInExpanded)
+                askExpandType();
+            if (tmp)
+            	beginAt = rom.length();
+
+            // store old pointer for use later
+            int oldPointer;
+            if (pointerLen < 0)
+                oldPointer = rom.readRegAsmPointer(pointerLoc[0]);
+            else
+                oldPointer = toRegPointer(rom.readMulti(pointerLoc[0], pointerLen) + pointerBase);
+            // do not bother with shielding before 0x300200.
+            if ((newLen + (oldPointer < 0x300200 ? 0 : ((shield1 ? 1 : 0) + (shield2 ? 1 : 0))) <= oldLen)
+                && !(mustBeInExpanded && (oldPointer < 0x300200))
+                && (oldPointer + oldLen <= beginAt))
+            {
+                // if it fits in the same place, then write there
+                nullifyArea(oldPointer, oldLen);
+                if (oldPointer < 0x300200) {
+                    rom.write(oldPointer, data, newLen);
+                }
+                else
+                {
+                    if (pointerLen < 0)
+                        for (int i = 0; i < pointerLoc.length; i++)
+                            rom.writeRegAsmPointer(pointerLoc[i], oldPointer + (shield1 ? 1 : 0));
+                    else
+                        for (int i = 0; i < pointerLoc.length; i++)
+                            rom.write(pointerLoc[i], toSnesPointer(oldPointer + (shield1 ? 1 : 0)), pointerLen);
+                    // shield if after 0x300200
+                    if (shield1)
+                    	rom.write(oldPointer, 0xff);
+                    rom.write(oldPointer + (shield1 ? 1 : 0), data, newLen);
+                    if (shield2)
+                    	rom.write(oldPointer + (shield1 ? 1 : 0) + newLen, 0xff);
+                }
+                return true;
+            }
+            else
+            {
+                // if it's too big to fit in the same place...
+                // back-up old data in case there isn't enough space
+                byte[] oldData = rom.readByte(oldPointer, oldLen);
+                // delete old data from ROM, it may be part of the empty space
+                // found
+                System.out.println("oldPointer: " + Integer.toHexString(oldPointer));
+                nullifyArea(oldPointer, oldLen);
+                System.out.println("A: " + Integer.toHexString(oldLen));
+                try
+                {
+                    // look for space...
+                    int newPointer = findFreeRange(beginAt, newLen + (shield1 ? 1 : 0) + (shield2 ? 1 : 0));
+                    // write data there
+                    rom.write(newPointer + (shield1 ? 1 : 0), data, newLen);
+                    if (shield1)
+                    	rom.write(newPointer, 0xff);
+                    if (shield2)
+                    	rom.write(newPointer + (shield1 ? 1 : 0) + newLen, 0xff);
+                    // change pointer
+                    newPointer = newPointer - pointerBase + (shield1 ? 1 : 0);
+                    // write pointer
+                    if (pointerLen > 0)
+                        for (int i = 0; i < pointerLoc.length; i++)
+                            rom.write(pointerLoc[i], toSnesPointer(newPointer),
+                                pointerLen);
+                    else
+                        for (int i = 0; i < pointerLoc.length; i++)
+                            rom.writeRegAsmPointer(pointerLoc[i], newPointer);
+                    // success!
+                    return true;
+                }
+                catch (EOFException e)
+                {
+                    // if there isn't space, rewrite old data, and return failure
+                    rom.write(oldPointer, oldData);
+                    return false;
+                }
+            }
+        }
+    
     /**
      * Writes the specified data into a free spot in the ROM and nulls the
      * previous copy. If a free spot large enough cannot be found, false will be
