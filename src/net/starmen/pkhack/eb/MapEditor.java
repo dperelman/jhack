@@ -2076,7 +2076,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 		}
 
 		public void mouseWheelMoved(MouseWheelEvent e) {
-			int y = getMapTileY() + e.getWheelRotation();
+			int y = getMapTileY() + (e.getWheelRotation() * 3);
 			if (y > MapEditor.height - getScreenHeight() + 1)
 				y = MapEditor.height - getScreenHeight() + 1;
 			else if (y < 0)
@@ -2228,7 +2228,11 @@ public class MapEditor extends EbHackModule implements ActionListener,
 						EbMap.addDoor(coords[0], coords[1], dl);
 					}
 				} else if (movingData[0] <= 3) {
-					int[] coords = get1BppCoords(e.getX() - movingData[4], e.getY() - movingData[5]);
+					int[] coords;
+					if (movingData[0] == 2)
+						coords = get1BppCoords(e.getX() - movingData[4], e.getY() - movingData[5]);
+					else
+						coords = get1BppCoords(e.getX(), e.getY());
 					if (movingData[0] == 2) {
 						HotspotEditor.getHotspot(movingData[3]).setX2((short) ((coords[0] / 8)
 								+ (HotspotEditor.getHotspot(movingData[3]).getX2()
