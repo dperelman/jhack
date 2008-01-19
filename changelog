@@ -1,7 +1,14 @@
-NEXT VERSION (after v0.5.13):
+NEXT VERSION (after v0.5.14):
+
+v0.5.14:
 # Event-Based Map Changes Editor: Can write changes data to the expanded area (thanks HyperBound, Michael1)
+# Battle Entry Editor: Improved, less confusing GUI
 # Battle Entry Editor: BUGFIX: Does not break if user deletes and enemy then saves (thanks The_Kirby)
 # BUGFIX: PK Hack can create valid empty preferences file (thanks Erik500002 et al.)
+# BUGFIX: Data in the first expanded MB is now nullified correctly
+# Map Editor: BUGFIX: Will not fill up your expanded area with door data
+# Changed all instances of "anyoneeb.ath.cx" to "anyoneeb.net"
+# Added Battle Swirl Editor
 
 v0.5.13:
 # Map Editor: BUGFIX: Local tileset data is saved correctly (thanks SilverFang)
