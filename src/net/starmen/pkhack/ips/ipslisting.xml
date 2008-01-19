@@ -92,6 +92,10 @@
 	<ips src = "batfonwidhac.ips" size = "283" author = "Mr. Accident" 
 		name = "Battle Font Width Hack" sdesc = "Makes the battle font width table be used"
 		type = "asm" romtype = "Earthbound" />
+	<!-- Michael1 asm hacks -->
+	<ips src = "ede45_relocation.ips" size = "1072" author = "Michael1"
+		name = "Battle Swirl Relocation Hack" sdesc = "Allows saving of battle swirl data into the expanded area."
+		type = "asm" romtype = "Earthbound" />
 	<!-- Font hacks -->
 	<ips src = "mato_oldenglish.efn" size = "3168" author = "Tomato"
 		name = "Olde English Font" sdesc = "Changes Mr. Saturn font to Olde English"
