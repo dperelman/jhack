@@ -17,6 +17,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
@@ -29,42 +31,27 @@ import net.starmen.pkhack.XMLPreferences;
  * 
  * TODO Write javadoc for this class
  */
-public class BattleEntryEditor extends EbHackModule implements ActionListener {
+public class BattleEntryEditor extends EbHackModule implements ActionListener, DocumentListener {
 	public BattleEntryEditor(AbstractRom rom, XMLPreferences prefs) {
 		super(rom, prefs);
 	}
 
 	public static final int NUM_ENTRIES = 484;
-
 	public static final int POINTERS = 0x10c80d;
-
 	private static final String DEL_ENEMY_COMMAND = "DNMY";
+	private static final String CHG_ENEMY_COMMAND = "CNMY";
 
 	private static BattleEntry[] battleEntries;
-
 	private static ArrayList enemyGroups;
-
 	private static ArrayList oldGroupLengths;
-
 	private static boolean useGameOrder;
-
 	private JTextField flag;
-
-	private JComboBox selector, groupSelector, boxSize, flagEffect;
-
-	private JButton addGroup, delGroup, addEnemy;
-
+	private JComboBox selector, boxSize, flagEffect;
+	private JButton addEnemy;
 	private JPanel groupEditPanel;
-
 	private JRadioButton ordGame, ordReg;
-
 	private JComboBox[] enemies = new JComboBox[0];
-
 	private JTextField[] amounts = new JTextField[0];
-
-	private boolean[] deletedEnemies;
-
-	private ArrayList addedEnemies;
 
 	/*
 	 * (non-Javadoc)
@@ -87,16 +74,10 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 
 		selector = new JComboBox();
 		selector.addActionListener(this);
-		groupSelector = new JComboBox();
-		groupSelector.addActionListener(this);
 		flag = HackModule.createSizedJTextField(3, true, true);
 		flagEffect = new JComboBox(new String[] { "Unset", "Set" });
 		boxSize = new JComboBox(new String[] { "None", "Large", "Medium",
 				"Small" });
-		addGroup = new JButton("Add Group");
-		addGroup.addActionListener(this);
-		delGroup = new JButton("Delete Group");
-		delGroup.addActionListener(this);
 
 		groupEditPanel = new JPanel();
 		groupEditPanel
@@ -117,8 +98,6 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
 		topPanel.add(selector);
 		topPanel.add(panel);
-		topPanel.add(groupSelector);
-		topPanel.add(HackModule.pairComponents(addGroup, delGroup, true));
 		topPanel.add(new JLabel("Enemy Group contents:"));
 		topPanel.add(createFlowLayout(new JRadioButton[] { ordGame, ordReg }));
 		topPanel.add(groupEditPanel);
@@ -170,13 +149,14 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 		}
 	}
 
-	public static JComboBox createEnemyComboBox(final ActionListener al) {
+	public static JComboBox createEnemyComboBox(final ActionListener al, int num) {
 		SimpleComboBoxModel model = createEnemyComboBoxModel();
 		final JComboBox out = new JComboBox(model);
-		out.addActionListener(al);
+		out.setActionCommand(CHG_ENEMY_COMMAND + Integer.toString(num));
 		model.addListDataListener(new ListDataListener() {
 			public void contentsChanged(ListDataEvent lde) {
 				if (out.getSelectedIndex() == -1) {
+					System.out.println("a");
 					out.removeActionListener(al);
 					out.setSelectedIndex(lde.getIndex0());
 					out.addActionListener(al);
@@ -189,6 +169,7 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 			public void intervalRemoved(ListDataEvent arg0) {
 			}
 		});
+		out.addActionListener(al);
 
 		return out;
 	}
@@ -199,7 +180,7 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 	 * @see net.starmen.pkhack.HackModule#getVersion()
 	 */
 	public String getVersion() {
-		return "0.2";
+		return "0.3";
 	}
 
 	/*
@@ -234,7 +215,6 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 		EnemyEditor.readFromRom(this);
 		readFromRom(rom);
 		reloadEntryNames(selector, this);
-		reloadGroupNames();
 		updateComponents();
 		mainWindow.setVisible(true);
 	}
@@ -258,84 +238,60 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 		reloadEntryNames(selector, null);
 	}
 
-	private void reloadGroupNames() {
-		groupSelector.removeActionListener(this);
-		int selected = groupSelector.getSelectedIndex();
-		groupSelector.removeAllItems();
-		for (int i = 0; i < enemyGroups.size(); i++)
-			groupSelector.addItem(getNumberedString(getGroupName(i), i));
-		groupSelector.setSelectedIndex(selected);
-		groupSelector.addActionListener(this);
-	}
-
 	private void updateComponents() {
 		BattleEntry entry = battleEntries[selector.getSelectedIndex()];
 
 		flag.setText(Integer.toHexString(entry.getFlag() & 0xffff));
 		flagEffect.setSelectedIndex(entry.getFlagUsage() ? 1 : 0);
 		boxSize.setSelectedIndex(entry.getBoxSize() & 0xff);
-		groupSelector.setSelectedIndex(entry.getEnemyGroup());
+		updateGroupDisplay();
 	}
 
-	private void updateGroupDisplay(boolean reset) {
-		ArrayList group = (ArrayList) enemyGroups.get(groupSelector
-				.getSelectedIndex());
-		int numDeleted = 0;
-		if (reset) {
-			enemies = new JComboBox[0];
-			amounts = new JTextField[0];
-			addedEnemies = new ArrayList();
-			deletedEnemies = new boolean[group.size()];
-			Arrays.fill(deletedEnemies, false);
-		} else
-			for (int i = 0; i < deletedEnemies.length; i++)
-				if (deletedEnemies[i])
-					numDeleted++;
+	private void updateGroupDisplay() {
+		ArrayList group = (ArrayList) enemyGroups.get(selector.getSelectedIndex());
 
 		groupEditPanel.removeAll();
-		if ((group.size() - numDeleted == 0) && (addedEnemies.size() == 0))
+		if (group.size() == 0)
 			groupEditPanel.add(new JLabel("No enemies in this group."));
 		else {
-			JComboBox[] enemies = new JComboBox[group.size()
-					+ addedEnemies.size()];
-			JTextField[] amounts = new JTextField[group.size()
-					+ addedEnemies.size()];
+			enemies = new JComboBox[group.size()];
+			amounts = new JTextField[group.size()];
 
 			/*
 			 * String[] enemyNames = new String[EnemyEditor.enemies.length]; for
 			 * (int i = 0; i < enemyNames.length; i++) enemyNames[i] =
 			 * EnemyEditor.enemies[i].getName();
 			 */
-			for (int i = 0; i < group.size() + addedEnemies.size(); i++) {
-				boolean real = i < group.size();
-				if (!real || !deletedEnemies[i]) {
-					EnemyEntry enemy;
-					if (real)
-						enemy = (EnemyEntry) group.get(i);
-					else
-						enemy = (EnemyEntry) addedEnemies.get(i - group.size());
+			for (int i = 0; i < group.size(); i++) {
 					JButton delButton = new JButton("Delete");
 					delButton.setActionCommand(DEL_ENEMY_COMMAND
 							+ Integer.toString(i));
 					delButton.addActionListener(this);
 
-					enemies[i] = createEnemyComboBox(this);
-					amounts[i] = HackModule.createSizedJTextField(3, true,
-							false);
-					if ((i < this.enemies.length) && (i < this.amounts.length)) {
-						enemies[i].setSelectedIndex(this.enemies[i]
-								.getSelectedIndex());
-						amounts[i].setText(this.amounts[i].getText());
-					} else {
-						if (!search(getNumberedString("", enemy.getEnemy()),
-								enemies[i]))
-							enemies[i].setSelectedIndex(0);
-						//enemies[i].setSelectedIndex(useGameOrder ?
-						//		EnemyEditor.gameOrder[enemy.getEnemy()] :
-						// enemy.getEnemy());
-						amounts[i].setText(Integer
-								.toString(enemy.getAmount() & 0xff));
-					}
+					enemies[i] = createEnemyComboBox(this,i);
+					enemies[i].removeActionListener(this);
+					enemies[i].setSelectedIndex(((EnemyEntry) group.get(i)).getEnemy());
+					enemies[i].addActionListener(this);
+					
+					amounts[i] = HackModule.createSizedJTextField(3, true,false);
+					amounts[i].setText(""+((EnemyEntry) group.get(i)).getAmount());
+					amounts[i].getDocument().addDocumentListener(new DocumentListener() {
+
+						public void changedUpdate(DocumentEvent e) {
+							//((ArrayList) enemyGroups.get(selector.getSelectedIndex())).get(i);
+						}
+
+						public void insertUpdate(DocumentEvent e) {
+							// TODO Auto-generated method stub
+							
+						}
+
+						public void removeUpdate(DocumentEvent e) {
+							// TODO Auto-generated method stub
+							
+						}
+						
+					});
 
 					JPanel row = new JPanel();
 					row.add(delButton);
@@ -344,10 +300,7 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 					row.add(new JLabel("Amount: "));
 					row.add(amounts[i]);
 					groupEditPanel.add(row);
-				}
 			}
-			this.enemies = enemies;
-			this.amounts = amounts;
 		}
 
 		mainWindow.pack();
@@ -480,101 +433,38 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals("apply")) {
-			battleEntries[selector.getSelectedIndex()]
-					.setEnemyGroup(groupSelector.getSelectedIndex());
+			//battleEntries[selector.getSelectedIndex()]
+			//		.setEnemyGroup(groupSelector.getSelectedIndex());
 			battleEntries[selector.getSelectedIndex()].setFlag((short) (Integer
 					.parseInt(flag.getText(), 16) & 0xffff));
 			battleEntries[selector.getSelectedIndex()].setFlagUsage(flagEffect
 					.getSelectedIndex() > 0);
 			battleEntries[selector.getSelectedIndex()]
 					.setBoxSize((byte) (boxSize.getSelectedIndex() & 0xff));
-			ArrayList group = new ArrayList();
-			for (int i = 0; i < enemies.length; i++)
-				if (!deletedEnemies[i])
-					group.add(new EnemyEntry((byte) Integer.parseInt(amounts[i].getText()),
-						useGameOrder ? EnemyEditor.gameOrder[enemies[i]
-								.getSelectedIndex()] : (short) enemies[i]
-								.getSelectedIndex()));
 			//(short) enemies[i].getSelectedIndex()));
-			enemyGroups.set(groupSelector.getSelectedIndex(), group);
+			//enemyGroups.set(groupSelector.getSelectedIndex(), group);
 			updateComponents();
 			reloadEntryNames(selector, this);
-			reloadGroupNames();
 
 			writeToRom(this);
 		} else if (e.getActionCommand().equals("close")) {
 			hide();
 		} else if (e.getSource().equals(selector))
 			updateComponents();
-		else if (e.getSource().equals(groupSelector))
-			updateGroupDisplay(true);
-		else if (e.getSource().equals(addGroup)) {
-			int index = enemyGroups.size();
-			enemyGroups.add(new ArrayList());
-			reloadGroupNames();
-			groupSelector.setSelectedIndex(index);
-		} else if (e.getSource().equals(delGroup)) {
-			if (enemyGroups.size() > 0) {
-				int group = groupSelector.getSelectedIndex();
-				ArrayList entriesUsing = new ArrayList();
-				for (int i = 0; i < battleEntries.length; i++)
-					if (battleEntries[i].getEnemyGroup() == group)
-						entriesUsing.add(new Integer(i));
-				String message;
-				if (entriesUsing.size() > 0) {
-					message = "WARNING: There are entries using this group,\nwhich will be"
-							+ " set to use group 0 if not changed. The entries are:\n";
-					for (int i = 0; i < entriesUsing.size(); i++)
-						message = message
-								+ (i > 0 || (i - 1) % 5 == 0 ? " " : "")
-								+ "0x"
-								+ Integer.toHexString(((Integer) entriesUsing
-										.get(i)).intValue())
-								+ (i % 10 == 0 ? "\n" : "");
-				} else
-					message = "This are no entries using this group, so it should be OK.";
-				int confirm = JOptionPane.showConfirmDialog(mainWindow,
-						"Are you sure you want to delete this enemy group?\n"
-								+ message, "Are you sure?",
-						JOptionPane.YES_NO_OPTION);
-				if (confirm == JOptionPane.YES_OPTION) {
-					for (int i = 0; i < entriesUsing.size(); i++)
-						battleEntries[((Integer) entriesUsing.get(i))
-								.intValue()].setEnemyGroup(0);
-					enemyGroups.remove(group);
-					reloadGroupNames();
-					groupSelector.setSelectedIndex(0);
-				}
-			} else
-				JOptionPane.showMessageDialog(mainWindow,
-						"There needs to be at least one enemy group!",
-						"Could not obey command", JOptionPane.ERROR_MESSAGE);
-		} else if (e.getSource().equals(addEnemy)) {
-			addedEnemies.add(new EnemyEntry((byte) 0, (short) 0));
-			updateGroupDisplay(false);
-		} else if (e.getActionCommand().substring(0, 4).equals(DEL_ENEMY_COMMAND)) {
-			int num = Integer.parseInt(e.getActionCommand().substring(4));
-			ArrayList group = (ArrayList) enemyGroups.get(groupSelector.getSelectedIndex());
-			int numDeleted = 0;
-			for (int i = 0; i < deletedEnemies.length; i++)
-				if (deletedEnemies[i])
-					numDeleted++;
-			if (num >= group.size() - numDeleted)
-				addedEnemies.remove(num - group.size());
-			else
-				deletedEnemies[num] = true;
-			JComboBox[] enemies = new JComboBox[this.enemies.length - 1];
-			JTextField[] amounts = new JTextField[this.amounts.length - 1];
-			boolean passedDeleted = false;
-			for (int i = 0; i < this.enemies.length; i++)
-				if (i != num) {
-					enemies[i - (passedDeleted ? 1 : 0)] = this.enemies[i];
-					amounts[i - (passedDeleted ? 1 : 0)] = this.amounts[i];
-				} else
-					passedDeleted = true;
-			this.enemies = enemies;
-			this.amounts = amounts;
-			updateGroupDisplay(false);
+		else if (e.getSource().equals(addEnemy)) {
+			ArrayList group = (ArrayList) enemyGroups.get(selector.getSelectedIndex());
+			group.add(new EnemyEntry((byte) 0, (short) 0));
+			
+			updateGroupDisplay();
+		} else if (e.getActionCommand().substring(0, DEL_ENEMY_COMMAND.length()).equals(DEL_ENEMY_COMMAND)) {
+			int num = Integer.parseInt(e.getActionCommand().substring(DEL_ENEMY_COMMAND.length()));
+			ArrayList group = (ArrayList) enemyGroups.get(selector.getSelectedIndex());
+			group.remove(num);
+			updateGroupDisplay();
+		} else if (e.getActionCommand().substring(0, CHG_ENEMY_COMMAND.length()).equals(CHG_ENEMY_COMMAND)) {
+			int num = Integer.parseInt(e.getActionCommand().substring(CHG_ENEMY_COMMAND.length()));
+			ArrayList group = (ArrayList) enemyGroups.get(selector.getSelectedIndex());
+			((EnemyEntry) group.get(num)).setEnemy((short) enemies[num].getSelectedIndex());
 		} else if (e.getSource().equals(ordGame)) {
 			useGameOrder = true;
 			notifyEnemyDataListeners(new ListDataEvent(this,
@@ -655,6 +545,10 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 		public short getEnemy() {
 			return enemy;
 		}
+		
+		public void setEnemy(short enemy) {
+			this.enemy = enemy;
+		}
 
 		public byte getAmount() {
 			return amount;
@@ -681,5 +575,20 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener {
 			this.address = address;
 			this.length = length;
 		}
+	}
+
+	public void changedUpdate(DocumentEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void insertUpdate(DocumentEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void removeUpdate(DocumentEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }
