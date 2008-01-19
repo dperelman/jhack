@@ -31,7 +31,7 @@ import net.starmen.pkhack.XMLPreferences;
  * 
  * TODO Write javadoc for this class
  */
-public class BattleEntryEditor extends EbHackModule implements ActionListener, DocumentListener {
+public class BattleEntryEditor extends EbHackModule implements ActionListener {
 	public BattleEntryEditor(AbstractRom rom, XMLPreferences prefs) {
 		super(rom, prefs);
 	}
@@ -275,23 +275,7 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener, D
 					
 					amounts[i] = HackModule.createSizedJTextField(3, true,false);
 					amounts[i].setText(""+((EnemyEntry) group.get(i)).getAmount());
-					amounts[i].getDocument().addDocumentListener(new DocumentListener() {
-
-						public void changedUpdate(DocumentEvent e) {
-							//((ArrayList) enemyGroups.get(selector.getSelectedIndex())).get(i);
-						}
-
-						public void insertUpdate(DocumentEvent e) {
-							// TODO Auto-generated method stub
-							
-						}
-
-						public void removeUpdate(DocumentEvent e) {
-							// TODO Auto-generated method stub
-							
-						}
-						
-					});
+					amounts[i].getDocument().addDocumentListener(new AmountListener(i));
 
 					JPanel row = new JPanel();
 					row.add(delButton);
@@ -462,9 +446,11 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener, D
 			group.remove(num);
 			updateGroupDisplay();
 		} else if (e.getActionCommand().substring(0, CHG_ENEMY_COMMAND.length()).equals(CHG_ENEMY_COMMAND)) {
+			System.out.println("b");
 			int num = Integer.parseInt(e.getActionCommand().substring(CHG_ENEMY_COMMAND.length()));
 			ArrayList group = (ArrayList) enemyGroups.get(selector.getSelectedIndex());
 			((EnemyEntry) group.get(num)).setEnemy((short) enemies[num].getSelectedIndex());
+			((EnemyEntry) group.get(num)).setAmount((byte) (Integer.parseInt(amounts[num].getText()) & 0xff));
 		} else if (e.getSource().equals(ordGame)) {
 			useGameOrder = true;
 			notifyEnemyDataListeners(new ListDataEvent(this,
@@ -473,6 +459,28 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener, D
 			useGameOrder = false;
 			notifyEnemyDataListeners(new ListDataEvent(this,
 					ListDataEvent.CONTENTS_CHANGED, 0, EnemyEditor.NUM_ENEMIES));
+		}
+	}
+	
+	private class AmountListener implements DocumentListener {
+		int num;
+		
+		public AmountListener(int num) {
+			this.num = num;
+		}
+		
+		public void changedUpdate(DocumentEvent e) {
+			if (amounts[num].getText().length() != 0)
+				((EnemyEntry) ((ArrayList) enemyGroups.get(selector.getSelectedIndex())).get(num)).setAmount(
+						(byte) (Integer.parseInt(amounts[num].getText()) & 0xff));
+		}
+
+		public void insertUpdate(DocumentEvent e) {
+			changedUpdate(e);
+		}
+
+		public void removeUpdate(DocumentEvent e) {
+			changedUpdate(e);
 		}
 	}
 
@@ -534,7 +542,6 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener, D
 
 	public static class EnemyEntry {
 		private byte amount;
-
 		private short enemy;
 
 		public EnemyEntry(byte amount, short enemy) {
@@ -552,6 +559,10 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener, D
 
 		public byte getAmount() {
 			return amount;
+		}
+		
+		public void setAmount(byte amount) {
+			this.amount = amount;
 		}
 
 		public String getName() {
@@ -575,20 +586,5 @@ public class BattleEntryEditor extends EbHackModule implements ActionListener, D
 			this.address = address;
 			this.length = length;
 		}
-	}
-
-	public void changedUpdate(DocumentEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void insertUpdate(DocumentEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void removeUpdate(DocumentEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 }
