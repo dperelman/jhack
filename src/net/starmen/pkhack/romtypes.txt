@@ -34,6 +34,9 @@ Chrono Trigger
 	
 EarthBound 0
 	*3d6: d4 e9 ed e5 cd e1 e3 e8 #unknown
+	
+Super Mario RPG (U)
+	*7FB0: 30 31 41 52 57 45 # internal heder ("01ARWE")
 
 #Different Yoshi's Island versions:
 #(1.1U) is the version that has been hacked
