@@ -987,9 +987,7 @@ public class SpriteEditor extends EbHackModule implements ActionListener,
             {
                 for (int y = 0; y < sprite[x].length; y++)
                 {
-                    g.setColor(this.getPixelColor((si.isHFliped()
-                        ? (sprite.length - 1) - x
-                        : x), y, trans));
+                    g.setColor(this.getPixelColor(x, y, trans));
                     g.drawLine(x, y, x, y); // there's no draw point, WHY?!?
                 }
             }
