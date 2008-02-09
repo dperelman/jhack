@@ -287,9 +287,9 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             .add(getLabeledComponent(
                 "Order: ",
                 actionOrder = new JComboBox(),
-                "Staggered Order goes something like \"Attack 3, 4, 3, 4, 3, 4, 3, 1, 2, 1, 2, etc.\""));
+                "Staggered Order goes something like \"Attack 2, 4, 2, 4, 2, 4, 1, 3, 1, 3, 1, 3, etc.\""));
         actionOrder.addItem(getNumberedString("Random", 0));
-        actionOrder.addItem(getNumberedString("Random, Favor Third", 1));
+        actionOrder.addItem(getNumberedString("Random, Favor First, then Second", 1));
         actionOrder.addItem(getNumberedString("In Order", 2));
         actionOrder.addItem(getNumberedString("Staggered Order", 3));
         actionsTabBottom.add(startPointer = new TextEditor.TextOffsetEntry(
@@ -537,7 +537,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         }
         try
         {
-            if (!search(getNumberedString("", temp), arguements[j]))
+            if (!search(getNumberedString("", temp), arguements[j], true, false))
                 arguements[j].setSelectedIndex(0);
             //arguements[j].setSelectedIndex(temp);
         }
@@ -606,13 +606,17 @@ public class EnemyEditor extends EbHackModule implements ActionListener
         missRate.setText(Integer.toString(enemies[i].getMissRate()));
         type.setSelectedIndex(enemies[i].getType());
 
+        
+        
         //actions tab
         for (int j = 0; j < actions.length; j++)
         {
             //set to zero to make sure no incorrect error message is
             //shown by updateArguements()
             arguements[j].setSelectedIndex(0);
+            //actions[j].removeActionListener(this);
             actions[j].setSelectedIndex(enemies[i].getAction(j));
+            //actions[j].addActionListener(this);
             //updateArguements(j); //done by actionPerformed
             int earg = enemies[i].getArguement(j);
             if (earg >= arguements[j].getItemCount())
@@ -627,7 +631,7 @@ public class EnemyEditor extends EbHackModule implements ActionListener
             }
             else
             {
-                if (!search(getNumberedString("", earg), arguements[j]))
+                if (!search(getNumberedString("", earg,true), arguements[j], true, false))
                     arguements[j].setSelectedIndex(0);
                 //arguements[j].setSelectedIndex(earg);
             }
