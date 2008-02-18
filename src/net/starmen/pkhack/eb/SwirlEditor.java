@@ -171,6 +171,7 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 						data[2] = 0xff;
 						data[3] = 0;
 					}
+					System.out.println("Repeating " + Integer.toHexString(numOfScanlines) + " times");
 					for (int i = curScanline; i < curScanline + numOfScanlines; i++)
 						for (int j = 0; j < 4; j++)
 							swirlData[num][i][j] = data[j];
@@ -179,6 +180,7 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 				} else { // continuous mode
 					numOfScanlines -= 0x80;
 					
+					System.out.println("Non-repeating " + Integer.toHexString(numOfScanlines) + " times");
 					for (int i = curScanline; i < curScanline + numOfScanlines; i++) {
 						for (int j = 0; j < (isMode01 ? 2 : 4); j++)
 							data[j] = rom.readSeek();
@@ -231,8 +233,10 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 					
 					if ((j == 0) || !Arrays.equals(swirlData[i][j-1],swirlData[i][j])
 							|| (repeatNo == 0x7f)) { // continuous mode
-						if (repeatNo != 0)
+						if (repeatNo != 0) {
+							hdmaEntries++;
 							repeatNo = 0;
+						}
 						if ((continuousNo == 0x7f) || (continuousNo == 0)) {
 							hdmaEntries++;
 							continuousNo = 0;
@@ -305,7 +309,7 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 		"Phase Distorter Swirl",
 		"Boss Battle Swirl",
 		"Shield Swirl",
-		"Enemy PSI Swirl",
+		"Giygas Battle End Swirl",
 		"Giygas Phase Shift Swirl"
 	};
 	
@@ -393,7 +397,6 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
         
 		if (isSwirlRelocateHacked(rom)) {
 			oldAddr = toRegPointer(rom.readMulti(asmHackPtrs[0],3)) - 1; // -1 because there will always be FF shielding in front
-			System.out.println(Integer.toHexString(oldAddr));
 		} else {
 			oldAddr = 0xe0200 + rom.readMulti(swirlEffectPtrTable,2);
 		}
@@ -405,8 +408,6 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 							toRegPointer(rom.readMulti(asmHackPtrs[0],3)) : 0));
 		}
 		oldLen = rom.getSeek() - oldAddr; // (rom.getSeek()-1)+1 because there will always be FF shielding at the end
-		System.out.println("oldLen: " + Integer.toHexString(rom.getSeek()) + " - "
-				+ Integer.toHexString(oldAddr) + " = " + Integer.toHexString(oldLen));
 	}
 	
 	private static void writeToRom(HackModule hm) throws EOFException {
@@ -426,7 +427,6 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 		swirlData[0] = new int[1][numFrames*4];
 		Arrays.fill(swirlData[0][0], 0); // filling with 0x00 will make 0xff shielding always occur
 		
-		System.out.println("sdl: " + Integer.toHexString(swirlDataLen + (numFrames * 4)));
 		// will need to write old pointer if rom hasn't been swirl relocate hacked
 		rom.write(asmHackPtrs[0],toSnesPointer(oldAddr),3);
 		hm.writetoFree(swirlData, asmHackPtrs, 0, 3, oldLen, swirlDataLen + (numFrames * 4), rom.length(), true);
@@ -472,7 +472,8 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals("apply")) {
-	        if (JHack.main.getPrefs().getValue("swirlRelocateHack") == null
+	        if (((JHack.main.getPrefs().getValue("swirlRelocateHack") == null)
+	        		  || !JHack.main.getPrefs().getValueAsBoolean("swirlRelocateHack"))
 	                && swirlRelocateHack != null
 	                && !isSwirlRelocateHacked(rom)) {
                 Box quesBox = new Box(BoxLayout.Y_AXIS);
@@ -511,9 +512,16 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 					e1.printStackTrace();
 				}
 	        }
-		} else if (e.getActionCommand().equals("close"))
+		} else if (e.getActionCommand().equals("close")) {
         	hide();
-        else if (e.getSource().equals(swirlChooser)) {
+        	int[][] tmp = swirls[0].getFrameData();
+        	for (int i = 0; i < tmp[0].length; i++) {
+        		System.out.print(HackModule.addZeros(Integer.toHexString(tmp[0][i]),2) + " ");
+        		if ((i+1) % 16 == 0)
+        			System.out.println();
+        	}
+        	System.out.println();
+		} else if (e.getSource().equals(swirlChooser)) {
 			frameChooser.removeActionListener(this);
 			frameChooser.removeAllItems();
 			for (int i = 0; i < swirls[swirlChooser.getSelectedIndex()].getNumFrames(); i++)
