@@ -2026,15 +2026,15 @@ public class MapEditor extends EbHackModule implements ActionListener,
 						paletteBox.addItem(Integer.toString(tileset
 								.getPalette(i).getMapPalette()));
 						if (!couldSetOldPalette
-								&& (tileset.getPalette(i).getMapPalette() == sector
-										.getPalette())) {
+								&& (tileset.getPalette(i).getMapPalette() == sector.getPalette())) {
 							couldSetOldPalette = true;
-							paletteBox
-									.setSelectedIndex(tileset.getPalette(i).getMapPalette());
+							paletteBox.setSelectedIndex(tileset.getPalette(i).getMapPalette());
 						}
 					}
-				if (!couldSetOldPalette)
+				if (!couldSetOldPalette) {
 					paletteBox.setSelectedIndex(0);
+					sector.setPalette((byte) 0);
+				}
 				paletteBox.addActionListener(this);
 
 				repaint();
@@ -2368,9 +2368,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 										num);
 						String dest;
 						if (EbMap.DOOR_DEST_TYPES[doorLocation.getType()] >= 0)
-							dest = "Destination #"
-									+ Integer.toString(doorLocation
-											.getDestIndex());
+							dest = "Destination #" + Integer.toString(EbMap.getDestIndex(doorLocation.getDestination()));
 						else
 							dest = "No Destination";
 						popup.add(EbHackModule.createJMenuItem("Edit entry ("
@@ -2556,8 +2554,7 @@ public class MapEditor extends EbHackModule implements ActionListener,
 					net.starmen.pkhack.JHack.main.showModule(DoorEditor.class,
 							new int[] { areaX, areaY, num });
 				} else if (ac.equals(JUMP_DEST)) {
-					EbMap.Destination dest = EbMap.getDestination(EbMap
-							.getDoorLocation(areaX, areaY, num).getDestIndex());
+					EbMap.Destination dest = EbMap.getDoorLocation(areaX, areaY, num).getDestination();
 					gfxcontrol.setMapXY(dest.getX() * 8 / MapEditor.tileWidth,
 							dest.getY() * 8 / MapEditor.tileHeight);
 				}
