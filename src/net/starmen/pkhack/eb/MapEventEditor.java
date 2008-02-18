@@ -19,6 +19,8 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -29,6 +31,7 @@ import javax.swing.event.DocumentListener;
 import net.starmen.pkhack.AbstractRom;
 import net.starmen.pkhack.HackModule;
 import net.starmen.pkhack.XMLPreferences;
+import net.starmen.pkhack.eb.MapEditor.MenuListener;
 import net.starmen.pkhack.eb.MapEditor.TileChooser;
 
 /**
@@ -75,6 +78,20 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
 	{
 		mainWindow = createBaseWindow(this);
 		mainWindow.setTitle(getDescription());
+		
+		JMenuBar menuBar = new JMenuBar();
+		JMenu menu;
+		menu = new JMenu("File");
+		menu.add(EbHackModule.createJMenuItem("Apply Changes", 'a', null,
+				"apply", this));
+		menu.add(EbHackModule.createJMenuItem("Close", 'c', null,
+				"close", this));
+		menuBar.add(menu);
+		menu = new JMenu("Tools");
+		menu.add(EbHackModule.createJMenuItem("Delete All", 'd', null,
+				"deleteall", this));
+		menuBar.add(menu);
+		mainWindow.setJMenuBar(menuBar);
 		
 		String[] tsetNames = new String[MapEditor.drawTsetNum];
 		for (int i = 0; i < tsetNames.length; i++)
@@ -522,15 +539,25 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
         }
         else if (e.getActionCommand().equals("close"))
         	hide();
-        else if (e.getSource().equals(addGroup))
-        {
+        else if (e.getActionCommand().equals("deleteall")) {
+        	int confirm = JOptionPane.showConfirmDialog(
+        		    mainWindow,
+        		    "Are you sure you want to delete all of the flag groups for every tileset?\n" +
+        		    "This cannot be undone. However, it will not be saved until you click the\n" +
+        		    "\"Apply Changes\" button.",
+        		    "Are you sure?",
+        		    JOptionPane.YES_NO_OPTION);
+        	if (confirm == JOptionPane.YES_OPTION) {
+        		for (int i = 0; i < entries.length; i++)
+        			entries[i].clear();
+        		updateComponents(true, true, true);
+        	}
+        } else if (e.getSource().equals(addGroup)) {
         	TilesetChange change = new TilesetChange((short) 1, false);
         	entries[tileset.getSelectedIndex()].add(change);
         	updateComponents(true, false, true);
         	flagGroup.setSelectedIndex(entries[tileset.getSelectedIndex()].indexOf(change));
-        }
-        else if (e.getSource().equals(delGroup))
-        {
+        } else if (e.getSource().equals(delGroup)) {
         	int confirm = JOptionPane.showConfirmDialog(
         		    mainWindow,
         		    "Do you really want to delete this flag group?",
@@ -539,8 +566,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
         	if (confirm == JOptionPane.YES_OPTION)
         		entries[tileset.getSelectedIndex()].remove(flagGroup.getSelectedIndex());
         	updateComponents(true, false, true);
-        }
-        else if (e.getSource().equals(tileset))
+        } else if (e.getSource().equals(tileset))
         	updateComponents(true, false, false);
         else if (e.getSource().equals(flagGroup))
         	updateComponents(false, false, true);
@@ -548,14 +574,11 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
         	updateComponents(false, false, false);
         else if (e.getSource().equals(page))
         	updateComponents(false, false, false);
-        else if (e.getSource().equals(add))
-        {
+        else if (e.getSource().equals(add)) {
         	((TilesetChange) entries[tileset.getSelectedIndex()].get(
         			flagGroup.getSelectedIndex())).addTileChange(new TilesetChange.TileChange((short) 0, (short) 0));
         	updateComponents(false, true, false);
-        }
-        else if (e.getSource().equals(del))
-        {
+        } else if (e.getSource().equals(del)) {
         	String input = JOptionPane.showInputDialog(
                     mainWindow,
                     "Delete which tile change?",
@@ -596,9 +619,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
                     		    JOptionPane.ERROR_MESSAGE);
 				}
         	}
-        }
-        else if ((e.getSource().equals(tileChooser)) && (selected != -1))
-        {
+        } else if ((e.getSource().equals(tileChooser)) && (selected != -1)) {
         	TilesetChange change = ((TilesetChange) entries[tileset.getSelectedIndex()].get(
         			flagGroup.getSelectedIndex()));
         	if (selected % 2 == 0)
@@ -606,9 +627,7 @@ public class MapEventEditor extends EbHackModule implements ActionListener, Docu
     		else
     			change.getTileChange(selected / 2).setTile2((short) tileChooser.getSelected());
     		updateComponents(false, false, false);	
-        }
-        else if (e.getSource() instanceof TileButton)
-        {
+        } else if (e.getSource() instanceof TileButton) {
         	selected = Integer.parseInt(e.getActionCommand());
         	TilesetChange change = ((TilesetChange) entries[tileset.getSelectedIndex()].get(
         			flagGroup.getSelectedIndex()));
