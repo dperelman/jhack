@@ -1,4 +1,13 @@
 NEXT VERSION (after v0.5.14):
+# Door Editor: Added ability to create new and remove existing destinations
+# Door Editor: BUGFIX: Will not nullify any destination data written past
+    0xf284f on the initial write
+# Swirl Editor: BUGFIX: Fixed saving error (thanks EBisumaru)
+# Event-Based Map Changes Editor: Added shortcut to delete all entries
+# Map Editor: BUGFIX: Fixed issue with copying sectors
+# Map Editor, TPT Editor: BUGFIX: Right-facing sprites do not face left
+# Enemy Editor: BUGFIX: Does not give "search not found" error when
+    switching between some enemies (thanks furrykef)
 
 v0.5.14:
 # Event-Based Map Changes Editor: Can write changes data to the expanded area (thanks HyperBound, Michael1)
