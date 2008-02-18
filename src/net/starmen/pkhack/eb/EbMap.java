@@ -251,7 +251,15 @@ public class EbMap {
 	}
 
 	public static void setSectorData(int sectorX, int sectorY, Sector sector) {
-		sectorData[sectorX + (sectorY * MapEditor.widthInSectors)] = sector;
+		Sector s = sectorData[sectorX + (sectorY * MapEditor.widthInSectors)];
+		s.setCantTeleport(sector.cantTeleport());
+		s.setItem(sector.getItem());
+		s.setMisc(sector.getMisc());
+		s.setMusic(sector.getMusic());
+		s.setPalette(sector.getPalette());
+		s.setTileset(sector.getTileset());
+		s.setTownMap(sector.getTownMap());
+		s.setUnknown(sector.isUnknownEnabled());
 	}
 
 	public static void writeSectorData(AbstractRom rom) {
@@ -604,7 +612,6 @@ public class EbMap {
 					// sectorData[(i / MapEditor.sectorHeight) * MapEditor.widthInSectors + (j / MapEditor.sectorWidth)].clear();
 				}
 				if (nullMap && (i % 8 == 0)) {
-					System.out.println(j + "," + i);
 					addr = localTsetAddress + ((i / 8) * (MapEditor.width + 1)) + j + ((i / 4) % 2 == 1 ? 0x3000 : 0);
 					rom.write(addr, 0);
 				}
@@ -637,6 +644,11 @@ public class EbMap {
 				* MapEditor.widthInSectors; i++)
 			if (doorData[i] == null)
 				errors += loadDoorData(rom, i);
+		
+		// If there are no destinations loaded, create a dummy one to satisfy the Door Editor
+		if (destData.size() == 0)
+			addNewDestination();
+		
 		if (errors > 0)
 			System.out.println(errors + " door entry error"
 					+ (errors > 1 ? "s" : "") + " found"
@@ -652,7 +664,7 @@ public class EbMap {
 		oldDoorEntryLengths[areaNum] = rom.read(ptr);
 		short doorX, doorY, doorPtr;
 		byte doorType;
-		for (byte i = 0; i < rom.readByte(ptr); i++) {
+		for (int i = 0; i < rom.readByte(ptr); i++) {
 			doorX = (short) rom.read(ptr + 3 + (i * 5));
 			doorY = (short) rom.read(ptr + 2 + (i * 5));
 			doorType = rom.readByte(ptr + 4 + (i * 5));
@@ -678,13 +690,6 @@ public class EbMap {
 
 		return numErrors;
 	}
-
-	/*
-	 * public static boolean isDoorDataLoaded(int areaNum) { return
-	 * (doorData[areaNum] != null); } public static boolean
-	 * isDoorDataLoaded(int areaX, int areaY) { return
-	 * isDoorDataLoaded(areaX + (areaY * MapEditor.widthInSectors)); }
-	 */
 
 	public static ArrayList getErrors() {
 		return errors;
@@ -713,13 +718,13 @@ public class EbMap {
 	public static int addDoor(int areaX, int areaY, short doorX,
 			short doorY, byte doorType, short doorPtr) {
 		return addDoor(areaX, areaY, new DoorLocation(doorX, doorY,
-				doorType, doorPtr, 0));
+				doorType, doorPtr, (Destination) destData.get(0)));
 	}
 
 	public static int addDoor(int areaX, int areaY, short doorX,
 			short doorY, byte doorType, short doorPtr, int destNum) {
 		return addDoor(areaX, areaY, new DoorLocation(doorX, doorY,
-				doorType, doorPtr, destNum));
+				doorType, doorPtr, (Destination) destData.get(destNum)));
 	}
 
 	public static void removeDoor(int areaX, int areaY, int num) {
@@ -732,12 +737,10 @@ public class EbMap {
 	}
 
 	public static DoorLocation getDoorLocation(int areaX, int areaY, int num) {
-		return getDoorLocation(areaX + (areaY * MapEditor.widthInSectors),
-				num);
+		return getDoorLocation(areaX + (areaY * MapEditor.widthInSectors), num);
 	}
 
-	public static int findDoor(int areaX, int areaY, short doorX,
-			short doorY) {
+	public static int findDoor(int areaX, int areaY, short doorX, short doorY) {
 		int areaNum = areaX + (areaY * MapEditor.widthInSectors);
 		for (int i = 0; i < doorData[areaNum].size(); i++) {
 			DoorLocation doorLocation = (DoorLocation) doorData[areaNum]
@@ -751,34 +754,73 @@ public class EbMap {
 		}
 		return -1;
 	}
+	
+	public static int[] findDoor(Destination dest) {
+		DoorLocation door;
+		for (int i = 0; i < doorData.length; i++) {
+			for (int j = 0; j < doorData[i].size(); j++) {
+				door = (DoorLocation) doorData[i].get(j);
+				if ((door.getDestination() != null) && door.getDestination().equals(dest))
+					return new int[] { i-((i/MapEditor.widthInSectors)*MapEditor.widthInSectors), i/MapEditor.widthInSectors, j };
+			}
+		}
+		return null;
+	}
+	
+	public static int getDestIndex(Destination dest) {
+		return destData.indexOf(dest);
+	}
 
 	public static boolean writeDoors(HackModule hm, boolean oldCompatability) {
 		AbstractRom rom = hm.rom;
-		if (oldCompatability) {
-			rom.write(0x2e9430, new int[] { 0, 0x96, 0x2e, 0x00, 0xe1, 0x03 });
-			rom.write(0x2e9600, destData.size(), 2);
-		}
 
 		ArrayList destPointers = new ArrayList();
 		int address = 0;
 		Destination dest;
+		byte[] oldDestData = rom.readByte(0xf0200, 0xf5ae3-0xf0200);
 		byte[] destBytes;
 		for (int i = 0; i < destData.size(); i++) {
 			dest = (Destination) destData.get(i);
-			destBytes = dest.toByteArray();
-			rom.write(0xf0200 + address, destBytes);
-			destPointers.add(new Integer(address));
-			address += destBytes.length;
-			if (oldCompatability)
-				rom.write(0x2e9610 + i, dest.getType());
+			if (findDoor((Destination) destData.get(i)) == null) {
+				// Remove the unused destinations from the arraylist
+				destData.remove(i);
+				i--;
+			} else {
+				destBytes = dest.toByteArray();
+				
+				// Do not let destination data overflow into the next block
+				// (The next block is map/music event data)
+				if (0xf0200 + address + destBytes.length > 0xf5ae3) {
+					rom.write(0xf0200, oldDestData);
+					System.out.println("Could not write door data. Your destination data is too large to fit into the ROM.");
+					return false;
+				}
+				
+				rom.write(0xf0200 + address, destBytes);
+				destPointers.add(new Integer(address));
+				address += destBytes.length;
+				if (oldCompatability)
+					rom.write(0x2e9610 + i, dest.getType());
+			}
+		}
+		// Make sure the editors have at least one destination to work with
+		if (destData.size() == 0)
+			addNewDestination();
+		
+		if (oldCompatability) {
+			rom.write(0x2e9430, new int[] { 0, 0x96, 0x2e, 0x00, 0xe1, 0x03 });
+			rom.write(0x2e9600, destData.size(), 2);
 		}
 
 		byte[][] allRawDoorData = new byte[doorData.length][];
 		int totalLength = 0;
 		DoorLocation doorLocation;
 		for (int i = 0; i < doorData.length; i++) {
-			hm.nullifyArea(HackModule.toRegPointer(rom.readMulti(dPointersAddress + (i * 4),4)),
-					(oldDoorEntryLengths[i] * 5) + 2);
+			// Only bother clearing the old door data if it was in the expanded area
+			// After all, if it's at 0xf284f-0xf5ae3, then it could be new destination data
+			if (HackModule.toRegPointer(rom.readMulti(dPointersAddress + (i * 4),4)) >= 0x300200)
+				hm.nullifyArea(HackModule.toRegPointer(rom.readMulti(dPointersAddress + (i * 4),4)), (oldDoorEntryLengths[i] * 5) + 2);
+			
 			if (doorData[i].size() > 0) {
 				oldDoorEntryLengths[i] = doorData[i].size();
 				allRawDoorData[i] = new byte[(doorData[i].size() * 5) + 2];
@@ -795,9 +837,7 @@ public class EbMap {
 						allRawDoorData[i][5 + (j * 5)] = (byte) (data & 0xff);
 						allRawDoorData[i][6 + (j * 5)] = (byte) (((data & 0xff00) / 0x100) & 0xff);
 					} else {
-						int destAddress = ((Integer) destPointers
-								.get(doorLocation.getDestIndex()))
-								.intValue();
+						int destAddress = ((Integer) destPointers.get(destData.indexOf(doorLocation.getDestination()))).intValue();
 						allRawDoorData[i][5 + (j * 5)] = (byte) (destAddress & 0xff);
 						allRawDoorData[i][6 + (j * 5)] = (byte) ((destAddress & 0xff00) / 0x100);
 					}
@@ -826,10 +866,10 @@ public class EbMap {
 
 	}
 
-	private static int loadDestData(AbstractRom rom, int address, int type) {
+	private static Destination loadDestData(AbstractRom rom, int address, int type) {
 		for (int i = 0; i < destData.size(); i++) {
 			if (((Destination) destData.get(i)).getAddress() == address)
-				return i;
+				return (Destination) destData.get(i);
 		}
 		Destination dest = null;
 		if (DOOR_DEST_TYPES[type] == 0) {
@@ -865,9 +905,10 @@ public class EbMap {
 
 		if (dest != null) {
 			destData.add(dest);
-			return destData.size() - 1;
+			//System.out.println("Destination #" + Integer.toHexString(destData.size()-1) + ": 0x" + Integer.toHexString(address));
+			return dest;
 		} else
-			return -1;
+			return null;
 	}
 
 	public static Destination getDestination(int index) {
@@ -876,6 +917,15 @@ public class EbMap {
 	
 	public static int getNumDests() {
 		return destData.size();
+	}
+	
+	public static void removeDestination(int i) {
+		if ((i >= 0) && (i < destData.size()))
+				destData.remove(i);
+	}
+	
+	public static void addNewDestination() {
+		destData.add(new Destination(0,0));
 	}
 
 	public static void changeEnemyLoc(int x, int y, byte enemy) {
@@ -995,19 +1045,16 @@ public class EbMap {
 	}
 
 	public static class DoorLocation {
-		private int destIndex;
-
+		private Destination dest;
 		private byte type;
-
 		private short x, y, pointer, misc;
 
-		public DoorLocation(short x, short y, byte type, short pointer,
-				int destIndex) {
+		public DoorLocation(short x, short y, byte type, short pointer, Destination dest) {
 			this.x = x;
 			this.y = y;
 			this.type = type;
 			this.pointer = pointer;
-			this.destIndex = destIndex;
+			this.dest = dest;
 		}
 
 		public DoorLocation(short x, short y, byte type, short misc) {
@@ -1015,7 +1062,7 @@ public class EbMap {
 			this.y = y;
 			this.type = type;
 			this.misc = misc;
-			this.destIndex = -1;
+			this.dest = null;
 		}
 
 		public void setX(short x) {
@@ -1079,12 +1126,12 @@ public class EbMap {
 			return misc;
 		}
 
-		public int getDestIndex() {
-			return destIndex;
+		public Destination getDestination() {
+			return dest;
 		}
 
-		public void setDestIndex(int destIndex) {
-			this.destIndex = destIndex;
+		public void setDestination(Destination dest) {
+			this.dest = dest;
 		}
 	}
 
@@ -1135,7 +1182,7 @@ public class EbMap {
 			return palette;
 		}
 
-		public void setMusic(byte music) {
+		public void setMusic(short music) {
 			this.music = music;
 		}
 
