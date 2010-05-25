@@ -171,7 +171,7 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 						data[2] = 0xff;
 						data[3] = 0;
 					}
-					System.out.println("Repeating " + Integer.toHexString(numOfScanlines) + " times");
+					//System.out.println("Repeating " + Integer.toHexString(numOfScanlines) + " times");
 					for (int i = curScanline; i < curScanline + numOfScanlines; i++)
 						for (int j = 0; j < 4; j++)
 							swirlData[num][i][j] = data[j];
@@ -180,7 +180,7 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 				} else { // continuous mode
 					numOfScanlines -= 0x80;
 					
-					System.out.println("Non-repeating " + Integer.toHexString(numOfScanlines) + " times");
+					//System.out.println("Non-repeating " + Integer.toHexString(numOfScanlines) + " times");
 					for (int i = curScanline; i < curScanline + numOfScanlines; i++) {
 						for (int j = 0; j < (isMode01 ? 2 : 4); j++)
 							data[j] = rom.readSeek();
@@ -514,13 +514,13 @@ public class SwirlEditor extends EbHackModule implements ActionListener, Documen
 	        }
 		} else if (e.getActionCommand().equals("close")) {
         	hide();
-        	int[][] tmp = swirls[0].getFrameData();
+        	/*int[][] tmp = swirls[0].getFrameData();
         	for (int i = 0; i < tmp[0].length; i++) {
         		System.out.print(HackModule.addZeros(Integer.toHexString(tmp[0][i]),2) + " ");
         		if ((i+1) % 16 == 0)
         			System.out.println();
         	}
-        	System.out.println();
+        	System.out.println();*/
 		} else if (e.getSource().equals(swirlChooser)) {
 			frameChooser.removeActionListener(this);
 			frameChooser.removeAllItems();

@@ -1695,9 +1695,9 @@ public abstract class HackModule
                 byte[] oldData = rom.readByte(oldPointer, oldLen);
                 // delete old data from ROM, it may be part of the empty space
                 // found
-                System.out.println("oldPointer: " + Integer.toHexString(oldPointer));
+                //System.out.println("oldPointer: " + Integer.toHexString(oldPointer));
                 nullifyArea(oldPointer, oldLen);
-                System.out.println("A: " + Integer.toHexString(oldLen));
+                //System.out.println("A: " + Integer.toHexString(oldLen));
                 try
                 {
                     // look for space...
