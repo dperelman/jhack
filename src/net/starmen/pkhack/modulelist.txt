@@ -46,7 +46,7 @@ eb.PSIDamageEditor	#Edits the damage caused by PSI attacks
 #eb.BattleAnimEditor     #Edits battle animations (PSIs, items that animate)
 eb.BattleEntryEditor	#Edits [1f 23 xx xx] battle entries
 ----------------------Sprites--------------------------------------------------
-eb.SpriteEditor		     #Edits the appearence of out of battle (uncompressed) sprites
+eb.SpriteEditor		     #Edits the appearance of out of battle (uncompressed) sprites
 eb.SPTEditor		     #Edits the SPT
 eb.SpriteCharacterTableEditor
 					     #tells which sprites are used for playable chacters
@@ -55,12 +55,13 @@ eb.BattleSpriteEditor	 #Edits sprites used by enemies in battle
 ----------------------Graphics-------------------------------------------------
 eb.FontEditor			#Edits Fonts
 eb.CreditsFontEditor	#Edits Credits font
-eb.WindowBorderEditor	#Edits Window appearence
+eb.WindowBorderEditor	#Edits Window appearance
 eb.WindowPositionEditor #Edits Window position
 eb.TownMapEditor		#Edits town maps
-eb.LogoScreenEditor		#Edits logo screens at start of game (Nitendo, HAL, APE)
+eb.LogoScreenEditor		#Edits logo screens at start of game (Nintendo, HAL, APE)
 eb.GasStationEditor		#Edits the gas station screen at the start of the game
 eb.TitleScreenEditor	#Edits (part of) the title screen at the start of the game
+eb.DeathScreenEditor	#Edits the screen shown when you die
 eb.SwirlEditor			#Edits battle swirls
 ----------------------Maps-----------------------------------------------------
 eb.TileEditor		#Edits map tiles, tile arrangements, and collision info,
