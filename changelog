@@ -1,4 +1,6 @@
-NEXT VERSION (after v0.5.14):
+NEXT VERSION (after v0.5.15)
+
+v0.5.15:
 # Door Editor: Added ability to create new and remove existing destinations
 # Door Editor: BUGFIX: Will not nullify any destination data written past
     0xf284f on the initial write

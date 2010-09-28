@@ -494,7 +494,7 @@ public class MainGUI implements ActionListener, WindowListener
      */
     public static String getVersion()
     {
-        return "0.5.14";
+        return "0.5.15";
     }
 
     /**
